@@ -13,24 +13,42 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\TW3DEngine">
+      <UniqueIdentifier>{dff9c8bf-887e-4bf6-a674-b30a124a75d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TW3DEngine">
+      <UniqueIdentifier>{dd51a116-d939-4fec-9140-ce0213f34895}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TWTypes">
+      <UniqueIdentifier>{ceaac37c-798c-4b79-9e6c-a58408ce9e63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TWTypes">
+      <UniqueIdentifier>{41661c97-f49a-44ec-9104-a1701891a418}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TWT.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="TW3DEngine.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="TWTypes.h">
+      <Filter>Header Files\TWTypes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TWT.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DEngine.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="TWTypes.cpp">
+      <Filter>Source Files\TWTypes</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
