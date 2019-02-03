@@ -14,6 +14,9 @@ namespace TWU {
 	// Load and decode image from file
 	TWT::Int LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, TWT::WString filename, TWT::Int& bytesPerRow);
 
+	// Get available DirectX hardware adapter
+	void GetDXHardwareAdapter(IDXGIFactory2* pFactory, IDXGIAdapter1** ppAdapter);
+
 	// Safely release DirectX resources
 	template<typename T>
 	void DXSafeRelease(T* t){

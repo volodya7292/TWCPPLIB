@@ -194,7 +194,7 @@ void init_window() {
 }
 
 void init_dx12() {
-	TWT::UInt dxgi_factory_flags;
+	TWT::UInt dxgi_factory_flags = 0;
 
 #if defined(_DEBUG)
 	// Enable the debug layer (requires the Graphics Tools "optional feature").
@@ -216,34 +216,7 @@ void init_dx12() {
 	TWU::ThrowIfFailed(CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgiFactory)));
 
 	IDXGIAdapter1* adapter; // adapters are the graphics card (this includes the embedded graphics on the motherboard)
-
-	int adapterIndex = 0; // we'll start looking for directx 12  compatible graphics devices starting at index 0
-
-	bool adapterFound = false; // set this to true when a good one was found
-
-							   // find first hardware gpu that supports d3d 12
-	while (dxgiFactory->EnumAdapters1(adapterIndex, &adapter) != DXGI_ERROR_NOT_FOUND) {
-		DXGI_ADAPTER_DESC1 desc;
-		adapter->GetDesc1(&desc);
-
-		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
-			// we dont want a software device
-			continue;
-		}
-
-		// we want a device that is compatible with direct3d 12 (feature level 11 or higher)
-		TWU::ThrowIfFailed(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr));
-		
-		adapterFound = true;
-		break;
-		
-
-		adapterIndex++;
-	}
-
-	if (!adapterFound) {
-		return;
-	}
+	TWU::GetDXHardwareAdapter(dxgiFactory, &adapter);
 
 	TWU::ThrowIfFailed(D3D12CreateDevice(
 		adapter,
