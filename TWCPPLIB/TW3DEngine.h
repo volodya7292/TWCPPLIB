@@ -1,9 +1,14 @@
 #pragma once
+#include "TWUtils.h"
 
 namespace TW3D {
 	struct InitializeInfo {
-
+		TWT::UInt		width;
+		TWT::UInt		height;
+		TWT::String		title;
+		TWT::Bool		fullscreen;
+		TWT::Bool		vsync;
 	};
 
-	void Initialize(const InitializeInfo& info);
-}
+	void Start(const InitializeInfo& info);
+} // TW3D

@@ -1,18 +1,70 @@
 #pragma once
 
+using namespace std::string_literals;
+
 namespace TWT {
-	typedef	int8_t		Char;
+	using Bool = bool;
 
-	typedef int8_t		Int8;
-	typedef int16_t		Int16;
-	typedef int32_t		Int;
-	typedef int64_t		Int64;
+	using Char = char;
+	using WChar = wchar_t;
 
-	typedef uint8_t		UInt8;
-	typedef uint16_t	UInt16;
-	typedef uint32_t	UInt;
-	typedef uint64_t	UInt64;
+	using Int8 = int8_t;
+	using Int16 = int16_t;
+	using Int = int32_t;
+	using Int64 = int64_t;
 
-	typedef float		Float;
-	typedef double		Float64;
+	using UInt8 = uint8_t;
+	using UInt16 = uint16_t;
+	using UInt = uint32_t;
+	using UInt64 = uint64_t;
+
+	using Float = float;
+	using Float64 = double;
+
+	struct WString;
+
+	struct String {
+		String() = default;
+		String(Int data);
+		String(const Char* data);
+		String(std::string /*data*/);
+		String(const String &str);
+		~String() = default;
+
+		WString Wide();
+
+		String& operator + (const String& t);
+		String& operator = (const String &t);
+		String& operator += (const String& t);
+		
+		std::string data;
+	};
+
+	struct WString {
+		WString() = default;
+		WString(Int data);
+		WString(const WChar* data);
+		WString(std::wstring /*data*/);
+		WString(const WString &str);
+		~WString() = default;
+
+		String Multibyte();
+
+		WString& operator + (const WString& t);
+		WString& operator = (const WString &t);
+		WString& operator += (const WString& t);
+
+		std::wstring data;
+	};
+}  // namespace TWT
+
+std::ostream& operator << (std::ostream& os, const TWT::String& t);
+
+template <typename T>
+std::string operator+(const std::string& str, const T& t) {
+	return str + std::to_string(t);
+}
+template <typename T>
+std::string operator+(const T& t, const std::string& str) {
+	return std::to_string(t) + str;
 }

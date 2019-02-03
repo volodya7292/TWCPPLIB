@@ -25,6 +25,12 @@
     <Filter Include="Header Files\TWTypes">
       <UniqueIdentifier>{41661c97-f49a-44ec-9104-a1701891a418}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\TWUtils">
+      <UniqueIdentifier>{baff5cba-1386-4ba3-a4db-f85a5d439e73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TWUtils">
+      <UniqueIdentifier>{60b891bd-ea6a-4409-a747-b90b5f2d803b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -35,6 +41,12 @@
     </ClInclude>
     <ClInclude Include="TWTypes.h">
       <Filter>Header Files\TWTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TWUtils.h">
+      <Filter>Header Files\TWUtils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -49,6 +61,9 @@
     </ClCompile>
     <ClCompile Include="TWTypes.cpp">
       <Filter>Source Files\TWTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="TWUtils.cpp">
+      <Filter>Source Files\TWUtils</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
