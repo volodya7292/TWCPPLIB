@@ -1,11 +1,14 @@
 #ifndef PCH_H
 #define PCH_H
 
+#define NOMINMAX
+
 #include <iostream>
-#include <stdint.h>
 #include <vector>
 #include <string>
 #include <codecvt>
+#include <algorithm>
+#include <stdint.h>
 #include <wincodec.h>
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>

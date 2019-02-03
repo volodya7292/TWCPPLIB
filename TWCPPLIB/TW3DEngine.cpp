@@ -15,7 +15,7 @@ void on_resize();
 static int frameIndex; // current rtv we are on
 static int rtvDescriptorSize; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 static const int frameBufferCount = 3; // number of buffers we want, 2 for double buffering, 3 for tripple buffering
-static ID3D12Device5* device;
+static ID3D12Device* device;
 static ID3D12CommandQueue* commandQueue;
 static IDXGISwapChain3* swapChain;
 static ID3D12DescriptorHeap* rtvDescriptorHeap;
@@ -96,218 +96,6 @@ struct Vertex {
 	XMFLOAT2 texCoord;
 };
 
-// get the dxgi format equivilent of a wic format
-DXGI_FORMAT GetDXGIFormatFromWICFormat(WICPixelFormatGUID& wicFormatGUID) {
-	if (wicFormatGUID == GUID_WICPixelFormat128bppRGBAFloat) return DXGI_FORMAT_R32G32B32A32_FLOAT;
-	else if (wicFormatGUID == GUID_WICPixelFormat64bppRGBAHalf) return DXGI_FORMAT_R16G16B16A16_FLOAT;
-	else if (wicFormatGUID == GUID_WICPixelFormat64bppRGBA) return DXGI_FORMAT_R16G16B16A16_UNORM;
-	else if (wicFormatGUID == GUID_WICPixelFormat32bppRGBA) return DXGI_FORMAT_R8G8B8A8_UNORM;
-	else if (wicFormatGUID == GUID_WICPixelFormat32bppBGRA) return DXGI_FORMAT_B8G8R8A8_UNORM;
-	else if (wicFormatGUID == GUID_WICPixelFormat32bppBGR) return DXGI_FORMAT_B8G8R8X8_UNORM;
-	else if (wicFormatGUID == GUID_WICPixelFormat32bppRGBA1010102XR) return DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM;
-
-	else if (wicFormatGUID == GUID_WICPixelFormat32bppRGBA1010102) return DXGI_FORMAT_R10G10B10A2_UNORM;
-	else if (wicFormatGUID == GUID_WICPixelFormat16bppBGRA5551) return DXGI_FORMAT_B5G5R5A1_UNORM;
-	else if (wicFormatGUID == GUID_WICPixelFormat16bppBGR565) return DXGI_FORMAT_B5G6R5_UNORM;
-	else if (wicFormatGUID == GUID_WICPixelFormat32bppGrayFloat) return DXGI_FORMAT_R32_FLOAT;
-	else if (wicFormatGUID == GUID_WICPixelFormat16bppGrayHalf) return DXGI_FORMAT_R16_FLOAT;
-	else if (wicFormatGUID == GUID_WICPixelFormat16bppGray) return DXGI_FORMAT_R16_UNORM;
-	else if (wicFormatGUID == GUID_WICPixelFormat8bppGray) return DXGI_FORMAT_R8_UNORM;
-	else if (wicFormatGUID == GUID_WICPixelFormat8bppAlpha) return DXGI_FORMAT_A8_UNORM;
-
-	else return DXGI_FORMAT_UNKNOWN;
-}
-
-// get a dxgi compatible wic format from another wic format
-WICPixelFormatGUID GetConvertToWICFormat(WICPixelFormatGUID& wicFormatGUID) {
-	if (wicFormatGUID == GUID_WICPixelFormatBlackWhite) return GUID_WICPixelFormat8bppGray;
-	else if (wicFormatGUID == GUID_WICPixelFormat1bppIndexed) return GUID_WICPixelFormat32bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat2bppIndexed) return GUID_WICPixelFormat32bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat4bppIndexed) return GUID_WICPixelFormat32bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat8bppIndexed) return GUID_WICPixelFormat32bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat2bppGray) return GUID_WICPixelFormat8bppGray;
-	else if (wicFormatGUID == GUID_WICPixelFormat4bppGray) return GUID_WICPixelFormat8bppGray;
-	else if (wicFormatGUID == GUID_WICPixelFormat16bppGrayFixedPoint) return GUID_WICPixelFormat16bppGrayHalf;
-	else if (wicFormatGUID == GUID_WICPixelFormat32bppGrayFixedPoint) return GUID_WICPixelFormat32bppGrayFloat;
-	else if (wicFormatGUID == GUID_WICPixelFormat16bppBGR555) return GUID_WICPixelFormat16bppBGRA5551;
-	else if (wicFormatGUID == GUID_WICPixelFormat32bppBGR101010) return GUID_WICPixelFormat32bppRGBA1010102;
-	else if (wicFormatGUID == GUID_WICPixelFormat24bppBGR) return GUID_WICPixelFormat32bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat24bppRGB) return GUID_WICPixelFormat32bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat32bppPBGRA) return GUID_WICPixelFormat32bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat32bppPRGBA) return GUID_WICPixelFormat32bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat48bppRGB) return GUID_WICPixelFormat64bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat48bppBGR) return GUID_WICPixelFormat64bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat64bppBGRA) return GUID_WICPixelFormat64bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat64bppPRGBA) return GUID_WICPixelFormat64bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat64bppPBGRA) return GUID_WICPixelFormat64bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat48bppRGBFixedPoint) return GUID_WICPixelFormat64bppRGBAHalf;
-	else if (wicFormatGUID == GUID_WICPixelFormat48bppBGRFixedPoint) return GUID_WICPixelFormat64bppRGBAHalf;
-	else if (wicFormatGUID == GUID_WICPixelFormat64bppRGBAFixedPoint) return GUID_WICPixelFormat64bppRGBAHalf;
-	else if (wicFormatGUID == GUID_WICPixelFormat64bppBGRAFixedPoint) return GUID_WICPixelFormat64bppRGBAHalf;
-	else if (wicFormatGUID == GUID_WICPixelFormat64bppRGBFixedPoint) return GUID_WICPixelFormat64bppRGBAHalf;
-	else if (wicFormatGUID == GUID_WICPixelFormat64bppRGBHalf) return GUID_WICPixelFormat64bppRGBAHalf;
-	else if (wicFormatGUID == GUID_WICPixelFormat48bppRGBHalf) return GUID_WICPixelFormat64bppRGBAHalf;
-	else if (wicFormatGUID == GUID_WICPixelFormat128bppPRGBAFloat) return GUID_WICPixelFormat128bppRGBAFloat;
-	else if (wicFormatGUID == GUID_WICPixelFormat128bppRGBFloat) return GUID_WICPixelFormat128bppRGBAFloat;
-	else if (wicFormatGUID == GUID_WICPixelFormat128bppRGBAFixedPoint) return GUID_WICPixelFormat128bppRGBAFloat;
-	else if (wicFormatGUID == GUID_WICPixelFormat128bppRGBFixedPoint) return GUID_WICPixelFormat128bppRGBAFloat;
-	else if (wicFormatGUID == GUID_WICPixelFormat32bppRGBE) return GUID_WICPixelFormat128bppRGBAFloat;
-	else if (wicFormatGUID == GUID_WICPixelFormat32bppCMYK) return GUID_WICPixelFormat32bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat64bppCMYK) return GUID_WICPixelFormat64bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat40bppCMYKAlpha) return GUID_WICPixelFormat64bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat80bppCMYKAlpha) return GUID_WICPixelFormat64bppRGBA;
-
-#if (_WIN32_WINNT >= _WIN32_WINNT_WIN8) || defined(_WIN7_PLATFORM_UPDATE)
-	else if (wicFormatGUID == GUID_WICPixelFormat32bppRGB) return GUID_WICPixelFormat32bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat64bppRGB) return GUID_WICPixelFormat64bppRGBA;
-	else if (wicFormatGUID == GUID_WICPixelFormat64bppPRGBAHalf) return GUID_WICPixelFormat64bppRGBAHalf;
-#endif
-
-	else return GUID_WICPixelFormatDontCare;
-}
-
-// get the number of bits per pixel for a dxgi format
-int GetDXGIFormatBitsPerPixel(DXGI_FORMAT& dxgiFormat) {
-	if (dxgiFormat == DXGI_FORMAT_R32G32B32A32_FLOAT) return 128;
-	else if (dxgiFormat == DXGI_FORMAT_R16G16B16A16_FLOAT) return 64;
-	else if (dxgiFormat == DXGI_FORMAT_R16G16B16A16_UNORM) return 64;
-	else if (dxgiFormat == DXGI_FORMAT_R8G8B8A8_UNORM) return 32;
-	else if (dxgiFormat == DXGI_FORMAT_B8G8R8A8_UNORM) return 32;
-	else if (dxgiFormat == DXGI_FORMAT_B8G8R8X8_UNORM) return 32;
-	else if (dxgiFormat == DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM) return 32;
-
-	else if (dxgiFormat == DXGI_FORMAT_R10G10B10A2_UNORM) return 32;
-	else if (dxgiFormat == DXGI_FORMAT_B5G5R5A1_UNORM) return 16;
-	else if (dxgiFormat == DXGI_FORMAT_B5G6R5_UNORM) return 16;
-	else if (dxgiFormat == DXGI_FORMAT_R32_FLOAT) return 32;
-	else if (dxgiFormat == DXGI_FORMAT_R16_FLOAT) return 16;
-	else if (dxgiFormat == DXGI_FORMAT_R16_UNORM) return 16;
-	else if (dxgiFormat == DXGI_FORMAT_R8_UNORM) return 8;
-	else if (dxgiFormat == DXGI_FORMAT_A8_UNORM) return 8;
-}
-
-// load and decode image from file
-int LoadImageDataFromFile(BYTE** imageData, D3D12_RESOURCE_DESC& resourceDescription, LPCWSTR filename, int &bytesPerRow) {
-	HRESULT hr;
-
-	// we only need one instance of the imaging factory to create decoders and frames
-	static IWICImagingFactory *wicFactory;
-
-	// reset decoder, frame and converter since these will be different for each image we load
-	IWICBitmapDecoder *wicDecoder = NULL;
-	IWICBitmapFrameDecode *wicFrame = NULL;
-	IWICFormatConverter *wicConverter = NULL;
-
-	bool imageConverted = false;
-
-	if (wicFactory == NULL) {
-		// Initialize the COM library
-		CoInitialize(NULL);
-
-		// create the WIC factory
-		hr = CoCreateInstance(
-			CLSID_WICImagingFactory,
-			NULL,
-			CLSCTX_INPROC_SERVER,
-			IID_PPV_ARGS(&wicFactory)
-		);
-		if (FAILED(hr)) return 0;
-	}
-
-	// load a decoder for the image
-	hr = wicFactory->CreateDecoderFromFilename(
-		filename,                        // Image we want to load in
-		NULL,                            // This is a vendor ID, we do not prefer a specific one so set to null
-		GENERIC_READ,                    // We want to read from this file
-		WICDecodeMetadataCacheOnLoad,    // We will cache the metadata right away, rather than when needed, which might be unknown
-		&wicDecoder                      // the wic decoder to be created
-	);
-	if (FAILED(hr)) return 0;
-
-	// get image from decoder (this will decode the "frame")
-	hr = wicDecoder->GetFrame(0, &wicFrame);
-	if (FAILED(hr)) return 0;
-
-	// get wic pixel format of image
-	WICPixelFormatGUID pixelFormat;
-	hr = wicFrame->GetPixelFormat(&pixelFormat);
-	if (FAILED(hr)) return 0;
-
-	// get size of image
-	UINT textureWidth, textureHeight;
-	hr = wicFrame->GetSize(&textureWidth, &textureHeight);
-	if (FAILED(hr)) return 0;
-
-	// we are not handling sRGB types in this tutorial, so if you need that support, you'll have to figure
-	// out how to implement the support yourself
-
-	// convert wic pixel format to dxgi pixel format
-	DXGI_FORMAT dxgiFormat = GetDXGIFormatFromWICFormat(pixelFormat);
-
-	// if the format of the image is not a supported dxgi format, try to convert it
-	if (dxgiFormat == DXGI_FORMAT_UNKNOWN) {
-		// get a dxgi compatible wic format from the current image format
-		WICPixelFormatGUID convertToPixelFormat = GetConvertToWICFormat(pixelFormat);
-
-		// return if no dxgi compatible format was found
-		if (convertToPixelFormat == GUID_WICPixelFormatDontCare) return 0;
-
-		// set the dxgi format
-		dxgiFormat = GetDXGIFormatFromWICFormat(convertToPixelFormat);
-
-		// create the format converter
-		hr = wicFactory->CreateFormatConverter(&wicConverter);
-		if (FAILED(hr)) return 0;
-
-		// make sure we can convert to the dxgi compatible format
-		BOOL canConvert = FALSE;
-		hr = wicConverter->CanConvert(pixelFormat, convertToPixelFormat, &canConvert);
-		if (FAILED(hr) || !canConvert) return 0;
-
-		// do the conversion (wicConverter will contain the converted image)
-		hr = wicConverter->Initialize(wicFrame, convertToPixelFormat, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
-		if (FAILED(hr)) return 0;
-
-		// this is so we know to get the image data from the wicConverter (otherwise we will get from wicFrame)
-		imageConverted = true;
-	}
-
-	int bitsPerPixel = GetDXGIFormatBitsPerPixel(dxgiFormat); // number of bits per pixel
-	bytesPerRow = (textureWidth * bitsPerPixel) / 8; // number of bytes in each row of the image data
-	int imageSize = bytesPerRow * textureHeight; // total image size in bytes
-
-	// allocate enough memory for the raw image data, and set imageData to point to that memory
-	*imageData = (BYTE*)malloc(imageSize);
-
-	// copy (decoded) raw image data into the newly allocated memory (imageData)
-	if (imageConverted) {
-		// if image format needed to be converted, the wic converter will contain the converted image
-		hr = wicConverter->CopyPixels(0, bytesPerRow, imageSize, *imageData);
-		if (FAILED(hr)) return 0;
-	} else {
-		// no need to convert, just copy data from the wic frame
-		hr = wicFrame->CopyPixels(0, bytesPerRow, imageSize, *imageData);
-		if (FAILED(hr)) return 0;
-	}
-
-	// now describe the texture with the information we have obtained from the image
-	resourceDescription ={};
-	resourceDescription.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	resourceDescription.Alignment = 0; // may be 0, 4KB, 64KB, or 4MB. 0 will let runtime decide between 64KB and 4MB (4MB for multi-sampled textures)
-	resourceDescription.Width = textureWidth; // width of the texture
-	resourceDescription.Height = textureHeight; // height of the texture
-	resourceDescription.DepthOrArraySize = 1; // if 3d image, depth of 3d image. Otherwise an array of 1D or 2D textures (we only have one image, so we set 1)
-	resourceDescription.MipLevels = 1; // Number of mipmaps. We are not generating mipmaps for this texture, so we have only one level
-	resourceDescription.Format = dxgiFormat; // This is the dxgi format of the image (format of the pixels)
-	resourceDescription.SampleDesc.Count = 1; // This is the number of samples per pixel, we just want 1 sample
-	resourceDescription.SampleDesc.Quality = 0; // The quality level of the samples. Higher is better quality, but worse performance
-	resourceDescription.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN; // The arrangement of the pixels. Setting to unknown lets the driver choose the most efficient one
-	resourceDescription.Flags = D3D12_RESOURCE_FLAG_NONE; // no flags
-
-	// return the size of the image. remember to delete the image once your done with it (in this tutorial once its uploaded to the gpu)
-	return imageSize;
-}
-
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
 	case WM_KEYDOWN:
@@ -316,6 +104,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			DestroyWindow(hwnd);
 		} else if (wParam == VK_F11) {
 			fullscreen = !fullscreen;
+			TWU::CPrintln(fullscreen);
 			if (FAILED(swapChain->SetFullscreenState(fullscreen, nullptr)))
 				TWU::CPrintln("TESTFAILED");
 			on_resize();
@@ -344,7 +133,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 void init_window() {
 	if (fullscreen) {
 		HMONITOR hmon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-		MONITORINFO mi = { sizeof(mi) };
+		MONITORINFO mi ={ sizeof(mi) };
 		GetMonitorInfo(hmon, &mi);
 
 		width = mi.rcMonitor.right - mi.rcMonitor.left;
@@ -376,13 +165,15 @@ void init_window() {
 		std::cout << GetLastError();
 		MessageBox(NULL, L"sd", L"sd", MB_OK | MB_ICONERROR);
 	}
-	
+
 	hwnd = CreateWindowEx(NULL,
 		wtitle,
 		wtitle,
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT,
-		width, height,
+		(GetSystemMetrics(SM_CXSCREEN) - width) / 2,
+		(GetSystemMetrics(SM_CYSCREEN) - height) / 2,
+		width,
+		height,
 		NULL,
 		NULL,
 		instance,
@@ -403,15 +194,26 @@ void init_window() {
 }
 
 void init_dx12() {
-	HRESULT hr;
+	TWT::UInt dxgi_factory_flags;
+
+#if defined(_DEBUG)
+	// Enable the debug layer (requires the Graphics Tools "optional feature").
+	// NOTE: Enabling the debug layer after device creation will invalidate the active device.
+	{
+		ID3D12Debug* debugController;
+		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
+			debugController->EnableDebugLayer();
+
+			// Enable additional debug layers.
+			dxgi_factory_flags |= DXGI_CREATE_FACTORY_DEBUG;
+		}
+	}
+#endif
 
 	// -- Create the Device -- //
 
 	IDXGIFactory4* dxgiFactory;
-	hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
-	if (FAILED(hr)) {
-	
-	}
+	TWU::ThrowIfFailed(CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgiFactory)));
 
 	IDXGIAdapter1* adapter; // adapters are the graphics card (this includes the embedded graphics on the motherboard)
 
@@ -430,39 +232,32 @@ void init_dx12() {
 		}
 
 		// we want a device that is compatible with direct3d 12 (feature level 11 or higher)
-		hr = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr);
-		if (SUCCEEDED(hr)) {
-			adapterFound = true;
-			break;
-		}
+		TWU::ThrowIfFailed(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr));
+		
+		adapterFound = true;
+		break;
+		
 
 		adapterIndex++;
 	}
 
 	if (!adapterFound) {
-		
+		return;
 	}
 
-	// Create the device
-	hr = D3D12CreateDevice(
+	TWU::ThrowIfFailed(D3D12CreateDevice(
 		adapter,
 		D3D_FEATURE_LEVEL_11_0,
 		IID_PPV_ARGS(&device)
-	);
-	if (FAILED(hr)) {
-		
-	}
-
+	));
+	
 	// -- Create a direct command queue -- //
 
 	D3D12_COMMAND_QUEUE_DESC cqDesc ={};
 	cqDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	cqDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT; // direct means the gpu can directly execute this command queue
 
-	hr = device->CreateCommandQueue(&cqDesc, IID_PPV_ARGS(&commandQueue)); // create the command queue
-	if (FAILED(hr)) {
-		
-	}
+	TWU::ThrowIfFailed(device->CreateCommandQueue(&cqDesc, IID_PPV_ARGS(&commandQueue))); // create the command queue
 
 	// -- Create the Swap Chain (double/tripple buffering) -- //
 
@@ -507,10 +302,7 @@ void init_dx12() {
 													   // This heap will not be directly referenced by the shaders (not shader visible), as this will store the output from the pipeline
 													   // otherwise we would set the heap's flag to D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	hr = device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvDescriptorHeap));
-	if (FAILED(hr)) {
-		
-	}
+	TWU::ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvDescriptorHeap)));
 
 	// get the size of a descriptor in this heap (this is a rtv heap, so only rtv descriptors should be stored in it.
 	// descriptor sizes may vary from device to device, which is why there is no set size and we must ask the 
@@ -525,10 +317,7 @@ void init_dx12() {
 	for (int i = 0; i < frameBufferCount; i++) {
 		// first we get the n'th buffer in the swap chain and store it in the n'th
 		// position of our ID3D12Resource array
-		hr = swapChain->GetBuffer(i, IID_PPV_ARGS(&renderTargets[i]));
-		if (FAILED(hr)) {
-			
-		}
+		TWU::ThrowIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(&renderTargets[i])));
 
 		// the we "create" a render target view which binds the swap chain buffer (ID3D12Resource[n]) to the rtv handle
 		device->CreateRenderTargetView(renderTargets[i], nullptr, rtvHandle);
@@ -540,35 +329,26 @@ void init_dx12() {
 	// -- Create the Command Allocators -- //
 
 	for (int i = 0; i < frameBufferCount; i++) {
-		hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator[i]));
-		if (FAILED(hr)) {
-			
-		}
+		TWU::ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator[i])));
 	}
 
 	// -- Create a Command List -- //
 
 	// create the command list with the first allocator
-	hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator[frameIndex], NULL, IID_PPV_ARGS(&commandList));
-	if (FAILED(hr)) {
-		
-	}
+	TWU::ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator[frameIndex], NULL, IID_PPV_ARGS(&commandList)));
 
 	// -- Create a Fence & Fence Event -- //
 
 	// create the fences
 	for (int i = 0; i < frameBufferCount; i++) {
-		hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence[i]));
-		if (FAILED(hr)) {
-			
-		}
+		TWU::ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence[i])));
 		fenceValue[i] = 0; // set the initial fence value to 0
 	}
 
 	// create a handle to a fence event
 	fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 	if (fenceEvent == nullptr) {
-		
+
 	}
 
 	// create root signature
@@ -632,16 +412,9 @@ void init_dx12() {
 
 	ID3DBlob* errorBuff; // a buffer holding the error data if any
 	ID3DBlob* signature;
-	hr = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &errorBuff);
-	if (FAILED(hr)) {
-		OutputDebugStringA((char*)errorBuff->GetBufferPointer());
-		
-	}
+	TWU::ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &errorBuff));
 
-	hr = device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
-	if (FAILED(hr)) {
-		
-	}
+	TWU::ThrowIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
 
 	// create vertex and pixel shaders
 
@@ -654,7 +427,7 @@ void init_dx12() {
 
 	// compile vertex shader
 	ID3DBlob* vertexShader; // d3d blob for holding vertex shader bytecode
-	hr = D3DCompileFromFile(L"D:\\VertexShader.hlsl",
+	TWU::ThrowIfFailed(D3DCompileFromFile(L"D:\\VertexShader.hlsl",
 		nullptr,
 		nullptr,
 		"main",
@@ -662,11 +435,7 @@ void init_dx12() {
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
 		0,
 		&vertexShader,
-		&errorBuff);
-	if (FAILED(hr)) {
-		OutputDebugStringA("GOVNO!");
-		OutputDebugStringA((char*)errorBuff->GetBufferPointer());
-	}
+		&errorBuff));
 
 	// fill out a shader bytecode structure, which is basically just a pointer
 	// to the shader bytecode and the size of the shader bytecode
@@ -676,7 +445,7 @@ void init_dx12() {
 
 	// compile pixel shader
 	ID3DBlob* pixelShader;
-	hr = D3DCompileFromFile(L"D:\\PixelShader.hlsl",
+	TWU::ThrowIfFailed(D3DCompileFromFile(L"D:\\PixelShader.hlsl",
 		nullptr,
 		nullptr,
 		"main",
@@ -684,10 +453,7 @@ void init_dx12() {
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
 		0,
 		&pixelShader,
-		&errorBuff);
-	if (FAILED(hr)) {
-		OutputDebugStringA((char*)errorBuff->GetBufferPointer());
-	}
+		&errorBuff));
 
 	// fill out shader bytecode structure for pixel shader
 	D3D12_SHADER_BYTECODE pixelShaderBytecode ={};
@@ -739,10 +505,7 @@ void init_dx12() {
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // a default depth stencil state
 
 	// create the pso
-	hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineStateObject));
-	if (FAILED(hr)) {
-		
-	}
+	TWU::ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineStateObject)));
 
 	// Create vertex buffer
 
@@ -791,17 +554,14 @@ void init_dx12() {
 	// default heap is memory on the GPU. Only the GPU has access to this memory
 	// To get data into this heap, we will have to upload the data using
 	// an upload heap
-	hr = device->CreateCommittedResource(
+	TWU::ThrowIfFailed(device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), // a default heap
 		D3D12_HEAP_FLAG_NONE, // no flags
 		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize), // resource description for a buffer
 		D3D12_RESOURCE_STATE_COPY_DEST, // we will start this heap in the copy destination state since we will copy data
 										// from the upload heap to this heap
 		nullptr, // optimized clear value must be null for this type of resource. used for render targets and depth/stencil buffers
-		IID_PPV_ARGS(&vertexBuffer));
-	if (FAILED(hr)) {
-		
-	}
+		IID_PPV_ARGS(&vertexBuffer)));
 
 	// we can give resource heaps a name so when we debug with the graphics debugger we know what resource we are looking at
 	vertexBuffer->SetName(L"Vertex Buffer Resource Heap");
@@ -810,16 +570,14 @@ void init_dx12() {
 	// upload heaps are used to upload data to the GPU. CPU can write to it, GPU can read from it
 	// We will upload the vertex buffer using this heap to the default heap
 	ID3D12Resource* vBufferUploadHeap;
-	hr = device->CreateCommittedResource(
+	TWU::ThrowIfFailed(device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), // upload heap
 		D3D12_HEAP_FLAG_NONE, // no flags
 		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize), // resource description for a buffer
 		D3D12_RESOURCE_STATE_GENERIC_READ, // GPU will read from this buffer and copy its contents to the default heap
 		nullptr,
-		IID_PPV_ARGS(&vBufferUploadHeap));
-	if (FAILED(hr)) {
-		
-	}
+		IID_PPV_ARGS(&vBufferUploadHeap)));
+
 	vBufferUploadHeap->SetName(L"Vertex Buffer Upload Resource Heap");
 
 	// store vertex buffer in upload heap
@@ -869,32 +627,27 @@ void init_dx12() {
 	numCubeIndices = sizeof(iList) / sizeof(DWORD);
 
 	// create default heap to hold index buffer
-	hr = device->CreateCommittedResource(
+	TWU::ThrowIfFailed(device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), // a default heap
 		D3D12_HEAP_FLAG_NONE, // no flags
 		&CD3DX12_RESOURCE_DESC::Buffer(iBufferSize), // resource description for a buffer
 		D3D12_RESOURCE_STATE_COPY_DEST, // start in the copy destination state
 		nullptr, // optimized clear value must be null for this type of resource
-		IID_PPV_ARGS(&indexBuffer));
-	if (FAILED(hr)) {
-		
-	}
+		IID_PPV_ARGS(&indexBuffer)));
 
 	// we can give resource heaps a name so when we debug with the graphics debugger we know what resource we are looking at
 	vertexBuffer->SetName(L"Index Buffer Resource Heap");
 
 	// create upload heap to upload index buffer
 	ID3D12Resource* iBufferUploadHeap;
-	hr = device->CreateCommittedResource(
+	TWU::ThrowIfFailed(device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), // upload heap
 		D3D12_HEAP_FLAG_NONE, // no flags
 		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize), // resource description for a buffer
 		D3D12_RESOURCE_STATE_GENERIC_READ, // GPU will read from this buffer and copy its contents to the default heap
 		nullptr,
-		IID_PPV_ARGS(&iBufferUploadHeap));
-	if (FAILED(hr)) {
-		
-	}
+		IID_PPV_ARGS(&iBufferUploadHeap)));
+
 	vBufferUploadHeap->SetName(L"Index Buffer Upload Resource Heap");
 
 	// store vertex buffer in upload heap
@@ -917,10 +670,7 @@ void init_dx12() {
 	dsvHeapDesc.NumDescriptors = 1;
 	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	hr = device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsDescriptorHeap));
-	if (FAILED(hr)) {
-		
-	}
+	TWU::ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsDescriptorHeap)));
 
 	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc ={};
 	depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
@@ -932,17 +682,15 @@ void init_dx12() {
 	depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
 	depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
-	hr = device->CreateCommittedResource(
+	TWU::ThrowIfFailed(device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, width, height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,
 		&depthOptimizedClearValue,
 		IID_PPV_ARGS(&depthStencilBuffer)
-	);
-	if (FAILED(hr)) {
-		
-	}
+	));
+
 	dsDescriptorHeap->SetName(L"Depth/Stencil Resource Heap");
 
 	device->CreateDepthStencilView(depthStencilBuffer, &depthStencilDesc, dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
@@ -963,16 +711,14 @@ void init_dx12() {
 	// resource, and each resource must be at least 64KB (65536 bits)
 	for (int i = 0; i < frameBufferCount; ++i) {
 		// create resource for cube 1
-		hr = device->CreateCommittedResource(
+		TWU::ThrowIfFailed(device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), // this heap will be used to upload the constant buffer data
 			D3D12_HEAP_FLAG_NONE, // no flags
 			&CD3DX12_RESOURCE_DESC::Buffer(D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT), // size of the resource heap. Must be a multiple of 64KB for single-textures and constant buffers
 			D3D12_RESOURCE_STATE_GENERIC_READ, // will be data that is read from so we keep it in the generic read state
 			nullptr, // we do not have use an optimized clear value for constant buffers
-			IID_PPV_ARGS(&constantBufferUploadHeaps[i]));
-		if (FAILED(hr)) {
-			
-		}
+			IID_PPV_ARGS(&constantBufferUploadHeaps[i])));
+
 		constantBufferUploadHeaps[i]->SetName(L"Constant Buffer Upload Resource Heap");
 
 		ZeroMemory(&cbPerObject, sizeof(cbPerObject));
@@ -980,7 +726,7 @@ void init_dx12() {
 		CD3DX12_RANGE readRange(0, 0);    // We do not intend to read from this resource on the CPU. (so end is less than or equal to begin)
 
 		// map the resource heap to get a gpu virtual address to the beginning of the heap
-		hr = constantBufferUploadHeaps[i]->Map(0, &readRange, reinterpret_cast<void**>(&cbvGPUAddress[i]));
+		TWU::ThrowIfFailed(constantBufferUploadHeaps[i]->Map(0, &readRange, reinterpret_cast<void**>(&cbvGPUAddress[i])));
 
 		// Because of the constant read alignment requirements, constant buffer views must be 256 bit aligned. Our buffers are smaller than 256 bits,
 		// so we need to add spacing between the two buffers, so that the second buffer starts at 256 bits from the beginning of the resource heap.
@@ -994,24 +740,22 @@ void init_dx12() {
 	D3D12_RESOURCE_DESC textureDesc;
 	int imageBytesPerRow;
 	BYTE* imageData;
-	int imageSize = LoadImageDataFromFile(&imageData, textureDesc, L"D:\\test1.png", imageBytesPerRow);
+	int imageSize = TWU::LoadImageDataFromFile(&imageData, textureDesc, L"D:\\test1.png", imageBytesPerRow);
 
 	// make sure we have data
 	if (imageSize <= 0) {
-		
+
 	}
 
 	// create a default heap where the upload heap will copy its contents into (contents being the texture)
-	hr = device->CreateCommittedResource(
+	TWU::ThrowIfFailed(device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), // a default heap
 		D3D12_HEAP_FLAG_NONE, // no flags
 		&textureDesc, // the description of our texture
 		D3D12_RESOURCE_STATE_COPY_DEST, // We will copy the texture from the upload heap to here, so we start it out in a copy dest state
 		nullptr, // used for render targets and depth/stencil buffers
-		IID_PPV_ARGS(&textureBuffer));
-	if (FAILED(hr)) {
-		
-	}
+		IID_PPV_ARGS(&textureBuffer)));
+
 	textureBuffer->SetName(L"Texture Buffer Resource Heap");
 
 	UINT64 textureUploadBufferSize;
@@ -1022,16 +766,14 @@ void init_dx12() {
 	device->GetCopyableFootprints(&textureDesc, 0, 1, 0, nullptr, nullptr, nullptr, &textureUploadBufferSize);
 
 	// now we create an upload heap to upload our texture to the GPU
-	hr = device->CreateCommittedResource(
+	TWU::ThrowIfFailed(device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), // upload heap
 		D3D12_HEAP_FLAG_NONE, // no flags
 		&CD3DX12_RESOURCE_DESC::Buffer(textureUploadBufferSize), // resource description for a buffer (storing the image data in this heap just to copy to the default heap)
 		D3D12_RESOURCE_STATE_GENERIC_READ, // We will copy the contents from this heap to the default heap above
 		nullptr,
-		IID_PPV_ARGS(&textureBufferUploadHeap));
-	if (FAILED(hr)) {
-		
-	}
+		IID_PPV_ARGS(&textureBufferUploadHeap)));
+
 	textureBufferUploadHeap->SetName(L"Texture Buffer Upload Resource Heap");
 
 	// store vertex buffer in upload heap
@@ -1051,10 +793,7 @@ void init_dx12() {
 	heapDesc.NumDescriptors = 1;
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	hr = device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mainDescriptorHeap));
-	if (FAILED(hr)) {
-		
-	}
+	TWU::ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mainDescriptorHeap)));
 
 	// now we create a shader resource view (descriptor that points to the texture and describes it)
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc ={};
@@ -1071,10 +810,7 @@ void init_dx12() {
 
 	// increment the fence value now, otherwise the buffer might not be uploaded by the time we start drawing
 	fenceValue[frameIndex]++;
-	hr = commandQueue->Signal(fence[frameIndex], fenceValue[frameIndex]);
-	if (FAILED(hr)) {
-		
-	}
+	TWU::ThrowIfFailed(commandQueue->Signal(fence[frameIndex], fenceValue[frameIndex]));
 
 	// we are done with image data now that we've uploaded it to the gpu, so free it up
 	delete imageData;
@@ -1138,42 +874,51 @@ void init_dx12() {
 	XMStoreFloat4x4(&cube2WorldMat, tmpMat); // store cube2's world matrix
 }
 
-void WaitForPreviousFrame() {
-	HRESULT hr;
+//void WaitForPreviousFrame() {
+//	HRESULT hr;
+//
+//	// swap the current rtv buffer index so we draw on the correct buffer
+//	frameIndex = swapChain->GetCurrentBackBufferIndex();
+//
+//	// if the current fence value is still less than "fenceValue", then we know the GPU has not finished executing
+//	// the command queue since it has not reached the "commandQueue->Signal(fence, fenceValue)" command
+//	if (fence[frameIndex]->GetCompletedValue() < fenceValue[frameIndex]) {
+//		// we have the fence create an event which is signaled once the fence's current value is "fenceValue"
+//		TWU::ThrowIfFailed(fence[frameIndex]->SetEventOnCompletion(fenceValue[frameIndex], fenceEvent);
+//		if (FAILED(hr)) {
+//			
+//		}
+//
+//		// We will wait until the fence has triggered the event that it's current value has reached "fenceValue". once it's value
+//		// has reached "fenceValue", we know the command queue has finished executing
+//		WaitForSingleObject(fenceEvent, INFINITE);
+//	}
+//
+//	// increment fenceValue for next frame
+//	fenceValue[frameIndex]++;
+//}
 
-	// swap the current rtv buffer index so we draw on the correct buffer
-	frameIndex = swapChain->GetCurrentBackBufferIndex();
+void WaitForFence(int i) {
+	HRESULT hr;
 
 	// if the current fence value is still less than "fenceValue", then we know the GPU has not finished executing
 	// the command queue since it has not reached the "commandQueue->Signal(fence, fenceValue)" command
-	if (fence[frameIndex]->GetCompletedValue() < fenceValue[frameIndex]) {
+	if (fence[i]->GetCompletedValue() < fenceValue[i]) {
 		// we have the fence create an event which is signaled once the fence's current value is "fenceValue"
-		hr = fence[frameIndex]->SetEventOnCompletion(fenceValue[frameIndex], fenceEvent);
-		if (FAILED(hr)) {
-			
-		}
+		TWU::ThrowIfFailed(fence[i]->SetEventOnCompletion(fenceValue[i], fenceEvent));
 
 		// We will wait until the fence has triggered the event that it's current value has reached "fenceValue". once it's value
 		// has reached "fenceValue", we know the command queue has finished executing
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
-
-	// increment fenceValue for next frame
-	fenceValue[frameIndex]++;
 }
 
 void UpdatePipeline() {
 	HRESULT hr;
 
-	// We have to wait for the gpu to finish with the command allocator before we reset it
-	//WaitForPreviousFrame();
-
 	// we can only reset an allocator once the gpu is done with it
 	// resetting an allocator frees the memory that the command list was stored in
-	hr = commandAllocator[frameIndex]->Reset();
-	if (FAILED(hr)) {
-		
-	}
+	TWU::ThrowIfFailed(commandAllocator[frameIndex]->Reset());
 
 	// reset the command list. by resetting the command list we are putting it into
 	// a recording state so we can start recording commands into the command allocator.
@@ -1185,10 +930,7 @@ void UpdatePipeline() {
 	// but in this tutorial we are only clearing the rtv, and do not actually need
 	// anything but an initial default pipeline, which is what we get by setting
 	// the second parameter to NULL
-	hr = commandList->Reset(commandAllocator[frameIndex], pipelineStateObject);
-	if (FAILED(hr)) {
-		
-	}
+	TWU::ThrowIfFailed(commandList->Reset(commandAllocator[frameIndex], pipelineStateObject));
 
 	// here we start recording commands into the commandList (which all the commands will be stored in the commandAllocator)
 
@@ -1248,10 +990,7 @@ void UpdatePipeline() {
 	// warning if present is called on the render target when it's not in the present state
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
-	hr = commandList->Close();
-	if (FAILED(hr)) {
-		
-	}
+	TWU::ThrowIfFailed(commandList->Close());
 }
 
 void update() {
@@ -1323,7 +1062,15 @@ void update() {
 void render() {
 	HRESULT hr;
 
+	// We have to wait for the gpu to finish with the command allocator before we reset it
+	//WaitForPreviousFrame();
+
+	WaitForFence(frameIndex);
+
+	frameIndex = swapChain->GetCurrentBackBufferIndex();
+
 	UpdatePipeline(); // update the pipeline by sending commands to the commandqueue
+
 
 	// create an array of command lists (only one command list here)
 	ID3D12CommandList* ppCommandLists[] ={ commandList };
@@ -1335,48 +1082,28 @@ void render() {
 	// this command goes in at the end of our command queue. we will know when our command queue 
 	// has finished because the fence value will be set to "fenceValue" from the GPU since the command
 	// queue is being executed on the GPU
-	hr = commandQueue->Signal(fence[frameIndex], fenceValue[frameIndex]);
-	if (FAILED(hr)) {
-		
-	}
+	TWU::ThrowIfFailed(commandQueue->Signal(fence[frameIndex], ++fenceValue[frameIndex]));
 
 	// present the current backbuffer
-	hr = swapChain->Present(vsync ? 1 : 0, 0);
-	if (FAILED(hr)) {
-		
-	}
-
-
-
-	// Schedule a Signal command in the queue.
-	const UINT64 currentFenceValue = fenceValue[frameIndex];
-	commandQueue->Signal(fence[frameIndex], currentFenceValue);
-
-	// Update the frame index.
-	frameIndex = swapChain->GetCurrentBackBufferIndex();
-
-	// If the next frame is not ready to be rendered yet, wait until it is ready.
-	if (fence[frameIndex]->GetCompletedValue() < fenceValue[frameIndex]) {
-		fence[frameIndex]->SetEventOnCompletion(fenceValue[frameIndex], fenceEvent);
-		WaitForSingleObjectEx(fenceEvent, INFINITE, FALSE);
-	}
-
-	// Set the fence value for the next frame.
-	fenceValue[frameIndex] = currentFenceValue + 1;
+	TWU::ThrowIfFailed(swapChain->Present(vsync ? 1 : 0, 0));
 }
 
 void on_resize() {
+
+	//for (UINT n = 0; n < frameBufferCount; n++) {
+	WaitForFence(frameIndex);
+	//}
 
 	TWU::CPrintln("RESIZE");
 	RECT clientRect ={};
 	GetClientRect(hwnd, &clientRect);
 
-	width = clientRect.right - clientRect.left;
-	height = clientRect.bottom - clientRect.top;
+	width  = std::max(clientRect.right - clientRect.left, 1L);
+	height = std::max(clientRect.bottom - clientRect.top, 1L);
 
 	TWU::CPrintln(width + " "s + height);
 
-	viewport.Width = width;
+	viewport.Width  = width;
 	viewport.Height = height;
 
 	scissorRect.right = width;
@@ -1392,7 +1119,7 @@ void on_resize() {
 	DXGI_SWAP_CHAIN_DESC desc ={};
 	swapChain->GetDesc(&desc);
 	swapChain->ResizeBuffers(frameBufferCount, width, height, desc.BufferDesc.Format, desc.Flags);
-	
+
 
 	frameIndex = swapChain->GetCurrentBackBufferIndex();
 
@@ -1405,7 +1132,7 @@ void on_resize() {
 
 		swapChain->GetBuffer(i, IID_PPV_ARGS(&renderTargets[i]));
 
-		
+
 		// the we "create" a render target view which binds the swap chain buffer (ID3D12Resource[n]) to the rtv handle
 		device->CreateRenderTargetView(renderTargets[i], nullptr, rtvHandle);
 
@@ -1429,13 +1156,13 @@ void on_resize() {
 	// Create a depth buffer.
 
 	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc ={};
-	depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
+	depthStencilDesc.Format                        = DXGI_FORMAT_D32_FLOAT;
+	depthStencilDesc.ViewDimension                 = D3D12_DSV_DIMENSION_TEXTURE2D;
+	depthStencilDesc.Flags                         = D3D12_DSV_FLAG_NONE;
 
-	D3D12_CLEAR_VALUE depthOptimizedClearValue ={};
-	depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
-	depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+	D3D12_CLEAR_VALUE depthOptimizedClearValue    ={};
+	depthOptimizedClearValue.Format               = DXGI_FORMAT_D32_FLOAT;
+	depthOptimizedClearValue.DepthStencil.Depth   = 1.0f;
 	depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
 	device->CreateCommittedResource(
@@ -1470,6 +1197,43 @@ void main_loop() {
 			render(); // execute the command queue (rendering the scene is the result of the gpu executing the command lists)
 		}
 	}
+
+	WaitForFence(frameIndex);
+}
+
+void cleanup() {
+	// wait for the gpu to finish all frames
+	WaitForFence(frameIndex);
+
+
+	// get swapchain out of full screen before exiting
+	BOOL fs = false;
+	if (swapChain->GetFullscreenState(&fs, NULL))
+		swapChain->SetFullscreenState(false, NULL);
+
+	TWU::DXSafeRelease(device);
+	TWU::DXSafeRelease(swapChain);
+	TWU::DXSafeRelease(commandQueue);
+	TWU::DXSafeRelease(rtvDescriptorHeap);
+	TWU::DXSafeRelease(commandList);
+
+	for (int i = 0; i < frameBufferCount; ++i) {
+		TWU::DXSafeRelease(renderTargets[i]);
+		TWU::DXSafeRelease(commandAllocator[i]);
+		TWU::DXSafeRelease(fence[i]);
+	};
+
+	TWU::DXSafeRelease(pipelineStateObject);
+	TWU::DXSafeRelease(rootSignature);
+	TWU::DXSafeRelease(vertexBuffer);
+	TWU::DXSafeRelease(indexBuffer);
+
+	TWU::DXSafeRelease(depthStencilBuffer);
+	TWU::DXSafeRelease(dsDescriptorHeap);
+
+	for (int i = 0; i < frameBufferCount; ++i) {
+		TWU::DXSafeRelease(constantBufferUploadHeaps[i]);
+	};
 }
 
 void TW3D::Start(const InitializeInfo& info) {
@@ -1483,4 +1247,5 @@ void TW3D::Start(const InitializeInfo& info) {
 	init_dx12();
 
 	main_loop();
+	cleanup();
 }

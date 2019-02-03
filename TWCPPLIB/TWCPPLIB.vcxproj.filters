@@ -48,6 +48,12 @@
     <ClInclude Include="TWUtils.h">
       <Filter>Header Files\TWUtils</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DTypes.h">
+      <Filter>Header Files\TWTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DUtils.h">
+      <Filter>Header Files\TWUtils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -63,6 +69,12 @@
       <Filter>Source Files\TWTypes</Filter>
     </ClCompile>
     <ClCompile Include="TWUtils.cpp">
+      <Filter>Source Files\TWUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DTypes.cpp">
+      <Filter>Source Files\TWTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DUtils.cpp">
       <Filter>Source Files\TWUtils</Filter>
     </ClCompile>
   </ItemGroup>

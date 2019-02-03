@@ -14,10 +14,6 @@ TWT::String::String(std::string data) {
 	this->data = move(data);
 }
 
-TWT::String::String(const String& str) 
-	
-= default;
-
 TWT::WString TWT::String::Wide() {
 	std::wstring stemp = std::wstring(data.begin(), data.end());
 	return WString(stemp);
@@ -48,10 +44,6 @@ TWT::WString::WString(const WChar* data) :
 TWT::WString::WString(std::wstring data) {
 	this->data = move(data);
 }
-
-TWT::WString::WString(const WString& str) 
-	
-= default;
 
 TWT::String TWT::WString::Multibyte() {
 	std::string stemp = std::string(data.begin(), data.end());

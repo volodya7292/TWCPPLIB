@@ -5,20 +5,21 @@ using namespace std::string_literals;
 namespace TWT {
 	using Bool = bool;
 
-	using Char = char;
+	using Char  = char;
+	using Byte  = unsigned char;
 	using WChar = wchar_t;
 
-	using Int8 = int8_t;
+	using Int8  = int8_t;
 	using Int16 = int16_t;
-	using Int = int32_t;
+	using Int   = int32_t;
 	using Int64 = int64_t;
 
-	using UInt8 = uint8_t;
+	using UInt8  = uint8_t;
 	using UInt16 = uint16_t;
-	using UInt = uint32_t;
+	using UInt   = uint32_t;
 	using UInt64 = uint64_t;
 
-	using Float = float;
+	using Float   = float;
 	using Float64 = double;
 
 	struct WString;
@@ -28,7 +29,7 @@ namespace TWT {
 		String(Int data);
 		String(const Char* data);
 		String(std::string /*data*/);
-		String(const String &str);
+		String(const String &str) = default;
 		~String() = default;
 
 		WString Wide();
@@ -45,7 +46,7 @@ namespace TWT {
 		WString(Int data);
 		WString(const WChar* data);
 		WString(std::wstring /*data*/);
-		WString(const WString &str);
+		WString(const WString &str) = default;
 		~WString() = default;
 
 		String Multibyte();
@@ -56,7 +57,7 @@ namespace TWT {
 
 		std::wstring data;
 	};
-}  // namespace TWT
+}
 
 std::ostream& operator << (std::ostream& os, const TWT::String& t);
 

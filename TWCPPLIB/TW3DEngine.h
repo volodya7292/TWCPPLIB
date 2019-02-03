@@ -1,5 +1,5 @@
 #pragma once
-#include "TWUtils.h"
+#include "TW3DUtils.h"
 
 namespace TW3D {
 	struct InitializeInfo {
@@ -11,4 +11,4 @@ namespace TW3D {
 	};
 
 	void Start(const InitializeInfo& info);
-} // TW3D
+}
