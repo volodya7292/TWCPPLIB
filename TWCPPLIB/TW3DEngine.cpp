@@ -233,6 +233,10 @@ void init_dx12() {
 	
 	TWU::ThrowIfFailed(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
 
+	DXGI_ADAPTER_DESC d;
+	adapter->GetDesc(&d);
+	TWU::CPrintln(d.Description);
+
 	// -- Create a direct command queue -- //
 
 	D3D12_COMMAND_QUEUE_DESC cqDesc = {};
@@ -417,46 +421,30 @@ void init_dx12() {
 	// shader bytecode, which of course is faster than compiling
 	// them at runtime
 
-	// compile vertex shader
-	ID3DBlob* vertexShader; // d3d blob for holding vertex shader bytecode
-	TWU::ThrowIfFailed(D3DCompileFromFile(L"D:\\VertexShader.hlsl",
-		nullptr,
-		nullptr,
-		"main",
-		"vs_5_0",
-		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
-		0,
-		&vertexShader,
-		&errorBuff));
+	TWT::Int s;
+	TWT::Byte* ps = TWU::LoadShaderFile("VertexShader.cso", &s);
 
-	// fill out a shader bytecode structure, which is basically just a pointer
-	// to the shader bytecode and the size of the shader bytecode
+
 	D3D12_SHADER_BYTECODE vertexShaderBytecode = {};
-	vertexShaderBytecode.BytecodeLength = vertexShader->GetBufferSize();
-	vertexShaderBytecode.pShaderBytecode = vertexShader->GetBufferPointer();
+	vertexShaderBytecode.BytecodeLength = s;
+	vertexShaderBytecode.pShaderBytecode = ps;
+
 
 	// compile pixel shader
-	ID3DBlob* pixelShader;
-	TWU::ThrowIfFailed(D3DCompileFromFile(L"D:\\PixelShader.hlsl",
-		nullptr,
-		nullptr,
-		"main",
-		"ps_5_0",
-		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
-		0,
-		&pixelShader,
-		&errorBuff));
+	TWT::Array<int, 5> arr;
 
-	// fill out shader bytecode structure for pixel shader
+	ps = TWU::LoadShaderFile("PixelShader.cso", &s);
+	
+
 	D3D12_SHADER_BYTECODE pixelShaderBytecode = {};
-	pixelShaderBytecode.BytecodeLength = pixelShader->GetBufferSize();
-	pixelShaderBytecode.pShaderBytecode = pixelShader->GetBufferPointer();
+	pixelShaderBytecode.BytecodeLength = s;
+	pixelShaderBytecode.pShaderBytecode = ps;
 
 	// create input layout
 
 	// The input layout is used by the Input Assembler so that it knows
 	// how to read the vertex data bound to it.
-
+	
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -1253,5 +1241,12 @@ void TW3D::Start(const InitializeInfo& info) {
 	init_dx12();
 
 	main_loop();
+
+	IDXGIDebug1* d;
+	TWU::ThrowIfFailed(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&d)));
+	TWU::ThrowIfFailed(d->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL));
 	cleanup();
+
+	
+	TWU::ThrowIfFailed(d->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL));
 }

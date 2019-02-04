@@ -66,3 +66,7 @@ TWT::WString& TWT::WString::operator+=(const WString& t) {
 std::ostream& operator<<(std::ostream& os, const TWT::String& t) {
 	return os << t.data;
 }
+
+std::wostream& operator<<(std::wostream& os, const TWT::WString& t) {
+	return os << t.data;
+}

@@ -22,6 +22,9 @@ namespace TWT {
 	using Float   = float;
 	using Float64 = double;
 
+	template<class _Ty, size_t _Size>
+	using Array = std::array<_Ty, _Size>;
+	
 	struct WString;
 
 	struct String {
@@ -60,6 +63,7 @@ namespace TWT {
 }
 
 std::ostream& operator << (std::ostream& os, const TWT::String& t);
+std::wostream& operator << (std::wostream& os, const TWT::WString& t);
 
 template <typename T>
 std::string operator+(const std::string& str, const T& t) {

@@ -233,6 +233,32 @@ void TWU::GetDXHardwareAdapter(IDXGIFactory2* pFactory, IDXGIAdapter1** ppAdapte
 	*ppAdapter = adapter.Detach();
 }
 
+// this function loads a file into an Array^
+TWT::Byte* TWU::LoadShaderFile(std::string File, TWT::Int* s) {
+	// open the file
+	std::ifstream VertexFile(File, std::ios::ate | std::ios::binary);
+	
+	// if open was successful
+	if (VertexFile.good()) {
+		// find the length of the file
+		TWT::Int Length = (int)VertexFile.tellg();
+		// collect the file data
+		TWT::Byte* data = new TWT::Byte[Length];
+
+		
+		*s = Length;
+		TWU::CPrintln(" "s + Length + " gov"s);
+
+		VertexFile.seekg(0);
+		VertexFile.read(reinterpret_cast<char*>(data), Length);
+		VertexFile.close();
+
+		return data;
+	}
+
+	return nullptr;
+}
+
 void TWU::ThrowIfFailed(HRESULT hr) {
 	if (FAILED(hr)) {
 		TWT::Char s_str[64] = {};

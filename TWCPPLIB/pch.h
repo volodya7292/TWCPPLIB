@@ -4,10 +4,12 @@
 #define NOMINMAX
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
 #include <codecvt>
 #include <algorithm>
+#include <array>
 #include <stdint.h>
 #include <wincodec.h>
 #include <dxgi1_6.h>

@@ -17,6 +17,8 @@ namespace TWU {
 	// Get available DirectX hardware adapter
 	void GetDXHardwareAdapter(IDXGIFactory2* pFactory, IDXGIAdapter1** ppAdapter);
 
+	TWT::Byte* LoadShaderFile(std::string File, TWT::Int* s);
+
 	// Safely release DirectX resources
 	template<typename T>
 	void DXSafeRelease(T* t){
