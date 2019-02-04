@@ -179,14 +179,17 @@ void init_window() {
 		MessageBox(NULL, L"sd", L"sd", MB_OK | MB_ICONERROR);
 	}
 
+	TWT::UInt x = (GetSystemMetrics(SM_CXSCREEN) - width) / 2;
+	TWT::UInt y = (GetSystemMetrics(SM_CYSCREEN) - height) / 2;
+	RECT rect = { x, y, x + width, y + height };
+	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
+
 	hwnd = CreateWindowEx(NULL,
 		wtitle,
 		wtitle,
 		WS_OVERLAPPEDWINDOW,
-		(GetSystemMetrics(SM_CXSCREEN) - width) / 2,
-		(GetSystemMetrics(SM_CYSCREEN) - height) / 2,
-		width,
-		height,
+		rect.left, rect.top,
+		rect.right - rect.left, rect.bottom - rect.top,
 		NULL,
 		NULL,
 		instance,
@@ -225,13 +228,15 @@ void init_dx12() {
 
 	// -- Create the Device -- //
 
-	IDXGIFactory4* dxgiFactory;
-	CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgiFactory));
+	IDXGIFactory7* dxgiFactory = TWU::DXGICreateFactory(dxgi_factory_flags);
+	//CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgiFactory));
 
-	IDXGIAdapter1* adapter = nullptr; // adapters are the graphics card (this includes the embedded graphics on the motherboard)
-	TWU::GetDXHardwareAdapter(dxgiFactory, &adapter);
+	IDXGIAdapter4* adapter = TWU::DXGIGetHardwareAdapter(dxgiFactory); // adapters are the graphics card (this includes the embedded graphics on the motherboard)
+	//TWU::GetDXHardwareAdapter(dxgiFactory, &adapter);
 	
-	TWU::ThrowIfFailed(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
+	device = TWU::DXCreateDevice(adapter);
+
+	//TWU::ThrowIfFailed(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
 
 	DXGI_ADAPTER_DESC d;
 	adapter->GetDesc(&d);
@@ -422,7 +427,7 @@ void init_dx12() {
 	// them at runtime
 
 	TWT::Int s;
-	TWT::Byte* ps = TWU::LoadShaderFile("VertexShader.cso", &s);
+	TWT::Byte* ps = TWU::ReadFileBytes("VertexShader.cso", s);
 
 
 	D3D12_SHADER_BYTECODE vertexShaderBytecode = {};
@@ -430,10 +435,7 @@ void init_dx12() {
 	vertexShaderBytecode.pShaderBytecode = ps;
 
 
-	// compile pixel shader
-	TWT::Array<int, 5> arr;
-
-	ps = TWU::LoadShaderFile("PixelShader.cso", &s);
+	ps = TWU::ReadFileBytes("PixelShader.cso", s);
 	
 
 	D3D12_SHADER_BYTECODE pixelShaderBytecode = {};
@@ -1081,17 +1083,15 @@ void render() {
 }
 
 void on_resize() {
-
 	FlushGPU();
 
-	TWU::CPrintln("RESIZE");
 	RECT clientRect = {};
 	GetClientRect(hwnd, &clientRect);
 
 	width = std::max(clientRect.right - clientRect.left, 1L);
 	height = std::max(clientRect.bottom - clientRect.top, 1L);
 
-	TWU::CPrintln(width + " "s + height);
+	//TWU::CPrintln(width + " "s + height);
 
 	viewport.Width = width;
 	viewport.Height = height;

@@ -248,6 +248,7 @@
   <ItemGroup>
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TW3DDevice.h" />
     <ClInclude Include="TW3DEngine.h" />
     <ClInclude Include="TW3DTypes.h" />
     <ClInclude Include="TW3DUtils.h" />
@@ -264,6 +265,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="TW3DDevice.cpp" />
     <ClCompile Include="TW3DEngine.cpp" />
     <ClCompile Include="TW3DTypes.cpp" />
     <ClCompile Include="TW3DUtils.cpp" />

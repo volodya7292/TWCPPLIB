@@ -2,6 +2,15 @@
 #include "TWUtils.h"
 
 namespace TWU {
+	// Create a DXGI factory
+	IDXGIFactory7* DXGICreateFactory(TWT::UInt flags);
+
+	// Get available DirectX hardware adapter
+	IDXGIAdapter4* DXGIGetHardwareAdapter(IDXGIFactory7* factory);
+
+	// Create a DX12 device
+	ID3D12Device5* DXCreateDevice(IDXGIAdapter4* adapter);
+
 	// Get the DXGI format equivilent of a WIC format
 	DXGI_FORMAT WICFormatToDXGIFormat(WICPixelFormatGUID& wicFormatGUID);
 
@@ -14,10 +23,8 @@ namespace TWU {
 	// Load and decode image from file
 	TWT::Int LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, TWT::WString filename, TWT::Int& bytesPerRow);
 
-	// Get available DirectX hardware adapter
-	void GetDXHardwareAdapter(IDXGIFactory2* pFactory, IDXGIAdapter1** ppAdapter);
-
-	TWT::Byte* LoadShaderFile(std::string File, TWT::Int* s);
+	// Read entire file into byte array
+	TWT::Byte* ReadFileBytes(std::string file, TWT::Int& size);
 
 	// Safely release DirectX resources
 	template<typename T>

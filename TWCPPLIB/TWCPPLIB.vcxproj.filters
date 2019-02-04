@@ -9,10 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Header Files\TW3DEngine">
       <UniqueIdentifier>{dff9c8bf-887e-4bf6-a674-b30a124a75d0}</UniqueIdentifier>
     </Filter>
@@ -30,6 +26,10 @@
     </Filter>
     <Filter Include="Source Files\TWUtils">
       <UniqueIdentifier>{60b891bd-ea6a-4409-a747-b90b5f2d803b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -54,6 +54,9 @@
     <ClInclude Include="TW3DUtils.h">
       <Filter>Header Files\TWUtils</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DDevice.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -76,6 +79,9 @@
     </ClCompile>
     <ClCompile Include="TW3DUtils.cpp">
       <Filter>Source Files\TWUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DDevice.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

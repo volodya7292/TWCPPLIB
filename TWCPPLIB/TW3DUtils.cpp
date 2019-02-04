@@ -1,6 +1,38 @@
 #include "pch.h"
 #include "TW3DUtils.h"
 
+IDXGIFactory7* TWU::DXGICreateFactory(TWT::UInt flags) {
+	IDXGIFactory7* dxgiFactory;
+	CreateDXGIFactory2(flags, IID_PPV_ARGS(&dxgiFactory));
+	return dxgiFactory;
+}
+
+IDXGIAdapter4* TWU::DXGIGetHardwareAdapter(IDXGIFactory7* factory) {
+	IDXGIAdapter1* adapter;
+
+	for (UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != factory->EnumAdapters1(adapterIndex, &adapter); ++adapterIndex) {
+		DXGI_ADAPTER_DESC1 desc;
+		ThrowIfFailed(adapter->GetDesc1(&desc));
+
+		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
+			// Don't select the Basic Render Driver(software) adapter.
+			continue;
+		}
+
+		// Check to see if the adapter supports Direct3D 12, but don't create the actual device yet.
+		if (SUCCEEDED(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
+			break;
+	}
+
+	return static_cast<IDXGIAdapter4*>(adapter);
+}
+
+ID3D12Device5* TWU::DXCreateDevice(IDXGIAdapter4* adapter) {
+	ID3D12Device5* device;
+	TWU::ThrowIfFailed(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
+	return device;
+}
+
 DXGI_FORMAT TWU::WICFormatToDXGIFormat(WICPixelFormatGUID& wicFormatGUID) {
 	if (wicFormatGUID == GUID_WICPixelFormat128bppRGBAFloat) return DXGI_FORMAT_R32G32B32A32_FLOAT;
 	else if (wicFormatGUID == GUID_WICPixelFormat64bppRGBAHalf) return DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -209,48 +241,17 @@ TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& 
 	return imageSize;
 }
 
-void TWU::GetDXHardwareAdapter(IDXGIFactory2* pFactory, IDXGIAdapter1** ppAdapter) {
-	Microsoft::WRL::ComPtr<IDXGIAdapter1> adapter;
-	*ppAdapter = nullptr;
-
-	for (UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != pFactory->EnumAdapters1(adapterIndex, &adapter); ++adapterIndex) {
-		DXGI_ADAPTER_DESC1 desc;
-		ThrowIfFailed(adapter->GetDesc1(&desc));
-
-		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
-			// Don't select the Basic Render Driver adapter.
-			// If you want a software adapter, pass in "/warp" on the command line.
-			continue;
-		}
-
-		// Check to see if the adapter supports Direct3D 12, but don't create the
-		// actual device yet.
-		if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr))) {
-			break;
-		}
-	}
-
-	*ppAdapter = adapter.Detach();
-}
-
 // this function loads a file into an Array^
-TWT::Byte* TWU::LoadShaderFile(std::string File, TWT::Int* s) {
-	// open the file
-	std::ifstream VertexFile(File, std::ios::ate | std::ios::binary);
+TWT::Byte* TWU::ReadFileBytes(std::string file, TWT::Int& size) {
+	std::ifstream VertexFile(file, std::ios::ate | std::ios::binary);
 	
-	// if open was successful
-	if (VertexFile.good()) {
-		// find the length of the file
-		TWT::Int Length = (int)VertexFile.tellg();
-		// collect the file data
-		TWT::Byte* data = new TWT::Byte[Length];
+	if (VertexFile.is_open()) {
+		size = (TWT::Int)VertexFile.tellg();
 
-		
-		*s = Length;
-		TWU::CPrintln(" "s + Length + " gov"s);
+		TWT::Byte* data = new TWT::Byte[size];
 
 		VertexFile.seekg(0);
-		VertexFile.read(reinterpret_cast<char*>(data), Length);
+		VertexFile.read(reinterpret_cast<char*>(data), size);
 		VertexFile.close();
 
 		return data;
