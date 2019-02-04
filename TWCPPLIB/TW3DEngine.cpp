@@ -7,7 +7,7 @@ static TWT::UInt		width, height;
 static TWT::String		title;
 static TWT::Bool		fullscreen, vsync;
 
-static TWT::Bool		running;
+static TWT::Bool		running, minimized = false;
 static HWND				hwnd;
 
 void on_resize();
@@ -17,7 +17,7 @@ static int rtvDescriptorSize; // size of the rtv descriptor on the device (all f
 static const int frameBufferCount = 3; // number of buffers we want, 2 for double buffering, 3 for tripple buffering
 static ID3D12Device* device;
 static ID3D12CommandQueue* commandQueue;
-static IDXGISwapChain3* swapChain;
+static IDXGISwapChain4* swapChain;
 static ID3D12DescriptorHeap* rtvDescriptorHeap;
 static ID3D12Resource* renderTargets[frameBufferCount]; // number of render targets equal to buffer count
 static ID3D12CommandAllocator* commandAllocator[frameBufferCount];
@@ -104,16 +104,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			DestroyWindow(hwnd);
 		} else if (wParam == VK_F11) {
 			fullscreen = !fullscreen;
-			TWU::CPrintln(fullscreen);
-			if (FAILED(swapChain->SetFullscreenState(fullscreen, nullptr)))
-				TWU::CPrintln("TESTFAILED");
+			TWU::ThrowIfFailed((swapChain->SetFullscreenState(fullscreen, nullptr)));
 			on_resize();
 		}
 		return 0;
 
 	case WM_SIZE:
-		if ((UINT)wParam == SIZE_MAXIMIZED)
+		if ((UINT)wParam == SIZE_MAXIMIZED) {
 			on_resize();
+		}  else if ((UINT)wParam == SIZE_MINIMIZED) {
+			minimized = true;
+		} else if ((UINT)wParam == SIZE_RESTORED) { // unminimized
+			minimized = false;
+		}
+
+		if (swapChain) {
+			BOOL govno;
+			swapChain->GetFullscreenState(&govno, nullptr);
+			if (fullscreen != govno) {
+				fullscreen = govno;
+				on_resize();
+			}
+		}
+		
 		return 0;
 
 	case WM_EXITSIZEMOVE:
@@ -133,7 +146,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 void init_window() {
 	if (fullscreen) {
 		HMONITOR hmon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-		MONITORINFO mi ={ sizeof(mi) };
+		MONITORINFO mi = { sizeof(mi) };
 		GetMonitorInfo(hmon, &mi);
 
 		width = mi.rcMonitor.right - mi.rcMonitor.left;
@@ -146,7 +159,7 @@ void init_window() {
 
 	WNDCLASSEX wc;
 
-	HINSTANCE instance =  GetModuleHandle(NULL);
+	HINSTANCE instance = GetModuleHandle(NULL);
 
 	wc.cbSize = sizeof(WNDCLASSEX);
 	wc.style = CS_HREDRAW | CS_VREDRAW;
@@ -213,62 +226,67 @@ void init_dx12() {
 	// -- Create the Device -- //
 
 	IDXGIFactory4* dxgiFactory;
-	TWU::ThrowIfFailed(CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgiFactory)));
+	CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgiFactory));
 
-	IDXGIAdapter1* adapter; // adapters are the graphics card (this includes the embedded graphics on the motherboard)
+	IDXGIAdapter1* adapter = nullptr; // adapters are the graphics card (this includes the embedded graphics on the motherboard)
 	TWU::GetDXHardwareAdapter(dxgiFactory, &adapter);
-
-	TWU::ThrowIfFailed(D3D12CreateDevice(
-		adapter,
-		D3D_FEATURE_LEVEL_11_0,
-		IID_PPV_ARGS(&device)
-	));
 	
+	TWU::ThrowIfFailed(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
+
 	// -- Create a direct command queue -- //
 
-	D3D12_COMMAND_QUEUE_DESC cqDesc ={};
+	D3D12_COMMAND_QUEUE_DESC cqDesc = {};
 	cqDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	cqDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT; // direct means the gpu can directly execute this command queue
-
+	
 	TWU::ThrowIfFailed(device->CreateCommandQueue(&cqDesc, IID_PPV_ARGS(&commandQueue))); // create the command queue
 
 	// -- Create the Swap Chain (double/tripple buffering) -- //
 
-	DXGI_MODE_DESC backBufferDesc ={}; // this is to describe our display mode
+	DXGI_MODE_DESC backBufferDesc = {}; // this is to describe our display mode
 	backBufferDesc.Width = width; // buffer width
 	backBufferDesc.Height = height; // buffer height
 	backBufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // format of the buffer (rgba 32 bits, 8 bits for each chanel)
 
 														// describe our multi-sampling. We are not multi-sampling, so we set the count to 1 (we need at least one sample of course)
-	DXGI_SAMPLE_DESC sampleDesc ={};
+	DXGI_SAMPLE_DESC sampleDesc = {};
 	sampleDesc.Count = 1; // multisample count (no multisampling, so we just put 1, since we still need 1 sample)
 
 						  // Describe and create the swap chain.
-	DXGI_SWAP_CHAIN_DESC swapChainDesc ={};
-	swapChainDesc.BufferCount = frameBufferCount; // number of buffers we have
-	swapChainDesc.BufferDesc = backBufferDesc; // our back buffer description
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // this says the pipeline will render to this swap chain
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+	swapChainDesc.Width = width;
+	swapChainDesc.Height = height;
+	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapChainDesc.Stereo = false;
+	swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // dxgi will discard the buffer (data) after we call present
-	swapChainDesc.OutputWindow = hwnd; // handle to our window
+	swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+	swapChainDesc.BufferCount = frameBufferCount; // number of buffers we have
+	//swapChainDesc.BufferDesc = backBufferDesc; // our back buffer description
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // this says the pipeline will render to this swap chain
+	//swapChainDesc.OutputWindow = hwnd; // handle to our window
 	swapChainDesc.SampleDesc = sampleDesc; // our multi-sampling description
-	swapChainDesc.Windowed = !fullscreen; // set to true, then if in fullscreen must call SetFullScreenState with true for full screen to get uncapped fps
+	//swapChainDesc.Windowed = !fullscreen; // set to true, then if in fullscreen must call SetFullScreenState with true for full screen to get uncapped fps
 
-	IDXGISwapChain* tempSwapChain;
 
-	dxgiFactory->CreateSwapChain(
-		commandQueue, // the queue will be flushed once the swap chain is created
-		&swapChainDesc, // give it the swap chain description we created above
-		&tempSwapChain // store the created swap chain in a temp IDXGISwapChain interface
-	);
+	IDXGISwapChain1* tempSwapChain;
+	
+	TWU::ThrowIfFailed(dxgiFactory->CreateSwapChainForHwnd(commandQueue, hwnd, &swapChainDesc, nullptr, nullptr, &tempSwapChain));
+	TWU::ThrowIfFailed(dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER));
+	swapChain =static_cast<IDXGISwapChain4*>(tempSwapChain);
 
-	swapChain = static_cast<IDXGISwapChain3*>(tempSwapChain);
+	//dxgiFactory->CreateSwapChain(
+	//	commandQueue, // the queue will be flushed once the swap chain is created
+	//	&swapChainDesc, // give it the swap chain description we created above
+	//	&tempSwapChain // store the created swap chain in a temp IDXGISwapChain interface
+	//);
 
 	frameIndex = swapChain->GetCurrentBackBufferIndex();
 
 	// -- Create the Back Buffers (render target views) Descriptor Heap -- //
 
 	// describe an rtv descriptor heap and create
-	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc ={};
+	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
 	rtvHeapDesc.NumDescriptors = frameBufferCount; // number of descriptors for this heap.
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; // this heap is a render target view heap
 
@@ -294,6 +312,7 @@ void init_dx12() {
 
 		// the we "create" a render target view which binds the swap chain buffer (ID3D12Resource[n]) to the rtv handle
 		device->CreateRenderTargetView(renderTargets[i], nullptr, rtvHandle);
+		renderTargets[i]->SetName(L"RTV");
 
 		// we increment the rtv handle by the rtv descriptor size we got above
 		rtvHandle.Offset(1, rtvDescriptorSize);
@@ -358,7 +377,7 @@ void init_dx12() {
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
 
 	// create a static sampler
-	D3D12_STATIC_SAMPLER_DESC sampler ={};
+	D3D12_STATIC_SAMPLER_DESC sampler = {};
 	sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
 	sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
 	sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
@@ -412,7 +431,7 @@ void init_dx12() {
 
 	// fill out a shader bytecode structure, which is basically just a pointer
 	// to the shader bytecode and the size of the shader bytecode
-	D3D12_SHADER_BYTECODE vertexShaderBytecode ={};
+	D3D12_SHADER_BYTECODE vertexShaderBytecode = {};
 	vertexShaderBytecode.BytecodeLength = vertexShader->GetBufferSize();
 	vertexShaderBytecode.pShaderBytecode = vertexShader->GetBufferPointer();
 
@@ -429,7 +448,7 @@ void init_dx12() {
 		&errorBuff));
 
 	// fill out shader bytecode structure for pixel shader
-	D3D12_SHADER_BYTECODE pixelShaderBytecode ={};
+	D3D12_SHADER_BYTECODE pixelShaderBytecode = {};
 	pixelShaderBytecode.BytecodeLength = pixelShader->GetBufferSize();
 	pixelShaderBytecode.pShaderBytecode = pixelShader->GetBufferPointer();
 
@@ -445,7 +464,7 @@ void init_dx12() {
 	};
 
 	// fill out an input layout description structure
-	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc ={};
+	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc = {};
 
 	// we can get the number of elements in an array by "sizeof(array) / sizeof(arrayElementType)"
 	inputLayoutDesc.NumElements = sizeof(inputLayout) / sizeof(D3D12_INPUT_ELEMENT_DESC);
@@ -463,7 +482,7 @@ void init_dx12() {
 	// output, and not on a render target, which means you would not need anything after the stream
 	// output.
 
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc ={}; // a structure to define a pso
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {}; // a structure to define a pso
 	psoDesc.InputLayout = inputLayoutDesc; // the structure describing our input layout
 	psoDesc.pRootSignature = rootSignature; // the root signature that describes the input data this pso needs
 	psoDesc.VS = vertexShaderBytecode; // structure describing where to find the vertex shader bytecode and how large it is
@@ -476,6 +495,7 @@ void init_dx12() {
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT); // a default blent state.
 	psoDesc.NumRenderTargets = 1; // we are only binding one render target
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // a default depth stencil state
+	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
 	// create the pso
 	TWU::ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineStateObject)));
@@ -483,7 +503,7 @@ void init_dx12() {
 	// Create vertex buffer
 
 	// a cube
-	Vertex vList[] ={
+	Vertex vList[] = {
 		// front face
 		{ -0.5f,  0.5f, -0.5f, 0.0f, 0.0f },
 		{  0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
@@ -554,7 +574,7 @@ void init_dx12() {
 	vBufferUploadHeap->SetName(L"Vertex Buffer Upload Resource Heap");
 
 	// store vertex buffer in upload heap
-	D3D12_SUBRESOURCE_DATA vertexData ={};
+	D3D12_SUBRESOURCE_DATA vertexData = {};
 	vertexData.pData = reinterpret_cast<BYTE*>(vList); // pointer to our vertex array
 	vertexData.RowPitch = vBufferSize; // size of all our triangle vertex data
 	vertexData.SlicePitch = vBufferSize; // also the size of our triangle vertex data
@@ -569,7 +589,7 @@ void init_dx12() {
 	// Create index buffer
 
 	// a quad (2 triangles)
-	DWORD iList[] ={
+	DWORD iList[] = {
 		// ffront face
 		0, 1, 2, // first triangle
 		0, 3, 1, // second triangle
@@ -624,7 +644,7 @@ void init_dx12() {
 	vBufferUploadHeap->SetName(L"Index Buffer Upload Resource Heap");
 
 	// store vertex buffer in upload heap
-	D3D12_SUBRESOURCE_DATA indexData ={};
+	D3D12_SUBRESOURCE_DATA indexData = {};
 	indexData.pData = reinterpret_cast<BYTE*>(iList); // pointer to our index array
 	indexData.RowPitch = iBufferSize; // size of all our index buffer
 	indexData.SlicePitch = iBufferSize; // also the size of our index buffer
@@ -639,18 +659,18 @@ void init_dx12() {
 	// Create the depth/stencil buffer
 
 	// create a depth stencil descriptor heap so we can get a pointer to the depth stencil buffer
-	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc ={};
+	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
 	dsvHeapDesc.NumDescriptors = 1;
 	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	TWU::ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsDescriptorHeap)));
 
-	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc ={};
+	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
 	depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
 	depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-	D3D12_CLEAR_VALUE depthOptimizedClearValue ={};
+	D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
 	depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
 	depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
 	depthOptimizedClearValue.DepthStencil.Stencil = 0;
@@ -750,7 +770,7 @@ void init_dx12() {
 	textureBufferUploadHeap->SetName(L"Texture Buffer Upload Resource Heap");
 
 	// store vertex buffer in upload heap
-	D3D12_SUBRESOURCE_DATA textureData ={};
+	D3D12_SUBRESOURCE_DATA textureData = {};
 	textureData.pData = &imageData[0]; // pointer to our image data
 	textureData.RowPitch = imageBytesPerRow; // size of all our triangle vertex data
 	textureData.SlicePitch = imageBytesPerRow * textureDesc.Height; // also the size of our triangle vertex data
@@ -762,14 +782,14 @@ void init_dx12() {
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(textureBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
 	// create the descriptor heap that will store our srv
-	D3D12_DESCRIPTOR_HEAP_DESC heapDesc ={};
+	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 	heapDesc.NumDescriptors = 1;
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	TWU::ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mainDescriptorHeap)));
 
 	// now we create a shader resource view (descriptor that points to the texture and describes it)
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc ={};
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.Format = textureDesc.Format;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -778,7 +798,7 @@ void init_dx12() {
 
 	// Now we execute the command list to upload the initial assets (triangle data)
 	commandList->Close();
-	ID3D12CommandList* ppCommandLists[] ={ commandList };
+	ID3D12CommandList* ppCommandLists[] = { commandList };
 	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
 	// increment the fence value now, otherwise the buffer might not be uploaded by the time we start drawing
@@ -886,6 +906,16 @@ void WaitForFence(int i) {
 	}
 }
 
+void FlushFence(int n) {
+	TWU::ThrowIfFailed(commandQueue->Signal(fence[n], ++fenceValue[n]));
+	WaitForFence(n);
+}
+
+void FlushGPU() {
+	for (UINT n = 0; n < frameBufferCount; n++)
+		FlushFence(n);
+}
+
 void UpdatePipeline() {
 	HRESULT hr;
 
@@ -920,7 +950,7 @@ void UpdatePipeline() {
 	commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 
 	// Clear the render target by using the ClearRenderTargetView command
-	const float clearColor[] ={ 0.0f, 0.2f, 0.4f, 1.0f };
+	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 
 	// clear the depth/stencil buffer
@@ -930,7 +960,7 @@ void UpdatePipeline() {
 	commandList->SetGraphicsRootSignature(rootSignature); // set the root signature
 
 	// set the descriptor heap
-	ID3D12DescriptorHeap* descriptorHeaps[] ={ mainDescriptorHeap };
+	ID3D12DescriptorHeap* descriptorHeaps[] = { mainDescriptorHeap };
 	commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
 	// set the descriptor table to the descriptor heap (parameter 1, as constant buffer root descriptor is parameter index 0)
@@ -1038,7 +1068,7 @@ void render() {
 	// We have to wait for the gpu to finish with the command allocator before we reset it
 	//WaitForPreviousFrame();
 
-	WaitForFence(frameIndex);
+	FlushFence(frameIndex);
 
 	frameIndex = swapChain->GetCurrentBackBufferIndex();
 
@@ -1046,7 +1076,7 @@ void render() {
 
 
 	// create an array of command lists (only one command list here)
-	ID3D12CommandList* ppCommandLists[] ={ commandList };
+	ID3D12CommandList* ppCommandLists[] = { commandList };
 
 	// execute the array of command lists
 
@@ -1055,28 +1085,27 @@ void render() {
 	// this command goes in at the end of our command queue. we will know when our command queue 
 	// has finished because the fence value will be set to "fenceValue" from the GPU since the command
 	// queue is being executed on the GPU
-	TWU::ThrowIfFailed(commandQueue->Signal(fence[frameIndex], ++fenceValue[frameIndex]));
+	//TWU::ThrowIfFailed(commandQueue->Signal(fence[frameIndex], ++fenceValue[frameIndex]));
 
 	// present the current backbuffer
-	TWU::ThrowIfFailed(swapChain->Present(vsync ? 1 : 0, 0));
+	swapChain->Present(vsync ? 1 : 0, 0);
+	//TWU::ThrowIfFailed(swapChain->Present(vsync ? 1 : 0, 0));
 }
 
 void on_resize() {
 
-	//for (UINT n = 0; n < frameBufferCount; n++) {
-	WaitForFence(frameIndex);
-	//}
+	FlushGPU();
 
 	TWU::CPrintln("RESIZE");
-	RECT clientRect ={};
+	RECT clientRect = {};
 	GetClientRect(hwnd, &clientRect);
 
-	width  = std::max(clientRect.right - clientRect.left, 1L);
+	width = std::max(clientRect.right - clientRect.left, 1L);
 	height = std::max(clientRect.bottom - clientRect.top, 1L);
 
 	TWU::CPrintln(width + " "s + height);
 
-	viewport.Width  = width;
+	viewport.Width = width;
 	viewport.Height = height;
 
 	scissorRect.right = width;
@@ -1089,7 +1118,7 @@ void on_resize() {
 
 	depthStencilBuffer->Release();
 
-	DXGI_SWAP_CHAIN_DESC desc ={};
+	DXGI_SWAP_CHAIN_DESC desc = {};
 	swapChain->GetDesc(&desc);
 	swapChain->ResizeBuffers(frameBufferCount, width, height, desc.BufferDesc.Format, desc.Flags);
 
@@ -1108,6 +1137,7 @@ void on_resize() {
 
 		// the we "create" a render target view which binds the swap chain buffer (ID3D12Resource[n]) to the rtv handle
 		device->CreateRenderTargetView(renderTargets[i], nullptr, rtvHandle);
+		renderTargets[i]->SetName(L"RTV");
 
 		// we increment the rtv handle by the rtv descriptor size we got above
 		rtvHandle.Offset(1, rtvDescriptorSize);
@@ -1128,14 +1158,14 @@ void on_resize() {
 	// Resize screen dependent resources.
 	// Create a depth buffer.
 
-	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc ={};
-	depthStencilDesc.Format                        = DXGI_FORMAT_D32_FLOAT;
-	depthStencilDesc.ViewDimension                 = D3D12_DSV_DIMENSION_TEXTURE2D;
-	depthStencilDesc.Flags                         = D3D12_DSV_FLAG_NONE;
+	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
+	depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-	D3D12_CLEAR_VALUE depthOptimizedClearValue    ={};
-	depthOptimizedClearValue.Format               = DXGI_FORMAT_D32_FLOAT;
-	depthOptimizedClearValue.DepthStencil.Depth   = 1.0f;
+	D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+	depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+	depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
 	depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
 	device->CreateCommittedResource(
@@ -1167,22 +1197,21 @@ void main_loop() {
 		} else {
 			// run game code
 			update(); // update the game logic
-			render(); // execute the command queue (rendering the scene is the result of the gpu executing the command lists)
+			if (!minimized)
+				render(); // execute the command queue (rendering the scene is the result of the gpu executing the command lists)
 		}
 	}
 
-	WaitForFence(frameIndex);
+	FlushGPU();
 }
 
 void cleanup() {
-	// wait for the gpu to finish all frames
-	WaitForFence(frameIndex);
-
 
 	// get swapchain out of full screen before exiting
-	BOOL fs = false;
-	if (swapChain->GetFullscreenState(&fs, NULL))
-		swapChain->SetFullscreenState(false, NULL);
+	BOOL govno = false;
+	swapChain->GetFullscreenState(&govno, nullptr);
+	if (govno);
+		swapChain->SetFullscreenState(false, nullptr);
 
 	TWU::DXSafeRelease(device);
 	TWU::DXSafeRelease(swapChain);
@@ -1210,11 +1239,15 @@ void cleanup() {
 }
 
 void TW3D::Start(const InitializeInfo& info) {
-	width		= info.width;
-	height      = info.height;
-	title       = info.title;
-	fullscreen  = info.fullscreen;
-	vsync       = info.vsync;
+	width = info.width;
+	height = info.height;
+	title = info.title;
+	fullscreen = info.fullscreen;
+	vsync = info.vsync;
+
+	/*IDXGIDebug1* d;
+	TWU::ThrowIfFailed(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&d)));
+	TWU::ThrowIfFailed(d->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL));*/
 
 	init_window();
 	init_dx12();

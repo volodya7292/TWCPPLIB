@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <wincodec.h>
 #include <dxgi1_6.h>
+#include <dxgidebug.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <wrl.h>
