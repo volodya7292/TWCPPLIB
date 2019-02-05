@@ -4,10 +4,11 @@
 TW3D::TW3DAdapter::TW3DAdapter(IDXGIAdapter4* native_adapter, D3D_FEATURE_LEVEL featureLevel) :
 	native_adapter(native_adapter), featureLevel(featureLevel)
 {
-	//DXGI_ADAPTER_DESC3 desc;
-	//native_adapter->GetDesc3(&desc);
+	DXGI_ADAPTER_DESC3 desc;
+	native_adapter->GetDesc3(&desc);
 	
-	//TWU::CPrintln(desc.DedicatedSystemMemory + " "s + desc.DedicatedVideoMemory + " " + desc.SharedSystemMemory);
+	description = TWT::WString(desc.Description);
+	dedicatedVideoMemory = desc.DedicatedVideoMemory;
 }
 
 TW3D::TW3DAdapter::~TW3DAdapter() {
@@ -18,8 +19,7 @@ void TW3D::TW3DAdapter::CreateDevice(ID3D12Device5** device) {
 	TWU::ThrowIfFailed(D3D12CreateDevice(native_adapter, featureLevel, IID_PPV_ARGS(device)));
 }
 
-TW3D::TW3DAdapter& TW3D::TW3DAdapter::operator=(TW3DAdapter t)
-{
+TW3D::TW3DAdapter& TW3D::TW3DAdapter::operator=(TW3DAdapter t) {
 	*this = std::move(t);
 	return *this;
 }

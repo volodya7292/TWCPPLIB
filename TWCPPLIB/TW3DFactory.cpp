@@ -24,12 +24,22 @@ std::vector<ComPtr<IDXGIAdapter4>> TW3D::TW3DFactory::ListAdapters(D3D_FEATURE_L
 			break;
 		}
 	}
-
+	
 	return adapters;
 }
 
 void TW3D::TW3DFactory::CreateSwapChainForHwnd(ID3D12CommandQueue* commandQueue, HWND hwnd, const DXGI_SWAP_CHAIN_DESC1* desc, IDXGISwapChain1** swapChain) {
 	TWU::ThrowIfFailed(factory->CreateSwapChainForHwnd(commandQueue, hwnd, desc, nullptr, nullptr, swapChain));
 	TWU::ThrowIfFailed(factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER));
+}
+
+void TW3D::TW3DFactory::CheckFeatureSupport(DXGI_FEATURE feature, void *featureSupportData, TWT::UInt featureSupportDataSize) {
+	factory->CheckFeatureSupport(feature, featureSupportData, featureSupportDataSize);
+}
+
+TWT::Bool TW3D::TW3DFactory::CheckTearingSupport() {
+	BOOL allowTearing;
+	TWU::ThrowIfFailed(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing)));
+	return allowTearing;
 }
 

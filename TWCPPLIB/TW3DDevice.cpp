@@ -7,6 +7,10 @@ TW3D::TW3DDevice::TW3DDevice(TW3D::TW3DAdapter* adapter) :
 	adapter->CreateDevice(&device);
 }
 
+TW3D::TW3DDevice::~TW3DDevice() {
+	TWU::DXSafeRelease(device);
+}
+
 void TW3D::TW3DDevice::CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC* desc, ID3D12CommandQueue** commandQueue) {
 	TWU::ThrowIfFailed(device->CreateCommandQueue(desc, IID_PPV_ARGS(commandQueue)));
 }

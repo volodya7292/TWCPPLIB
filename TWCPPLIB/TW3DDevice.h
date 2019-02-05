@@ -6,7 +6,7 @@ namespace TW3D {
 	class TW3DDevice {
 	public:
 		TW3DDevice(TW3DAdapter* adapter);
-		~TW3DDevice() = default;
+		~TW3DDevice();
 
 		void CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC* desc, ID3D12CommandQueue** commandQueue);
 		void CreateDescriptorHeap(const D3D12_DESCRIPTOR_HEAP_DESC* desc, ID3D12DescriptorHeap** descriptorHeap);

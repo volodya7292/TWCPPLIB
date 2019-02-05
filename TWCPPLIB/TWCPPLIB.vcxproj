@@ -252,6 +252,7 @@
     <ClInclude Include="TW3DDevice.h" />
     <ClInclude Include="TW3DEngine.h" />
     <ClInclude Include="TW3DFactory.h" />
+    <ClInclude Include="TW3DSwapChain.h" />
     <ClInclude Include="TW3DTypes.h" />
     <ClInclude Include="TW3DUtils.h" />
     <ClInclude Include="TWTypes.h" />
@@ -271,6 +272,7 @@
     <ClCompile Include="TW3DDevice.cpp" />
     <ClCompile Include="TW3DEngine.cpp" />
     <ClCompile Include="TW3DFactory.cpp" />
+    <ClCompile Include="TW3DSwapChain.cpp" />
     <ClCompile Include="TW3DTypes.cpp" />
     <ClCompile Include="TW3DUtils.cpp" />
     <ClCompile Include="TWTypes.cpp" />

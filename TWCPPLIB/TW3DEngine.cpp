@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TW3DEngine.h"
-#include "TW3DAdapter.h"
 #include "TW3DDevice.h"
+#include "TW3DSwapChain.h"
 
 using namespace DirectX;
 
@@ -15,6 +15,7 @@ static HWND				hwnd;
 static TW3D::TW3DFactory* factory;
 static TW3D::TW3DAdapter* adapter;
 static TW3D::TW3DDevice* device;
+static TW3D::TW3DSwapChain* swapChain;
 
 void on_resize();
 
@@ -23,7 +24,6 @@ static int rtvDescriptorSize; // size of the rtv descriptor on the device (all f
 static const int frameBufferCount = 3; // number of buffers we want, 2 for double buffering, 3 for tripple buffering
 //static ID3D12Device* device;
 static ID3D12CommandQueue* commandQueue;
-static IDXGISwapChain4* swapChain;
 static ID3D12DescriptorHeap* rtvDescriptorHeap;
 static ID3D12Resource* renderTargets[frameBufferCount]; // number of render targets equal to buffer count
 static ID3D12CommandAllocator* commandAllocator[frameBufferCount];
@@ -54,6 +54,9 @@ static ID3D12Resource* textureBuffer; // the resource heap containing our textur
 
 static ID3D12DescriptorHeap* mainDescriptorHeap;
 static ID3D12Resource* textureBufferUploadHeap;
+
+static ID3D12Resource* iBufferUploadHeap;
+static ID3D12Resource* vBufferUploadHeap;
 
 static HANDLE fenceEvent; // a handle to an event when our fence is unlocked by the gpu
 static UINT64 fenceValue[frameBufferCount]; // this value is incremented each frame. each fence will have its own value
@@ -110,7 +113,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			DestroyWindow(hwnd);
 		} else if (wParam == VK_F11) {
 			fullscreen = !fullscreen;
-			TWU::ThrowIfFailed((swapChain->SetFullscreenState(fullscreen, nullptr)));
+			swapChain->SetFullscreen(fullscreen);
 			on_resize();
 		}
 		return 0;
@@ -125,8 +128,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		}
 
 		if (swapChain) {
-			BOOL govno;
-			swapChain->GetFullscreenState(&govno, nullptr);
+			TWT::Bool govno = swapChain->GetFullscreen();
 			if (fullscreen != govno) {
 				fullscreen = govno;
 				on_resize();
@@ -222,12 +224,19 @@ void init_dx12() {
 	// Enable the debug layer (requires the Graphics Tools "optional feature").
 	// NOTE: Enabling the debug layer after device creation will invalidate the active device.
 	{
-		ID3D12Debug* debugController;
-		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
+		ComPtr<ID3D12Debug> debugController;
+		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(debugController.GetAddressOf())))) {
 			debugController->EnableDebugLayer();
+		} else {
+			OutputDebugStringA("WARNING: Direct3D Debug Device is not available\n");
+		}
 
-			// Enable additional debug layers.
-			dxgi_factory_flags |= DXGI_CREATE_FACTORY_DEBUG;
+		ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
+		if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(dxgiInfoQueue.GetAddressOf())))) {
+			dxgi_factory_flags = DXGI_CREATE_FACTORY_DEBUG;
+
+			dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, true);
+			dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
 		}
 	}
 #endif
@@ -237,8 +246,6 @@ void init_dx12() {
 	std::vector<TW3D::TW3DAdapter*> adapters = TW3D::TW3DAdapter::ListAvailable(factory, D3D_FEATURE_LEVEL_11_0);
 	adapter = adapters[0];
 	device = new TW3D::TW3DDevice(adapter);
-
-
 
 
 
@@ -294,10 +301,7 @@ void init_dx12() {
 	//swapChainDesc.Windowed = !fullscreen; // set to true, then if in fullscreen must call SetFullScreenState with true for full screen to get uncapped fps
 
 
-	IDXGISwapChain1* tempSwapChain;
-
-	factory->CreateSwapChainForHwnd(commandQueue, hwnd, &swapChainDesc, &tempSwapChain);
-	swapChain = static_cast<IDXGISwapChain4*>(tempSwapChain);
+	swapChain = new TW3D::TW3DSwapChain(factory, commandQueue, hwnd, width, height, vsync);
 
 	//dxgiFactory->CreateSwapChain(
 	//	commandQueue, // the queue will be flushed once the swap chain is created
@@ -305,7 +309,7 @@ void init_dx12() {
 	//	&tempSwapChain // store the created swap chain in a temp IDXGISwapChain interface
 	//);
 
-	frameIndex = swapChain->GetCurrentBackBufferIndex();
+	frameIndex = swapChain->GetCurrentBufferIndex();
 
 	// -- Create the Back Buffers (render target views) Descriptor Heap -- //
 
@@ -334,7 +338,7 @@ void init_dx12() {
 	for (int i = 0; i < frameBufferCount; i++) {
 		// first we get the n'th buffer in the swap chain and store it in the n'th
 		// position of our ID3D12Resource array
-		TWU::ThrowIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(&renderTargets[i])));
+		renderTargets[i] = swapChain->GetBuffer(i);
 
 		
 		// the we "create" a render target view which binds the swap chain buffer (ID3D12Resource[n]) to the rtv handle
@@ -569,7 +573,7 @@ void init_dx12() {
 	// create upload heap
 	// upload heaps are used to upload data to the GPU. CPU can write to it, GPU can read from it
 	// We will upload the vertex buffer using this heap to the default heap
-	ID3D12Resource* vBufferUploadHeap;
+	
 	device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 		D3D12_HEAP_FLAG_NONE,
@@ -638,7 +642,6 @@ void init_dx12() {
 	vertexBuffer->SetName(L"Index Buffer Resource Heap");
 
 	// create upload heap to upload index buffer
-	ID3D12Resource* iBufferUploadHeap;
 	device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 		D3D12_HEAP_FLAG_NONE,
@@ -657,6 +660,7 @@ void init_dx12() {
 	// we are now creating a command with the command list to copy the data from
 	// the upload heap to the default heap
 	UpdateSubresources(commandList, indexBuffer, iBufferUploadHeap, 0, 0, 1, &indexData);
+
 
 	// transition the vertex buffer data from copy destination state to vertex buffer state
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(indexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
@@ -800,7 +804,7 @@ void init_dx12() {
 	commandList->Close();
 	ID3D12CommandList* ppCommandLists[] = { commandList };
 	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-
+	
 	// increment the fence value now, otherwise the buffer might not be uploaded by the time we start drawing
 	fenceValue[frameIndex]++;
 	TWU::ThrowIfFailed(commandQueue->Signal(fence[frameIndex], fenceValue[frameIndex]));
@@ -1070,7 +1074,7 @@ void render() {
 
 	FlushFence(frameIndex);
 
-	frameIndex = swapChain->GetCurrentBackBufferIndex();
+	frameIndex = swapChain->GetCurrentBufferIndex();
 
 	UpdatePipeline(); // update the pipeline by sending commands to the commandqueue
 
@@ -1088,7 +1092,7 @@ void render() {
 	//TWU::ThrowIfFailed(commandQueue->Signal(fence[frameIndex], ++fenceValue[frameIndex]));
 
 	// present the current backbuffer
-	swapChain->Present(vsync ? 1 : 0, 0);
+	swapChain->Present();
 	//TWU::ThrowIfFailed(swapChain->Present(vsync ? 1 : 0, 0));
 }
 
@@ -1116,12 +1120,9 @@ void on_resize() {
 
 	depthStencilBuffer->Release();
 
-	DXGI_SWAP_CHAIN_DESC desc = {};
-	swapChain->GetDesc(&desc);
-	swapChain->ResizeBuffers(frameBufferCount, width, height, desc.BufferDesc.Format, desc.Flags);
+	swapChain->Resize(width, height);
 
-
-	frameIndex = swapChain->GetCurrentBackBufferIndex();
+	frameIndex = swapChain->GetCurrentBufferIndex();
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
@@ -1130,7 +1131,8 @@ void on_resize() {
 		// first we get the n'th buffer in the swap chain and store it in the n'th
 		// position of our ID3D12Resource array
 
-		swapChain->GetBuffer(i, IID_PPV_ARGS(&renderTargets[i]));
+		renderTargets[i] = swapChain->GetBuffer(i);
+		
 
 
 		// the we "create" a render target view which binds the swap chain buffer (ID3D12Resource[n]) to the rtv handle
@@ -1206,14 +1208,15 @@ void main_loop() {
 void cleanup() {
 
 	// get swapchain out of full screen before exiting
-	BOOL govno = false;
-	swapChain->GetFullscreenState(&govno, nullptr);
-	if (govno);
-	swapChain->SetFullscreenState(false, nullptr);
+	if (swapChain->GetFullscreen()) {
+		swapChain->SetFullscreen(false);
+	}
 
+	delete factory;
+	delete adapter;
 	delete device;
-	//TWU::DXSafeRelease(device);
-	TWU::DXSafeRelease(swapChain);
+	delete swapChain;
+
 	TWU::DXSafeRelease(commandQueue);
 	TWU::DXSafeRelease(rtvDescriptorHeap);
 	TWU::DXSafeRelease(commandList);
@@ -1222,7 +1225,12 @@ void cleanup() {
 		TWU::DXSafeRelease(renderTargets[i]);
 		TWU::DXSafeRelease(commandAllocator[i]);
 		TWU::DXSafeRelease(fence[i]);
+		TWU::DXSafeRelease(constantBufferUploadHeaps[i]);
 	};
+
+	TWU::DXSafeRelease(mainDescriptorHeap);
+	TWU::DXSafeRelease(vBufferUploadHeap);
+	TWU::DXSafeRelease(iBufferUploadHeap);
 
 	TWU::DXSafeRelease(pipelineStateObject);
 	TWU::DXSafeRelease(rootSignature);
@@ -1232,9 +1240,15 @@ void cleanup() {
 	TWU::DXSafeRelease(depthStencilBuffer);
 	TWU::DXSafeRelease(dsDescriptorHeap);
 
-	for (int i = 0; i < frameBufferCount; ++i) {
-		TWU::DXSafeRelease(constantBufferUploadHeaps[i]);
-	};
+	TWU::DXSafeRelease(textureBuffer);
+	TWU::DXSafeRelease(textureBufferUploadHeap);
+
+	CloseHandle(fenceEvent);
+
+	ComPtr<IDXGIDebug1> dxgiDebug;
+	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug)))) {
+		dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
+	}
 }
 
 void TW3D::Start(const InitializeInfo& info) {
@@ -1244,20 +1258,9 @@ void TW3D::Start(const InitializeInfo& info) {
 	fullscreen = info.fullscreen;
 	vsync = info.vsync;
 
-	/*IDXGIDebug1* d;
-	TWU::ThrowIfFailed(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&d)));
-	TWU::ThrowIfFailed(d->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL));*/
-
 	init_window();
 	init_dx12();
 
 	main_loop();
-
-	IDXGIDebug1* d;
-	TWU::ThrowIfFailed(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&d)));
-	TWU::ThrowIfFailed(d->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL));
 	cleanup();
-
-
-	TWU::ThrowIfFailed(d->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL));
 }

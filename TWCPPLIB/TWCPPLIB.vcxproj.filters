@@ -63,6 +63,9 @@
     <ClInclude Include="TW3DFactory.h">
       <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DSwapChain.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -93,6 +96,9 @@
       <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="TW3DSwapChain.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\..\..\..\PixelShader.hlsl" />

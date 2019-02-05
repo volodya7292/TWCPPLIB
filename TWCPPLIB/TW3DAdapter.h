@@ -19,6 +19,9 @@ namespace TW3D {
 
 	private:
 		IDXGIAdapter4* native_adapter;
+
+		TWT::WString description;
+		TWT::UInt64 dedicatedVideoMemory;
 	};
 }
 
