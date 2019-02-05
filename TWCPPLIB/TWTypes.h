@@ -22,9 +22,9 @@ namespace TWT {
 	using Float   = float;
 	using Float64 = double;
 
-	template<class _Ty, size_t _Size>
-	using Array = std::array<_Ty, _Size>;
-	
+	template<class T>
+	using Vector = std::vector<T>;
+
 	struct WString;
 
 	struct String {
@@ -38,7 +38,7 @@ namespace TWT {
 		WString Wide();
 
 		String& operator + (const String& t);
-		String& operator = (const String &t);
+		String& operator = (const String& t) = default;
 		String& operator += (const String& t);
 		
 		std::string data;
@@ -55,7 +55,7 @@ namespace TWT {
 		String Multibyte();
 
 		WString& operator + (const WString& t);
-		WString& operator = (const WString &t);
+		WString& operator = (const WString& t) = default;
 		WString& operator += (const WString& t);
 
 		std::wstring data;

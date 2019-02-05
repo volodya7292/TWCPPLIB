@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "TW3DEngine.h"
+#include "TW3DAdapter.h"
+#include "TW3DDevice.h"
 
 using namespace DirectX;
 
@@ -10,19 +12,23 @@ static TWT::Bool		fullscreen, vsync;
 static TWT::Bool		running, minimized = false;
 static HWND				hwnd;
 
+static TW3D::TW3DFactory* factory;
+static TW3D::TW3DAdapter* adapter;
+static TW3D::TW3DDevice* device;
+
 void on_resize();
 
 static int frameIndex; // current rtv we are on
 static int rtvDescriptorSize; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 static const int frameBufferCount = 3; // number of buffers we want, 2 for double buffering, 3 for tripple buffering
-static ID3D12Device* device;
+//static ID3D12Device* device;
 static ID3D12CommandQueue* commandQueue;
 static IDXGISwapChain4* swapChain;
 static ID3D12DescriptorHeap* rtvDescriptorHeap;
 static ID3D12Resource* renderTargets[frameBufferCount]; // number of render targets equal to buffer count
 static ID3D12CommandAllocator* commandAllocator[frameBufferCount];
 static ID3D12GraphicsCommandList* commandList;
-static ID3D12Fence* fence[frameBufferCount];     // an object that is locked while our command list is being executed by the gpu. We need as many 
+static ID3D12Fence1* fence[frameBufferCount];     // an object that is locked while our command list is being executed by the gpu. We need as many 
 static ID3D12RootSignature* rootSignature;
 static ID3D12PipelineState* pipelineStateObject;
 static D3D12_VIEWPORT viewport; // area that output from rasterizer will be stretched to.
@@ -112,7 +118,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	case WM_SIZE:
 		if ((UINT)wParam == SIZE_MAXIMIZED) {
 			on_resize();
-		}  else if ((UINT)wParam == SIZE_MINIMIZED) {
+		} else if ((UINT)wParam == SIZE_MINIMIZED) {
 			minimized = true;
 		} else if ((UINT)wParam == SIZE_RESTORED) { // unminimized
 			minimized = false;
@@ -126,7 +132,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				on_resize();
 			}
 		}
-		
+
 		return 0;
 
 	case WM_EXITSIZEMOVE:
@@ -226,29 +232,39 @@ void init_dx12() {
 	}
 #endif
 
+
+	factory = new TW3D::TW3DFactory(dxgi_factory_flags);
+	std::vector<TW3D::TW3DAdapter*> adapters = TW3D::TW3DAdapter::ListAvailable(factory, D3D_FEATURE_LEVEL_11_0);
+	adapter = adapters[0];
+	device = new TW3D::TW3DDevice(adapter);
+
+
+
+
+
 	// -- Create the Device -- //
 
-	IDXGIFactory7* dxgiFactory = TWU::DXGICreateFactory(dxgi_factory_flags);
+	//IDXGIFactory7* dxgiFactory = TWU::DXGICreateFactory(dxgi_factory_flags);
 	//CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgiFactory));
 
-	IDXGIAdapter4* adapter = TWU::DXGIGetHardwareAdapter(dxgiFactory); // adapters are the graphics card (this includes the embedded graphics on the motherboard)
+	//IDXGIAdapter4* adapter = TWU::DXGIGetHardwareAdapter(dxgiFactory); // adapters are the graphics card (this includes the embedded graphics on the motherboard)
 	//TWU::GetDXHardwareAdapter(dxgiFactory, &adapter);
-	
-	device = TWU::DXCreateDevice(adapter);
+
+	//device = TWU::DXCreateDevice(adapter);
 
 	//TWU::ThrowIfFailed(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
 
-	DXGI_ADAPTER_DESC d;
+	/*DXGI_ADAPTER_DESC d;
 	adapter->GetDesc(&d);
-	TWU::CPrintln(d.Description);
+	TWU::CPrintln(d.Description);*/
 
 	// -- Create a direct command queue -- //
 
 	D3D12_COMMAND_QUEUE_DESC cqDesc = {};
 	cqDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	cqDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT; // direct means the gpu can directly execute this command queue
-	
-	TWU::ThrowIfFailed(device->CreateCommandQueue(&cqDesc, IID_PPV_ARGS(&commandQueue))); // create the command queue
+
+	device->CreateCommandQueue(&cqDesc, &commandQueue);
 
 	// -- Create the Swap Chain (double/tripple buffering) -- //
 
@@ -279,10 +295,9 @@ void init_dx12() {
 
 
 	IDXGISwapChain1* tempSwapChain;
-	
-	TWU::ThrowIfFailed(dxgiFactory->CreateSwapChainForHwnd(commandQueue, hwnd, &swapChainDesc, nullptr, nullptr, &tempSwapChain));
-	TWU::ThrowIfFailed(dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER));
-	swapChain =static_cast<IDXGISwapChain4*>(tempSwapChain);
+
+	factory->CreateSwapChainForHwnd(commandQueue, hwnd, &swapChainDesc, &tempSwapChain);
+	swapChain = static_cast<IDXGISwapChain4*>(tempSwapChain);
 
 	//dxgiFactory->CreateSwapChain(
 	//	commandQueue, // the queue will be flushed once the swap chain is created
@@ -302,11 +317,13 @@ void init_dx12() {
 													   // This heap will not be directly referenced by the shaders (not shader visible), as this will store the output from the pipeline
 													   // otherwise we would set the heap's flag to D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	TWU::ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvDescriptorHeap)));
+
+	device->CreateDescriptorHeap(&rtvHeapDesc, &rtvDescriptorHeap);
 
 	// get the size of a descriptor in this heap (this is a rtv heap, so only rtv descriptors should be stored in it.
 	// descriptor sizes may vary from device to device, which is why there is no set size and we must ask the 
 	// device to give us the size. we will use this size to increment a descriptor handle offset
+
 	rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	// get a handle to the first descriptor in the descriptor heap. a handle is basically a pointer,
@@ -319,8 +336,9 @@ void init_dx12() {
 		// position of our ID3D12Resource array
 		TWU::ThrowIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(&renderTargets[i])));
 
+		
 		// the we "create" a render target view which binds the swap chain buffer (ID3D12Resource[n]) to the rtv handle
-		device->CreateRenderTargetView(renderTargets[i], nullptr, rtvHandle);
+		device->CreateRenderTargetView(renderTargets[i], rtvHandle);
 		renderTargets[i]->SetName(L"RTV");
 
 		// we increment the rtv handle by the rtv descriptor size we got above
@@ -330,19 +348,19 @@ void init_dx12() {
 	// -- Create the Command Allocators -- //
 
 	for (int i = 0; i < frameBufferCount; i++) {
-		TWU::ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator[i])));
+		device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, &commandAllocator[i]);
 	}
 
 	// -- Create a Command List -- //
 
 	// create the command list with the first allocator
-	TWU::ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator[frameIndex], NULL, IID_PPV_ARGS(&commandList)));
+	device->CreateGraphicsCommandList(D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator[frameIndex], &commandList);
 
 	// -- Create a Fence & Fence Event -- //
 
 	// create the fences
 	for (int i = 0; i < frameBufferCount; i++) {
-		TWU::ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence[i])));
+		device->CreateFence(0, D3D12_FENCE_FLAG_NONE, &fence[i]);
 		fenceValue[i] = 0; // set the initial fence value to 0
 	}
 
@@ -415,7 +433,7 @@ void init_dx12() {
 	ID3DBlob* signature;
 	TWU::ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &errorBuff));
 
-	TWU::ThrowIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
+	device->CreateRootSignature(signature, &rootSignature);
 
 	// create vertex and pixel shaders
 
@@ -436,7 +454,7 @@ void init_dx12() {
 
 
 	ps = TWU::ReadFileBytes("PixelShader.cso", s);
-	
+
 
 	D3D12_SHADER_BYTECODE pixelShaderBytecode = {};
 	pixelShaderBytecode.BytecodeLength = s;
@@ -446,7 +464,7 @@ void init_dx12() {
 
 	// The input layout is used by the Input Assembler so that it knows
 	// how to read the vertex data bound to it.
-	
+
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -488,7 +506,8 @@ void init_dx12() {
 	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
 	// create the pso
-	TWU::ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineStateObject)));
+	device->CreateGraphicsPipelineState(&psoDesc, &pipelineStateObject);
+	
 
 	// Create vertex buffer
 
@@ -537,14 +556,12 @@ void init_dx12() {
 	// default heap is memory on the GPU. Only the GPU has access to this memory
 	// To get data into this heap, we will have to upload the data using
 	// an upload heap
-	TWU::ThrowIfFailed(device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), // a default heap
-		D3D12_HEAP_FLAG_NONE, // no flags
-		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize), // resource description for a buffer
-		D3D12_RESOURCE_STATE_COPY_DEST, // we will start this heap in the copy destination state since we will copy data
-										// from the upload heap to this heap
-		nullptr, // optimized clear value must be null for this type of resource. used for render targets and depth/stencil buffers
-		IID_PPV_ARGS(&vertexBuffer)));
+	device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize),
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		&vertexBuffer);
 
 	// we can give resource heaps a name so when we debug with the graphics debugger we know what resource we are looking at
 	vertexBuffer->SetName(L"Vertex Buffer Resource Heap");
@@ -553,13 +570,12 @@ void init_dx12() {
 	// upload heaps are used to upload data to the GPU. CPU can write to it, GPU can read from it
 	// We will upload the vertex buffer using this heap to the default heap
 	ID3D12Resource* vBufferUploadHeap;
-	TWU::ThrowIfFailed(device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), // upload heap
-		D3D12_HEAP_FLAG_NONE, // no flags
-		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize), // resource description for a buffer
-		D3D12_RESOURCE_STATE_GENERIC_READ, // GPU will read from this buffer and copy its contents to the default heap
-		nullptr,
-		IID_PPV_ARGS(&vBufferUploadHeap)));
+	device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		&vBufferUploadHeap);
 
 	vBufferUploadHeap->SetName(L"Vertex Buffer Upload Resource Heap");
 
@@ -610,26 +626,25 @@ void init_dx12() {
 	numCubeIndices = sizeof(iList) / sizeof(DWORD);
 
 	// create default heap to hold index buffer
-	TWU::ThrowIfFailed(device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), // a default heap
-		D3D12_HEAP_FLAG_NONE, // no flags
-		&CD3DX12_RESOURCE_DESC::Buffer(iBufferSize), // resource description for a buffer
-		D3D12_RESOURCE_STATE_COPY_DEST, // start in the copy destination state
-		nullptr, // optimized clear value must be null for this type of resource
-		IID_PPV_ARGS(&indexBuffer)));
+
+	device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(iBufferSize),
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		&indexBuffer);
 
 	// we can give resource heaps a name so when we debug with the graphics debugger we know what resource we are looking at
 	vertexBuffer->SetName(L"Index Buffer Resource Heap");
 
 	// create upload heap to upload index buffer
 	ID3D12Resource* iBufferUploadHeap;
-	TWU::ThrowIfFailed(device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), // upload heap
-		D3D12_HEAP_FLAG_NONE, // no flags
-		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize), // resource description for a buffer
-		D3D12_RESOURCE_STATE_GENERIC_READ, // GPU will read from this buffer and copy its contents to the default heap
-		nullptr,
-		IID_PPV_ARGS(&iBufferUploadHeap)));
+	device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		&iBufferUploadHeap);
 
 	vBufferUploadHeap->SetName(L"Index Buffer Upload Resource Heap");
 
@@ -653,7 +668,7 @@ void init_dx12() {
 	dsvHeapDesc.NumDescriptors = 1;
 	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	TWU::ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsDescriptorHeap)));
+	device->CreateDescriptorHeap(&dsvHeapDesc, &dsDescriptorHeap);
 
 	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
 	depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
@@ -665,18 +680,16 @@ void init_dx12() {
 	depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
 	depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
-	TWU::ThrowIfFailed(device->CreateCommittedResource(
+	device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, width, height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		&depthOptimizedClearValue,
-		IID_PPV_ARGS(&depthStencilBuffer)
-	));
+		&depthStencilBuffer, &depthOptimizedClearValue);
 
 	dsDescriptorHeap->SetName(L"Depth/Stencil Resource Heap");
 
-	device->CreateDepthStencilView(depthStencilBuffer, &depthStencilDesc, dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	device->CreateDepthStencilView(depthStencilBuffer, dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), &depthStencilDesc);
 
 	// create the constant buffer resource heap
 	// We will update the constant buffer one or more times per frame, so we will use only an upload heap
@@ -694,13 +707,12 @@ void init_dx12() {
 	// resource, and each resource must be at least 64KB (65536 bits)
 	for (int i = 0; i < frameBufferCount; ++i) {
 		// create resource for cube 1
-		TWU::ThrowIfFailed(device->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), // this heap will be used to upload the constant buffer data
-			D3D12_HEAP_FLAG_NONE, // no flags
-			&CD3DX12_RESOURCE_DESC::Buffer(D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT), // size of the resource heap. Must be a multiple of 64KB for single-textures and constant buffers
-			D3D12_RESOURCE_STATE_GENERIC_READ, // will be data that is read from so we keep it in the generic read state
-			nullptr, // we do not have use an optimized clear value for constant buffers
-			IID_PPV_ARGS(&constantBufferUploadHeaps[i])));
+		device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			&constantBufferUploadHeaps[i]);
 
 		constantBufferUploadHeaps[i]->SetName(L"Constant Buffer Upload Resource Heap");
 
@@ -731,31 +743,29 @@ void init_dx12() {
 	}
 
 	// create a default heap where the upload heap will copy its contents into (contents being the texture)
-	TWU::ThrowIfFailed(device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), // a default heap
-		D3D12_HEAP_FLAG_NONE, // no flags
-		&textureDesc, // the description of our texture
-		D3D12_RESOURCE_STATE_COPY_DEST, // We will copy the texture from the upload heap to here, so we start it out in a copy dest state
-		nullptr, // used for render targets and depth/stencil buffers
-		IID_PPV_ARGS(&textureBuffer)));
+	device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&textureDesc,
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		&textureBuffer);
 
 	textureBuffer->SetName(L"Texture Buffer Resource Heap");
 
-	UINT64 textureUploadBufferSize;
+	TWT::UInt64 textureUploadBufferSize;
 	// this function gets the size an upload buffer needs to be to upload a texture to the gpu.
 	// each row must be 256 byte aligned except for the last row, which can just be the size in bytes of the row
 	// eg. textureUploadBufferSize = ((((width * numBytesPerPixel) + 255) & ~255) * (height - 1)) + (width * numBytesPerPixel);
 	//textureUploadBufferSize = (((imageBytesPerRow + 255) & ~255) * (textureDesc.Height - 1)) + imageBytesPerRow;
-	device->GetCopyableFootprints(&textureDesc, 0, 1, 0, nullptr, nullptr, nullptr, &textureUploadBufferSize);
+	textureUploadBufferSize = device->GetCopyableFootprints(&textureDesc, 1);
 
 	// now we create an upload heap to upload our texture to the GPU
-	TWU::ThrowIfFailed(device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), // upload heap
-		D3D12_HEAP_FLAG_NONE, // no flags
-		&CD3DX12_RESOURCE_DESC::Buffer(textureUploadBufferSize), // resource description for a buffer (storing the image data in this heap just to copy to the default heap)
-		D3D12_RESOURCE_STATE_GENERIC_READ, // We will copy the contents from this heap to the default heap above
-		nullptr,
-		IID_PPV_ARGS(&textureBufferUploadHeap)));
+	device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(textureUploadBufferSize),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		&textureBufferUploadHeap);
 
 	textureBufferUploadHeap->SetName(L"Texture Buffer Upload Resource Heap");
 
@@ -776,7 +786,7 @@ void init_dx12() {
 	heapDesc.NumDescriptors = 1;
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	TWU::ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mainDescriptorHeap)));
+	device->CreateDescriptorHeap(&heapDesc, &mainDescriptorHeap);
 
 	// now we create a shader resource view (descriptor that points to the texture and describes it)
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -1124,7 +1134,7 @@ void on_resize() {
 
 
 		// the we "create" a render target view which binds the swap chain buffer (ID3D12Resource[n]) to the rtv handle
-		device->CreateRenderTargetView(renderTargets[i], nullptr, rtvHandle);
+		device->CreateRenderTargetView(renderTargets[i], rtvHandle);
 		renderTargets[i]->SetName(L"RTV");
 
 		// we increment the rtv handle by the rtv descriptor size we got above
@@ -1161,12 +1171,12 @@ void on_resize() {
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, width, height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		&depthOptimizedClearValue,
-		IID_PPV_ARGS(&depthStencilBuffer)
-	);
+		&depthStencilBuffer,
+		&depthOptimizedClearValue);
+
 	dsDescriptorHeap->SetName(L"Depth/Stencil Resource Heap");
 
-	device->CreateDepthStencilView(depthStencilBuffer, &depthStencilDesc, dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	device->CreateDepthStencilView(depthStencilBuffer, dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), &depthStencilDesc);
 }
 
 void main_loop() {
@@ -1199,9 +1209,10 @@ void cleanup() {
 	BOOL govno = false;
 	swapChain->GetFullscreenState(&govno, nullptr);
 	if (govno);
-		swapChain->SetFullscreenState(false, nullptr);
+	swapChain->SetFullscreenState(false, nullptr);
 
-	TWU::DXSafeRelease(device);
+	delete device;
+	//TWU::DXSafeRelease(device);
 	TWU::DXSafeRelease(swapChain);
 	TWU::DXSafeRelease(commandQueue);
 	TWU::DXSafeRelease(rtvDescriptorHeap);
@@ -1247,6 +1258,6 @@ void TW3D::Start(const InitializeInfo& info) {
 	TWU::ThrowIfFailed(d->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL));
 	cleanup();
 
-	
+
 	TWU::ThrowIfFailed(d->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL));
 }

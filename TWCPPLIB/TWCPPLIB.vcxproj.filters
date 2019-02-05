@@ -57,11 +57,14 @@
     <ClInclude Include="TW3DDevice.h">
       <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DAdapter.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DFactory.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -83,6 +86,13 @@
     <ClCompile Include="TW3DDevice.cpp">
       <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
+    <ClCompile Include="TW3DAdapter.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DFactory.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\..\..\..\PixelShader.hlsl" />

@@ -24,8 +24,6 @@ TWT::String& TWT::String::operator+(const String& t) {
 	return *this;
 }
 
-TWT::String& TWT::String::operator=(const String& t) = default;
-
 TWT::String& TWT::String::operator+=(const String& t) {
 	data += t.data;
 	return *this;
@@ -54,8 +52,6 @@ TWT::WString& TWT::WString::operator+(const WString& t) {
 	data += t.data;
 	return *this;
 }
-
-TWT::WString& TWT::WString::operator=(const WString& t) = default;
 
 TWT::WString& TWT::WString::operator+=(const WString& t) {
 	data += t.data;
