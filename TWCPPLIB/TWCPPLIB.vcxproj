@@ -249,6 +249,9 @@
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TW3DAdapter.h" />
+    <ClInclude Include="TW3DBuffer.h" />
+    <ClInclude Include="TW3DGraphicsCommandList.h" />
+    <ClInclude Include="TW3DDescriptorHeap.h" />
     <ClInclude Include="TW3DDevice.h" />
     <ClInclude Include="TW3DEngine.h" />
     <ClInclude Include="TW3DFactory.h" />
@@ -269,6 +272,9 @@
     </ClCompile>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TW3DAdapter.cpp" />
+    <ClCompile Include="TW3DBuffer.cpp" />
+    <ClCompile Include="TW3DGraphicsCommandList.cpp" />
+    <ClCompile Include="TW3DDescriptorHeap.cpp" />
     <ClCompile Include="TW3DDevice.cpp" />
     <ClCompile Include="TW3DEngine.cpp" />
     <ClCompile Include="TW3DFactory.cpp" />

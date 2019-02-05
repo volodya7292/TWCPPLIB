@@ -275,10 +275,7 @@ void init_dx12() {
 
 	// -- Create the Swap Chain (double/tripple buffering) -- //
 
-	DXGI_MODE_DESC backBufferDesc = {}; // this is to describe our display mode
-	backBufferDesc.Width = width; // buffer width
-	backBufferDesc.Height = height; // buffer height
-	backBufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // format of the buffer (rgba 32 bits, 8 bits for each chanel)
+
 
 														// describe our multi-sampling. We are not multi-sampling, so we set the count to 1 (we need at least one sample of course)
 	DXGI_SAMPLE_DESC sampleDesc = {};
@@ -294,7 +291,6 @@ void init_dx12() {
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // dxgi will discard the buffer (data) after we call present
 	swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
 	swapChainDesc.BufferCount = frameBufferCount; // number of buffers we have
-	//swapChainDesc.BufferDesc = backBufferDesc; // our back buffer description
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // this says the pipeline will render to this swap chain
 	//swapChainDesc.OutputWindow = hwnd; // handle to our window
 	swapChainDesc.SampleDesc = sampleDesc; // our multi-sampling description
@@ -317,7 +313,6 @@ void init_dx12() {
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
 	rtvHeapDesc.NumDescriptors = frameBufferCount; // number of descriptors for this heap.
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; // this heap is a render target view heap
-
 													   // This heap will not be directly referenced by the shaders (not shader visible), as this will store the output from the pipeline
 													   // otherwise we would set the heap's flag to D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
@@ -785,6 +780,11 @@ void init_dx12() {
 	// transition the texture default heap to a pixel shader resource (we will be sampling from this heap in the pixel shader to get the color of pixels)
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(textureBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
+	// Now we execute the command list to upload the initial assets (triangle data)
+	commandList->Close();
+	ID3D12CommandList* ppCommandLists[] = { commandList };
+	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	
 	// create the descriptor heap that will store our srv
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 	heapDesc.NumDescriptors = 1;
@@ -800,11 +800,6 @@ void init_dx12() {
 	srvDesc.Texture2D.MipLevels = 1;
 	device->CreateShaderResourceView(textureBuffer, &srvDesc, mainDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-	// Now we execute the command list to upload the initial assets (triangle data)
-	commandList->Close();
-	ID3D12CommandList* ppCommandLists[] = { commandList };
-	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-	
 	// increment the fence value now, otherwise the buffer might not be uploaded by the time we start drawing
 	fenceValue[frameIndex]++;
 	TWU::ThrowIfFailed(commandQueue->Signal(fence[frameIndex], fenceValue[frameIndex]));
