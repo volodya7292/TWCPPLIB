@@ -1,10 +1,11 @@
 #pragma once
 #include "TW3DFactory.h"
+#include "TW3DCommandQueue.h"
 
 namespace TW3D {
 	class TW3DSwapChain {
 	public:
-		TW3DSwapChain(TW3D::TW3DFactory* factory, ID3D12CommandQueue* commandQueue, HWND hwnd, TWT::UInt width, TWT::UInt height, TWT::Bool vsync);
+		TW3DSwapChain(TW3DFactory* factory, TW3DCommandQueue* commandQueue, HWND hwnd, TWT::UInt width, TWT::UInt height, TWT::Bool vsync);
 		~TW3DSwapChain();;
 
 		TWT::Bool GetFullscreen();

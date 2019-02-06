@@ -75,6 +75,12 @@
     <ClInclude Include="TW3DGraphicsCommandList.h">
       <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DCommandQueue.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DFence.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -115,6 +121,12 @@
       <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
     <ClCompile Include="TW3DGraphicsCommandList.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DCommandQueue.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DFence.cpp">
       <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
   </ItemGroup>

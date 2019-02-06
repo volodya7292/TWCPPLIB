@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TW3DSwapChain.h"
 
-TW3D::TW3DSwapChain::TW3DSwapChain(TW3D::TW3DFactory* factory, ID3D12CommandQueue* commandQueue, HWND hwnd, TWT::UInt width, TWT::UInt height, TWT::Bool vsync) :
+TW3D::TW3DSwapChain::TW3DSwapChain(TW3D::TW3DFactory* factory, TW3DCommandQueue* commandQueue, HWND hwnd, TWT::UInt width, TWT::UInt height, TWT::Bool vsync) :
 	vsync(vsync), tearing(factory->CheckTearingSupport())
 {
 	DXGI_SAMPLE_DESC sampleDesc = {};
@@ -21,7 +21,7 @@ TW3D::TW3DSwapChain::TW3DSwapChain(TW3D::TW3DFactory* factory, ID3D12CommandQueu
 	desc.Flags = tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
 	IDXGISwapChain1* tempSwapChain;
-	factory->CreateSwapChainForHwnd(commandQueue, hwnd, &desc, &tempSwapChain);
+	factory->CreateSwapChainForHwnd(commandQueue->Get(), hwnd, &desc, &tempSwapChain);
 	swapChain = static_cast<IDXGISwapChain4*>(tempSwapChain);
 }
 

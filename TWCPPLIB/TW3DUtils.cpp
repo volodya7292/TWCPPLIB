@@ -120,6 +120,11 @@ TWT::Int TWU::GetDXGIFormatBitsPerPixel(DXGI_FORMAT& dxgiFormat) {
 	else if (dxgiFormat == DXGI_FORMAT_A8_UNORM) return 8;
 }
 
+void TWU::UpdateSubresourcesImp(ID3D12GraphicsCommandList* commandList, ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate,
+	D3D12_SUBRESOURCE_DATA* SrcData, TWT::UInt SubresourcesCount, TWT::UInt64 IntermediateOffset, TWT::UInt FirstSubresource) {
+	UpdateSubresources(commandList, DestinationResource, Intermediate, IntermediateOffset, FirstSubresource, SubresourcesCount, SrcData);
+}
+
 TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, TWT::WString filename, TWT::Int& bytesPerRow) {
 	HRESULT hr;
 

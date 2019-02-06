@@ -20,6 +20,10 @@ namespace TWU {
 	// Get the number of bits per pixel for a DXGI format
 	TWT::Int GetDXGIFormatBitsPerPixel(DXGI_FORMAT& dxgiFormat);
 
+	// Implementation of UpdateSubresources from d3dx12.h. Used in TW3DGraphicsCommandList.
+	void UpdateSubresourcesImp(ID3D12GraphicsCommandList* commandList, ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate,
+		D3D12_SUBRESOURCE_DATA* SrcData, TWT::UInt SubresourcesCount, TWT::UInt64 IntermediateOffset, TWT::UInt FirstSubresource);
+
 	// Load and decode image from file
 	TWT::Int LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, TWT::WString filename, TWT::Int& bytesPerRow);
 
