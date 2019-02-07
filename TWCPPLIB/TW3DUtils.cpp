@@ -250,6 +250,8 @@ TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& 
 
 // this function loads a file into an Array^
 TWT::Byte* TWU::ReadFileBytes(std::string file, TWT::Int& size) {
+	TWU::FileExistsAssert(TWT::WString(file));
+
 	std::ifstream VertexFile(file, std::ios::ate | std::ios::binary);
 	
 	if (VertexFile.is_open()) {

@@ -15,8 +15,9 @@ TWT::String::String(std::string data) {
 }
 
 TWT::WString TWT::String::Wide() {
-	std::wstring stemp = std::wstring(data.begin(), data.end());
-	return WString(stemp);
+	return WString(MultibyteToWide(data));
+	//std::wstring stemp = std::wstring(data.begin(), data.end());
+	//return WString(stemp);
 }
 
 //std::string& TWT::String::operator+(const TWT::String & t) {
@@ -39,13 +40,18 @@ TWT::WString::WString(const WChar* data) :
 {
 }
 
+TWT::WString::WString(std::string data) {
+	this->data = MultibyteToWide(data);
+}
+
 TWT::WString::WString(std::wstring data) {
 	this->data = move(data);
 }
 
 TWT::String TWT::WString::Multibyte() {
-	std::string stemp = std::string(data.begin(), data.end());
-	return String(stemp);
+	return WideToMultibyte(data);
+	//std::string stemp = std::string(data.begin(), data.end());
+	//return String(stemp);
 }
 
 //TWT::WString& TWT::WString::operator+(const WString& t) {
@@ -56,6 +62,29 @@ TWT::String TWT::WString::Multibyte() {
 TWT::WString& TWT::WString::operator+=(const WString& t) {
 	data += t.data;
 	return *this;
+}
+
+
+TWT::Char* TWT::WideToMultibyte(const std::wstring &wstr) {
+	if (wstr.empty()) return new char[1];
+	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+
+	std::string strTo(size_needed, 0);
+	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+
+	size_t data_size = strTo.length() + 1;
+	char* data = new char[data_size];
+	strcpy_s(data, data_size, strTo.c_str());
+
+	return data;
+}
+
+std::wstring TWT::MultibyteToWide(const std::string &str) {
+	if (str.empty()) return std::wstring();
+	int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+	std::wstring wstrTo(size_needed, 0);
+	MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+	return wstrTo;
 }
 
 
