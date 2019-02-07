@@ -249,7 +249,7 @@
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TW3DAdapter.h" />
-    <ClInclude Include="TW3DBuffer.h" />
+    <ClInclude Include="TW3DResource.h" />
     <ClInclude Include="TW3DCommandQueue.h" />
     <ClInclude Include="TW3DFence.h" />
     <ClInclude Include="TW3DGraphicsCommandList.h" />
@@ -257,6 +257,9 @@
     <ClInclude Include="TW3DDevice.h" />
     <ClInclude Include="TW3DEngine.h" />
     <ClInclude Include="TW3DFactory.h" />
+    <ClInclude Include="TW3DResourceDSV.h" />
+    <ClInclude Include="TW3DResourceRTV.h" />
+    <ClInclude Include="TW3DResourceSV.h" />
     <ClInclude Include="TW3DSwapChain.h" />
     <ClInclude Include="TW3DTypes.h" />
     <ClInclude Include="TW3DUtils.h" />
@@ -274,7 +277,7 @@
     </ClCompile>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TW3DAdapter.cpp" />
-    <ClCompile Include="TW3DBuffer.cpp" />
+    <ClCompile Include="TW3DResource.cpp" />
     <ClCompile Include="TW3DCommandQueue.cpp" />
     <ClCompile Include="TW3DFence.cpp" />
     <ClCompile Include="TW3DGraphicsCommandList.cpp" />
@@ -282,6 +285,9 @@
     <ClCompile Include="TW3DDevice.cpp" />
     <ClCompile Include="TW3DEngine.cpp" />
     <ClCompile Include="TW3DFactory.cpp" />
+    <ClCompile Include="TW3DResourceDSV.cpp" />
+    <ClCompile Include="TW3DResourceRTV.cpp" />
+    <ClCompile Include="TW3DResourceSV.cpp" />
     <ClCompile Include="TW3DSwapChain.cpp" />
     <ClCompile Include="TW3DTypes.cpp" />
     <ClCompile Include="TW3DUtils.cpp" />

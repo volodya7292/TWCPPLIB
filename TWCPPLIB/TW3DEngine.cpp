@@ -4,6 +4,9 @@
 #include "TW3DSwapChain.h"
 #include "TW3DFence.h"
 #include "TW3DDescriptorHeap.h"
+#include "TW3DResource.h"
+#include "TW3DResourceDSV.h"
+#include "TW3DResourceSV.h"
 
 using namespace DirectX;
 
@@ -25,8 +28,20 @@ static TW3D::TW3DCommandQueue* commandQueue;
 static TW3D::TW3DGraphicsCommandList* commandList;
 static TW3D::TW3DDescriptorHeap* mainDescriptorHeap;
 static TW3D::TW3DDescriptorHeap* rtvDescriptorHeap;
-static TW3D::TW3DDescriptorHeap* dsDescriptorHeap;
+//static TW3D::TW3DDescriptorHeap* dsDescriptorHeap;
 static TW3D::TW3DFence* fence[frameBufferCount];
+
+static TW3D::TW3DResourceDSV* depthStencil;
+static TW3D::TW3DResourceSV* texture;
+
+static TW3D::TW3DResource* vertexBuffer;
+static TW3D::TW3DResource* indexBuffer;
+//static TW3D::TW3DResource* depthStencilBuffer;
+static TW3D::TW3DResource* vBufferUploadHeap;
+static TW3D::TW3DResource* iBufferUploadHeap;
+static TW3D::TW3DResource* constantBufferUploadHeaps[frameBufferCount];
+//static TW3D::TW3DResource* textureBuffer;
+//static TW3D::TW3DResource* textureBufferUploadHeap;
 
 void on_resize();
 
@@ -45,8 +60,8 @@ static D3D12_VIEWPORT viewport; // area that output from rasterizer will be stre
 
 static D3D12_RECT scissorRect; // the area to draw in. pixels outside that area will not be drawn onto
 
-static ID3D12Resource* vertexBuffer; // a default buffer in GPU memory that we will load vertex data for our triangle into
-static ID3D12Resource* indexBuffer; // a default buffer in GPU memory that we will load index data for our triangle into
+//static ID3D12Resource* vertexBuffer; // a default buffer in GPU memory that we will load vertex data for our triangle into
+//static ID3D12Resource* indexBuffer; // a default buffer in GPU memory that we will load index data for our triangle into
 
 static D3D12_VERTEX_BUFFER_VIEW vertexBufferView; // a structure containing a pointer to the vertex data in gpu memory
 										   // the total size of the buffer, and the size of each element (vertex)
@@ -55,18 +70,18 @@ static D3D12_INDEX_BUFFER_VIEW indexBufferView; // a structure holding informati
 												 //as we have allocators (more if we want to know when the gpu is finished with an asset)
 
 
-static ID3D12Resource* depthStencilBuffer; // This is the memory for our depth buffer. it will also be used for a stencil buffer in a later tutorial
+//static ID3D12Resource* depthStencilBuffer; // This is the memory for our depth buffer. it will also be used for a stencil buffer in a later tutorial
 //static ID3D12DescriptorHeap* dsDescriptorHeap; // This is a heap for our depth/stencil buffer descriptor
 
-static ID3D12Resource* constantBufferUploadHeaps[frameBufferCount]; // this is the memory on the gpu where constant buffers for each frame will be placed
+//static ID3D12Resource* constantBufferUploadHeaps[frameBufferCount]; // this is the memory on the gpu where constant buffers for each frame will be placed
 
-static ID3D12Resource* textureBuffer; // the resource heap containing our texture
+//static ID3D12Resource* textureBuffer; // the resource heap containing our texture
 
 //static ID3D12DescriptorHeap* mainDescriptorHeap;
-static ID3D12Resource* textureBufferUploadHeap;
+//static ID3D12Resource* textureBufferUploadHeap;
 
-static ID3D12Resource* iBufferUploadHeap;
-static ID3D12Resource* vBufferUploadHeap;
+//static ID3D12Resource* iBufferUploadHeap;
+//static ID3D12Resource* vBufferUploadHeap;
 
 //static HANDLE fenceEvent; // a handle to an event when our fence is unlocked by the gpu
 //static UINT64 fenceValue[frameBufferCount]; // this value is incremented each frame. each fence will have its own value
@@ -518,28 +533,10 @@ void init_dx12() {
 	// default heap is memory on the GPU. Only the GPU has access to this memory
 	// To get data into this heap, we will have to upload the data using
 	// an upload heap
-	device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize),
-		D3D12_RESOURCE_STATE_COPY_DEST,
-		&vertexBuffer);
-
-	// we can give resource heaps a name so when we debug with the graphics debugger we know what resource we are looking at
-	vertexBuffer->SetName(L"Vertex Buffer Resource Heap");
-
-	// create upload heap
-	// upload heaps are used to upload data to the GPU. CPU can write to it, GPU can read from it
-	// We will upload the vertex buffer using this heap to the default heap
 	
-	device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize),
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		&vBufferUploadHeap);
+	vertexBuffer = TW3D::TW3DResource::Create(device, vBufferSize, false);
 
-	vBufferUploadHeap->SetName(L"Vertex Buffer Upload Resource Heap");
+	vBufferUploadHeap = TW3D::TW3DResource::Create(device, vBufferSize, true);
 
 	// store vertex buffer in upload heap
 	D3D12_SUBRESOURCE_DATA vertexData = {};
@@ -553,7 +550,8 @@ void init_dx12() {
 	//UpdateSubresources(commandList, vertexBuffer, vBufferUploadHeap, 0, 0, 1, &vertexData);
 
 	// transition the vertex buffer data from copy destination state to vertex buffer state
-	commandList->ResourceBarrier(CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+	commandList->ResourceBarrier(vertexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+	//commandList->ResourceBarrier(CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer->resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 
 	// Create index buffer
 
@@ -590,25 +588,9 @@ void init_dx12() {
 
 	// create default heap to hold index buffer
 
-	device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(iBufferSize),
-		D3D12_RESOURCE_STATE_COPY_DEST,
-		&indexBuffer);
+	indexBuffer = TW3D::TW3DResource::Create(device, iBufferSize, false);
 
-	// we can give resource heaps a name so when we debug with the graphics debugger we know what resource we are looking at
-	vertexBuffer->SetName(L"Index Buffer Resource Heap");
-
-	// create upload heap to upload index buffer
-	device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize),
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		&iBufferUploadHeap);
-
-	vBufferUploadHeap->SetName(L"Index Buffer Upload Resource Heap");
+	iBufferUploadHeap = TW3D::TW3DResource::Create(device, iBufferSize, true);
 
 	// store vertex buffer in upload heap
 	D3D12_SUBRESOURCE_DATA indexData = {};
@@ -623,33 +605,12 @@ void init_dx12() {
 
 
 	// transition the vertex buffer data from copy destination state to vertex buffer state
-	commandList->ResourceBarrier(CD3DX12_RESOURCE_BARRIER::Transition(indexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+	commandList->ResourceBarrier(indexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 
 	// Create the depth/stencil buffer
 
-	dsDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForDSV(device);
-
-	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
-	depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
-
-	D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
-	depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
-	depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
-	depthOptimizedClearValue.DepthStencil.Stencil = 0;
-
-	device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, width, height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
-		D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		&depthStencilBuffer, &depthOptimizedClearValue);
-
-
-	//dsDescriptorHeap->SetName(L"Depth/Stencil Resource Heap");
-
-	device->CreateDepthStencilView(depthStencilBuffer, dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), &depthStencilDesc);
+	depthStencil = new TW3D::TW3DResourceDSV(device);
+	depthStencil->Create(width, height);
 
 	// create the constant buffer resource heap
 	// We will update the constant buffer one or more times per frame, so we will use only an upload heap
@@ -666,22 +627,16 @@ void init_dx12() {
 	// heap, one for each cube, thats only 64x2 bits, or 128 bits we are using for each
 	// resource, and each resource must be at least 64KB (65536 bits)
 	for (int i = 0; i < frameBufferCount; ++i) {
-		// create resource for cube 1
-		device->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT),
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			&constantBufferUploadHeaps[i]);
+		constantBufferUploadHeaps[i] = TW3D::TW3DResource::CreateCBStaging(device);
 
-		constantBufferUploadHeaps[i]->SetName(L"Constant Buffer Upload Resource Heap");
+		//constantBufferUploadHeaps[i]->SetName(L"Constant Buffer Upload Resource Heap");
 
 		ZeroMemory(&cbPerObject, sizeof(cbPerObject));
 
 		CD3DX12_RANGE readRange(0, 0);    // We do not intend to read from this resource on the CPU. (so end is less than or equal to begin)
 
 		// map the resource heap to get a gpu virtual address to the beginning of the heap
-		TWU::ThrowIfFailed(constantBufferUploadHeaps[i]->Map(0, &readRange, reinterpret_cast<void**>(&cbvGPUAddress[i])));
+		constantBufferUploadHeaps[i]->Map(0, &readRange, reinterpret_cast<void**>(&cbvGPUAddress[i]));
 
 		// Because of the constant read alignment requirements, constant buffer views must be 256 bit aligned. Our buffers are smaller than 256 bits,
 		// so we need to add spacing between the two buffers, so that the second buffer starts at 256 bits from the beginning of the resource heap.
@@ -702,65 +657,16 @@ void init_dx12() {
 
 	}
 
-	// create a default heap where the upload heap will copy its contents into (contents being the texture)
-	device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&textureDesc,
-		D3D12_RESOURCE_STATE_COPY_DEST,
-		&textureBuffer);
 
-	textureBuffer->SetName(L"Texture Buffer Resource Heap");
-
-	TWT::UInt64 textureUploadBufferSize;
-	// this function gets the size an upload buffer needs to be to upload a texture to the gpu.
-	// each row must be 256 byte aligned except for the last row, which can just be the size in bytes of the row
-	// eg. textureUploadBufferSize = ((((width * numBytesPerPixel) + 255) & ~255) * (height - 1)) + (width * numBytesPerPixel);
-	//textureUploadBufferSize = (((imageBytesPerRow + 255) & ~255) * (textureDesc.Height - 1)) + imageBytesPerRow;
-	textureUploadBufferSize = device->GetCopyableFootprints(&textureDesc, 1);
-
-	// now we create an upload heap to upload our texture to the GPU
-	device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(textureUploadBufferSize),
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		&textureBufferUploadHeap);
-
-	textureBufferUploadHeap->SetName(L"Texture Buffer Upload Resource Heap");
-
-	// store vertex buffer in upload heap
-	D3D12_SUBRESOURCE_DATA textureData = {};
-	textureData.pData = &imageData[0]; // pointer to our image data
-	textureData.RowPitch = imageBytesPerRow; // size of all our triangle vertex data
-	textureData.SlicePitch = imageBytesPerRow * textureDesc.Height; // also the size of our triangle vertex data
-
-	// Now we copy the upload buffer contents to the default heap
-	//UpdateSubresources(commandList, textureBuffer, textureBufferUploadHeap, 0, 0, 1, &textureData);
-	commandList->UpdateSubresources(textureBuffer, textureBufferUploadHeap, &textureData);
-
-	// transition the texture default heap to a pixel shader resource (we will be sampling from this heap in the pixel shader to get the color of pixels)
-	commandList->ResourceBarrier(CD3DX12_RESOURCE_BARRIER::Transition(textureBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-	// Now we execute the command list to upload the initial assets (triangle data)
-	commandList->Close();
-	//ID3D12CommandList* ppCommandLists[] = { commandList };
-	commandQueue->ExecuteCommandList(commandList);
-	//commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-	
 	mainDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForSR(device, 1);
 
+	texture = new TW3D::TW3DResourceSV(device, mainDescriptorHeap);
+	texture->Create2D(textureDesc.Width, textureDesc.Height, textureDesc.Format);
+	texture->Upload2D(imageData, imageBytesPerRow);
 
-	// now we create a shader resource view (descriptor that points to the texture and describes it)
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.Format = textureDesc.Format;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = 1;
-	device->CreateShaderResourceView(textureBuffer, &srvDesc, mainDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-	// increment the fence value now, otherwise the buffer might not be uploaded by the time we start drawing
-	//fenceValue[frameIndex]++;
+	commandList->Close();
+	commandQueue->ExecuteCommandList(commandList);
 
 	fence[frameIndex]->Flush(commandQueue);
 
@@ -860,10 +766,10 @@ void UpdatePipeline() {
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescriptorSize);
 
 	// get a handle to the depth/stencil buffer
-	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	//CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
 	// set the render target for the output merger stage (the output of the pipeline)
-	commandList->SetRenderTarget(&rtvHandle, &dsvHandle);
+	commandList->SetRenderTarget(&rtvHandle, depthStencil);
 	//commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 	
 	// Clear the render target by using the ClearRenderTargetView command
@@ -872,7 +778,7 @@ void UpdatePipeline() {
 	//commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 
 	// clear the depth/stencil buffer
-	commandList->ClearDSVDepth(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), 1.0f);
+	commandList->ClearDSVDepth(depthStencil, 1.0f);
 	//commandList->ClearDepthStencilView(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 	// set root signature
@@ -1002,20 +908,16 @@ void on_resize() {
 	width = std::max(clientRect.right - clientRect.left, 1L);
 	height = std::max(clientRect.bottom - clientRect.top, 1L);
 
-	//TWU::CPrintln(width + " "s + height);
-
 	viewport.Width = width;
 	viewport.Height = height;
 
 	scissorRect.right = width;
 	scissorRect.bottom = height;
 
-	for (UINT n = 0; n < frameBufferCount; n++) {
+	for (UINT n = 0; n < frameBufferCount; n++)
 		renderTargets[n]->Release();
-		//fenceValue[n] = fenceValue[frameIndex];
-	}
 
-	depthStencilBuffer->Release();
+	depthStencil->Release();
 
 	swapChain->Resize(width, height);
 
@@ -1043,22 +945,7 @@ void on_resize() {
 	depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-	D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
-	depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
-	depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
-	depthOptimizedClearValue.DepthStencil.Stencil = 0;
-
-	device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, width, height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
-		D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		&depthStencilBuffer,
-		&depthOptimizedClearValue);
-
-	//dsDescriptorHeap->SetName(L"Depth/Stencil Resource Heap");
-
-	device->CreateDepthStencilView(depthStencilBuffer, dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), &depthStencilDesc);
+	depthStencil->Create(width, height);
 }
 
 void main_loop() {
@@ -1105,26 +992,23 @@ void cleanup() {
 		TWU::DXSafeRelease(renderTargets[i]);
 		TWU::DXSafeRelease(commandAllocator[i]);
 		//TWU::DXSafeRelease(fence[i]);
-		TWU::DXSafeRelease(constantBufferUploadHeaps[i]);
+		delete constantBufferUploadHeaps[i];
 
 		delete fence[i];
 	};
 
 	delete mainDescriptorHeap;
 	
-	TWU::DXSafeRelease(vBufferUploadHeap);
-	TWU::DXSafeRelease(iBufferUploadHeap);
+	delete vBufferUploadHeap;
+	delete iBufferUploadHeap;
 
 	TWU::DXSafeRelease(pipelineStateObject);
 	TWU::DXSafeRelease(rootSignature);
-	TWU::DXSafeRelease(vertexBuffer);
-	TWU::DXSafeRelease(indexBuffer);
+	delete vertexBuffer;
+	delete indexBuffer;
 
-	TWU::DXSafeRelease(depthStencilBuffer);
-	delete dsDescriptorHeap;
-
-	TWU::DXSafeRelease(textureBuffer);
-	TWU::DXSafeRelease(textureBufferUploadHeap);
+	delete depthStencil;
+	delete texture;
 
 #ifdef _DEBUG
 	ComPtr<IDXGIDebug1> dxgiDebug;
