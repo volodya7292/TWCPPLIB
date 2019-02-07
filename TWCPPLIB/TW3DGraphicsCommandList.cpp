@@ -24,7 +24,7 @@ void TW3D::TW3DGraphicsCommandList::ResourceBarrier(const D3D12_RESOURCE_BARRIER
 }
 
 void TW3D::TW3DGraphicsCommandList::ResourceBarriers(const TWT::Vector<D3D12_RESOURCE_BARRIER>& barriers) {
-	commandList->ResourceBarrier(barriers.size(), barriers.data());
+	commandList->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
 }
 
 void TW3D::TW3DGraphicsCommandList::ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {
@@ -62,7 +62,7 @@ void TW3D::TW3DGraphicsCommandList::SetDescriptorHeaps(TWT::Vector<TW3DDescripto
 	for (TWT::UInt i = 0; i < nativeHeaps.size(); i++)
 		nativeHeaps[i] = heaps[i]->Get();
 
-	commandList->SetDescriptorHeaps(heaps.size(), nativeHeaps.data());
+	commandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), nativeHeaps.data());
 }
 
 void TW3D::TW3DGraphicsCommandList::SetGraphicsRootDescriptorTable(TWT::UInt RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor) {
@@ -90,7 +90,7 @@ void TW3D::TW3DGraphicsCommandList::SetVertexBuffer(TWT::UInt StartSlot, const D
 }
 
 void TW3D::TW3DGraphicsCommandList::SetVertexBuffers(TWT::UInt StartSlot, TWT::Vector<D3D12_VERTEX_BUFFER_VIEW> views) {
-	commandList->IASetVertexBuffers(StartSlot, views.size(), views.data());
+	commandList->IASetVertexBuffers(StartSlot, static_cast<UINT>(views.size()), views.data());
 }
 
 void TW3D::TW3DGraphicsCommandList::SetIndexBuffer(const D3D12_INDEX_BUFFER_VIEW* view) {
@@ -106,11 +106,11 @@ void TW3D::TW3DGraphicsCommandList::DrawIndexed(TWT::UInt IndexCountPerInstance,
 }
 
 void TW3D::TW3DGraphicsCommandList::Reset(ID3D12CommandAllocator* commandAllocator, ID3D12PipelineState* initialState) {
-	TWU::ThrowIfFailed(commandList->Reset(commandAllocator, initialState));
+	TWU::SuccessAssert(commandList->Reset(commandAllocator, initialState));
 }
 
 void TW3D::TW3DGraphicsCommandList::Close() {
-	TWU::ThrowIfFailed(commandList->Close());
+	TWU::SuccessAssert(commandList->Close());
 }
 
 TW3D::TW3DGraphicsCommandList* TW3D::TW3DGraphicsCommandList::CreateDirect(TW3DDevice* device, ID3D12CommandAllocator* commandAllocator) {

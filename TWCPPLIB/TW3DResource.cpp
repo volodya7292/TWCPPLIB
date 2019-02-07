@@ -25,7 +25,7 @@ D3D12_GPU_VIRTUAL_ADDRESS TW3D::TW3DResource::GetGPUVirtualAddress() {
 }
 
 void TW3D::TW3DResource::Map(TWT::UInt SubResourceIndex, D3D12_RANGE* ReadRange, void** Data) {
-	TWU::ThrowIfFailed(resource->Map(SubResourceIndex, ReadRange, Data));
+	TWU::SuccessAssert(resource->Map(SubResourceIndex, ReadRange, Data));
 }
 
 TW3D::TW3DResource* TW3D::TW3DResource::Create(TW3DDevice* Device, TWT::UInt64 Size, TWT::Bool Staging) {
@@ -53,28 +53,6 @@ TW3D::TW3DResource* TW3D::TW3DResource::CreateDS(TW3DDevice* Device, TWT::UInt W
 		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Width, Height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,
 		&depthOptimizedClearValue
-	);
-}
-
-TW3D::TW3DResource* TW3D::TW3DResource::CreateTexture2D(TW3DDevice* Device, DXGI_FORMAT Format, TWT::UInt Width, TWT::UInt Height) {
-	D3D12_RESOURCE_DESC resourceDescription = {};
-	resourceDescription.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	resourceDescription.Alignment = 0; // may be 0, 4KB, 64KB, or 4MB. 0 will let runtime decide between 64KB and 4MB (4MB for multi-sampled textures)
-	resourceDescription.Width = Width; // width of the texture
-	resourceDescription.Height = Height; // height of the texture
-	resourceDescription.DepthOrArraySize = 1; // if 3d image, depth of 3d image. Otherwise an array of 1D or 2D textures (we only have one image, so we set 1)
-	resourceDescription.MipLevels = 1; // Number of mipmaps. We are not generating mipmaps for this texture, so we have only one level
-	resourceDescription.Format = Format; // This is the dxgi format of the image (format of the pixels)
-	resourceDescription.SampleDesc.Count = 1; // This is the number of samples per pixel, we just want 1 sample
-	resourceDescription.SampleDesc.Quality = 0; // The quality level of the samples. Higher is better quality, but worse performance
-	resourceDescription.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN; // The arrangement of the pixels. Setting to unknown lets the driver choose the most efficient one
-	resourceDescription.Flags = D3D12_RESOURCE_FLAG_NONE; // no flags
-
-	return new TW3DResource(Device,
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&resourceDescription,
-		D3D12_RESOURCE_STATE_COPY_DEST
 	);
 }
 

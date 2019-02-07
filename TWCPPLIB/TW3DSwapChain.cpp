@@ -31,12 +31,12 @@ TW3D::TW3DSwapChain::~TW3DSwapChain() {
 
 TWT::Bool TW3D::TW3DSwapChain::GetFullscreen() {
 	BOOL fullscreen;
-	TWU::ThrowIfFailed(swapChain->GetFullscreenState(&fullscreen, nullptr));
+	TWU::SuccessAssert(swapChain->GetFullscreenState(&fullscreen, nullptr));
 	return fullscreen;
 }
 
 void TW3D::TW3DSwapChain::SetFullscreen(TWT::Bool fullscreen) {
-	TWU::ThrowIfFailed(swapChain->SetFullscreenState(fullscreen, nullptr));
+	TWU::SuccessAssert(swapChain->SetFullscreenState(fullscreen, nullptr));
 }
 
 TWT::UInt TW3D::TW3DSwapChain::GetCurrentBufferIndex() {

@@ -12,7 +12,7 @@ IDXGIAdapter4* TWU::DXGIGetHardwareAdapter(IDXGIFactory7* factory) {
 
 	for (UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != factory->EnumAdapters1(adapterIndex, &adapter); ++adapterIndex) {
 		DXGI_ADAPTER_DESC1 desc;
-		ThrowIfFailed(adapter->GetDesc1(&desc));
+		SuccessAssert(adapter->GetDesc1(&desc));
 
 		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
 			// Don't select the Basic Render Driver(software) adapter.
@@ -29,7 +29,7 @@ IDXGIAdapter4* TWU::DXGIGetHardwareAdapter(IDXGIFactory7* factory) {
 
 ID3D12Device5* TWU::DXCreateDevice(IDXGIAdapter4* adapter) {
 	ID3D12Device5* device;
-	TWU::ThrowIfFailed(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
+	TWU::SuccessAssert(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
 	return device;
 }
 
@@ -127,6 +127,8 @@ void TWU::UpdateSubresourcesImp(ID3D12GraphicsCommandList* commandList, ID3D12Re
 
 TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, TWT::WString filename, TWT::Int& bytesPerRow) {
 	HRESULT hr;
+
+	TWU::FileExistsAssert(filename);
 
 	// we only need one instance of the imaging factory to create decoders and frames
 	static IWICImagingFactory *wicFactory;
@@ -265,7 +267,7 @@ TWT::Byte* TWU::ReadFileBytes(std::string file, TWT::Int& size) {
 	return nullptr;
 }
 
-void TWU::ThrowIfFailed(HRESULT hr) {
+void TWU::SuccessAssert(HRESULT hr) {
 	if (FAILED(hr)) {
 		TWT::Char s_str[64] = {};
 		sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<TWT::UInt>(hr));

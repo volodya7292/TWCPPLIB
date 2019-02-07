@@ -28,11 +28,11 @@ void TW3D::TW3DCommandQueue::ExecuteCommandLists(TWT::Vector<TW3DGraphicsCommand
 	for (TWT::UInt i = 0; i < nativeLists.size(); i++)
 		nativeLists[i] = commandLists[i]->Get();
 
-	commandQueue->ExecuteCommandLists(nativeLists.size(), nativeLists.data());
+	commandQueue->ExecuteCommandLists(static_cast<UINT>(nativeLists.size()), nativeLists.data());
 }
 
 void TW3D::TW3DCommandQueue::SignalFence(ID3D12Fence1* fence, TWT::UInt64 value) {
-	TWU::ThrowIfFailed(commandQueue->Signal(fence, value));
+	TWU::SuccessAssert(commandQueue->Signal(fence, value));
 }
 
 TW3D::TW3DCommandQueue* TW3D::TW3DCommandQueue::CreateDirect(TW3DDevice* device) {

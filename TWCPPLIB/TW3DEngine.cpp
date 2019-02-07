@@ -214,7 +214,7 @@ void init_window() {
 
 	TWT::UInt x = (GetSystemMetrics(SM_CXSCREEN) - width) / 2;
 	TWT::UInt y = (GetSystemMetrics(SM_CYSCREEN) - height) / 2;
-	RECT rect = { x, y, x + width, y + height };
+	RECT rect = { (LONG)x, (LONG)y, (LONG)(x + width), (LONG)(y + height) };
 	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
 
 	hwnd = CreateWindowEx(NULL,
@@ -408,7 +408,7 @@ void init_dx12() {
 
 	ID3DBlob* errorBuff; // a buffer holding the error data if any
 	ID3DBlob* signature;
-	TWU::ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &errorBuff));
+	TWU::SuccessAssert(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &errorBuff));
 
 	device->CreateRootSignature(signature, &rootSignature);
 
@@ -607,6 +607,9 @@ void init_dx12() {
 	// transition the vertex buffer data from copy destination state to vertex buffer state
 	commandList->ResourceBarrier(indexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 
+	commandList->Close();
+	commandQueue->ExecuteCommandList(commandList);
+
 	// Create the depth/stencil buffer
 
 	depthStencil = new TW3D::TW3DResourceDSV(device);
@@ -646,32 +649,14 @@ void init_dx12() {
 
 	// load the image, create a texture resource and descriptor heap
 
-	// Load the image from file
-	D3D12_RESOURCE_DESC textureDesc;
-	int imageBytesPerRow;
-	BYTE* imageData;
-	int imageSize = TWU::LoadImageDataFromFile(&imageData, textureDesc, L"D:\\test1.png", imageBytesPerRow);
-
-	// make sure we have data
-	if (imageSize <= 0) {
-
-	}
-
-
 	mainDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForSR(device, 1);
 
-	texture = new TW3D::TW3DResourceSV(device, mainDescriptorHeap);
-	texture->Create2D(textureDesc.Width, textureDesc.Height, textureDesc.Format);
-	texture->Upload2D(imageData, imageBytesPerRow);
-
-
-	commandList->Close();
-	commandQueue->ExecuteCommandList(commandList);
+	texture = TW3D::TW3DResourceSV::Create2D(device, mainDescriptorHeap, L"D:\\тест.png");
 
 	fence[frameIndex]->Flush(commandQueue);
 
 	// we are done with image data now that we've uploaded it to the gpu, so free it up
-	delete imageData;
+	//delete imageData;
 
 	// create a vertex buffer view for the triangle. We get the GPU memory address to the vertex pointer using the GetGPUVirtualAddress() method
 	vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
@@ -686,8 +671,8 @@ void init_dx12() {
 	// Fill out the Viewport
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = width;
-	viewport.Height = height;
+	viewport.Width = static_cast<FLOAT>(width);
+	viewport.Height = static_cast<FLOAT>(height);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 
@@ -739,11 +724,9 @@ void FlushGPU() {
 }
 
 void UpdatePipeline() {
-	HRESULT hr;
-
 	// we can only reset an allocator once the gpu is done with it
 	// resetting an allocator frees the memory that the command list was stored in
-	TWU::ThrowIfFailed(commandAllocator[frameIndex]->Reset());
+	TWU::SuccessAssert(commandAllocator[frameIndex]->Reset());
 
 	// reset the command list. by resetting the command list we are putting it into
 	// a recording state so we can start recording commands into the command allocator.
@@ -908,8 +891,8 @@ void on_resize() {
 	width = std::max(clientRect.right - clientRect.left, 1L);
 	height = std::max(clientRect.bottom - clientRect.top, 1L);
 
-	viewport.Width = width;
-	viewport.Height = height;
+	viewport.Width = static_cast<FLOAT>(width);
+	viewport.Height = static_cast<FLOAT>(height);
 
 	scissorRect.right = width;
 	scissorRect.bottom = height;

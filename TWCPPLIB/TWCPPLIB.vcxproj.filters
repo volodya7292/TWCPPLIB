@@ -88,7 +88,7 @@
       <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
     <ClInclude Include="TW3DResourceRTV.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -145,7 +145,7 @@
       <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
     <ClCompile Include="TW3DResourceRTV.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -12,37 +12,37 @@ TW3D::TW3DDevice::~TW3DDevice() {
 }
 
 void TW3D::TW3DDevice::CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC* desc, ID3D12CommandQueue** commandQueue) {
-	TWU::ThrowIfFailed(device->CreateCommandQueue(desc, IID_PPV_ARGS(commandQueue)));
+	TWU::SuccessAssert(device->CreateCommandQueue(desc, IID_PPV_ARGS(commandQueue)));
 }
 
 void TW3D::TW3DDevice::CreateDescriptorHeap(const D3D12_DESCRIPTOR_HEAP_DESC* desc, ID3D12DescriptorHeap** descriptorHeap) {
-	TWU::ThrowIfFailed(device->CreateDescriptorHeap(desc, IID_PPV_ARGS(descriptorHeap)));
+	TWU::SuccessAssert(device->CreateDescriptorHeap(desc, IID_PPV_ARGS(descriptorHeap)));
 }
 
 void TW3D::TW3DDevice::CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator** commandAllocator) {
-	TWU::ThrowIfFailed(device->CreateCommandAllocator(type, IID_PPV_ARGS(commandAllocator)));
+	TWU::SuccessAssert(device->CreateCommandAllocator(type, IID_PPV_ARGS(commandAllocator)));
 }
 
 void TW3D::TW3DDevice::CreateGraphicsCommandList(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator* commandAllocator, ID3D12GraphicsCommandList** commandList) {
-	TWU::ThrowIfFailed(device->CreateCommandList(0, type, commandAllocator, nullptr, IID_PPV_ARGS(commandList)));
+	TWU::SuccessAssert(device->CreateCommandList(0, type, commandAllocator, nullptr, IID_PPV_ARGS(commandList)));
 }
 
 void TW3D::TW3DDevice::CreateFence(TWT::UInt64 initialValue, D3D12_FENCE_FLAGS flags, ID3D12Fence1** fence) {
-	TWU::ThrowIfFailed(device->CreateFence(initialValue, flags, IID_PPV_ARGS(fence)));
+	TWU::SuccessAssert(device->CreateFence(initialValue, flags, IID_PPV_ARGS(fence)));
 }
 
 void TW3D::TW3DDevice::CreateRootSignature(ID3DBlob* signature, ID3D12RootSignature** rootSignature) {
-	TWU::ThrowIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(rootSignature)));
+	TWU::SuccessAssert(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(rootSignature)));
 }
 
 void TW3D::TW3DDevice::CreateGraphicsPipelineState(const D3D12_GRAPHICS_PIPELINE_STATE_DESC* desc, ID3D12PipelineState** pipelineState) {
-	TWU::ThrowIfFailed(device->CreateGraphicsPipelineState(desc, IID_PPV_ARGS(pipelineState)));
+	TWU::SuccessAssert(device->CreateGraphicsPipelineState(desc, IID_PPV_ARGS(pipelineState)));
 }
 
 void TW3D::TW3DDevice::CreateCommittedResource(const D3D12_HEAP_PROPERTIES* heapProperties, D3D12_HEAP_FLAGS heapFlags, const D3D12_RESOURCE_DESC* desc,
 	D3D12_RESOURCE_STATES initialResourceState, ID3D12Resource** resource, const D3D12_CLEAR_VALUE* optimizedClearValue) {
 
-	TWU::ThrowIfFailed(device->CreateCommittedResource(heapProperties, heapFlags, desc, initialResourceState, optimizedClearValue, IID_PPV_ARGS(resource)));
+	TWU::SuccessAssert(device->CreateCommittedResource(heapProperties, heapFlags, desc, initialResourceState, optimizedClearValue, IID_PPV_ARGS(resource)));
 }
 
 void TW3D::TW3DDevice::CreateRenderTargetView(ID3D12Resource* rtv, D3D12_CPU_DESCRIPTOR_HANDLE cpuDescHandle, const D3D12_RENDER_TARGET_VIEW_DESC* desc) {

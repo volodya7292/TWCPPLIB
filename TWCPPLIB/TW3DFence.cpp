@@ -20,7 +20,7 @@ void TW3D::TW3DFence::Flush(TW3DCommandQueue* commandQueue) {
 	// the command queue since it has not reached the "commandQueue->Signal(fence, fenceValue)" command
 	if (fence->GetCompletedValue() < flushValue) {
 		// we have the fence create an event which is signaled once the fence's current value is "fenceValue"
-		TWU::ThrowIfFailed(fence->SetEventOnCompletion(flushValue, fenceEvent));
+		TWU::SuccessAssert(fence->SetEventOnCompletion(flushValue, fenceEvent));
 
 		// We will wait until the fence has triggered the event that it's current value has reached "fenceValue". once it's value
 		// has reached "fenceValue", we know the command queue has finished executing

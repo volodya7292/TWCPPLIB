@@ -18,7 +18,6 @@ namespace TW3D {
 		static TW3DResource* Create(TW3DDevice* Device, TWT::UInt64 Size, TWT::Bool Staging);
 		static TW3DResource* CreateCBStaging(TW3DDevice* Device);
 		static TW3DResource* CreateDS(TW3DDevice* Device, TWT::UInt Width, TWT::UInt Height);
-		static TW3DResource* CreateTexture2D(TW3DDevice* Device, DXGI_FORMAT Format, TWT::UInt Width, TWT::UInt Height);
 
 		static TW3DResource* CreateDSView(TW3DDevice* Device, TW3DDescriptorHeap* DescriptorHeap);
 		static TW3DResource* CreateShaderView(TW3DDevice* Device, TW3DDescriptorHeap* DescriptorHeap, DXGI_FORMAT Format);

@@ -15,13 +15,12 @@ TW3D::TW3DAdapter::~TW3DAdapter() {
 	TWU::DXSafeRelease(native_adapter);
 }
 
-void TW3D::TW3DAdapter::CreateDevice(ID3D12Device5** device) {
-	TWU::ThrowIfFailed(D3D12CreateDevice(native_adapter, featureLevel, IID_PPV_ARGS(device)));
+D3D_FEATURE_LEVEL TW3D::TW3DAdapter::GetFeatureLevel() {
+	return featureLevel;
 }
 
-TW3D::TW3DAdapter& TW3D::TW3DAdapter::operator=(TW3DAdapter t) {
-	*this = std::move(t);
-	return *this;
+void TW3D::TW3DAdapter::CreateDevice(ID3D12Device5** device) {
+	TWU::SuccessAssert(D3D12CreateDevice(native_adapter, featureLevel, IID_PPV_ARGS(device)));
 }
 
 std::vector<TW3D::TW3DAdapter*> TW3D::TW3DAdapter::ListAvailable(TW3DFactory* factory, D3D_FEATURE_LEVEL featureLevel) {

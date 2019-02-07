@@ -29,7 +29,13 @@ void TW3D::TW3DResourceSV::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORM
 	ImageDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN; // The arrangement of the pixels. Setting to unknown lets the driver choose the most efficient one
 	ImageDesc.Flags = D3D12_RESOURCE_FLAG_NONE; // no flags
 
-	Buffer = TW3D::TW3DResource::CreateTexture2D(Device, Format, Width, Height);
+	Buffer = new TW3DResource(Device,
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&ImageDesc,
+		D3D12_RESOURCE_STATE_COPY_DEST
+	);
+
 	Device->CreateShaderResourceView(Buffer->Get(), &desc, DescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
@@ -39,29 +45,21 @@ void TW3D::TW3DResourceSV::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow) {
 	textureData.RowPitch = BytesPerRow; // size of all our triangle vertex data
 	textureData.SlicePitch = BytesPerRow * ImageDesc.Height; // also the size of our triangle vertex data
 
-	TW3DFence* fence = new TW3DFence(Device);
-
 	TWT::UInt64 textureUploadBufferSize = Device->GetCopyableFootprints(&ImageDesc, 1);
 	TW3DResource* textureBufferUploadHeap = TW3DResource::Create(Device, textureUploadBufferSize, true);
 
 
+	TW3DFence* fence = new TW3DFence(Device);
 	TW3DCommandQueue* commandQueue = new TW3DCommandQueue(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
-
 	ID3D12CommandAllocator* commandAllocator;
 	Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, &commandAllocator);
-
-
 	TW3DGraphicsCommandList* commandList = new TW3DGraphicsCommandList(Device, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator);
 
 	commandList->UpdateSubresources(Buffer, textureBufferUploadHeap, &textureData);
-
-	// transition the texture default heap to a pixel shader resource (we will be sampling from this heap in the pixel shader to get the color of pixels)
 	commandList->ResourceBarrier(Buffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-	// Now we execute the command list to upload the initial assets (triangle data)
 	commandList->Close();
-	//ID3D12CommandList* ppCommandLists[] = { commandList };
 	commandQueue->ExecuteCommandList(commandList);
+
 
 	fence->Flush(commandQueue);
 
@@ -70,4 +68,19 @@ void TW3D::TW3DResourceSV::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow) {
 	delete commandQueue;
 	delete fence;
 	delete textureBufferUploadHeap;
+}
+
+TW3D::TW3DResourceSV* TW3D::TW3DResourceSV::Create2D(TW3DDevice* Device, TW3DDescriptorHeap* DescriptorHeap, TWT::WString filename) {
+	D3D12_RESOURCE_DESC textureDesc;
+	TWT::Int imageBytesPerRow;
+	TWT::Byte* imageData;
+	int imageSize = TWU::LoadImageDataFromFile(&imageData, textureDesc, filename, imageBytesPerRow);
+
+	TW3DResourceSV* texture = new TW3DResourceSV(Device, DescriptorHeap);
+	texture->Create2D(static_cast<UINT>(textureDesc.Width), textureDesc.Height, textureDesc.Format);
+	texture->Upload2D(imageData, imageBytesPerRow);
+
+	delete imageData;
+
+	return texture;
 }

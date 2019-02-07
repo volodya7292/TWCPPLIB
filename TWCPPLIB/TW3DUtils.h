@@ -36,5 +36,5 @@ namespace TWU {
 		t->Release();
 	}
 
-	void ThrowIfFailed(HRESULT hr);
+	void SuccessAssert(HRESULT hr);
 }
