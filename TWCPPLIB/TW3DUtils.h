@@ -27,9 +27,6 @@ namespace TWU {
 	// Load and decode image from file
 	TWT::Int LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, TWT::WString filename, TWT::Int& bytesPerRow);
 
-	// Read entire file into byte array
-	TWT::Byte* ReadFileBytes(std::string file, TWT::Int& size);
-
 	// Safely release DirectX resources
 	template<typename T>
 	void DXSafeRelease(T* t){

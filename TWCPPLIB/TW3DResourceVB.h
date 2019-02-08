@@ -12,6 +12,7 @@ namespace TW3D {
 
 	private:
 		TW3DTempGCL* TempGCL;
+		ID3D12Resource* UploadHeap;
 		D3D12_VERTEX_BUFFER_VIEW VertexView;
 		TWT::UInt64 Size;
 	};

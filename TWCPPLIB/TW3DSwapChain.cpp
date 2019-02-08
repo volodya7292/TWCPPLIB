@@ -29,6 +29,10 @@ TW3D::TW3DSwapChain::~TW3DSwapChain() {
 	TWU::DXSafeRelease(swapChain);
 }
 
+DXGI_SWAP_CHAIN_DESC1 TW3D::TW3DSwapChain::GetDescription() {
+	return desc;
+}
+
 TWT::Bool TW3D::TW3DSwapChain::GetFullscreen() {
 	BOOL fullscreen;
 	TWU::SuccessAssert(swapChain->GetFullscreenState(&fullscreen, nullptr));

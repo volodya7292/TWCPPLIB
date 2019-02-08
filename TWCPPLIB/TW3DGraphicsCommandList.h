@@ -1,13 +1,12 @@
 #pragma once
-#include "TW3DDevice.h"
-#include "TW3DResource.h"
 #include "TW3DResourceDSV.h"
 #include "TW3DResourceRTV.h"
+#include "TW3DPipelineState.h"
 
 namespace TW3D {
 	class TW3DGraphicsCommandList {
 	public:
-		TW3DGraphicsCommandList(TW3DDevice* device, D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator* commandAllocator);
+		TW3DGraphicsCommandList(TW3DDevice* device, D3D12_COMMAND_LIST_TYPE type);
 		~TW3DGraphicsCommandList();
 
 		ID3D12GraphicsCommandList* Get();
@@ -20,6 +19,8 @@ namespace TW3D {
 		void ResourceBarrier(const D3D12_RESOURCE_BARRIER barrier);
 		void ResourceBarriers(const TWT::Vector<D3D12_RESOURCE_BARRIER>& barriers);
 		void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
+		void ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
+		void SetPipelineState(TW3DPipelineState* PipelineState);
 		void SetRenderTarget(TW3DResourceRTV* RTV, TW3DResourceDSV* DSV);
 		void SetRenderTargets(TWT::UInt RTVDescriptorCount, const D3D12_CPU_DESCRIPTOR_HANDLE* RTVDescriptors, TW3DResourceDSV* DSV);
 		void ClearRTV(TW3DResourceRTV* RTV, const TWT::Float (&RGBA)[4]);
@@ -38,12 +39,13 @@ namespace TW3D {
 		void Draw(TWT::UInt VertexCountPerInstance, TWT::UInt StartVertexLocation = 0, TWT::UInt InstanceCount = 1, TWT::UInt StartInstanceLocation = 0);
 		void DrawIndexed(TWT::UInt IndexCountPerInstance, TWT::UInt StartIndexLocation = 0, TWT::UInt InstanceCount = 1, TWT::UInt StartInstanceLocation = 0, TWT::Int BaseVertexLocation = 0);
 
-		void Reset(ID3D12CommandAllocator *commandAllocator, ID3D12PipelineState *initialState);
+		void Reset();
 		void Close();
 
-		static TW3DGraphicsCommandList* CreateDirect(TW3DDevice* device, ID3D12CommandAllocator* commandAllocator);
+		static TW3DGraphicsCommandList* CreateDirect(TW3DDevice* device);
 
 	private:
 		ID3D12GraphicsCommandList* commandList;
+		ID3D12CommandAllocator* CommandAllocator;
 	};
 }

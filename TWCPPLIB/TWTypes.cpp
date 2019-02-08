@@ -1,10 +1,6 @@
 #include "pch.h"
 #include "TWTypes.h"
 
-TWT::String::String(Int data) {
-	this->data = std::to_string(data);
-}
-
 TWT::String::String(const Char* data) :
 	data(data)
 {

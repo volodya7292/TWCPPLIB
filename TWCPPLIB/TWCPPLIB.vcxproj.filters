@@ -105,6 +105,12 @@
     <ClInclude Include="TW3DTempGCL.h">
       <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DPipelineState.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DRootSignature.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -166,6 +172,12 @@
       <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
     <ClCompile Include="TW3DTempGCL.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DPipelineState.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DRootSignature.cpp">
       <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
   </ItemGroup>

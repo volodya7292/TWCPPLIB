@@ -127,7 +127,6 @@ void TWU::UpdateSubresourcesImp(ID3D12GraphicsCommandList* commandList, ID3D12Re
 
 TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, TWT::WString filename, TWT::Int& bytesPerRow) {
 	HRESULT hr;
-
 	TWU::FileExistsAssert(filename);
 
 	// we only need one instance of the imaging factory to create decoders and frames
@@ -246,27 +245,6 @@ TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& 
 
 	// return the size of the image. remember to delete the image once your done with it (in this tutorial once its uploaded to the gpu)
 	return imageSize;
-}
-
-// this function loads a file into an Array^
-TWT::Byte* TWU::ReadFileBytes(std::string file, TWT::Int& size) {
-	TWU::FileExistsAssert(TWT::WString(file));
-
-	std::ifstream VertexFile(file, std::ios::ate | std::ios::binary);
-	
-	if (VertexFile.is_open()) {
-		size = (TWT::Int)VertexFile.tellg();
-
-		TWT::Byte* data = new TWT::Byte[size];
-
-		VertexFile.seekg(0);
-		VertexFile.read(reinterpret_cast<char*>(data), size);
-		VertexFile.close();
-
-		return data;
-	}
-
-	return nullptr;
 }
 
 void TWU::SuccessAssert(HRESULT hr) {

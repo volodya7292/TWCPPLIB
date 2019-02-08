@@ -3,20 +3,21 @@
 
 #define NOMINMAX
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <codecvt>
 #include <chrono>
 #include <vector>
 #include <string>
-#include <codecvt>
-#include <algorithm>
 #include <array>
+#include <wrl.h>
 #include <stdint.h>
-#include <wincodec.h>
 #include <dxgi1_6.h>
+#include <wincodec.h>
 #include <dxgidebug.h>
 #include <DirectXMath.h>
-#include <wrl.h>
+
 #include "d3dx12.h"
 
 using Microsoft::WRL::ComPtr;

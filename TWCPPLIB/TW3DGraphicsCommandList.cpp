@@ -2,12 +2,14 @@
 #include "TW3DGraphicsCommandList.h"
 #include "TW3DResource.h"
 
-TW3D::TW3DGraphicsCommandList::TW3DGraphicsCommandList(TW3D::TW3DDevice* device, D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator* commandAllocator) {
-	device->CreateGraphicsCommandList(type, commandAllocator, &commandList);
+TW3D::TW3DGraphicsCommandList::TW3DGraphicsCommandList(TW3D::TW3DDevice* device, D3D12_COMMAND_LIST_TYPE type) {
+	device->CreateCommandAllocator(type, &CommandAllocator);
+	device->CreateGraphicsCommandList(type, CommandAllocator, &commandList);
 }
 
 TW3D::TW3DGraphicsCommandList::~TW3DGraphicsCommandList() {
 	TWU::DXSafeRelease(commandList);
+	TWU::DXSafeRelease(CommandAllocator);
 }
 
 ID3D12GraphicsCommandList* TW3D::TW3DGraphicsCommandList::Get() {
@@ -34,6 +36,14 @@ void TW3D::TW3DGraphicsCommandList::ResourceBarriers(const TWT::Vector<D3D12_RES
 
 void TW3D::TW3DGraphicsCommandList::ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(Resource->Get(), StateBefore, StateAfter));
+}
+
+void TW3D::TW3DGraphicsCommandList::ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(Resource, StateBefore, StateAfter));
+}
+
+void TW3D::TW3DGraphicsCommandList::SetPipelineState(TW3D::TW3DPipelineState* PipelineState) {
+	commandList->SetPipelineState(PipelineState->Get());
 }
 
 void TW3D::TW3DGraphicsCommandList::SetRenderTarget(TW3DResourceRTV* RTV, TW3DResourceDSV* DSV) {
@@ -110,14 +120,15 @@ void TW3D::TW3DGraphicsCommandList::DrawIndexed(TWT::UInt IndexCountPerInstance,
 	commandList->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
 }
 
-void TW3D::TW3DGraphicsCommandList::Reset(ID3D12CommandAllocator* commandAllocator, ID3D12PipelineState* initialState) {
-	TWU::SuccessAssert(commandList->Reset(commandAllocator, initialState));
+void TW3D::TW3DGraphicsCommandList::Reset() {
+	TWU::SuccessAssert(CommandAllocator->Reset());
+	TWU::SuccessAssert(commandList->Reset(CommandAllocator, nullptr));
 }
 
 void TW3D::TW3DGraphicsCommandList::Close() {
 	TWU::SuccessAssert(commandList->Close());
 }
 
-TW3D::TW3DGraphicsCommandList* TW3D::TW3DGraphicsCommandList::CreateDirect(TW3DDevice* device, ID3D12CommandAllocator* commandAllocator) {
-	return new TW3DGraphicsCommandList(device, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator);
+TW3D::TW3DGraphicsCommandList* TW3D::TW3DGraphicsCommandList::CreateDirect(TW3DDevice* device) {
+	return new TW3DGraphicsCommandList(device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 }

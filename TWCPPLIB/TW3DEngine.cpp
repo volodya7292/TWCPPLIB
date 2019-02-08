@@ -8,6 +8,7 @@
 #include "TW3DResourceRTV.h"
 #include "TW3DResourceVB.h"
 #include "TW3DTempGCL.h"
+#include "TW3DPipelineState.h"
 
 using namespace DirectX;
 
@@ -31,6 +32,7 @@ static TW3D::TW3DDescriptorHeap* mainDescriptorHeap;
 static TW3D::TW3DDescriptorHeap* rtvDescriptorHeap;
 static TW3D::TW3DFence* fence[frameBufferCount];
 static TW3D::TW3DTempGCL* tempGCL;
+static TW3D::TW3DPipelineState* pipelineState;
 
 static TW3D::TW3DResourceRTV* renderTargets[frameBufferCount];
 static TW3D::TW3DResourceDSV* depthStencil;
@@ -46,9 +48,7 @@ static TW3D::TW3DResource* constantBufferUploadHeaps[frameBufferCount];
 void on_resize();
 
 static int frameIndex; // current rtv we are on
-static ID3D12CommandAllocator* commandAllocator[frameBufferCount];
 static ID3D12RootSignature* rootSignature;
-static ID3D12PipelineState* pipelineStateObject;
 static D3D12_VIEWPORT viewport; // area that output from rasterizer will be stretched to.
 
 static D3D12_RECT scissorRect; // the area to draw in. pixels outside that area will not be drawn onto
@@ -251,24 +251,6 @@ void init_dx12() {
 
 	commandQueue = TW3D::TW3DCommandQueue::CreateDirect(device);
 
-	DXGI_SAMPLE_DESC sampleDesc = {};
-	sampleDesc.Count = 1; // multisample count (no multisampling, so we just put 1, since we still need 1 sample)
-
-						  // Describe and create the swap chain.
-	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-	swapChainDesc.Width = width;
-	swapChainDesc.Height = height;
-	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapChainDesc.Stereo = false;
-	swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // dxgi will discard the buffer (data) after we call present
-	swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-	swapChainDesc.BufferCount = frameBufferCount; // number of buffers we have
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // this says the pipeline will render to this swap chain
-	//swapChainDesc.OutputWindow = hwnd; // handle to our window
-	swapChainDesc.SampleDesc = sampleDesc; // our multi-sampling description
-	//swapChainDesc.Windowed = !fullscreen; // set to true, then if in fullscreen must call SetFullScreenState with true for full screen to get uncapped fps
-
 
 	swapChain = new TW3D::TW3DSwapChain(factory, commandQueue, hwnd, width, height, vsync);
 
@@ -287,14 +269,14 @@ void init_dx12() {
 
 	// -- Create the Command Allocators -- //
 
-	for (int i = 0; i < frameBufferCount; i++) {
-		device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, &commandAllocator[i]);
-	}
+	//for (int i = 0; i < frameBufferCount; i++) {
+		//device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, &commandAllocator);
+	//}
 
 	// -- Create a Command List -- //
 
 	// create the command list with the first allocator
-	commandList = TW3D::TW3DGraphicsCommandList::CreateDirect(device, commandAllocator[frameIndex]);
+	commandList = TW3D::TW3DGraphicsCommandList::CreateDirect(device);
 	//device->CreateGraphicsCommandList(D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator[frameIndex], &commandList);
 
 	// -- Create a Fence & Fence Event -- //
@@ -369,78 +351,26 @@ void init_dx12() {
 
 	device->CreateRootSignature(signature, &rootSignature);
 
-	// create vertex and pixel shaders
 
-	// when debugging, we can compile the shader files at runtime.
-	// but for release versions, we can compile the hlsl shaders
-	// with fxc.exe to create .cso files, which contain the shader
-	// bytecode. We can load the .cso files at runtime to get the
-	// shader bytecode, which of course is faster than compiling
-	// them at runtime
-
-	TWT::Int s;
-	TWT::Byte* ps = TWU::ReadFileBytes("VertexShader.cso", s);
+	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> inputLayout(2);
+	inputLayout[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
 
-	D3D12_SHADER_BYTECODE vertexShaderBytecode = {};
-	vertexShaderBytecode.BytecodeLength = s;
-	vertexShaderBytecode.pShaderBytecode = ps;
-
-
-	ps = TWU::ReadFileBytes("PixelShader.cso", s);
-
-
-	D3D12_SHADER_BYTECODE pixelShaderBytecode = {};
-	pixelShaderBytecode.BytecodeLength = s;
-	pixelShaderBytecode.pShaderBytecode = ps;
-
-	// create input layout
-
-	// The input layout is used by the Input Assembler so that it knows
-	// how to read the vertex data bound to it.
-
-	D3D12_INPUT_ELEMENT_DESC inputLayout[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-	};
-
-	// fill out an input layout description structure
-	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc = {};
-
-	// we can get the number of elements in an array by "sizeof(array) / sizeof(arrayElementType)"
-	inputLayoutDesc.NumElements = sizeof(inputLayout) / sizeof(D3D12_INPUT_ELEMENT_DESC);
-	inputLayoutDesc.pInputElementDescs = inputLayout;
-
-	// create a pipeline state object (PSO)
-
-	// In a real application, you will have many pso's. for each different shader
-	// or different combinations of shaders, different blend states or different rasterizer states,
-	// different topology types (point, line, triangle, patch), or a different number
-	// of render targets you will need a pso
-
-	// VS is the only required shader for a pso. You might be wondering when a case would be where
-	// you only set the VS. It's possible that you have a pso that only outputs data with the stream
-	// output, and not on a render target, which means you would not need anything after the stream
-	// output.
-
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {}; // a structure to define a pso
-	psoDesc.InputLayout = inputLayoutDesc; // the structure describing our input layout
-	psoDesc.pRootSignature = rootSignature; // the root signature that describes the input data this pso needs
-	psoDesc.VS = vertexShaderBytecode; // structure describing where to find the vertex shader bytecode and how large it is
-	psoDesc.PS = pixelShaderBytecode; // same as VS but for pixel shader
-	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; // type of topology we are drawing
-	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM; // format of the render target
-	psoDesc.SampleDesc = sampleDesc; // must be the same sample description as the swapchain and depth/stencil buffer
-	psoDesc.SampleMask = 0xffffffff; // sample mask has to do with multi-sampling. 0xffffffff means point sampling is done
-	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT); // a default rasterizer state.
-	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT); // a default blent state.
-	psoDesc.NumRenderTargets = 1; // we are only binding one render target
-	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // a default depth stencil state
-	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-
-	// create the pso
-	device->CreateGraphicsPipelineState(&psoDesc, &pipelineStateObject);
+	pipelineState = new TW3D::TW3DPipelineState(
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+		swapChain->GetDescription().SampleDesc,
+		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
+		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
+		rootSignature,
+		1);
+	pipelineState->SetRTVFormat(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+	pipelineState->SetVertexShader("VertexShader.cso");
+	pipelineState->SetPixelShader("PixelShader.cso");
+	pipelineState->SetInputLayout(inputLayout);
+	pipelineState->Create(device);
+	
 	
 
 	// Create vertex buffer
@@ -488,31 +418,6 @@ void init_dx12() {
 
 	vertexBuffer = new TW3D::TW3DResourceVB(device, vBufferSize, tempGCL);
 	vertexBuffer->UpdateData(reinterpret_cast<BYTE*>(vList), vBufferSize);
-
-	// create default heap
-	// default heap is memory on the GPU. Only the GPU has access to this memory
-	// To get data into this heap, we will have to upload the data using
-	// an upload heap
-	
-	//vertexBuffer = TW3D::TW3DResource::Create(device, vBufferSize, false);
-
-	//vBufferUploadHeap = TW3D::TW3DResource::Create(device, vBufferSize, true);
-
-	//// store vertex buffer in upload heap
-	//D3D12_SUBRESOURCE_DATA vertexData = {};
-	//vertexData.pData = reinterpret_cast<BYTE*>(vList); // pointer to our vertex array
-	//vertexData.RowPitch = vBufferSize; // size of all our triangle vertex data
-	//vertexData.SlicePitch = vBufferSize; // also the size of our triangle vertex data
-
-	//// we are now creating a command with the command list to copy the data from
-	//// the upload heap to the default heap
-	//commandList->UpdateSubresources(vertexBuffer, vBufferUploadHeap, &vertexData);
-	////commandList->UpdateSubresources()
-	////UpdateSubresources(commandList, vertexBuffer, vBufferUploadHeap, 0, 0, 1, &vertexData);
-
-	//// transition the vertex buffer data from copy destination state to vertex buffer state
-	//commandList->ResourceBarrier(vertexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-	//commandList->ResourceBarrier(CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer->resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 
 	// Create index buffer
 
@@ -685,21 +590,9 @@ void FlushGPU() {
 }
 
 void UpdatePipeline() {
-	// we can only reset an allocator once the gpu is done with it
-	// resetting an allocator frees the memory that the command list was stored in
-	TWU::SuccessAssert(commandAllocator[frameIndex]->Reset());
+	commandList->Reset();
 
-	// reset the command list. by resetting the command list we are putting it into
-	// a recording state so we can start recording commands into the command allocator.
-	// the command allocator that we reference here may have multiple command lists
-	// associated with it, but only one can be recording at any time. Make sure
-	// that any other command lists associated to this command allocator are in
-	// the closed state (not recording).
-	// Here you will pass an initial pipeline state object as the second parameter,
-	// but in this tutorial we are only clearing the rtv, and do not actually need
-	// anything but an initial default pipeline, which is what we get by setting
-	// the second parameter to NULL
-	commandList->Reset(commandAllocator[frameIndex], pipelineStateObject);
+	commandList->SetPipelineState(pipelineState);
 
 	// here we start recording commands into the commandList (which all the commands will be stored in the commandAllocator)
 
@@ -915,12 +808,11 @@ void cleanup() {
 	delete rtvDescriptorHeap;
 	delete commandList;
 
-	for (int i = 0; i < frameBufferCount; ++i) {
-		TWU::DXSafeRelease(renderTargets[i]);
-		TWU::DXSafeRelease(commandAllocator[i]);
-		//TWU::DXSafeRelease(fence[i]);
-		delete constantBufferUploadHeaps[i];
+	//TWU::DXSafeRelease(commandAllocator);
 
+	for (int i = 0; i < frameBufferCount; ++i) {
+		delete renderTargets[i];
+		delete constantBufferUploadHeaps[i];
 		delete fence[i];
 	};
 
@@ -929,7 +821,7 @@ void cleanup() {
 	//delete vBufferUploadHeap;
 	delete iBufferUploadHeap;
 
-	TWU::DXSafeRelease(pipelineStateObject);
+	delete pipelineState;
 	TWU::DXSafeRelease(rootSignature);
 	delete vertexBuffer;
 	delete indexBuffer;

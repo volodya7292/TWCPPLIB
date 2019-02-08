@@ -57,7 +57,7 @@ void TW3D::TW3DResourceSV::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow) {
 
 	TempGCL->Reset();
 	TempGCL->UpdateSubresources(Resource, textureBufferUploadHeap, &textureData);
-	TempGCL->ResourceBarrier(this, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	TempGCL->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	TempGCL->Execute();
 
 	TWU::DXSafeRelease(textureBufferUploadHeap);

@@ -250,6 +250,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="StepTimer.h" />
     <ClInclude Include="TW3DAdapter.h" />
+    <ClInclude Include="TW3DPipelineState.h" />
     <ClInclude Include="TW3DResource.h" />
     <ClInclude Include="TW3DCommandQueue.h" />
     <ClInclude Include="TW3DFence.h" />
@@ -262,6 +263,7 @@
     <ClInclude Include="TW3DResourceRTV.h" />
     <ClInclude Include="TW3DResourceSV.h" />
     <ClInclude Include="TW3DResourceVB.h" />
+    <ClInclude Include="TW3DRootSignature.h" />
     <ClInclude Include="TW3DSwapChain.h" />
     <ClInclude Include="TW3DTempGCL.h" />
     <ClInclude Include="TW3DTypes.h" />
@@ -280,6 +282,7 @@
     </ClCompile>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TW3DAdapter.cpp" />
+    <ClCompile Include="TW3DPipelineState.cpp" />
     <ClCompile Include="TW3DResource.cpp" />
     <ClCompile Include="TW3DCommandQueue.cpp" />
     <ClCompile Include="TW3DFence.cpp" />
@@ -292,6 +295,7 @@
     <ClCompile Include="TW3DResourceRTV.cpp" />
     <ClCompile Include="TW3DResourceSV.cpp" />
     <ClCompile Include="TW3DResourceVB.cpp" />
+    <ClCompile Include="TW3DRootSignature.cpp" />
     <ClCompile Include="TW3DSwapChain.cpp" />
     <ClCompile Include="TW3DTempGCL.cpp" />
     <ClCompile Include="TW3DTypes.cpp" />

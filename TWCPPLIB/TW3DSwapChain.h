@@ -8,6 +8,7 @@ namespace TW3D {
 		TW3DSwapChain(TW3DFactory* factory, TW3DCommandQueue* commandQueue, HWND hwnd, TWT::UInt width, TWT::UInt height, TWT::Bool vsync);
 		~TW3DSwapChain();
 
+		DXGI_SWAP_CHAIN_DESC1 GetDescription();
 		TWT::Bool GetFullscreen();
 		void SetFullscreen(TWT::Bool fullscreen);
 

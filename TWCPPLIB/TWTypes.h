@@ -29,7 +29,12 @@ namespace TWT {
 
 	struct String {
 		String() = default;
-		String(Int data);
+	
+		template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
+		String(T data) {
+			this->data = std::to_string(data);
+		};
+
 		String(const Char* data);
 		String(std::string data);
 		String(const String &str) = default;
@@ -69,14 +74,14 @@ namespace TWT {
 std::ostream&  operator << (std::ostream& os, const TWT::String& t);
 std::wostream& operator << (std::wostream& os, const TWT::WString& t);
 
-template <class T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
-std::string operator+(const std::string& str, const T& t) {
-	return str.data + std::to_string(t);
-}
-template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
-std::string operator+(const T& t, const std::string& str) {
-	return std::to_string(t) + str;
-}
+//template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
+//std::string operator+(const std::string& str, const T& t) {
+//	return str.data + std::to_string(t);
+//}
+//template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
+//std::string operator+(const T& t, const std::string& str) {
+//	return std::to_string(t) + str;
+//}
 
 std::string  operator+(const std::string&  str, const TWT::String&  t);
 std::string  operator+(const TWT::String&  t, const std::string&  str);
