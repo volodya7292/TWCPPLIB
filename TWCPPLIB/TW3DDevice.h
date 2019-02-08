@@ -8,6 +8,8 @@ namespace TW3D {
 		TW3DDevice(TW3DAdapter* adapter);
 		~TW3DDevice();
 
+		D3D12_FEATURE_DATA_D3D12_OPTIONS GetSupportedFeatures();
+
 		void CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC* desc, ID3D12CommandQueue** commandQueue);
 		void CreateDescriptorHeap(const D3D12_DESCRIPTOR_HEAP_DESC* desc, ID3D12DescriptorHeap** descriptorHeap);
 		void CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator** commandAllocator);
@@ -28,5 +30,6 @@ namespace TW3D {
 	private:
 		TW3DAdapter* adapter;
 		ID3D12Device5* device;
+		D3D12_FEATURE_DATA_D3D12_OPTIONS SupportedFeatures;
 	};
 }

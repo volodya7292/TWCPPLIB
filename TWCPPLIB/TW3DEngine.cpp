@@ -247,16 +247,10 @@ void init_dx12() {
 	adapter = adapters[0];
 	device = new TW3D::TW3DDevice(adapter);
 
-
-
 	commandQueue = TW3D::TW3DCommandQueue::CreateDirect(device);
-
-
 	swapChain = new TW3D::TW3DSwapChain(factory, commandQueue, hwnd, width, height, vsync);
 
-
 	frameIndex = swapChain->GetCurrentBufferIndex();
-
 
 	rtvDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForRTV(device, frameBufferCount);
 	for (int i = 0; i < frameBufferCount; i++) {

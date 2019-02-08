@@ -5,10 +5,15 @@ TW3D::TW3DDevice::TW3DDevice(TW3D::TW3DAdapter* adapter) :
 	adapter(adapter)
 {
 	adapter->CreateDevice(&device);
+	device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &SupportedFeatures, sizeof(SupportedFeatures));
 }
 
 TW3D::TW3DDevice::~TW3DDevice() {
 	TWU::DXSafeRelease(device);
+}
+
+D3D12_FEATURE_DATA_D3D12_OPTIONS TW3D::TW3DDevice::GetSupportedFeatures() {
+	return SupportedFeatures;
 }
 
 void TW3D::TW3DDevice::CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC* desc, ID3D12CommandQueue** commandQueue) {
