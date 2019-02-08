@@ -19,6 +19,11 @@ void TW3D::TW3DGraphicsCommandList::UpdateSubresources(TW3DResource* Destination
 	TWU::UpdateSubresourcesImp(commandList, DestinationResource->Get(), Intermediate->Get(), SrcData, SubresourcesCount, IntermediateOffset, FirstSubresource);
 }
 
+void TW3D::TW3DGraphicsCommandList::UpdateSubresources(ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate,
+	D3D12_SUBRESOURCE_DATA* SrcData, TWT::UInt SubresourcesCount, TWT::UInt64 IntermediateOffset, TWT::UInt FirstSubresource) {
+	TWU::UpdateSubresourcesImp(commandList, DestinationResource, Intermediate, SrcData, SubresourcesCount, IntermediateOffset, FirstSubresource);
+}
+
 void TW3D::TW3DGraphicsCommandList::ResourceBarrier(const D3D12_RESOURCE_BARRIER barrier) {
 	commandList->ResourceBarrier(1, &barrier);
 }
@@ -31,16 +36,16 @@ void TW3D::TW3DGraphicsCommandList::ResourceBarrier(TW3DResource* Resource, D3D1
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(Resource->Get(), StateBefore, StateAfter));
 }
 
-void TW3D::TW3DGraphicsCommandList::SetRenderTarget(const D3D12_CPU_DESCRIPTOR_HANDLE* RTVDescriptor, TW3DResourceDSV* DSV) {
-	commandList->OMSetRenderTargets(1, RTVDescriptor, false, &DSV->GetHandle());
+void TW3D::TW3DGraphicsCommandList::SetRenderTarget(TW3DResourceRTV* RTV, TW3DResourceDSV* DSV) {
+	commandList->OMSetRenderTargets(1, &RTV->GetHandle(), false, &DSV->GetHandle());
 }
 
 void TW3D::TW3DGraphicsCommandList::SetRenderTargets(TWT::UInt RTVDescriptorCount, const D3D12_CPU_DESCRIPTOR_HANDLE* RTVDescriptors, TW3DResourceDSV* DSV) {
 	commandList->OMSetRenderTargets(RTVDescriptorCount, RTVDescriptors, false, &DSV->GetHandle());
 }
 
-void TW3D::TW3DGraphicsCommandList::ClearRTV(D3D12_CPU_DESCRIPTOR_HANDLE RTVDescriptor, const TWT::Float(&RGBA)[4]) {
-	commandList->ClearRenderTargetView(RTVDescriptor, RGBA, 0, nullptr);
+void TW3D::TW3DGraphicsCommandList::ClearRTV(TW3DResourceRTV* RTV, const TWT::Float(&RGBA)[4]) {
+	commandList->ClearRenderTargetView(RTV->GetHandle(), RGBA, 0, nullptr);
 }
 
 void TW3D::TW3DGraphicsCommandList::ClearDSVDepth(TW3DResourceDSV* DSV, TWT::Float Depth) {

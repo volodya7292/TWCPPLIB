@@ -9,7 +9,7 @@ namespace TW3D {
 		~TW3DCommandQueue();
 
 		ID3D12CommandQueue* Get();
-
+	
 		void ExecuteCommandList(TW3DGraphicsCommandList* commandList);
 		void ExecuteCommandLists(TWT::Vector<TW3DGraphicsCommandList*> commandLists);
 

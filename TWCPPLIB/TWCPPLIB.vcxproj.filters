@@ -31,6 +31,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\TW3DEngine\TW3DResource">
+      <UniqueIdentifier>{80cf08c7-f479-453a-945f-2c18cb2f2f60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TW3DEngine\TW3DResource">
+      <UniqueIdentifier>{eab31c58-c6a3-4a88-b24a-2a332d6a4af6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -78,16 +84,25 @@
     <ClInclude Include="TW3DFence.h">
       <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DResource.h">
-      <Filter>Header Files\TW3DEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DResourceSV.h">
-      <Filter>Header Files\TW3DEngine</Filter>
+    <ClInclude Include="TW3DResourceVB.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
     <ClInclude Include="TW3DResourceDSV.h">
-      <Filter>Header Files\TW3DEngine</Filter>
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
     <ClInclude Include="TW3DResourceRTV.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DResourceSV.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DResource.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
+    </ClInclude>
+    <ClInclude Include="StepTimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DTempGCL.h">
       <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
   </ItemGroup>
@@ -136,15 +151,21 @@
       <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
     <ClCompile Include="TW3DResource.cpp">
-      <Filter>Source Files\TW3DEngine</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DResourceSV.cpp">
-      <Filter>Source Files\TW3DEngine</Filter>
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
     <ClCompile Include="TW3DResourceDSV.cpp">
-      <Filter>Source Files\TW3DEngine</Filter>
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
     <ClCompile Include="TW3DResourceRTV.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DResourceSV.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DResourceVB.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DTempGCL.cpp">
       <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
   </ItemGroup>

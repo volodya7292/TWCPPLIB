@@ -10,6 +10,7 @@ namespace TW3D {
 		ID3D12DescriptorHeap* Get();
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleForHeapStart();
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleForHeapStart();
+		CD3DX12_CPU_DESCRIPTOR_HANDLE GetHandle(TWT::Int Offset, TWT::UInt IncrementSize);
 
 		static TW3DDescriptorHeap* CreateForRTV(TW3DDevice* device, TWT::UInt count);
 		static TW3DDescriptorHeap* CreateForDSV(TW3DDevice* device);

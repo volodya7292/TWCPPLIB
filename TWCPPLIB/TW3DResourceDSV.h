@@ -2,7 +2,7 @@
 #include "TW3DResource.h"
 
 namespace TW3D {
-	class TW3DResourceDSV {
+	class TW3DResourceDSV : public TW3DResource {
 	public:
 		TW3DResourceDSV(TW3DDevice* Device);
 		~TW3DResourceDSV();
@@ -13,9 +13,7 @@ namespace TW3D {
 		void Release();
 
 	private:
-		TW3DDevice* Device;
 		TW3DDescriptorHeap* DescriptorHeap;
-		TW3DResource* Buffer;
 	};
 }
 

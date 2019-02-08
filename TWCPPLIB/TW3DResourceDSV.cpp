@@ -2,13 +2,13 @@
 #include "TW3DResourceDSV.h"
 
 TW3D::TW3DResourceDSV::TW3DResourceDSV(TW3DDevice* Device) :
-	Device(Device)
+	TW3DResource(Device)
 {
 	DescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForDSV(Device);
 }
 
 TW3D::TW3DResourceDSV::~TW3DResourceDSV() {
-	Release();
+	//Release();
 	delete DescriptorHeap;
 }
 
@@ -22,10 +22,22 @@ void TW3D::TW3DResourceDSV::Create(TWT::UInt Width, TWT::UInt Height) {
 	desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	desc.Flags = D3D12_DSV_FLAG_NONE;
 
-	Buffer = TW3D::TW3DResource::CreateDS(Device, Width, Height);
-	Device->CreateDepthStencilView(Buffer->Get(), GetHandle(), &desc);
+	D3D12_CLEAR_VALUE depthOptimizedClearValue ={};
+	depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+	depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+	depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+	Device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Width, Height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		&Resource,
+		&depthOptimizedClearValue);
+
+	Device->CreateDepthStencilView(Resource, GetHandle(), &desc);
 }
 
 void TW3D::TW3DResourceDSV::Release() {
-	delete Buffer;
+	TW3DResource::Release();
 }

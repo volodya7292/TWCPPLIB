@@ -26,6 +26,10 @@ D3D12_GPU_DESCRIPTOR_HANDLE TW3D::TW3DDescriptorHeap::GetGPUDescriptorHandleForH
 	return descriptorHeap->GetGPUDescriptorHandleForHeapStart();
 }
 
+CD3DX12_CPU_DESCRIPTOR_HANDLE TW3D::TW3DDescriptorHeap::GetHandle(TWT::Int Offset, TWT::UInt IncrementSize) {
+	return CD3DX12_CPU_DESCRIPTOR_HANDLE(GetCPUDescriptorHandleForHeapStart(), Offset, IncrementSize);
+}
+
 TW3D::TW3DDescriptorHeap* TW3D::TW3DDescriptorHeap::CreateForRTV(TW3DDevice* device, TWT::UInt count) {
 	return new TW3DDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, count);
 }

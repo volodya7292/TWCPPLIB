@@ -248,6 +248,7 @@
   <ItemGroup>
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="StepTimer.h" />
     <ClInclude Include="TW3DAdapter.h" />
     <ClInclude Include="TW3DResource.h" />
     <ClInclude Include="TW3DCommandQueue.h" />
@@ -260,7 +261,9 @@
     <ClInclude Include="TW3DResourceDSV.h" />
     <ClInclude Include="TW3DResourceRTV.h" />
     <ClInclude Include="TW3DResourceSV.h" />
+    <ClInclude Include="TW3DResourceVB.h" />
     <ClInclude Include="TW3DSwapChain.h" />
+    <ClInclude Include="TW3DTempGCL.h" />
     <ClInclude Include="TW3DTypes.h" />
     <ClInclude Include="TW3DUtils.h" />
     <ClInclude Include="TWTypes.h" />
@@ -288,7 +291,9 @@
     <ClCompile Include="TW3DResourceDSV.cpp" />
     <ClCompile Include="TW3DResourceRTV.cpp" />
     <ClCompile Include="TW3DResourceSV.cpp" />
+    <ClCompile Include="TW3DResourceVB.cpp" />
     <ClCompile Include="TW3DSwapChain.cpp" />
+    <ClCompile Include="TW3DTempGCL.cpp" />
     <ClCompile Include="TW3DTypes.cpp" />
     <ClCompile Include="TW3DUtils.cpp" />
     <ClCompile Include="TWTypes.cpp" />

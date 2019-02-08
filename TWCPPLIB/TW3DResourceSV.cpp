@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "TW3DResourceSV.h"
 
-TW3D::TW3DResourceSV::TW3DResourceSV(TW3DDevice* Device, TW3DDescriptorHeap* DescriptorHeap) :
-	Device(Device), DescriptorHeap(DescriptorHeap)
+TW3D::TW3DResourceSV::TW3DResourceSV(TW3DDevice* Device, TW3DDescriptorHeap* DescriptorHeap, TW3DTempGCL* TempGCL) :
+	TW3DResource(Device), DescriptorHeap(DescriptorHeap), TempGCL(TempGCL)
 {	
 }
 
 TW3D::TW3DResourceSV::~TW3DResourceSV() {
-	delete Buffer;
+	
 }
 
 void TW3D::TW3DResourceSV::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format) {
@@ -29,14 +29,14 @@ void TW3D::TW3DResourceSV::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORM
 	ImageDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN; // The arrangement of the pixels. Setting to unknown lets the driver choose the most efficient one
 	ImageDesc.Flags = D3D12_RESOURCE_FLAG_NONE; // no flags
 
-	Buffer = new TW3DResource(Device,
+	Device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&ImageDesc,
-		D3D12_RESOURCE_STATE_COPY_DEST
-	);
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		&Resource);
 
-	Device->CreateShaderResourceView(Buffer->Get(), &desc, DescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	Device->CreateShaderResourceView(Resource, &desc, DescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
 void TW3D::TW3DResourceSV::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow) {
@@ -46,37 +46,30 @@ void TW3D::TW3DResourceSV::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow) {
 	textureData.SlicePitch = BytesPerRow * ImageDesc.Height; // also the size of our triangle vertex data
 
 	TWT::UInt64 textureUploadBufferSize = Device->GetCopyableFootprints(&ImageDesc, 1);
-	TW3DResource* textureBufferUploadHeap = TW3DResource::Create(Device, textureUploadBufferSize, true);
 
+	ID3D12Resource* textureBufferUploadHeap;
+	Device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(textureUploadBufferSize),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		&textureBufferUploadHeap);
 
-	TW3DFence* fence = new TW3DFence(Device);
-	TW3DCommandQueue* commandQueue = new TW3DCommandQueue(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
-	ID3D12CommandAllocator* commandAllocator;
-	Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, &commandAllocator);
-	TW3DGraphicsCommandList* commandList = new TW3DGraphicsCommandList(Device, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator);
+	TempGCL->Reset();
+	TempGCL->UpdateSubresources(Resource, textureBufferUploadHeap, &textureData);
+	TempGCL->ResourceBarrier(this, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	TempGCL->Execute();
 
-	commandList->UpdateSubresources(Buffer, textureBufferUploadHeap, &textureData);
-	commandList->ResourceBarrier(Buffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-	commandList->Close();
-	commandQueue->ExecuteCommandList(commandList);
-
-
-	fence->Flush(commandQueue);
-
-	delete commandList;
-	commandAllocator->Release();
-	delete commandQueue;
-	delete fence;
-	delete textureBufferUploadHeap;
+	TWU::DXSafeRelease(textureBufferUploadHeap);
 }
 
-TW3D::TW3DResourceSV* TW3D::TW3DResourceSV::Create2D(TW3DDevice* Device, TW3DDescriptorHeap* DescriptorHeap, TWT::WString filename) {
+TW3D::TW3DResourceSV* TW3D::TW3DResourceSV::Create2D(TW3DDevice* Device, TW3DDescriptorHeap* DescriptorHeap, TWT::WString filename, TW3DTempGCL* TempGCL) {
 	D3D12_RESOURCE_DESC textureDesc;
 	TWT::Int imageBytesPerRow;
 	TWT::Byte* imageData;
 	int imageSize = TWU::LoadImageDataFromFile(&imageData, textureDesc, filename, imageBytesPerRow);
 
-	TW3DResourceSV* texture = new TW3DResourceSV(Device, DescriptorHeap);
+	TW3DResourceSV* texture = new TW3DResourceSV(Device, DescriptorHeap, TempGCL);
 	texture->Create2D(static_cast<UINT>(textureDesc.Width), textureDesc.Height, textureDesc.Format);
 	texture->Upload2D(imageData, imageBytesPerRow);
 
