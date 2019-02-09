@@ -33,7 +33,7 @@ namespace TW3D {
 		void SetDescriptorHeap(TW3DDescriptorHeap* heap);
 		void SetDescriptorHeaps(TWT::Vector<TW3DDescriptorHeap*> heaps);
 		void SetGraphicsRootDescriptorTable(TWT::UInt RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor);
-		void SetGraphicsRootCBV(TWT::UInt RootParameterIndex, TW3DResourceCB* CB, TWT::UInt align = 0);
+		void SetGraphicsRootCBV(TWT::UInt RootParameterIndex, TW3DResourceCB* CB, TWT::UInt ElementIndex);
 		void SetViewport(const D3D12_VIEWPORT *viewport);
 		void SetScissor(const D3D12_RECT* scissor);
 		void SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY PrimitiveTopology);

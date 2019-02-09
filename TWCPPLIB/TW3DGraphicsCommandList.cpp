@@ -85,8 +85,8 @@ void TW3D::TW3DGraphicsCommandList::SetGraphicsRootDescriptorTable(TWT::UInt Roo
 	commandList->SetGraphicsRootDescriptorTable(RootParameterIndex, BaseDescriptor);
 }
 
-void TW3D::TW3DGraphicsCommandList::SetGraphicsRootCBV(TWT::UInt RootParameterIndex, TW3DResourceCB* CB, TWT::UInt align) {
-	commandList->SetGraphicsRootConstantBufferView(RootParameterIndex, CB->GetGPUVirtualAddress() + align);
+void TW3D::TW3DGraphicsCommandList::SetGraphicsRootCBV(TWT::UInt RootParameterIndex, TW3DResourceCB* CB, TWT::UInt ElementIndex) {
+	commandList->SetGraphicsRootConstantBufferView(RootParameterIndex, CB->GetAddress(ElementIndex));
 }
 
 void TW3D::TW3DGraphicsCommandList::SetViewport(const D3D12_VIEWPORT* viewport) {

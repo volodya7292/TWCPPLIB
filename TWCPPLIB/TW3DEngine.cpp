@@ -86,18 +86,8 @@ XMFLOAT4 cube2PositionOffset; // our second cube will rotate around the first cu
 // this is the structure of our constant buffer.
 struct ConstantBufferPerObject {
 	XMFLOAT4X4 wvpMat;
+	//XMFLOAT4X4 govno[2560];
 };
-
-// Constant buffers must be 256-byte aligned which has to do with constant reads on the GPU.
-// We are only able to read at 256 byte intervals from the start of a resource heap, so we will
-// make sure that we add padding between the two constant buffers in the heap (one for cube1 and one for cube2)
-// Another way to do this would be to add a float array in the constant buffer structure for padding. In this case
-// we would need to add a float padding[50]; after the wvpMat variable. This would align our structure to 256 bytes (4 bytes per float)
-// The reason i didn't go with this way, was because there would actually be wasted cpu cycles when memcpy our constant
-// buffer data to the gpu virtual address. currently we memcpy the size of our structure, which is 16 bytes here, but if we
-// were to add the padding array, we would memcpy 64 bytes if we memcpy the size of our structure, which is 50 wasted bytes
-// being copied.
-int ConstantBufferPerObjectAlignedSize = (sizeof(ConstantBufferPerObject) + 255) & ~255;
 
 ConstantBufferPerObject cbPerObject; // this is the constant buffer data we will send to the gpu 
 										// (which will be placed in the resource we created above)
@@ -432,7 +422,7 @@ void init_dx12() {
 	// heap, one for each cube, thats only 64x2 bits, or 128 bits we are using for each
 	// resource, and each resource must be at least 64KB (65536 bits)
 
-	constantBuffer = new TW3D::TW3DResourceCB(device);
+	constantBuffer = new TW3D::TW3DResourceCB(device, sizeof(cbPerObject), 2);
 
 	//for (int i = 0; i < frameBufferCount; ++i) {
 	//	constantBufferUploadHeaps[i] = TW3D::TW3DResource::CreateCBStaging(device);
@@ -572,7 +562,7 @@ void UpdatePipeline() {
 	commandList->SetIndexBuffer(&indexBufferView);
 
 	// set cube1's constant buffer
-	commandList->SetGraphicsRootCBV(0,constantBuffer);
+	commandList->SetGraphicsRootCBV(0, constantBuffer, 0);
 
 	// draw first cube
 	commandList->DrawIndexed(numCubeIndices);
@@ -583,7 +573,7 @@ void UpdatePipeline() {
 	// resource heaps address. This is because cube1's constant buffer is stored at the beginning of the resource heap, while
 	// cube2's constant buffer data is stored after (256 bits from the start of the heap).
 	//commandList->SetGraphicsRootDescriptorTable(1, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	commandList->SetGraphicsRootCBV(0, constantBuffer, ConstantBufferPerObjectAlignedSize);
+	commandList->SetGraphicsRootCBV(0, constantBuffer, 1);
 
 	// draw second cube
 	commandList->DrawIndexed(numCubeIndices);
@@ -625,7 +615,7 @@ void update() {
 	XMStoreFloat4x4(&cbPerObject.wvpMat, transposed); // store transposed wvp matrix in constant buffer
 
 	// copy our ConstantBuffer instance to the mapped constant buffer resource
-	constantBuffer->Update(&cbPerObject, sizeof(cbPerObject));
+	constantBuffer->Update(&cbPerObject, 0);
 	//memcpy(cbvGPUAddress[frameIndex], &cbPerObject, sizeof(cbPerObject));
 
 	// now do cube2's world matrix
@@ -656,7 +646,7 @@ void update() {
 	XMStoreFloat4x4(&cbPerObject.wvpMat, transposed); // store transposed wvp matrix in constant buffer
 
 	// copy our ConstantBuffer instance to the mapped constant buffer resource
-	constantBuffer->Update(&cbPerObject, sizeof(cbPerObject), ConstantBufferPerObjectAlignedSize);
+	constantBuffer->Update(&cbPerObject, 1);
 	//memcpy(cbvGPUAddress[frameIndex] + ConstantBufferPerObjectAlignedSize, &cbPerObject, sizeof(cbPerObject));
 
 	// store cube2's world matrix
