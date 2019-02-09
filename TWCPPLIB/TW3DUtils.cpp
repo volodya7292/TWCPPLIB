@@ -120,6 +120,16 @@ TWT::Int TWU::GetDXGIFormatBitsPerPixel(DXGI_FORMAT& dxgiFormat) {
 	else if (dxgiFormat == DXGI_FORMAT_A8_UNORM) return 8;
 }
 
+D3D12_DESCRIPTOR_RANGE TWU::DXDescriptorRange(TWT::UInt Register, D3D12_DESCRIPTOR_RANGE_TYPE Type) {
+	D3D12_DESCRIPTOR_RANGE range = {};
+	range.BaseShaderRegister = Register;
+	range.RegisterSpace = 0;
+	range.NumDescriptors = 1;
+	range.RangeType = Type;
+
+	return range;
+}
+
 void TWU::UpdateSubresourcesImp(ID3D12GraphicsCommandList* commandList, ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate,
 	D3D12_SUBRESOURCE_DATA* SrcData, TWT::UInt SubresourcesCount, TWT::UInt64 IntermediateOffset, TWT::UInt FirstSubresource) {
 	UpdateSubresources(commandList, DestinationResource, Intermediate, IntermediateOffset, FirstSubresource, SubresourcesCount, SrcData);

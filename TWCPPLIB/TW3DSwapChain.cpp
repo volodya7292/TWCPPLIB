@@ -58,5 +58,5 @@ void TW3D::TW3DSwapChain::Resize(TWT::UInt width, TWT::UInt height) {
 }
 
 void TW3D::TW3DSwapChain::Present() {
-	swapChain->Present(vsync ? 1 : 0, tearing && !vsync ? DXGI_PRESENT_ALLOW_TEARING : 0);
+	swapChain->Present(vsync ? 1 : 0, tearing && !vsync && !GetFullscreen() ? DXGI_PRESENT_ALLOW_TEARING : 0);
 }

@@ -10,7 +10,7 @@ TW3D::TW3DResourceSV::~TW3DResourceSV() {
 	
 }
 
-void TW3D::TW3DResourceSV::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format) {
+void TW3D::TW3DResourceSV::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format, TWT::Int HeapIndex) {
 	D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
 	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	desc.Format = Format;
@@ -28,7 +28,7 @@ void TW3D::TW3DResourceSV::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORM
 	ImageDesc.SampleDesc.Quality = 0; // The quality level of the samples. Higher is better quality, but worse performance
 	ImageDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN; // The arrangement of the pixels. Setting to unknown lets the driver choose the most efficient one
 	ImageDesc.Flags = D3D12_RESOURCE_FLAG_NONE; // no flags
-
+	
 	Device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
@@ -36,7 +36,7 @@ void TW3D::TW3DResourceSV::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORM
 		D3D12_RESOURCE_STATE_COPY_DEST,
 		&Resource);
 
-	Device->CreateShaderResourceView(Resource, &desc, DescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	Device->CreateShaderResourceView(Resource, &desc, DescriptorHeap->GetHandle(HeapIndex, Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)));
 }
 
 void TW3D::TW3DResourceSV::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow) {
@@ -63,14 +63,14 @@ void TW3D::TW3DResourceSV::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow) {
 	TWU::DXSafeRelease(textureBufferUploadHeap);
 }
 
-TW3D::TW3DResourceSV* TW3D::TW3DResourceSV::Create2D(TW3DDevice* Device, TW3DDescriptorHeap* DescriptorHeap, TWT::WString filename, TW3DTempGCL* TempGCL) {
+TW3D::TW3DResourceSV* TW3D::TW3DResourceSV::Create2D(TW3DDevice* Device, TW3DDescriptorHeap* DescriptorHeap, TWT::WString filename, TW3DTempGCL* TempGCL, TWT::Int HeapIndex) {
 	D3D12_RESOURCE_DESC textureDesc;
 	TWT::Int imageBytesPerRow;
 	TWT::Byte* imageData;
 	int imageSize = TWU::LoadImageDataFromFile(&imageData, textureDesc, filename, imageBytesPerRow);
 
 	TW3DResourceSV* texture = new TW3DResourceSV(Device, DescriptorHeap, TempGCL);
-	texture->Create2D(static_cast<UINT>(textureDesc.Width), textureDesc.Height, textureDesc.Format);
+	texture->Create2D(static_cast<UINT>(textureDesc.Width), textureDesc.Height, textureDesc.Format, HeapIndex);
 	texture->Upload2D(imageData, imageBytesPerRow);
 
 	delete imageData;

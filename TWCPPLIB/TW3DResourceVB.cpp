@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TW3DResourceVB.h"
 
-TW3D::TW3DResourceVB::TW3DResourceVB(TW3DDevice* Device, TWT::UInt64 Size, TW3DTempGCL* TempGCL) :
+TW3D::TW3DResourceVB::TW3DResourceVB(TW3DDevice* Device, TWT::UInt64 Size, TWT::UInt SingleVertexSize, TW3DTempGCL* TempGCL) :
 	TW3DResource(Device), Size(Size), TempGCL(TempGCL)
 {
 	Device->CreateCommittedResource(
@@ -17,10 +17,18 @@ TW3D::TW3DResourceVB::TW3DResourceVB(TW3DDevice* Device, TWT::UInt64 Size, TW3DT
 		&CD3DX12_RESOURCE_DESC::Buffer(Size),
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		&UploadHeap);
+
+	View.BufferLocation = Resource->GetGPUVirtualAddress();
+	View.SizeInBytes = Size;
+	View.StrideInBytes = SingleVertexSize;
 }
 
 TW3D::TW3DResourceVB::~TW3DResourceVB() {
 	TWU::DXSafeRelease(UploadHeap);
+}
+
+D3D12_VERTEX_BUFFER_VIEW TW3D::TW3DResourceVB::GetView() {
+	return View;
 }
 
 void TW3D::TW3DResourceVB::UpdateData(BYTE* Data, TWT::UInt64 Size) {

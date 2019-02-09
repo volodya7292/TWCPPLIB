@@ -1,11 +1,11 @@
 #pragma once
-#include "TW3DDevice.h"
+#include "TW3DRootSignature.h"
 
 namespace TW3D {
 	class TW3DPipelineState {
 	public:
 		TW3DPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, DXGI_SAMPLE_DESC SampleDesc, D3D12_RASTERIZER_DESC RasterizerState,
-			D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, ID3D12RootSignature* RootSignature, TWT::UInt Count);
+			D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, TW3DRootSignature* RootSignature, TWT::UInt Count);
 		~TW3DPipelineState();
 
 		ID3D12PipelineState* Get();

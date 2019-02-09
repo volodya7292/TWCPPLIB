@@ -259,10 +259,12 @@
     <ClInclude Include="TW3DDevice.h" />
     <ClInclude Include="TW3DEngine.h" />
     <ClInclude Include="TW3DFactory.h" />
+    <ClInclude Include="TW3DResourceCB.h" />
     <ClInclude Include="TW3DResourceDSV.h" />
     <ClInclude Include="TW3DResourceRTV.h" />
     <ClInclude Include="TW3DResourceSV.h" />
     <ClInclude Include="TW3DResourceVB.h" />
+    <ClInclude Include="TW3DRootParameter.h" />
     <ClInclude Include="TW3DRootSignature.h" />
     <ClInclude Include="TW3DSwapChain.h" />
     <ClInclude Include="TW3DTempGCL.h" />
@@ -291,10 +293,12 @@
     <ClCompile Include="TW3DDevice.cpp" />
     <ClCompile Include="TW3DEngine.cpp" />
     <ClCompile Include="TW3DFactory.cpp" />
+    <ClCompile Include="TW3DResourceCB.cpp" />
     <ClCompile Include="TW3DResourceDSV.cpp" />
     <ClCompile Include="TW3DResourceRTV.cpp" />
     <ClCompile Include="TW3DResourceSV.cpp" />
     <ClCompile Include="TW3DResourceVB.cpp" />
+    <ClCompile Include="TW3DRootParameter.cpp" />
     <ClCompile Include="TW3DRootSignature.cpp" />
     <ClCompile Include="TW3DSwapChain.cpp" />
     <ClCompile Include="TW3DTempGCL.cpp" />

@@ -111,6 +111,12 @@
     <ClInclude Include="TW3DRootSignature.h">
       <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DRootParameter.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DResourceCB.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -179,6 +185,12 @@
     </ClCompile>
     <ClCompile Include="TW3DRootSignature.cpp">
       <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DRootParameter.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DResourceCB.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

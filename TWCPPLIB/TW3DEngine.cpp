@@ -9,6 +9,8 @@
 #include "TW3DResourceVB.h"
 #include "TW3DTempGCL.h"
 #include "TW3DPipelineState.h"
+#include "TW3DRootSignature.h"
+#include "TW3DResourceCB.h"
 
 using namespace DirectX;
 
@@ -33,28 +35,29 @@ static TW3D::TW3DDescriptorHeap* rtvDescriptorHeap;
 static TW3D::TW3DFence* fence[frameBufferCount];
 static TW3D::TW3DTempGCL* tempGCL;
 static TW3D::TW3DPipelineState* pipelineState;
+static TW3D::TW3DRootSignature* rootSignature;
+static TW3D::TW3DResourceCB* constantBuffer;
 
 static TW3D::TW3DResourceRTV* renderTargets[frameBufferCount];
 static TW3D::TW3DResourceDSV* depthStencil;
 static TW3D::TW3DResourceSV* texture;
+static TW3D::TW3DResourceSV* texture2;
 
 static TW3D::TW3DResourceVB* vertexBuffer;
 //static TW3D::TW3DResource* vertexBuffer;
 static TW3D::TW3DResource* indexBuffer;
 //static TW3D::TW3DResource* vBufferUploadHeap;
 static TW3D::TW3DResource* iBufferUploadHeap;
-static TW3D::TW3DResource* constantBufferUploadHeaps[frameBufferCount];
+//static TW3D::TW3DResource* constantBufferUploadHeaps[frameBufferCount];
+
 
 void on_resize();
 
 static int frameIndex; // current rtv we are on
-static ID3D12RootSignature* rootSignature;
+//static ID3D12RootSignature* rootSignature;
 static D3D12_VIEWPORT viewport; // area that output from rasterizer will be stretched to.
 
 static D3D12_RECT scissorRect; // the area to draw in. pixels outside that area will not be drawn onto
-
-static D3D12_VERTEX_BUFFER_VIEW vertexBufferView; // a structure containing a pointer to the vertex data in gpu memory
-										   // the total size of the buffer, and the size of each element (vertex)
 
 static D3D12_INDEX_BUFFER_VIEW indexBufferView; // a structure holding information about the index buffer
 												 //as we have allocators (more if we want to know when the gpu is finished with an asset)
@@ -62,7 +65,7 @@ static D3D12_INDEX_BUFFER_VIEW indexBufferView; // a structure holding informati
 
 
 static int numCubeIndices; // the number of indices to draw the cube
-static UINT8* cbvGPUAddress[frameBufferCount]; // this is a pointer to each of the constant buffer resource heaps
+//static UINT8* cbvGPUAddress[frameBufferCount]; // this is a pointer to each of the constant buffer resource heaps
 
 XMFLOAT4X4 cameraProjMat; // this will store our projection matrix
 XMFLOAT4X4 cameraViewMat; // this will store our view matrix
@@ -261,89 +264,28 @@ void init_dx12() {
 
 	tempGCL = new TW3D::TW3DTempGCL(device);
 
-	// -- Create the Command Allocators -- //
 
-	//for (int i = 0; i < frameBufferCount; i++) {
-		//device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, &commandAllocator);
-	//}
-
-	// -- Create a Command List -- //
-
-	// create the command list with the first allocator
 	commandList = TW3D::TW3DGraphicsCommandList::CreateDirect(device);
-	//device->CreateGraphicsCommandList(D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator[frameIndex], &commandList);
-
-	// -- Create a Fence & Fence Event -- //
 
 	// create the fences
 	for (int i = 0; i < frameBufferCount; i++) {
 		fence[i] = new TW3D::TW3DFence(device);
 	}
 
-	// create root signature
+	TWT::Vector<D3D12_DESCRIPTOR_RANGE> ranges(2);
+	ranges[0] = TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
+	ranges[1] = TWU::DXDescriptorRange(2, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
 
-	// create a root descriptor, which explains where to find the data for this root parameter
-	D3D12_ROOT_DESCRIPTOR rootCBVDescriptor;
-	rootCBVDescriptor.RegisterSpace = 0;
-	rootCBVDescriptor.ShaderRegister = 0;
-
-	// create a descriptor range (descriptor table) and fill it out
-	// this is a range of descriptors inside a descriptor heap
-	D3D12_DESCRIPTOR_RANGE  descriptorTableRanges[1]; // only one range right now
-	descriptorTableRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // this is a range of shader resource views (descriptors)
-	descriptorTableRanges[0].NumDescriptors = 1; // we only have one texture right now, so the range is only 1
-	descriptorTableRanges[0].BaseShaderRegister = 0; // start index of the shader registers in the range
-	descriptorTableRanges[0].RegisterSpace = 0; // space 0. can usually be zero
-	descriptorTableRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // this appends the range to the end of the root signature descriptor tables
-
-	// create a descriptor table
-	D3D12_ROOT_DESCRIPTOR_TABLE descriptorTable;
-	descriptorTable.NumDescriptorRanges = _countof(descriptorTableRanges); // we only have one range
-	descriptorTable.pDescriptorRanges = &descriptorTableRanges[0]; // the pointer to the beginning of our ranges array
-
-	// create a root parameter for the root descriptor and fill it out
-	D3D12_ROOT_PARAMETER  rootParameters[2]; // two root parameters
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // this is a constant buffer view root descriptor
-	rootParameters[0].Descriptor = rootCBVDescriptor; // this is the root descriptor for this root parameter
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // our pixel shader will be the only shader accessing this parameter for now
-
-	// fill out the parameter for our descriptor table. Remember it's a good idea to sort parameters by frequency of change. Our constant
-	// buffer will be changed multiple times per frame, while our descriptor table will not be changed at all (in this tutorial)
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // this is a descriptor table
-	rootParameters[1].DescriptorTable = descriptorTable; // this is our descriptor table for this root parameter
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
-
-	// create a static sampler
-	D3D12_STATIC_SAMPLER_DESC sampler = {};
-	sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
-	sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-	sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-	sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-	sampler.MipLODBias = 0;
-	sampler.MaxAnisotropy = 0;
-	sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-	sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
-	sampler.MinLOD = 0.0f;
-	sampler.MaxLOD = D3D12_FLOAT32_MAX;
-	sampler.ShaderRegister = 0;
-	sampler.RegisterSpace = 0;
-	sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-	rootSignatureDesc.Init(_countof(rootParameters), // we have 2 root parameters
-		rootParameters, // a pointer to the beginning of our root parameters array
-		1, // we have one static sampler
-		&sampler, // a pointer to our static sampler (array)
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | // we can deny shader stages here for better performance
+	rootSignature = new TW3D::TW3DRootSignature(
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
-
-	ID3DBlob* errorBuff; // a buffer holding the error data if any
-	ID3DBlob* signature;
-	TWU::SuccessAssert(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &errorBuff));
-
-	device->CreateRootSignature(signature, &rootSignature);
+	rootSignature->AddParameter(TW3D::TW3DRootParameter::CreateCBV(0, D3D12_SHADER_VISIBILITY_VERTEX));
+	rootSignature->AddParameter(TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, ranges));
+	rootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
+	rootSignature->AddSampler(1, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
+	rootSignature->Create(device);
 
 
 	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> inputLayout(2);
@@ -364,8 +306,8 @@ void init_dx12() {
 	pipelineState->SetPixelShader("PixelShader.cso");
 	pipelineState->SetInputLayout(inputLayout);
 	pipelineState->Create(device);
-	
-	
+
+
 
 	// Create vertex buffer
 
@@ -410,7 +352,7 @@ void init_dx12() {
 
 	int vBufferSize = sizeof(vList);
 
-	vertexBuffer = new TW3D::TW3DResourceVB(device, vBufferSize, tempGCL);
+	vertexBuffer = new TW3D::TW3DResourceVB(device, vBufferSize, sizeof(Vertex), tempGCL);
 	vertexBuffer->UpdateData(reinterpret_cast<BYTE*>(vList), vBufferSize);
 
 	// Create index buffer
@@ -489,29 +431,33 @@ void init_dx12() {
 	// 16 floats in one constant buffer, and we will store 2 constant buffers in each
 	// heap, one for each cube, thats only 64x2 bits, or 128 bits we are using for each
 	// resource, and each resource must be at least 64KB (65536 bits)
-	for (int i = 0; i < frameBufferCount; ++i) {
-		constantBufferUploadHeaps[i] = TW3D::TW3DResource::CreateCBStaging(device);
 
-		//constantBufferUploadHeaps[i]->SetName(L"Constant Buffer Upload Resource Heap");
+	constantBuffer = new TW3D::TW3DResourceCB(device);
 
-		ZeroMemory(&cbPerObject, sizeof(cbPerObject));
+	//for (int i = 0; i < frameBufferCount; ++i) {
+	//	constantBufferUploadHeaps[i] = TW3D::TW3DResource::CreateCBStaging(device);
 
-		CD3DX12_RANGE readRange(0, 0);    // We do not intend to read from this resource on the CPU. (so end is less than or equal to begin)
+	//	//constantBufferUploadHeaps[i]->SetName(L"Constant Buffer Upload Resource Heap");
 
-		// map the resource heap to get a gpu virtual address to the beginning of the heap
-		constantBufferUploadHeaps[i]->Map(0, &readRange, reinterpret_cast<void**>(&cbvGPUAddress[i]));
+	//	ZeroMemory(&cbPerObject, sizeof(cbPerObject));
 
-		// Because of the constant read alignment requirements, constant buffer views must be 256 bit aligned. Our buffers are smaller than 256 bits,
-		// so we need to add spacing between the two buffers, so that the second buffer starts at 256 bits from the beginning of the resource heap.
-		memcpy(cbvGPUAddress[i], &cbPerObject, sizeof(cbPerObject)); // cube1's constant buffer data
-		memcpy(cbvGPUAddress[i] + ConstantBufferPerObjectAlignedSize, &cbPerObject, sizeof(cbPerObject)); // cube2's constant buffer data
-	}
+	//	CD3DX12_RANGE readRange(0, 0);    // We do not intend to read from this resource on the CPU. (so end is less than or equal to begin)
+
+	//	// map the resource heap to get a gpu virtual address to the beginning of the heap
+	//	constantBufferUploadHeaps[i]->Map(0, &readRange, reinterpret_cast<void**>(&cbvGPUAddress[i]));
+
+	//	// Because of the constant read alignment requirements, constant buffer views must be 256 bit aligned. Our buffers are smaller than 256 bits,
+	//	// so we need to add spacing between the two buffers, so that the second buffer starts at 256 bits from the beginning of the resource heap.
+	//	memcpy(cbvGPUAddress[i], &cbPerObject, sizeof(cbPerObject)); // cube1's constant buffer data
+	//	memcpy(cbvGPUAddress[i] + ConstantBufferPerObjectAlignedSize, &cbPerObject, sizeof(cbPerObject)); // cube2's constant buffer data
+	//}
 
 	// load the image, create a texture resource and descriptor heap
 
-	mainDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForSR(device, 1);
+	mainDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForSR(device, 2);
 
-	texture = TW3D::TW3DResourceSV::Create2D(device, mainDescriptorHeap, L"D:\\тест.png", tempGCL);
+	texture = TW3D::TW3DResourceSV::Create2D(device, mainDescriptorHeap, L"D:\\тест.png", tempGCL, 0);
+	texture2 = TW3D::TW3DResourceSV::Create2D(device, mainDescriptorHeap, L"D:\\test2.png", tempGCL, 1);
 
 	fence[frameIndex]->Flush(commandQueue);
 
@@ -519,9 +465,9 @@ void init_dx12() {
 	//delete imageData;
 
 	// create a vertex buffer view for the triangle. We get the GPU memory address to the vertex pointer using the GetGPUVirtualAddress() method
-	vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
+	/*vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
 	vertexBufferView.StrideInBytes = sizeof(Vertex);
-	vertexBufferView.SizeInBytes = vBufferSize;
+	vertexBufferView.SizeInBytes = vBufferSize;*/
 
 	// create a vertex buffer view for the triangle. We get the GPU memory address to the vertex pointer using the GetGPUVirtualAddress() method
 	indexBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
@@ -580,7 +526,6 @@ void init_dx12() {
 void FlushGPU() {
 	for (UINT n = 0; n < frameBufferCount; n++)
 		fence[n]->Flush(commandQueue);
-		
 }
 
 void UpdatePipeline() {
@@ -602,7 +547,7 @@ void UpdatePipeline() {
 	// set the render target for the output merger stage (the output of the pipeline)
 	commandList->SetRenderTarget(renderTargets[frameIndex], depthStencil);
 	//commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
-	
+
 	// Clear the render target by using the ClearRenderTargetView command
 	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 	commandList->ClearRTV(renderTargets[frameIndex], clearColor);
@@ -623,13 +568,11 @@ void UpdatePipeline() {
 	commandList->SetViewport(&viewport); // set the viewports
 	commandList->SetScissor(&scissorRect); // set the scissor rects
 	commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // set the primitive topology
-	commandList->SetVertexBuffer(0, &vertexBufferView); // set the vertex buffer (using the vertex buffer view)
+	commandList->SetVertexBuffer(0, vertexBuffer); // set the vertex buffer (using the vertex buffer view)
 	commandList->SetIndexBuffer(&indexBufferView);
 
-	// first cube
-
 	// set cube1's constant buffer
-	commandList->SetGraphicsRootCBV(0, constantBufferUploadHeaps[frameIndex]->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootCBV(0,constantBuffer);
 
 	// draw first cube
 	commandList->DrawIndexed(numCubeIndices);
@@ -639,7 +582,8 @@ void UpdatePipeline() {
 	// set cube2's constant buffer. You can see we are adding the size of ConstantBufferPerObject to the constant buffer
 	// resource heaps address. This is because cube1's constant buffer is stored at the beginning of the resource heap, while
 	// cube2's constant buffer data is stored after (256 bits from the start of the heap).
-	commandList->SetGraphicsRootCBV(0, constantBufferUploadHeaps[frameIndex]->GetGPUVirtualAddress() + ConstantBufferPerObjectAlignedSize);
+	//commandList->SetGraphicsRootDescriptorTable(1, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	commandList->SetGraphicsRootCBV(0, constantBuffer, ConstantBufferPerObjectAlignedSize);
 
 	// draw second cube
 	commandList->DrawIndexed(numCubeIndices);
@@ -681,7 +625,8 @@ void update() {
 	XMStoreFloat4x4(&cbPerObject.wvpMat, transposed); // store transposed wvp matrix in constant buffer
 
 	// copy our ConstantBuffer instance to the mapped constant buffer resource
-	memcpy(cbvGPUAddress[frameIndex], &cbPerObject, sizeof(cbPerObject));
+	constantBuffer->Update(&cbPerObject, sizeof(cbPerObject));
+	//memcpy(cbvGPUAddress[frameIndex], &cbPerObject, sizeof(cbPerObject));
 
 	// now do cube2's world matrix
 	// create rotation matrices for cube2
@@ -711,7 +656,8 @@ void update() {
 	XMStoreFloat4x4(&cbPerObject.wvpMat, transposed); // store transposed wvp matrix in constant buffer
 
 	// copy our ConstantBuffer instance to the mapped constant buffer resource
-	memcpy(cbvGPUAddress[frameIndex] + ConstantBufferPerObjectAlignedSize, &cbPerObject, sizeof(cbPerObject));
+	constantBuffer->Update(&cbPerObject, sizeof(cbPerObject), ConstantBufferPerObjectAlignedSize);
+	//memcpy(cbvGPUAddress[frameIndex] + ConstantBufferPerObjectAlignedSize, &cbPerObject, sizeof(cbPerObject));
 
 	// store cube2's world matrix
 	XMStoreFloat4x4(&cube2WorldMat, worldMat);
@@ -723,10 +669,8 @@ void render() {
 
 	UpdatePipeline(); // update the pipeline by sending commands to the commandqueue
 
-
 	commandQueue->ExecuteCommandList(commandList);
 
-	// present the current backbuffer
 	swapChain->Present();
 }
 
@@ -735,7 +679,6 @@ void on_resize() {
 
 	RECT clientRect = {};
 	GetClientRect(hwnd, &clientRect);
-
 	width = std::max(clientRect.right - clientRect.left, 1L);
 	height = std::max(clientRect.bottom - clientRect.top, 1L);
 
@@ -802,26 +745,27 @@ void cleanup() {
 	delete rtvDescriptorHeap;
 	delete commandList;
 
-	//TWU::DXSafeRelease(commandAllocator);
+	delete constantBuffer;
 
 	for (int i = 0; i < frameBufferCount; ++i) {
 		delete renderTargets[i];
-		delete constantBufferUploadHeaps[i];
+		//delete constantBufferUploadHeaps[i];
 		delete fence[i];
 	};
 
 	delete mainDescriptorHeap;
-	
+
 	//delete vBufferUploadHeap;
 	delete iBufferUploadHeap;
 
 	delete pipelineState;
-	TWU::DXSafeRelease(rootSignature);
+	delete rootSignature;
 	delete vertexBuffer;
 	delete indexBuffer;
 
 	delete depthStencil;
 	delete texture;
+	delete texture2;
 
 #ifdef _DEBUG
 	ComPtr<IDXGIDebug1> dxgiDebug;

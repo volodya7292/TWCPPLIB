@@ -2,14 +2,14 @@
 #include "TW3DPipelineState.h"
 
 TW3D::TW3DPipelineState::TW3DPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, DXGI_SAMPLE_DESC SampleDesc, D3D12_RASTERIZER_DESC RasterizerState,
-	D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, ID3D12RootSignature* RootSignature, TWT::UInt Count) {
+	D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, TW3DRootSignature* RootSignature, TWT::UInt Count) {
 
 	Desc.PrimitiveTopologyType = PrimitiveTopologyType;
 	Desc.SampleDesc = SampleDesc;
 	Desc.RasterizerState = RasterizerState;
 	Desc.DepthStencilState = DepthStencilState;
 	Desc.BlendState = BlendState;
-	Desc.pRootSignature = RootSignature;
+	Desc.pRootSignature = RootSignature->Get();
 	Desc.NumRenderTargets = Count;
 	Desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	Desc.SampleMask = 0xffffffff;

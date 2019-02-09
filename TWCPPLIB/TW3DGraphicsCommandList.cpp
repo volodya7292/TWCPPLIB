@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "TW3DGraphicsCommandList.h"
-#include "TW3DResource.h"
+#include "TW3DResourceVB.h"
+#include "TW3DResourceCB.h"
 
 TW3D::TW3DGraphicsCommandList::TW3DGraphicsCommandList(TW3D::TW3DDevice* device, D3D12_COMMAND_LIST_TYPE type) {
 	device->CreateCommandAllocator(type, &CommandAllocator);
@@ -62,8 +63,8 @@ void TW3D::TW3DGraphicsCommandList::ClearDSVDepth(TW3DResourceDSV* DSV, TWT::Flo
 	commandList->ClearDepthStencilView(DSV->GetHandle(), D3D12_CLEAR_FLAG_DEPTH, Depth, 0, 0, nullptr);
 }
 
-void TW3D::TW3DGraphicsCommandList::SetGraphicsRootSignature(ID3D12RootSignature* RootSignature) {
-	commandList->SetGraphicsRootSignature(RootSignature);
+void TW3D::TW3DGraphicsCommandList::SetGraphicsRootSignature(TW3DRootSignature* RootSignature) {
+	commandList->SetGraphicsRootSignature(RootSignature->Get());
 }
 
 void TW3D::TW3DGraphicsCommandList::SetDescriptorHeap(TW3DDescriptorHeap* heap) {
@@ -84,8 +85,8 @@ void TW3D::TW3DGraphicsCommandList::SetGraphicsRootDescriptorTable(TWT::UInt Roo
 	commandList->SetGraphicsRootDescriptorTable(RootParameterIndex, BaseDescriptor);
 }
 
-void TW3D::TW3DGraphicsCommandList::SetGraphicsRootCBV(TWT::UInt RootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) {
-	commandList->SetGraphicsRootConstantBufferView(RootParameterIndex, BufferLocation);
+void TW3D::TW3DGraphicsCommandList::SetGraphicsRootCBV(TWT::UInt RootParameterIndex, TW3DResourceCB* CB, TWT::UInt align) {
+	commandList->SetGraphicsRootConstantBufferView(RootParameterIndex, CB->GetGPUVirtualAddress() + align);
 }
 
 void TW3D::TW3DGraphicsCommandList::SetViewport(const D3D12_VIEWPORT* viewport) {
@@ -100,8 +101,8 @@ void TW3D::TW3DGraphicsCommandList::SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOG
 	commandList->IASetPrimitiveTopology(PrimitiveTopology);
 }
 
-void TW3D::TW3DGraphicsCommandList::SetVertexBuffer(TWT::UInt StartSlot, const D3D12_VERTEX_BUFFER_VIEW* view) {
-	commandList->IASetVertexBuffers(StartSlot, 1, view);
+void TW3D::TW3DGraphicsCommandList::SetVertexBuffer(TWT::UInt StartSlot, TW3DResourceVB* view) {
+	commandList->IASetVertexBuffers(StartSlot, 1, &view->GetView());
 }
 
 void TW3D::TW3DGraphicsCommandList::SetVertexBuffers(TWT::UInt StartSlot, TWT::Vector<D3D12_VERTEX_BUFFER_VIEW> views) {
