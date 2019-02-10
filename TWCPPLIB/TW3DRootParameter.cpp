@@ -28,14 +28,6 @@ D3D12_ROOT_PARAMETER TW3D::TW3DRootParameter::Get() {
 	return RootParameter;
 }
 
-TWT::UInt TW3D::TW3DRootParameter::GetIndex() {
-	return Index;
-}
-
-void TW3D::TW3DRootParameter::SetIndex(TWT::UInt Index) {
-	this->Index = Index;
-}
-
 TW3D::TW3DRootParameter TW3D::TW3DRootParameter::CreateCBV(TWT::UInt Register, D3D12_SHADER_VISIBILITY ShaderVisibility) {
 	return TW3DRootParameter(D3D12_ROOT_PARAMETER_TYPE_CBV, ShaderVisibility, Register);
 }

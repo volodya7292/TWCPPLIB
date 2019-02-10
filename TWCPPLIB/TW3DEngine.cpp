@@ -266,13 +266,13 @@ void init_dx12() {
 	ranges[0] = TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
 	ranges[1] = TWU::DXDescriptorRange(2, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
 
-	rootSignature = new TW3D::TW3DRootSignature(
+	rootSignature = new TW3D::TW3DRootSignature(2,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
-	rootSignature->AddParameter(TW3D::TW3DRootParameter::CreateCBV(0, D3D12_SHADER_VISIBILITY_VERTEX));
-	rootSignature->AddParameter(TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, ranges));
+	rootSignature->SetParameter(0, TW3D::TW3DRootParameter::CreateCBV(0, D3D12_SHADER_VISIBILITY_VERTEX));
+	rootSignature->SetParameter(1, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, ranges));
 	rootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->AddSampler(1, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->Create(device);
@@ -407,43 +407,7 @@ void init_dx12() {
 	depthStencil = new TW3D::TW3DResourceDSV(device);
 	depthStencil->Create(width, height);
 
-	// create the constant buffer resource heap
-	// We will update the constant buffer one or more times per frame, so we will use only an upload heap
-	// unlike previously we used an upload heap to upload the vertex and index data, and then copied over
-	// to a default heap. If you plan to use a resource for more than a couple frames, it is usually more
-	// efficient to copy to a default heap where it stays on the gpu. In this case, our constant buffer
-	// will be modified and uploaded at least once per frame, so we only use an upload heap
-
-	// first we will create a resource heap (upload heap) for each frame for the cubes constant buffers
-	// As you can see, we are allocating 64KB for each resource we create. Buffer resource heaps must be
-	// an alignment of 64KB. We are creating 3 resources, one for each frame. Each constant buffer is 
-	// only a 4x4 matrix of floats in this tutorial. So with a float being 4 bytes, we have 
-	// 16 floats in one constant buffer, and we will store 2 constant buffers in each
-	// heap, one for each cube, thats only 64x2 bits, or 128 bits we are using for each
-	// resource, and each resource must be at least 64KB (65536 bits)
-
 	constantBuffer = new TW3D::TW3DResourceCB(device, sizeof(cbPerObject), 2);
-
-	//for (int i = 0; i < frameBufferCount; ++i) {
-	//	constantBufferUploadHeaps[i] = TW3D::TW3DResource::CreateCBStaging(device);
-
-	//	//constantBufferUploadHeaps[i]->SetName(L"Constant Buffer Upload Resource Heap");
-
-	//	ZeroMemory(&cbPerObject, sizeof(cbPerObject));
-
-	//	CD3DX12_RANGE readRange(0, 0);    // We do not intend to read from this resource on the CPU. (so end is less than or equal to begin)
-
-	//	// map the resource heap to get a gpu virtual address to the beginning of the heap
-	//	constantBufferUploadHeaps[i]->Map(0, &readRange, reinterpret_cast<void**>(&cbvGPUAddress[i]));
-
-	//	// Because of the constant read alignment requirements, constant buffer views must be 256 bit aligned. Our buffers are smaller than 256 bits,
-	//	// so we need to add spacing between the two buffers, so that the second buffer starts at 256 bits from the beginning of the resource heap.
-	//	memcpy(cbvGPUAddress[i], &cbPerObject, sizeof(cbPerObject)); // cube1's constant buffer data
-	//	memcpy(cbvGPUAddress[i] + ConstantBufferPerObjectAlignedSize, &cbPerObject, sizeof(cbPerObject)); // cube2's constant buffer data
-	//}
-
-	// load the image, create a texture resource and descriptor heap
-
 	mainDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForSR(device, 2);
 
 	texture = TW3D::TW3DResourceSV::Create2D(device, mainDescriptorHeap, L"D:\\тест.png", tempGCL, 0);
@@ -451,13 +415,6 @@ void init_dx12() {
 
 	fence[frameIndex]->Flush(commandQueue);
 
-	// we are done with image data now that we've uploaded it to the gpu, so free it up
-	//delete imageData;
-
-	// create a vertex buffer view for the triangle. We get the GPU memory address to the vertex pointer using the GetGPUVirtualAddress() method
-	/*vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
-	vertexBufferView.StrideInBytes = sizeof(Vertex);
-	vertexBufferView.SizeInBytes = vBufferSize;*/
 
 	// create a vertex buffer view for the triangle. We get the GPU memory address to the vertex pointer using the GetGPUVirtualAddress() method
 	indexBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();

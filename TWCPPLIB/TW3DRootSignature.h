@@ -5,12 +5,12 @@
 namespace TW3D {
 	class TW3DRootSignature {
 	public:
-		TW3DRootSignature(D3D12_ROOT_SIGNATURE_FLAGS SignatureFlags);
+		TW3DRootSignature(TWT::UInt RootParamCount, D3D12_ROOT_SIGNATURE_FLAGS SignatureFlags);
 		~TW3DRootSignature();
 
 		ID3D12RootSignature* Get();
 
-		void AddParameter(TW3DRootParameter Parameter);
+		void SetParameter(TWT::UInt Index, TW3DRootParameter Parameter);
 
 		void AddSampler(TWT::UInt Register, D3D12_SHADER_VISIBILITY ShaderVisibility, D3D12_FILTER Filter = D3D12_FILTER_MIN_MAG_MIP_POINT,
 			D3D12_TEXTURE_ADDRESS_MODE AddressMode = D3D12_TEXTURE_ADDRESS_MODE_WRAP, TWT::UInt MaxAnisotropy = 0);

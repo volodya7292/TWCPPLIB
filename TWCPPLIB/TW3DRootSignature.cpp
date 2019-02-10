@@ -2,14 +2,9 @@
 #include "TW3DRootSignature.h"
 #include "TW3DRootParameter.h"
 
-TW3D::TW3DRootSignature::TW3DRootSignature(D3D12_ROOT_SIGNATURE_FLAGS SignatureFlags) {
+TW3D::TW3DRootSignature::TW3DRootSignature(TWT::UInt RootParamCount, D3D12_ROOT_SIGNATURE_FLAGS SignatureFlags) {
 	Desc.Flags = SignatureFlags;
-	//Samplers.resize(SamplerCount);
-
-	/*D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS*/
+	RootParameters.resize(RootParamCount);
 }
 
 TW3D::TW3DRootSignature::~TW3DRootSignature() {
@@ -20,9 +15,8 @@ ID3D12RootSignature* TW3D::TW3DRootSignature::Get() {
 	return RootSignature;
 }
 
-void TW3D::TW3DRootSignature::AddParameter(TW3DRootParameter Parameter) {
-	Parameter.SetIndex(RootParameters.size());
-	RootParameters.emplace_back(Parameter);
+void TW3D::TW3DRootSignature::SetParameter(TWT::UInt Index, TW3DRootParameter Parameter) {
+	RootParameters[Index] = Parameter;
 }
 
 void TW3D::TW3DRootSignature::AddSampler(TWT::UInt Register, D3D12_SHADER_VISIBILITY ShaderVisibility, D3D12_FILTER Filter, D3D12_TEXTURE_ADDRESS_MODE AddressMode, TWT::UInt MaxAnisotropy) {
