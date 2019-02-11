@@ -16,13 +16,9 @@ D3D12_CPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceRTV::GetHandle() {
 
 void TW3D::TW3DResourceRTV::Create(ID3D12Resource* Buffer, TWT::Int Offset) {
 	this->Offset = Offset;
+	Resource = Buffer;
 
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = GetHandle();
-	//rtvHandle.Offset(1, rtvDescriptorSize * Offset);
-
-	Resource = Buffer;
-	//Resource = SwapChain->GetBuffer(Offset);
-
 	Device->CreateRenderTargetView(Resource, rtvHandle);
 }
 

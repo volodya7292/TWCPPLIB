@@ -12,7 +12,6 @@ namespace TW3D {
 		D3D12_ROOT_PARAMETER Get();
 
 		static TW3DRootParameter CreateCBV(TWT::UInt Register, D3D12_SHADER_VISIBILITY ShaderVisibility);
-		//static TW3DRootParameter CreateSRV(D3D12_SHADER_VISIBILITY ShaderVisibility, const TWT::Vector<D3D12_DESCRIPTOR_RANGE>& DescriptorRanges);
 
 	private:
 		D3D12_ROOT_PARAMETER RootParameter;

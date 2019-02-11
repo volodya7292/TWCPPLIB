@@ -44,28 +44,18 @@ static TW3D::TW3DResourceSV* texture;
 static TW3D::TW3DResourceSV* texture2;
 
 static TW3D::TW3DResourceVB* vertexBuffer;
-//static TW3D::TW3DResource* vertexBuffer;
-static TW3D::TW3DResource* indexBuffer;
-//static TW3D::TW3DResource* vBufferUploadHeap;
-static TW3D::TW3DResource* iBufferUploadHeap;
-//static TW3D::TW3DResource* constantBufferUploadHeaps[frameBufferCount];
 
 
 void on_resize();
 
 static int frameIndex; // current rtv we are on
-//static ID3D12RootSignature* rootSignature;
 static D3D12_VIEWPORT viewport; // area that output from rasterizer will be stretched to.
-
 static D3D12_RECT scissorRect; // the area to draw in. pixels outside that area will not be drawn onto
 
-static D3D12_INDEX_BUFFER_VIEW indexBufferView; // a structure holding information about the index buffer
-												 //as we have allocators (more if we want to know when the gpu is finished with an asset)
 
 
+static int numCubeVertices; // the number of indices to draw the cube
 
-static int numCubeIndices; // the number of indices to draw the cube
-//static UINT8* cbvGPUAddress[frameBufferCount]; // this is a pointer to each of the constant buffer resource heaps
 
 XMFLOAT4X4 cameraProjMat; // this will store our projection matrix
 XMFLOAT4X4 cameraViewMat; // this will store our view matrix
@@ -157,9 +147,7 @@ void init_window() {
 	TWT::WString wstrtitle = title.Wide();
 	const TWT::WChar* wtitle = wstrtitle.data.c_str();
 
-
 	WNDCLASSEX wc;
-
 	HINSTANCE instance = GetModuleHandle(NULL);
 
 	wc.cbSize = sizeof(WNDCLASSEX);
@@ -196,13 +184,10 @@ void init_window() {
 		instance,
 		NULL);
 
-	if (!hwnd) {
+	if (!hwnd)
 		MessageBox(NULL, L"Error creating window", L"Error", MB_OK | MB_ICONERROR);
-	}
-
-	if (fullscreen) {
+	if (fullscreen)
 		SetWindowLong(hwnd, GWL_STYLE, 0);
-	}
 
 	SetForegroundWindow(hwnd);
 	SetFocus(hwnd);
@@ -214,8 +199,6 @@ void init_dx12() {
 	TWT::UInt dxgi_factory_flags = 0;
 
 #if defined(_DEBUG)
-	// Enable the debug layer (requires the Graphics Tools "optional feature").
-	// NOTE: Enabling the debug layer after device creation will invalidate the active device.
 	{
 		ComPtr<ID3D12Debug> debugController;
 		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(debugController.GetAddressOf())))) {
@@ -282,13 +265,50 @@ void init_dx12() {
 	inputLayout[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	inputLayout[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
+	D3D12_RASTERIZER_DESC rastDesc = {};
+	rastDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
+	rastDesc.FrontCounterClockwise = FALSE;
+	rastDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+	rastDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+	rastDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+	rastDesc.DepthClipEnable = TRUE;
+	rastDesc.MultisampleEnable = TRUE;
+	rastDesc.AntialiasedLineEnable = FALSE;
+	rastDesc.ForcedSampleCount = 0;
+	rastDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	D3D12_DEPTH_STENCIL_DESC depthDesc = {};
+	depthDesc.DepthEnable = TRUE;
+	depthDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	depthDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+	depthDesc.StencilEnable = FALSE;
+	depthDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+	depthDesc.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+	const D3D12_DEPTH_STENCILOP_DESC defaultStencilOp = { D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_COMPARISON_FUNC_ALWAYS };
+	depthDesc.FrontFace = defaultStencilOp;
+	depthDesc.BackFace = defaultStencilOp;
+
+	D3D12_BLEND_DESC blendDesc = {};
+	blendDesc.AlphaToCoverageEnable = FALSE;
+	blendDesc.IndependentBlendEnable = FALSE;
+	blendDesc.RenderTarget[0].BlendEnable = FALSE;
+	blendDesc.RenderTarget[0].LogicOpEnable = FALSE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
 
 	pipelineState = new TW3D::TW3DPipelineState(
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
 		swapChain->GetDescription().SampleDesc,
-		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
-		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
-		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
+		rastDesc,
+		depthDesc,
+		blendDesc,
 		rootSignature,
 		1);
 	pipelineState->SetRTVFormat(0, DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -297,113 +317,66 @@ void init_dx12() {
 	pipelineState->SetInputLayout(inputLayout);
 	pipelineState->Create(device);
 
-
-
-	// Create vertex buffer
-
 	// a cube
 	Vertex vList[] = {
 		// front face
 		{ -0.5f,  0.5f, -0.5f, 0.0f, 0.0f },
-		{  0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
 		{ -0.5f, -0.5f, -0.5f, 0.0f, 1.0f },
+		{  0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
+		{ -0.5f,  0.5f, -0.5f, 0.0f, 0.0f },
+		{  0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
 		{  0.5f,  0.5f, -0.5f, 1.0f, 0.0f },
 
-		// right side face
+		//// right side face
+		{  0.5f,  0.5f, -0.5f, 0.0f, 0.0f },
 		{  0.5f, -0.5f, -0.5f, 0.0f, 1.0f },
-		{  0.5f,  0.5f,  0.5f, 1.0f, 0.0f },
 		{  0.5f, -0.5f,  0.5f, 1.0f, 1.0f },
 		{  0.5f,  0.5f, -0.5f, 0.0f, 0.0f },
+		{  0.5f, -0.5f,  0.5f, 1.0f, 1.0f },
+		{  0.5f,  0.5f,  0.5f, 1.0f, 0.0f },
 
 		// left side face
 		{ -0.5f,  0.5f,  0.5f, 0.0f, 0.0f },
-		{ -0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
 		{ -0.5f, -0.5f,  0.5f, 0.0f, 1.0f },
+		{ -0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
+		{ -0.5f,  0.5f,  0.5f, 0.0f, 0.0f },
+		{ -0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
 		{ -0.5f,  0.5f, -0.5f, 1.0f, 0.0f },
 
 		// back face
 		{  0.5f,  0.5f,  0.5f, 0.0f, 0.0f },
-		{ -0.5f, -0.5f,  0.5f, 1.0f, 1.0f },
 		{  0.5f, -0.5f,  0.5f, 0.0f, 1.0f },
+		{ -0.5f, -0.5f,  0.5f, 1.0f, 1.0f },
+		{  0.5f,  0.5f,  0.5f, 0.0f, 0.0f },
+		{ -0.5f, -0.5f,  0.5f, 1.0f, 1.0f },
 		{ -0.5f,  0.5f,  0.5f, 1.0f, 0.0f },
 
 		// top face
+		{ -0.5f,  0.5f,  0.5f, 0.0f, 0.0f },
 		{ -0.5f,  0.5f, -0.5f, 0.0f, 1.0f },
-		{  0.5f,  0.5f,  0.5f, 1.0f, 0.0f },
 		{  0.5f,  0.5f, -0.5f, 1.0f, 1.0f },
 		{ -0.5f,  0.5f,  0.5f, 0.0f, 0.0f },
+		{  0.5f,  0.5f, -0.5f, 1.0f, 1.0f },
+		{  0.5f,  0.5f,  0.5f, 1.0f, 0.0f },
 
 		// bottom face
 		{  0.5f, -0.5f,  0.5f, 0.0f, 0.0f },
-		{ -0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
 		{  0.5f, -0.5f, -0.5f, 0.0f, 1.0f },
+		{ -0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
+		{  0.5f, -0.5f,  0.5f, 0.0f, 0.0f },
+		{ -0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
 		{ -0.5f, -0.5f,  0.5f, 1.0f, 0.0f },
 	};
 
 	int vBufferSize = sizeof(vList);
+	numCubeVertices = vBufferSize / sizeof(Vertex);
 
 	vertexBuffer = new TW3D::TW3DResourceVB(device, vBufferSize, sizeof(Vertex), tempGCL);
 	vertexBuffer->UpdateData(reinterpret_cast<BYTE*>(vList), vBufferSize);
 
-	// Create index buffer
-
-	// a quad (2 triangles)
-	DWORD iList[] = {
-		// ffront face
-		0, 1, 2, // first triangle
-		0, 3, 1, // second triangle
-
-		// left face
-		4, 5, 6, // first triangle
-		4, 7, 5, // second triangle
-
-		// right face
-		8, 9, 10, // first triangle
-		8, 11, 9, // second triangle
-
-		// back face
-		12, 13, 14, // first triangle
-		12, 15, 13, // second triangle
-
-		// top face
-		16, 17, 18, // first triangle
-		16, 19, 17, // second triangle
-
-		// bottom face
-		20, 21, 22, // first triangle
-		20, 23, 21, // second triangle
-	};
-
-	int iBufferSize = sizeof(iList);
-
-	numCubeIndices = sizeof(iList) / sizeof(DWORD);
-
-	// create default heap to hold index buffer
-
-	indexBuffer = TW3D::TW3DResource::Create(device, iBufferSize, false);
-
-	iBufferUploadHeap = TW3D::TW3DResource::Create(device, iBufferSize, true);
-
-	// store vertex buffer in upload heap
-	D3D12_SUBRESOURCE_DATA indexData = {};
-	indexData.pData = reinterpret_cast<BYTE*>(iList); // pointer to our index array
-	indexData.RowPitch = iBufferSize; // size of all our index buffer
-	indexData.SlicePitch = iBufferSize; // also the size of our index buffer
-
-	// we are now creating a command with the command list to copy the data from
-	// the upload heap to the default heap
-	commandList->UpdateSubresources(indexBuffer, iBufferUploadHeap, &indexData);
-	//UpdateSubresources(commandList, indexBuffer, iBufferUploadHeap, 0, 0, 1, &indexData);
-
-
-	// transition the vertex buffer data from copy destination state to vertex buffer state
-	commandList->ResourceBarrier(indexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-
 	commandList->Close();
-	commandQueue->ExecuteCommandList(commandList);
 
 	// Create the depth/stencil buffer
-
 	depthStencil = new TW3D::TW3DResourceDSV(device);
 	depthStencil->Create(width, height);
 
@@ -415,11 +388,6 @@ void init_dx12() {
 
 	fence[frameIndex]->Flush(commandQueue);
 
-
-	// create a vertex buffer view for the triangle. We get the GPU memory address to the vertex pointer using the GetGPUVirtualAddress() method
-	indexBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
-	indexBufferView.Format = DXGI_FORMAT_R32_UINT; // 32-bit unsigned integer (this is what a dword is, double word, a word is 2 bytes)
-	indexBufferView.SizeInBytes = iBufferSize;
 
 	// Fill out the Viewport
 	viewport.TopLeftX = 0;
@@ -479,64 +447,28 @@ void UpdatePipeline() {
 	commandList->Reset();
 
 	commandList->SetPipelineState(pipelineState);
-
-	// here we start recording commands into the commandList (which all the commands will be stored in the commandAllocator)
-
-	// transition the "frameIndex" render target from the present state to the render target state so the command list draws to it starting from here
 	commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-	// here we again get the handle to our current render target view so we can set it as the render target in the output merger stage of the pipeline
-	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescriptorSize);
-
-	// get a handle to the depth/stencil buffer
-	//CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-
-	// set the render target for the output merger stage (the output of the pipeline)
 	commandList->SetRenderTarget(renderTargets[frameIndex], depthStencil);
-	//commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 
-	// Clear the render target by using the ClearRenderTargetView command
 	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 	commandList->ClearRTV(renderTargets[frameIndex], clearColor);
-	//commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-
-	// clear the depth/stencil buffer
 	commandList->ClearDSVDepth(depthStencil, 1.0f);
-	//commandList->ClearDepthStencilView(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-	// set root signature
 	commandList->SetGraphicsRootSignature(rootSignature); // set the root signature
-
-	// set the descriptor heap
 	commandList->SetDescriptorHeap(mainDescriptorHeap);
 
-	// set the descriptor table to the descriptor heap (parameter 1, as constant buffer root descriptor is parameter index 0)
 	commandList->SetGraphicsRootDescriptorTable(1, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	commandList->SetViewport(&viewport); // set the viewports
 	commandList->SetScissor(&scissorRect); // set the scissor rects
 	commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // set the primitive topology
 	commandList->SetVertexBuffer(0, vertexBuffer); // set the vertex buffer (using the vertex buffer view)
-	commandList->SetIndexBuffer(&indexBufferView);
 
-	// set cube1's constant buffer
 	commandList->SetGraphicsRootCBV(0, constantBuffer, 0);
+	commandList->Draw(numCubeVertices);
 
-	// draw first cube
-	commandList->DrawIndexed(numCubeIndices);
-
-	// second cube
-
-	// set cube2's constant buffer. You can see we are adding the size of ConstantBufferPerObject to the constant buffer
-	// resource heaps address. This is because cube1's constant buffer is stored at the beginning of the resource heap, while
-	// cube2's constant buffer data is stored after (256 bits from the start of the heap).
-	//commandList->SetGraphicsRootDescriptorTable(1, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	commandList->SetGraphicsRootCBV(0, constantBuffer, 1);
+	commandList->Draw(numCubeVertices);
 
-	// draw second cube
-	commandList->DrawIndexed(numCubeIndices);
-
-	// transition the "frameIndex" render target from the render target state to the present state. If the debug layer is enabled, you will receive a
-	// warning if present is called on the render target when it's not in the present state
 	commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
 	commandList->Close();
@@ -675,11 +607,8 @@ void main_loop() {
 }
 
 void cleanup() {
-
-	// get swapchain out of full screen before exiting
-	if (swapChain->GetFullscreen()) {
+	if (swapChain->GetFullscreen())
 		swapChain->SetFullscreen(false);
-	}
 
 	delete factory;
 	delete adapter;
@@ -692,23 +621,16 @@ void cleanup() {
 	delete rtvDescriptorHeap;
 	delete commandList;
 
-	delete constantBuffer;
-
 	for (int i = 0; i < frameBufferCount; ++i) {
 		delete renderTargets[i];
-		//delete constantBufferUploadHeaps[i];
 		delete fence[i];
 	};
 
+	delete constantBuffer;
 	delete mainDescriptorHeap;
-
-	//delete vBufferUploadHeap;
-	delete iBufferUploadHeap;
-
 	delete pipelineState;
 	delete rootSignature;
 	delete vertexBuffer;
-	delete indexBuffer;
 
 	delete depthStencil;
 	delete texture;
