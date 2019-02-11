@@ -13,5 +13,5 @@ float4 main(VS_OUTPUT input) : SV_TARGET
 {
     // return interpolated color
 
-    return lerp(t1.Sample(s1, input.texCoord), tex.Sample(texs, input.texCoord), 0);
+    return lerp(t1.Sample(s1, input.texCoord), tex.Sample(texs, input.texCoord), 0.5);
 }

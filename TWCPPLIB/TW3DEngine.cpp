@@ -35,11 +35,13 @@ static TW3D::TW3DDescriptorHeap* rtvDescriptorHeap;
 static TW3D::TW3DFence* fence[frameBufferCount];
 static TW3D::TW3DTempGCL* tempGCL;
 static TW3D::TW3DPipelineState* pipelineState;
+static TW3D::TW3DPipelineState* blitPipelineState;
 static TW3D::TW3DRootSignature* rootSignature;
 static TW3D::TW3DResourceCB* constantBuffer;
 
 static TW3D::TW3DResourceRTV* renderTargets[frameBufferCount];
 static TW3D::TW3DResourceDSV* depthStencil;
+static TW3D::TW3DResourceRTV* offscreen;
 static TW3D::TW3DResourceSV* texture;
 static TW3D::TW3DResourceSV* texture2;
 
@@ -228,11 +230,16 @@ void init_dx12() {
 
 	frameIndex = swapChain->GetCurrentBufferIndex();
 
-	rtvDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForRTV(device, frameBufferCount);
+	rtvDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForRTV(device, frameBufferCount + 1);
 	for (int i = 0; i < frameBufferCount; i++) {
-		renderTargets[i] = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap);
-		renderTargets[i]->Create(swapChain->GetBuffer(i), i);
+		renderTargets[i] = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap, i);
+		renderTargets[i]->Create(swapChain->GetBuffer(i));
 	}
+
+	mainDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForSR(device, 3);
+
+	offscreen = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap, frameBufferCount, mainDescriptorHeap, 2);
+	offscreen->Create(width, height, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 
 	tempGCL = new TW3D::TW3DTempGCL(device);
@@ -244,7 +251,7 @@ void init_dx12() {
 	for (int i = 0; i < frameBufferCount; i++) {
 		fence[i] = new TW3D::TW3DFence(device);
 	}
-
+	
 	TWT::Vector<D3D12_DESCRIPTOR_RANGE> ranges(2);
 	ranges[0] = TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
 	ranges[1] = TWU::DXDescriptorRange(2, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
@@ -266,14 +273,14 @@ void init_dx12() {
 	inputLayout[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
 	D3D12_RASTERIZER_DESC rastDesc = {};
-	rastDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
-	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
-	rastDesc.FrontCounterClockwise = FALSE;
+	rastDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	rastDesc.CullMode = D3D12_CULL_MODE_BACK;
+	rastDesc.FrontCounterClockwise = TRUE;
 	rastDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
 	rastDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
 	rastDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-	rastDesc.DepthClipEnable = TRUE;
-	rastDesc.MultisampleEnable = TRUE;
+	rastDesc.DepthClipEnable = FALSE;
+	rastDesc.MultisampleEnable = FALSE;
 	rastDesc.AntialiasedLineEnable = FALSE;
 	rastDesc.ForcedSampleCount = 0;
 	rastDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
@@ -316,6 +323,23 @@ void init_dx12() {
 	pipelineState->SetPixelShader("PixelShader.cso");
 	pipelineState->SetInputLayout(inputLayout);
 	pipelineState->Create(device);
+
+
+	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
+	depthDesc.DepthEnable = FALSE;
+
+	blitPipelineState = new TW3D::TW3DPipelineState(
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+		swapChain->GetDescription().SampleDesc,
+		rastDesc,
+		depthDesc,
+		blendDesc,
+		rootSignature,
+		1);
+	blitPipelineState->SetRTVFormat(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+	blitPipelineState->SetVertexShader("VertexOffscreenBlit.cso");
+	blitPipelineState->SetPixelShader("PixelOffscreenBlit.cso");
+	blitPipelineState->Create(device);
 
 	// a cube
 	Vertex vList[] = {
@@ -381,7 +405,6 @@ void init_dx12() {
 	depthStencil->Create(width, height);
 
 	constantBuffer = new TW3D::TW3DResourceCB(device, sizeof(cbPerObject), 2);
-	mainDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForSR(device, 2);
 
 	texture = TW3D::TW3DResourceSV::Create2D(device, mainDescriptorHeap, L"D:\\тест.png", tempGCL, 0);
 	texture2 = TW3D::TW3DResourceSV::Create2D(device, mainDescriptorHeap, L"D:\\test2.png", tempGCL, 1);
@@ -447,11 +470,10 @@ void UpdatePipeline() {
 	commandList->Reset();
 
 	commandList->SetPipelineState(pipelineState);
-	commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	commandList->SetRenderTarget(renderTargets[frameIndex], depthStencil);
 
-	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-	commandList->ClearRTV(renderTargets[frameIndex], clearColor);
+	commandList->SetRenderTarget(offscreen, depthStencil);
+	const float clearColor[] = { 0.f, 0.f, 0.f, 1.f };
+	commandList->ClearRTV(offscreen, clearColor);
 	commandList->ClearDSVDepth(depthStencil, 1.0f);
 
 	commandList->SetGraphicsRootSignature(rootSignature); // set the root signature
@@ -469,7 +491,22 @@ void UpdatePipeline() {
 	commandList->SetGraphicsRootCBV(0, constantBuffer, 1);
 	commandList->Draw(numCubeVertices);
 
+
+
+	commandList->SetPipelineState(blitPipelineState);
+
+	commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+	commandList->SetRenderTarget(renderTargets[frameIndex], depthStencil);
+	commandList->ClearRTV(renderTargets[frameIndex], clearColor);
+	commandList->ClearDSVDepth(depthStencil, 1.0f);
+	commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	commandList->Draw(4);
+
 	commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+
+
 
 	commandList->Close();
 }
@@ -577,7 +614,7 @@ void on_resize() {
 	frameIndex = swapChain->GetCurrentBufferIndex();
 
 	for (UINT n = 0; n < frameBufferCount; n++)
-		renderTargets[n]->Create(swapChain->GetBuffer(n), n);
+		renderTargets[n]->Create(swapChain->GetBuffer(n));
 
 	depthStencil->Create(width, height);
 }
@@ -629,6 +666,7 @@ void cleanup() {
 	delete constantBuffer;
 	delete mainDescriptorHeap;
 	delete pipelineState;
+	delete blitPipelineState;
 	delete rootSignature;
 	delete vertexBuffer;
 

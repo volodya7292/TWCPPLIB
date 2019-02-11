@@ -196,5 +196,7 @@
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl" />
     <FxCompile Include="VertexShader.hlsl" />
+    <FxCompile Include="VertexOffscreenBlit.hlsl" />
+    <FxCompile Include="PixelOffscreenBlit.hlsl" />
   </ItemGroup>
 </Project>
