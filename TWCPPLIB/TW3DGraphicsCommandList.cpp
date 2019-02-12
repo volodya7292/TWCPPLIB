@@ -55,8 +55,10 @@ void TW3D::TW3DGraphicsCommandList::SetRenderTargets(TWT::UInt RTVDescriptorCoun
 	commandList->OMSetRenderTargets(RTVDescriptorCount, RTVDescriptors, false, &DSV->GetHandle());
 }
 
-void TW3D::TW3DGraphicsCommandList::ClearRTV(TW3DResourceRTV* RTV, const TWT::Float(&RGBA)[4]) {
-	commandList->ClearRenderTargetView(RTV->GetHandle(), RGBA, 0, nullptr);
+void TW3D::TW3DGraphicsCommandList::ClearRTV(TW3DResourceRTV* RTV) {
+	TWT::Vector4f clear = RTV->GetClearColor();
+	float clearV[] = { clear.x, clear.y, clear.z, clear.w };
+	commandList->ClearRenderTargetView(RTV->GetHandle(), clearV, 0, nullptr);
 }
 
 void TW3D::TW3DGraphicsCommandList::ClearDSVDepth(TW3DResourceDSV* DSV, TWT::Float Depth) {

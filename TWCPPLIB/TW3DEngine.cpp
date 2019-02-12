@@ -37,6 +37,7 @@ static TW3D::TW3DTempGCL* tempGCL;
 static TW3D::TW3DPipelineState* pipelineState;
 static TW3D::TW3DPipelineState* blitPipelineState;
 static TW3D::TW3DRootSignature* rootSignature;
+static TW3D::TW3DRootSignature* blitRootSignature;
 static TW3D::TW3DResourceCB* constantBuffer;
 
 static TW3D::TW3DResourceRTV* renderTargets[frameBufferCount];
@@ -238,8 +239,8 @@ void init_dx12() {
 
 	mainDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForSR(device, 3);
 
-	offscreen = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap, frameBufferCount, mainDescriptorHeap, 2);
-	offscreen->Create(width, height, DXGI_FORMAT_R8G8B8A8_UNORM);
+	offscreen = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap, frameBufferCount, mainDescriptorHeap, 2, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
+	offscreen->Create(width, height);
 
 
 	tempGCL = new TW3D::TW3DTempGCL(device);
@@ -262,10 +263,21 @@ void init_dx12() {
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
 	rootSignature->SetParameter(0, TW3D::TW3DRootParameter::CreateCBV(0, D3D12_SHADER_VISIBILITY_VERTEX));
-	rootSignature->SetParameter(1, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, ranges));
+	rootSignature->SetParameter(1, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, ranges, 0));
 	rootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->AddSampler(1, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->Create(device);
+
+
+	TWT::Vector<D3D12_DESCRIPTOR_RANGE> blitranges(1);
+	blitranges[0] = TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
+	blitRootSignature = new TW3D::TW3DRootSignature(1,
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
+	blitRootSignature->SetParameter(0, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, blitranges, 2));
+	blitRootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
+	blitRootSignature->Create(device);
 
 
 	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> inputLayout(2);
@@ -334,7 +346,7 @@ void init_dx12() {
 		rastDesc,
 		depthDesc,
 		blendDesc,
-		rootSignature,
+		blitRootSignature,
 		1);
 	blitPipelineState->SetRTVFormat(0, DXGI_FORMAT_R8G8B8A8_UNORM);
 	blitPipelineState->SetVertexShader("VertexOffscreenBlit.cso");
@@ -473,7 +485,7 @@ void UpdatePipeline() {
 
 	commandList->SetRenderTarget(offscreen, depthStencil);
 	const float clearColor[] = { 0.f, 0.f, 0.f, 1.f };
-	commandList->ClearRTV(offscreen, clearColor);
+	commandList->ClearRTV(offscreen);
 	commandList->ClearDSVDepth(depthStencil, 1.0f);
 
 	commandList->SetGraphicsRootSignature(rootSignature); // set the root signature
@@ -498,9 +510,12 @@ void UpdatePipeline() {
 	commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 	commandList->SetRenderTarget(renderTargets[frameIndex], depthStencil);
-	commandList->ClearRTV(renderTargets[frameIndex], clearColor);
+	commandList->ClearRTV(renderTargets[frameIndex]);
 	commandList->ClearDSVDepth(depthStencil, 1.0f);
 	commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	commandList->SetGraphicsRootSignature(blitRootSignature); // set the root signature
+	commandList->SetGraphicsRootDescriptorTable(0, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 	commandList->Draw(4);
 
@@ -607,6 +622,8 @@ void on_resize() {
 	for (UINT n = 0; n < frameBufferCount; n++)
 		renderTargets[n]->Release();
 
+	offscreen->Release();
+
 	depthStencil->Release();
 
 	swapChain->Resize(width, height);
@@ -615,6 +632,7 @@ void on_resize() {
 
 	for (UINT n = 0; n < frameBufferCount; n++)
 		renderTargets[n]->Create(swapChain->GetBuffer(n));
+	offscreen->Create(width, height);
 
 	depthStencil->Create(width, height);
 }
@@ -663,11 +681,14 @@ void cleanup() {
 		delete fence[i];
 	};
 
+	delete offscreen;
+
 	delete constantBuffer;
 	delete mainDescriptorHeap;
 	delete pipelineState;
 	delete blitPipelineState;
 	delete rootSignature;
+	delete blitRootSignature;
 	delete vertexBuffer;
 
 	delete depthStencil;

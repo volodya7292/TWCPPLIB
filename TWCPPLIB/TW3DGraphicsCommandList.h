@@ -27,7 +27,7 @@ namespace TW3D {
 		void SetPipelineState(TW3DPipelineState* PipelineState);
 		void SetRenderTarget(TW3DResourceRTV* RTV, TW3DResourceDSV* DSV);
 		void SetRenderTargets(TWT::UInt RTVDescriptorCount, const D3D12_CPU_DESCRIPTOR_HANDLE* RTVDescriptors, TW3DResourceDSV* DSV);
-		void ClearRTV(TW3DResourceRTV* RTV, const TWT::Float (&RGBA)[4]);
+		void ClearRTV(TW3DResourceRTV* RTV);
 		void ClearDSVDepth(TW3DResourceDSV* DSV, TWT::Float Depth);
 		void SetGraphicsRootSignature(TW3DRootSignature* RootSignature);
 		void SetDescriptorHeap(TW3DDescriptorHeap* heap);
