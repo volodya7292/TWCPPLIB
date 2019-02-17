@@ -17,8 +17,7 @@
 #include <wincodec.h>
 #include <dxgidebug.h>
 #include <DirectXMath.h>
-
-#include "d3dx12.h"
+#include <d3dx12.h>
 
 using Microsoft::WRL::ComPtr;
 

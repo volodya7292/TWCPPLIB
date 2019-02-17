@@ -15,7 +15,7 @@ TW3D::TW3DSwapChain::TW3DSwapChain(TW3D::TW3DFactory* factory, TW3DCommandQueue*
 	desc.Scaling = DXGI_SCALING_STRETCH;
 	desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // dxgi will discard the buffer (data) after we call present
 	desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-	desc.BufferCount = bufferCount; // number of buffers we have
+	desc.BufferCount = BufferCount; // number of buffers we have
 	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // this says the pipeline will render to this swap chain
 	desc.SampleDesc = sampleDesc; // our multi-sampling description
 	desc.Flags = tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
@@ -54,7 +54,7 @@ ID3D12Resource* TW3D::TW3DSwapChain::GetBuffer(TWT::UInt index) {
 }
 
 void TW3D::TW3DSwapChain::Resize(TWT::UInt width, TWT::UInt height) {
-	swapChain->ResizeBuffers(bufferCount, width, height, desc.Format, desc.Flags);
+	swapChain->ResizeBuffers(BufferCount, width, height, desc.Format, desc.Flags);
 }
 
 void TW3D::TW3DSwapChain::Present() {

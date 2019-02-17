@@ -7,7 +7,7 @@ namespace TW3D {
 		TW3DResourceCB(TW3DDevice* Device, TWT::UInt ElementSize, TWT::UInt ElementCount);
 		~TW3DResourceCB();
 
-		TWT::UInt GetAddress(TWT::UInt ElementIndex);
+		D3D12_GPU_VIRTUAL_ADDRESS GetAddress(TWT::UInt ElementIndex);
 
 		void Update(void* Data, TWT::UInt ElementIndex);
 

@@ -21,8 +21,6 @@ static TWT::Bool		fullscreen, vsync;
 static TWT::Bool		running, minimized = false;
 static HWND				hwnd;
 
-static const int frameBufferCount = 3; // number of buffers we want, 2 for double buffering, 3 for tripple buffering
-
 static TW3D::TW3DFactory* factory;
 static TW3D::TW3DAdapter* adapter;
 static TW3D::TW3DDevice* device;
@@ -32,7 +30,7 @@ static TW3D::TW3DCommandQueue* commandQueue;
 static TW3D::TW3DGraphicsCommandList* commandList;
 static TW3D::TW3DDescriptorHeap* mainDescriptorHeap;
 static TW3D::TW3DDescriptorHeap* rtvDescriptorHeap;
-static TW3D::TW3DFence* fence[frameBufferCount];
+static TW3D::TW3DFence* fence[TW3D::TW3DSwapChain::BufferCount];
 static TW3D::TW3DTempGCL* tempGCL;
 static TW3D::TW3DPipelineState* pipelineState;
 static TW3D::TW3DPipelineState* blitPipelineState;
@@ -40,7 +38,7 @@ static TW3D::TW3DRootSignature* rootSignature;
 static TW3D::TW3DRootSignature* blitRootSignature;
 static TW3D::TW3DResourceCB* constantBuffer;
 
-static TW3D::TW3DResourceRTV* renderTargets[frameBufferCount];
+static TW3D::TW3DResourceRTV* renderTargets[TW3D::TW3DSwapChain::BufferCount];
 static TW3D::TW3DResourceDSV* depthStencil;
 static TW3D::TW3DResourceRTV* offscreen;
 static TW3D::TW3DResourceSV* texture;
@@ -231,15 +229,15 @@ void init_dx12() {
 
 	frameIndex = swapChain->GetCurrentBufferIndex();
 
-	rtvDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForRTV(device, frameBufferCount + 1);
-	for (int i = 0; i < frameBufferCount; i++) {
+	rtvDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForRTV(device, TW3D::TW3DSwapChain::BufferCount + 1);
+	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++) {
 		renderTargets[i] = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap, i);
 		renderTargets[i]->Create(swapChain->GetBuffer(i));
 	}
 
 	mainDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForSR(device, 3);
 
-	offscreen = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap, frameBufferCount, mainDescriptorHeap, 2, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
+	offscreen = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap, TW3D::TW3DSwapChain::BufferCount, mainDescriptorHeap, 2, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
 	offscreen->Create(width, height);
 
 
@@ -249,7 +247,7 @@ void init_dx12() {
 	commandList = TW3D::TW3DGraphicsCommandList::CreateDirect(device);
 
 	// create the fences
-	for (int i = 0; i < frameBufferCount; i++) {
+	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++) {
 		fence[i] = new TW3D::TW3DFence(device);
 	}
 	
@@ -474,7 +472,7 @@ void init_dx12() {
 }
 
 void FlushGPU() {
-	for (UINT n = 0; n < frameBufferCount; n++)
+	for (UINT n = 0; n < TW3D::TW3DSwapChain::BufferCount; n++)
 		fence[n]->Flush(commandQueue);
 }
 
@@ -520,8 +518,6 @@ void UpdatePipeline() {
 	commandList->Draw(4);
 
 	commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-
-
 
 	commandList->Close();
 }
@@ -609,6 +605,7 @@ void on_resize() {
 	FlushGPU();
 
 	RECT clientRect = {};
+
 	GetClientRect(hwnd, &clientRect);
 	width = std::max(clientRect.right - clientRect.left, 1L);
 	height = std::max(clientRect.bottom - clientRect.top, 1L);
@@ -619,7 +616,7 @@ void on_resize() {
 	scissorRect.right = width;
 	scissorRect.bottom = height;
 
-	for (UINT n = 0; n < frameBufferCount; n++)
+	for (UINT n = 0; n < TW3D::TW3DSwapChain::BufferCount; n++)
 		renderTargets[n]->Release();
 
 	offscreen->Release();
@@ -630,7 +627,7 @@ void on_resize() {
 
 	frameIndex = swapChain->GetCurrentBufferIndex();
 
-	for (UINT n = 0; n < frameBufferCount; n++)
+	for (UINT n = 0; n < TW3D::TW3DSwapChain::BufferCount; n++)
 		renderTargets[n]->Create(swapChain->GetBuffer(n));
 	offscreen->Create(width, height);
 
@@ -676,7 +673,7 @@ void cleanup() {
 	delete rtvDescriptorHeap;
 	delete commandList;
 
-	for (int i = 0; i < frameBufferCount; ++i) {
+	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; ++i) {
 		delete renderTargets[i];
 		delete fence[i];
 	};

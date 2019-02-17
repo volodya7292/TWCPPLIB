@@ -13,13 +13,13 @@ TW3D::TW3DResourceCB::TW3DResourceCB(TW3DDevice* Device, TWT::UInt ElementSize, 
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		&Resource);
 
-	Resource->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&GPUAddress));
+	TWU::SuccessAssert(Resource->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&GPUAddress)));
 }
 
 TW3D::TW3DResourceCB::~TW3DResourceCB() {
 }
 
-TWT::UInt TW3D::TW3DResourceCB::GetAddress(TWT::UInt ElementIndex) {
+D3D12_GPU_VIRTUAL_ADDRESS TW3D::TW3DResourceCB::GetAddress(TWT::UInt ElementIndex) {
 	return GetGPUVirtualAddress() + ElementIndex * AlignedElementSize;
 }
 
