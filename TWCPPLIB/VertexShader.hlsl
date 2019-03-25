@@ -19,7 +19,7 @@ ConstantBuffer<Foo> cb : register(b0);
 VS_OUTPUT main(VS_INPUT input)
 {
     VS_OUTPUT output;
-    output.pos = mul(input.pos, cb.wvpMat);
+    output.pos = mul(cb.wvpMat, input.pos);
     output.texCoord = input.texCoord;
     return output;
 }

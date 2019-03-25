@@ -2,6 +2,7 @@
 #define PCH_H
 
 #define NOMINMAX
+#define GLM_FORCE_RADIANS
 
 #include <algorithm>
 #include <iostream>
@@ -16,8 +17,8 @@
 #include <dxgi1_6.h>
 #include <wincodec.h>
 #include <dxgidebug.h>
-#include <DirectXMath.h>
 #include <d3dx12.h>
+#include <glm/gtc/type_ptr.hpp>
 
 using Microsoft::WRL::ComPtr;
 

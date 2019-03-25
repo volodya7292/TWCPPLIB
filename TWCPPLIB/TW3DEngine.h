@@ -1,5 +1,7 @@
 #pragma once
 #include "TW3DUtils.h"
+#include "TW3DScene.h"
+#include "TW3DRenderingMethod.h"
 
 namespace TW3D {
 	struct InitializeInfo {
@@ -11,4 +13,6 @@ namespace TW3D {
 	};
 
 	void Start(const InitializeInfo& info);
+	void SetScene(TW3DScene* Scene);
+	void SetRenderingMethod(TW3DRenderingMethod* RenderingMethod);
 }

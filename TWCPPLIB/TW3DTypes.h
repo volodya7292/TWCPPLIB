@@ -1,10 +1,8 @@
 #pragma once
 
 namespace TWT {
-	using namespace DirectX;
-
-	using Vector2f = XMFLOAT2;
-	using Vector3f = XMFLOAT3;
-	using Vector4f = XMFLOAT4;
-	using Matrix4f = XMFLOAT4X4;
+	using Vector2f = glm::vec2;
+	using Vector3f = glm::vec3;
+	using Vector4f = glm::vec4;
+	using Matrix4f = glm::mat4;
 }

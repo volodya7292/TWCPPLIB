@@ -37,6 +37,12 @@
     <Filter Include="Source Files\TW3DEngine\TW3DResource">
       <UniqueIdentifier>{eab31c58-c6a3-4a88-b24a-2a332d6a4af6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\TW3DEngine\TW3DGeometry">
+      <UniqueIdentifier>{eeac9b60-9701-460c-8cc2-3f72ee8186d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TW3DEngine\TW3DGeometry">
+      <UniqueIdentifier>{aa96f36d-40fb-47b5-a06c-ffd1fe5d73af}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TW3DEngine.h">
@@ -110,6 +116,21 @@
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DRenderingMethod.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DScene.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DResourceManager.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DGeometry.h">
+      <Filter>Header Files\TW3DEngine\TW3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DObject.h">
+      <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -185,6 +206,21 @@
     </ClCompile>
     <ClCompile Include="TW3DResourceCB.cpp">
       <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DRenderingMethod.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DScene.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DResourceManager.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DGeometry.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DObject.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
