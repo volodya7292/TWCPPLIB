@@ -140,6 +140,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnablePREfast>false</EnablePREfast>
       <AdditionalIncludeDirectories>D:\Vova\Projects\C++\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -161,6 +162,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnablePREfast>false</EnablePREfast>
       <AdditionalIncludeDirectories>D:\Vova\Projects\C++\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -271,11 +273,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TW3DPerspectiveCamera.h" />
     <ClInclude Include="TW3DAdapter.h" />
+    <ClInclude Include="TW3DCube.h" />
+    <ClInclude Include="TW3DDefaultRenderer.h" />
     <ClInclude Include="TW3DGeometry.h" />
     <ClInclude Include="TW3DObject.h" />
     <ClInclude Include="TW3DPipelineState.h" />
-    <ClInclude Include="TW3DRenderingMethod.h" />
+    <ClInclude Include="TW3DPrimitives.h" />
+    <ClInclude Include="TW3DRenderer.h" />
     <ClInclude Include="TW3DResource.h" />
     <ClInclude Include="TW3DCommandQueue.h" />
     <ClInclude Include="TW3DFence.h" />
@@ -295,6 +301,7 @@
     <ClInclude Include="TW3DScene.h" />
     <ClInclude Include="TW3DSwapChain.h" />
     <ClInclude Include="TW3DTempGCL.h" />
+    <ClInclude Include="TW3DTransform.h" />
     <ClInclude Include="TW3DTypes.h" />
     <ClInclude Include="TW3DUtils.h" />
     <ClInclude Include="TWTypes.h" />
@@ -310,11 +317,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="TW3DPerspectiveCamera.cpp" />
     <ClCompile Include="TW3DAdapter.cpp" />
+    <ClCompile Include="TW3DCube.cpp" />
+    <ClCompile Include="TW3DDefaultRenderer.cpp" />
     <ClCompile Include="TW3DGeometry.cpp" />
     <ClCompile Include="TW3DObject.cpp" />
     <ClCompile Include="TW3DPipelineState.cpp" />
-    <ClCompile Include="TW3DRenderingMethod.cpp" />
+    <ClCompile Include="TW3DPrimitives.cpp" />
+    <ClCompile Include="TW3DRenderer.cpp" />
     <ClCompile Include="TW3DResource.cpp" />
     <ClCompile Include="TW3DCommandQueue.cpp" />
     <ClCompile Include="TW3DFence.cpp" />
@@ -334,6 +345,7 @@
     <ClCompile Include="TW3DScene.cpp" />
     <ClCompile Include="TW3DSwapChain.cpp" />
     <ClCompile Include="TW3DTempGCL.cpp" />
+    <ClCompile Include="TW3DTransform.cpp" />
     <ClCompile Include="TW3DTypes.cpp" />
     <ClCompile Include="TW3DUtils.cpp" />
     <ClCompile Include="TWTypes.cpp" />

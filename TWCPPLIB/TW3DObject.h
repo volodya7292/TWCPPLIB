@@ -1,20 +1,20 @@
 #pragma once
 #include "TW3DTypes.h"
+#include "TW3DTransform.h"
+#include "TW3DGraphicsCommandList.h"
+#include "TW3DResourceManager.h"
 
 namespace TW3D {
-	struct Transform {
-		TWT::Vector3f position = TWT::Vector3f(0);
-		TWT::Vector3f rotation = TWT::Vector3f(0);
-		TWT::Vector3f scale = TWT::Vector3f(1);
-
-		TWT::Matrix4f GetModelMatrix();
-	};
-
 	class TW3DObject {
 	public:
-		TW3DObject();
+		TW3DObject(TW3DResourceManager* ResourceManager, TWT::UInt ConstantBufferSize);
 		virtual ~TW3DObject();
 
-		Transform transform;
+		virtual void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex);
+
+		TW3DTransform transform;
+		
+	protected:
+		TW3DResourceCB* ConstantBuffer;
 	};
 }

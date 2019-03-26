@@ -45,6 +45,7 @@ void TW3D::TW3DGraphicsCommandList::ResourceBarrier(ID3D12Resource* Resource, D3
 
 void TW3D::TW3DGraphicsCommandList::SetPipelineState(TW3D::TW3DPipelineState* PipelineState) {
 	commandList->SetPipelineState(PipelineState->Get());
+	commandList->SetGraphicsRootSignature(PipelineState->RootSignature->Get());
 }
 
 void TW3D::TW3DGraphicsCommandList::SetRenderTarget(TW3DResourceRTV* RTV, TW3DResourceDSV* DSV) {

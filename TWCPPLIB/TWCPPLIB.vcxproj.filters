@@ -37,11 +37,17 @@
     <Filter Include="Source Files\TW3DEngine\TW3DResource">
       <UniqueIdentifier>{eab31c58-c6a3-4a88-b24a-2a332d6a4af6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\TW3DEngine\TW3DGeometry">
-      <UniqueIdentifier>{eeac9b60-9701-460c-8cc2-3f72ee8186d1}</UniqueIdentifier>
+    <Filter Include="Header Files\TW3DEngine\TW3DRenderer">
+      <UniqueIdentifier>{38569007-973d-43e8-a670-1141a9b68c3b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\TW3DEngine\TW3DGeometry">
+    <Filter Include="Source Files\TW3DEngine\TW3DRenderer">
+      <UniqueIdentifier>{414afab7-c35e-4682-a207-51592690be9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TW3DEngine\TW3DObject">
       <UniqueIdentifier>{aa96f36d-40fb-47b5-a06c-ffd1fe5d73af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TW3DEngine\TW3DObject">
+      <UniqueIdentifier>{eeac9b60-9701-460c-8cc2-3f72ee8186d1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -117,9 +123,6 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DRenderingMethod.h">
-      <Filter>Header Files\TW3DEngine</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DScene.h">
       <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
@@ -127,9 +130,27 @@
       <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
     <ClInclude Include="TW3DGeometry.h">
-      <Filter>Header Files\TW3DEngine\TW3DGeometry</Filter>
+      <Filter>Header Files\TW3DEngine\TW3DObject</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DCube.h">
+      <Filter>Header Files\TW3DEngine\TW3DObject</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DPrimitives.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DRenderer.h">
+      <Filter>Header Files\TW3DEngine\TW3DRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DDefaultRenderer.h">
+      <Filter>Header Files\TW3DEngine\TW3DRenderer</Filter>
     </ClInclude>
     <ClInclude Include="TW3DObject.h">
+      <Filter>Header Files\TW3DEngine\TW3DObject</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DTransform.h">
+      <Filter>Header Files\TW3DEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DPerspectiveCamera.h">
       <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
   </ItemGroup>
@@ -207,9 +228,6 @@
     <ClCompile Include="TW3DResourceCB.cpp">
       <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DRenderingMethod.cpp">
-      <Filter>Source Files\TW3DEngine</Filter>
-    </ClCompile>
     <ClCompile Include="TW3DScene.cpp">
       <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
@@ -217,9 +235,27 @@
       <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
     <ClCompile Include="TW3DGeometry.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DGeometry</Filter>
+      <Filter>Source Files\TW3DEngine\TW3DObject</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DCube.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DObject</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DPrimitives.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DRenderer.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DDefaultRenderer.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DRenderer</Filter>
     </ClCompile>
     <ClCompile Include="TW3DObject.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DObject</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DTransform.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DPerspectiveCamera.cpp">
       <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
   </ItemGroup>

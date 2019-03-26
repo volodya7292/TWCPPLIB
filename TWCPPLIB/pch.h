@@ -2,8 +2,11 @@
 #define PCH_H
 
 #define NOMINMAX
-#define GLM_FORCE_RADIANS
 
+#define GLM_FORCE_RADIANS
+#include <glm/gtc/type_ptr.hpp>
+
+#include <unordered_set>
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -12,14 +15,14 @@
 #include <vector>
 #include <string>
 #include <array>
-#include <wrl.h>
+
 #include <stdint.h>
 #include <dxgi1_6.h>
 #include <wincodec.h>
 #include <dxgidebug.h>
 #include <d3dx12.h>
-#include <glm/gtc/type_ptr.hpp>
 
+#include <wrl.h>
 using Microsoft::WRL::ComPtr;
 
 #endif //PCH_H
