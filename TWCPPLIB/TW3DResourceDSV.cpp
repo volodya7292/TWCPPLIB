@@ -12,7 +12,7 @@ TW3D::TW3DResourceDSV::~TW3DResourceDSV() {
 	delete DescriptorHeap;
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceDSV::GetHandle() {
+D3D12_CPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceDSV::GetCPUHandle() {
 	return DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 }
 
@@ -35,7 +35,7 @@ void TW3D::TW3DResourceDSV::Create(TWT::UInt Width, TWT::UInt Height) {
 		&Resource,
 		&depthOptimizedClearValue);
 
-	Device->CreateDepthStencilView(Resource, GetHandle(), &desc);
+	Device->CreateDepthStencilView(Resource, GetCPUHandle(), &desc);
 }
 
 void TW3D::TW3DResourceDSV::Release() {

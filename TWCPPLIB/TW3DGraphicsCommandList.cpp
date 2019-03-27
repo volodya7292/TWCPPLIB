@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "TW3DGraphicsCommandList.h"
+#include "TW3DResourceSV.h"
 #include "TW3DResourceVB.h"
 #include "TW3DResourceCB.h"
+#include "TW3DResourceManager.h"
 
 TW3D::TW3DGraphicsCommandList::TW3DGraphicsCommandList(TW3D::TW3DDevice* device, D3D12_COMMAND_LIST_TYPE type) {
 	device->CreateCommandAllocator(type, &CommandAllocator);
@@ -49,21 +51,21 @@ void TW3D::TW3DGraphicsCommandList::SetPipelineState(TW3D::TW3DPipelineState* Pi
 }
 
 void TW3D::TW3DGraphicsCommandList::SetRenderTarget(TW3DResourceRTV* RTV, TW3DResourceDSV* DSV) {
-	commandList->OMSetRenderTargets(1, &RTV->GetHandle(), false, &DSV->GetHandle());
+	commandList->OMSetRenderTargets(1, &RTV->GetRTVCPUHandle(), false, &DSV->GetCPUHandle());
 }
 
 void TW3D::TW3DGraphicsCommandList::SetRenderTargets(TWT::UInt RTVDescriptorCount, const D3D12_CPU_DESCRIPTOR_HANDLE* RTVDescriptors, TW3DResourceDSV* DSV) {
-	commandList->OMSetRenderTargets(RTVDescriptorCount, RTVDescriptors, false, &DSV->GetHandle());
+	commandList->OMSetRenderTargets(RTVDescriptorCount, RTVDescriptors, false, &DSV->GetCPUHandle());
 }
 
 void TW3D::TW3DGraphicsCommandList::ClearRTV(TW3DResourceRTV* RTV) {
 	TWT::Vector4f clear = RTV->GetClearColor();
 	float clearV[] = { clear.x, clear.y, clear.z, clear.w };
-	commandList->ClearRenderTargetView(RTV->GetHandle(), clearV, 0, nullptr);
+	commandList->ClearRenderTargetView(RTV->GetRTVCPUHandle(), clearV, 0, nullptr);
 }
 
 void TW3D::TW3DGraphicsCommandList::ClearDSVDepth(TW3DResourceDSV* DSV, TWT::Float Depth) {
-	commandList->ClearDepthStencilView(DSV->GetHandle(), D3D12_CLEAR_FLAG_DEPTH, Depth, 0, 0, nullptr);
+	commandList->ClearDepthStencilView(DSV->GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH, Depth, 0, 0, nullptr);
 }
 
 void TW3D::TW3DGraphicsCommandList::SetGraphicsRootSignature(TW3DRootSignature* RootSignature) {
@@ -122,6 +124,18 @@ void TW3D::TW3DGraphicsCommandList::Draw(TWT::UInt VertexCountPerInstance, TWT::
 
 void TW3D::TW3DGraphicsCommandList::DrawIndexed(TWT::UInt IndexCountPerInstance, TWT::UInt StartIndexLocation, TWT::UInt InstanceCount, TWT::UInt StartInstanceLocation, TWT::Int BaseVertexLocation) {
 	commandList->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
+}
+
+void TW3D::TW3DGraphicsCommandList::BindResources(TW3DResourceManager* ResourceManager) {
+	SetDescriptorHeap(ResourceManager->GetSVDescriptorHeap());
+}
+
+void TW3D::TW3DGraphicsCommandList::BindTexture(TWT::UInt RootParameterIndex, TW3DResourceSV* SV) {
+	commandList->SetGraphicsRootDescriptorTable(RootParameterIndex, SV->GetGPUHandle());
+}
+
+void TW3D::TW3DGraphicsCommandList::BindRTVTexture(TWT::UInt RootParameterIndex, TW3DResourceRTV* RTV) {
+	commandList->SetGraphicsRootDescriptorTable(RootParameterIndex, RTV->GetSRVGPUHandle());
 }
 
 void TW3D::TW3DGraphicsCommandList::Reset() {

@@ -10,13 +10,15 @@ namespace TW3D {
 		ID3D12DescriptorHeap* Get();
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleForHeapStart();
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleForHeapStart();
-		CD3DX12_CPU_DESCRIPTOR_HANDLE GetHandle(TWT::Int Offset, TWT::UInt IncrementSize);
+		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(TWT::Int Index);
+		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle(TWT::Int Index);
 
-		static TW3DDescriptorHeap* CreateForRTV(TW3DDevice* device, TWT::UInt count);
-		static TW3DDescriptorHeap* CreateForDSV(TW3DDevice* device);
-		static TW3DDescriptorHeap* CreateForSR(TW3DDevice* device, TWT::UInt count);
+		static TW3DDescriptorHeap* CreateForRTV(TW3DDevice* Device, TWT::UInt Count);
+		static TW3DDescriptorHeap* CreateForDSV(TW3DDevice* Device);
+		static TW3DDescriptorHeap* CreateForSR(TW3DDevice* Device, TWT::UInt Count);
 
 	private:
 		ID3D12DescriptorHeap* descriptorHeap;
+		const TWT::UInt IncrementSize;
 	};
 }

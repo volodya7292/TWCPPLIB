@@ -5,8 +5,10 @@
 #include "TW3DRootSignature.h"
 
 namespace TW3D {
+	class TW3DResourceSV;
 	class TW3DResourceVB;
 	class TW3DResourceCB;
+	class TW3DResourceManager;
 
 	class TW3DGraphicsCommandList {
 	public:
@@ -42,6 +44,10 @@ namespace TW3D {
 		void SetIndexBuffer(const D3D12_INDEX_BUFFER_VIEW* view);
 		void Draw(TWT::UInt VertexCountPerInstance, TWT::UInt StartVertexLocation = 0, TWT::UInt InstanceCount = 1, TWT::UInt StartInstanceLocation = 0);
 		void DrawIndexed(TWT::UInt IndexCountPerInstance, TWT::UInt StartIndexLocation = 0, TWT::UInt InstanceCount = 1, TWT::UInt StartInstanceLocation = 0, TWT::Int BaseVertexLocation = 0);
+
+		void BindResources(TW3DResourceManager* ResourceManager);
+		void BindTexture(TWT::UInt RootParameterIndex, TW3DResourceSV* SV);
+		void BindRTVTexture(TWT::UInt RootParameterIndex, TW3DResourceRTV* RTV);
 
 		void Reset();
 		void Close();

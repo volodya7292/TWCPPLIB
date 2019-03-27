@@ -1,14 +1,14 @@
 #include "pch.h"
 #include "TW3DResourceRTV.h"
 
-TW3D::TW3DResourceRTV::TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TWT::Int RTVOffset) :
-	TW3DResource(Device), RTVDescriptorHeap(RTVDescriptorHeap), RTVOffset(RTVOffset)
+TW3D::TW3DResourceRTV::TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TWT::Int RTVIndex) :
+	TW3DResource(Device), RTVDescriptorHeap(RTVDescriptorHeap), RTVIndex(RTVIndex)
 {
 }
 
-TW3D::TW3DResourceRTV::TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TWT::Int RTVOffset,
-	TW3DDescriptorHeap* SRVDescriptorHeap, TWT::Int SRVOffset, DXGI_FORMAT Format, TWT::Vector4f ClearValue) :
-	TW3DResource(Device), RTVDescriptorHeap(RTVDescriptorHeap), RTVOffset(RTVOffset), SRVDescriptorHeap(SRVDescriptorHeap), SRVOffset(SRVOffset), ClearValue(ClearValue)
+TW3D::TW3DResourceRTV::TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TWT::Int RTVIndex,
+	TW3DDescriptorHeap* SRVDescriptorHeap, TWT::Int SRVIndex, DXGI_FORMAT Format, TWT::Vector4f ClearValue) :
+	TW3DResource(Device), RTVDescriptorHeap(RTVDescriptorHeap), RTVIndex(RTVIndex), SRVDescriptorHeap(SRVDescriptorHeap), SRVIndex(SRVIndex), ClearValue(ClearValue)
 {
 	ImageDesc.Format = Format;
 }
@@ -17,8 +17,12 @@ TW3D::TW3DResourceRTV::~TW3DResourceRTV() {
 	
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceRTV::GetHandle() {
-	return RTVDescriptorHeap->GetHandle(RTVOffset, Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
+D3D12_CPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceRTV::GetRTVCPUHandle() {
+	return RTVDescriptorHeap->GetCPUHandle(RTVIndex);
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceRTV::GetSRVGPUHandle() {
+	return SRVDescriptorHeap->GetGPUHandle(SRVIndex);
 }
 
 TWT::Vector4f TW3D::TW3DResourceRTV::GetClearColor() {
@@ -27,9 +31,7 @@ TWT::Vector4f TW3D::TW3DResourceRTV::GetClearColor() {
 
 void TW3D::TW3DResourceRTV::Create(ID3D12Resource* Buffer) {
 	Resource = Buffer;
-
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = GetHandle();
-	Device->CreateRenderTargetView(Resource, rtvHandle);
+	Device->CreateRenderTargetView(Resource, GetRTVCPUHandle());
 }
 
 void TW3D::TW3DResourceRTV::Create(TWT::UInt Width, TWT::UInt Height) {
@@ -58,9 +60,9 @@ void TW3D::TW3DResourceRTV::Create(TWT::UInt Width, TWT::UInt Height) {
 		D3D12_RESOURCE_STATE_RENDER_TARGET,
 		&Resource, &optClearValue);
 
-	Device->CreateShaderResourceView(Resource, &desc, SRVDescriptorHeap->GetHandle(SRVOffset, Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)));
+	Device->CreateShaderResourceView(Resource, &desc, SRVDescriptorHeap->GetCPUHandle(SRVIndex));
 
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = GetHandle();
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = GetRTVCPUHandle();
 	Device->CreateRenderTargetView(Resource, rtvHandle);
 }
 

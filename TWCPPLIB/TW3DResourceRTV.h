@@ -5,12 +5,13 @@
 namespace TW3D {
 	class TW3DResourceRTV : public TW3DResource {
 	public:
-		TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TWT::Int RTVOffset);
-		TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TWT::Int RTVOffset,
-			TW3DDescriptorHeap* SRVDescriptorHeap, TWT::Int SRVOffset, DXGI_FORMAT Format, TWT::Vector4f ClearValue);
+		TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TWT::Int RTVIndex);
+		TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TWT::Int RTVIndex,
+			TW3DDescriptorHeap* SRVDescriptorHeap, TWT::Int SRVIndex, DXGI_FORMAT Format, TWT::Vector4f ClearValue);
 		~TW3DResourceRTV();
 
-		D3D12_CPU_DESCRIPTOR_HANDLE GetHandle();
+		D3D12_CPU_DESCRIPTOR_HANDLE GetRTVCPUHandle();
+		D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUHandle();
 		TWT::Vector4f GetClearColor();
 
 		void Create(ID3D12Resource* Buffer);
@@ -20,8 +21,8 @@ namespace TW3D {
 	private:
 		TW3DDescriptorHeap*	RTVDescriptorHeap;
 		TW3DDescriptorHeap* SRVDescriptorHeap;
-		TWT::Int RTVOffset, SRVOffset;
 		D3D12_RESOURCE_DESC ImageDesc = {};
 		TWT::Vector4f       ClearValue;
+		TWT::Int RTVIndex, SRVIndex;
 	};
 }

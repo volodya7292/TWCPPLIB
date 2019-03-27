@@ -7,7 +7,7 @@ namespace TW3D {
 		TW3DResourceDSV(TW3DDevice* Device);
 		~TW3DResourceDSV();
 
-		D3D12_CPU_DESCRIPTOR_HANDLE GetHandle();
+		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle();
 
 		void Create(TWT::UInt Width, TWT::UInt Height);
 		void Release();

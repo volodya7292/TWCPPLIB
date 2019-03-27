@@ -33,10 +33,10 @@ static TW3D::TW3DSwapChain*		swapChain;
 
 static TW3D::TW3DCommandQueue* commandQueue;
 static TW3D::TW3DGraphicsCommandList* commandList;
-static TW3D::TW3DDescriptorHeap* mainDescriptorHeap;
-static TW3D::TW3DDescriptorHeap* rtvDescriptorHeap;
+//static TW3D::TW3DDescriptorHeap* mainDescriptorHeap;
+//static TW3D::TW3DDescriptorHeap* rtvDescriptorHeap;
 static TW3D::TW3DFence* fence[TW3D::TW3DSwapChain::BufferCount];
-static TW3D::TW3DTempGCL* tempGCL;
+//static TW3D::TW3DTempGCL* tempGCL;
 static TW3D::TW3DPipelineState* pipelineState;
 static TW3D::TW3DPipelineState* blitPipelineState;
 //static TW3D::TW3DRootSignature* rootSignature;
@@ -238,19 +238,22 @@ void init_dx12() {
 
 	frameIndex = swapChain->GetCurrentBufferIndex();
 
-	rtvDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForRTV(device, TW3D::TW3DSwapChain::BufferCount + 1);
+	//rtvDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForRTV(device, TW3D::TW3DSwapChain::BufferCount + 1);
 	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++) {
-		renderTargets[i] = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap, i);
-		renderTargets[i]->Create(swapChain->GetBuffer(i));
+		/*renderTargets[i] = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap, i);
+		renderTargets[i]->Create(swapChain->GetBuffer(i));*/
+
+		renderTargets[i] = resource_manager->CreateRenderTargetView(swapChain->GetBuffer(i));
 	}
 
-	mainDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForSR(device, 3);
+	//mainDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForSR(device, 3);
 
-	offscreen = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap, TW3D::TW3DSwapChain::BufferCount, mainDescriptorHeap, 2, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
-	offscreen->Create(width, height);
+	offscreen = resource_manager->CreateRenderTargetView(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
+	//offscreen = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap, TW3D::TW3DSwapChain::BufferCount, mainDescriptorHeap, 0, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
+	//offscreen->Create(width, height);
 
 
-	tempGCL = new TW3D::TW3DTempGCL(device);
+	//tempGCL = new TW3D::TW3DTempGCL(device);
 
 
 	commandList = TW3D::TW3DGraphicsCommandList::CreateDirect(device);
@@ -260,30 +263,28 @@ void init_dx12() {
 		fence[i] = new TW3D::TW3DFence(device);
 	}
 	
-	TWT::Vector<D3D12_DESCRIPTOR_RANGE> ranges(2);
-	ranges[0] = TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
-	ranges[1] = TWU::DXDescriptorRange(2, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
+	/*TWT::Vector<D3D12_DESCRIPTOR_RANGE> ranges(2);
+	ranges[0] = TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1);
+	ranges[1] = TWU::DXDescriptorRange(2, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2);*/
 
-	TW3D::TW3DRootSignature* rootSignature = new TW3D::TW3DRootSignature(3,
+	TW3D::TW3DRootSignature* rootSignature = new TW3D::TW3DRootSignature(4,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
 	rootSignature->SetParameter(0, TW3D::TW3DRootParameter::CreateCBV(0, D3D12_SHADER_VISIBILITY_VERTEX));
 	rootSignature->SetParameter(1, TW3D::TW3DRootParameter::CreateCBV(1, D3D12_SHADER_VISIBILITY_VERTEX));
-	rootSignature->SetParameter(2, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, ranges, 0));
+	rootSignature->SetParameter(2, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV)));
+	rootSignature->SetParameter(3, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, TWU::DXDescriptorRange(2, D3D12_DESCRIPTOR_RANGE_TYPE_SRV)));
 	rootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->AddSampler(1, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->Create(device);
 
-
-	TWT::Vector<D3D12_DESCRIPTOR_RANGE> blitranges(1);
-	blitranges[0] = TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
 	TW3D::TW3DRootSignature* blitRootSignature = new TW3D::TW3DRootSignature(1,
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
-	blitRootSignature->SetParameter(0, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, blitranges, 2));
+	blitRootSignature->SetParameter(0, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV)));
 	blitRootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	blitRootSignature->Create(device);
 
@@ -431,8 +432,11 @@ void init_dx12() {
 
 	//constantBuffer2 = new TW3D::TW3DResourceCB(device, sizeof(cbPerObject), 1);
 
-	texture = TW3D::TW3DResourceSV::Create2D(device, mainDescriptorHeap, L"D:\\тест.png", tempGCL, 0);
-	texture2 = TW3D::TW3DResourceSV::Create2D(device, mainDescriptorHeap, L"D:\\test2.png", tempGCL, 1);
+
+	texture = resource_manager->CreateTexture2D(L"D:\\тест.png");
+	texture2 = resource_manager->CreateTexture2D(L"D:\\test2.png");
+	/*texture = TW3D::TW3DResourceSV::Create2D(device, mainDescriptorHeap, L"D:\\тест.png", tempGCL, 1);
+	texture2 = TW3D::TW3DResourceSV::Create2D(device, mainDescriptorHeap, L"D:\\test2.png", tempGCL, 2);*/
 
 	fence[frameIndex]->Flush(commandQueue);
 
@@ -502,14 +506,18 @@ void UpdatePipeline() {
 	commandList->ClearDSVDepth(depthStencil, 1.0f);
 
 	//commandList->SetGraphicsRootSignature(rootSignature); // set the root signature
-	commandList->SetDescriptorHeap(mainDescriptorHeap);
+	//commandList->SetDescriptorHeap(mainDescriptorHeap);
+	commandList->BindResources(resource_manager);
 
-	commandList->SetGraphicsRootDescriptorTable(2, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	//CD3DX12_GPU_DESCRIPTOR_HANDLE(mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart(), 1);
+	commandList->BindTexture(2, texture);
+	commandList->BindTexture(3, texture2);
+	/*commandList->SetGraphicsRootDescriptorTable(2, texture->GetGPUHandle());
+	commandList->SetGraphicsRootDescriptorTable(3, texture2->GetGPUHandle());*/
 	commandList->SetViewport(&viewport); // set the viewports
 	commandList->SetScissor(&scissorRect); // set the scissor rects
 	commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // set the primitive topology
 	//commandList->SetVertexBuffer(0, vertexBuffer); // set the vertex buffer (using the vertex buffer view)
-
 	camera->Use(commandList);
 	//commandList->SetGraphicsRootCBV(0, cameraCB, 0);
 
@@ -532,7 +540,8 @@ void UpdatePipeline() {
 	commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 	//commandList->SetGraphicsRootSignature(blitRootSignature); // set the root signature
-	commandList->SetGraphicsRootDescriptorTable(0, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	commandList->BindRTVTexture(0, offscreen);
+	//commandList->SetGraphicsRootDescriptorTable(0, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 	commandList->Draw(4);
 
@@ -609,7 +618,7 @@ void update() {
 	// store cube2's world matrix
 	cube2WorldMat = worldMat;
 
-	cube->transform.AdjustRotation(TWT::Vector3f(0.01));
+	cube->transform.AdjustRotation(TWT::Vector3f(0.01f));
 	camera->UpdateConstantBuffer(width, height);
 	/*double t = TWU::GetTime();
 	for (int i = 0; i < 10000; i++) {
@@ -698,12 +707,12 @@ void cleanup() {
 	delete device;
 	delete swapChain;
 
-	delete tempGCL;
+	//delete tempGCL;
 	delete resource_manager;
 	delete camera;
 
 	delete commandQueue;
-	delete rtvDescriptorHeap;
+	//delete rtvDescriptorHeap;
 	delete commandList;
 
 	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; ++i) {
@@ -714,7 +723,7 @@ void cleanup() {
 	delete offscreen;
 
 	//delete constantBuffer1;
-	delete mainDescriptorHeap;
+	//delete mainDescriptorHeap;
 	delete pipelineState;
 	delete blitPipelineState;
 	//delete rootSignature;

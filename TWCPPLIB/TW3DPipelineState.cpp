@@ -5,7 +5,6 @@ TW3D::TW3DPipelineState::TW3DPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE Primiti
 	D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, TW3DRootSignature* RootSignature, TWT::UInt RTCount) :
 	RootSignature(RootSignature)
 {
-
 	desc.PrimitiveTopologyType = PrimitiveTopologyType;
 	desc.SampleDesc = Sampledesc;
 	desc.RasterizerState = RasterizerState;

@@ -126,6 +126,7 @@ D3D12_DESCRIPTOR_RANGE TWU::DXDescriptorRange(TWT::UInt Register, D3D12_DESCRIPT
 	range.RegisterSpace = 0;
 	range.NumDescriptors = 1;
 	range.RangeType = Type;
+	range.OffsetInDescriptorsFromTableStart = 0;
 
 	return range;
 }
