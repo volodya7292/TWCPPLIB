@@ -46,7 +46,7 @@ static TW3D::TW3DPipelineState* blitPipelineState;
 
 static TW3D::TW3DResourceRTV* renderTargets[TW3D::TW3DSwapChain::BufferCount];
 static TW3D::TW3DResourceDSV* depthStencil;
-static TW3D::TW3DResourceRTV* offscreen;
+static TW3D::TW3DResourceRTV *offscreen, *offscreen2;
 static TW3D::TW3DResourceSV* texture;
 static TW3D::TW3DResourceSV* texture2;
 
@@ -225,7 +225,6 @@ void init_dx12() {
 	}
 #endif
 
-
 	factory = new TW3D::TW3DFactory(dxgi_factory_flags);
 	std::vector<TW3D::TW3DAdapter*> adapters = TW3D::TW3DAdapter::ListAvailable(factory, D3D_FEATURE_LEVEL_11_0);
 	adapter = adapters[0];
@@ -249,6 +248,7 @@ void init_dx12() {
 	//mainDescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForSR(device, 3);
 
 	offscreen = resource_manager->CreateRenderTargetView(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
+	offscreen2 = resource_manager->CreateRenderTargetView(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
 	//offscreen = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap, TW3D::TW3DSwapChain::BufferCount, mainDescriptorHeap, 0, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
 	//offscreen->Create(width, height);
 
@@ -257,25 +257,24 @@ void init_dx12() {
 
 
 	commandList = TW3D::TW3DGraphicsCommandList::CreateDirect(device);
+	commandList->Close();
 
 	// create the fences
 	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++) {
 		fence[i] = new TW3D::TW3DFence(device);
 	}
 	
-	/*TWT::Vector<D3D12_DESCRIPTOR_RANGE> ranges(2);
-	ranges[0] = TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1);
-	ranges[1] = TWU::DXDescriptorRange(2, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2);*/
 
 	TW3D::TW3DRootSignature* rootSignature = new TW3D::TW3DRootSignature(4,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
-	rootSignature->SetParameter(0, TW3D::TW3DRootParameter::CreateCBV(0, D3D12_SHADER_VISIBILITY_VERTEX));
-	rootSignature->SetParameter(1, TW3D::TW3DRootParameter::CreateCBV(1, D3D12_SHADER_VISIBILITY_VERTEX));
-	rootSignature->SetParameter(2, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV)));
-	rootSignature->SetParameter(3, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, TWU::DXDescriptorRange(2, D3D12_DESCRIPTOR_RANGE_TYPE_SRV)));
+
+	rootSignature->SetParameterCBV(0, D3D12_SHADER_VISIBILITY_VERTEX, 0);
+	rootSignature->SetParameterCBV(1, D3D12_SHADER_VISIBILITY_VERTEX, 1);
+	rootSignature->SetParameterSV(2, D3D12_SHADER_VISIBILITY_PIXEL, 0);
+	rootSignature->SetParameterSV(3, D3D12_SHADER_VISIBILITY_PIXEL, 2);
 	rootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->AddSampler(1, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->Create(device);
@@ -284,7 +283,7 @@ void init_dx12() {
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
-	blitRootSignature->SetParameter(0, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV)));
+	blitRootSignature->SetParameterSV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);
 	blitRootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	blitRootSignature->Create(device);
 
@@ -338,8 +337,9 @@ void init_dx12() {
 		depthDesc,
 		blendDesc,
 		rootSignature,
-		1);
+		2);
 	pipelineState->SetRTVFormat(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+	pipelineState->SetRTVFormat(1, DXGI_FORMAT_R8G8B8A8_UNORM);
 	pipelineState->SetVertexShader("VertexShader.cso");
 	pipelineState->SetPixelShader("PixelShader.cso");
 	pipelineState->SetInputLayout(inputLayout);
@@ -361,65 +361,6 @@ void init_dx12() {
 	blitPipelineState->SetVertexShader("VertexOffscreenBlit.cso");
 	blitPipelineState->SetPixelShader("PixelOffscreenBlit.cso");
 	blitPipelineState->Create(device);
-
-	// a cube
-	Vertex vList[] = {
-		// front face
-		{ -0.5f,  0.5f, -0.5f, 0.0f, 0.0f },
-		{ -0.5f, -0.5f, -0.5f, 0.0f, 1.0f },
-		{  0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
-		{ -0.5f,  0.5f, -0.5f, 0.0f, 0.0f },
-		{  0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
-		{  0.5f,  0.5f, -0.5f, 1.0f, 0.0f },
-
-		//// right side face
-		{  0.5f,  0.5f, -0.5f, 0.0f, 0.0f },
-		{  0.5f, -0.5f, -0.5f, 0.0f, 1.0f },
-		{  0.5f, -0.5f,  0.5f, 1.0f, 1.0f },
-		{  0.5f,  0.5f, -0.5f, 0.0f, 0.0f },
-		{  0.5f, -0.5f,  0.5f, 1.0f, 1.0f },
-		{  0.5f,  0.5f,  0.5f, 1.0f, 0.0f },
-
-		// left side face
-		{ -0.5f,  0.5f,  0.5f, 0.0f, 0.0f },
-		{ -0.5f, -0.5f,  0.5f, 0.0f, 1.0f },
-		{ -0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
-		{ -0.5f,  0.5f,  0.5f, 0.0f, 0.0f },
-		{ -0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
-		{ -0.5f,  0.5f, -0.5f, 1.0f, 0.0f },
-
-		// back face
-		{  0.5f,  0.5f,  0.5f, 0.0f, 0.0f },
-		{  0.5f, -0.5f,  0.5f, 0.0f, 1.0f },
-		{ -0.5f, -0.5f,  0.5f, 1.0f, 1.0f },
-		{  0.5f,  0.5f,  0.5f, 0.0f, 0.0f },
-		{ -0.5f, -0.5f,  0.5f, 1.0f, 1.0f },
-		{ -0.5f,  0.5f,  0.5f, 1.0f, 0.0f },
-
-		// top face
-		{ -0.5f,  0.5f,  0.5f, 0.0f, 0.0f },
-		{ -0.5f,  0.5f, -0.5f, 0.0f, 1.0f },
-		{  0.5f,  0.5f, -0.5f, 1.0f, 1.0f },
-		{ -0.5f,  0.5f,  0.5f, 0.0f, 0.0f },
-		{  0.5f,  0.5f, -0.5f, 1.0f, 1.0f },
-		{  0.5f,  0.5f,  0.5f, 1.0f, 0.0f },
-
-		// bottom face
-		{  0.5f, -0.5f,  0.5f, 0.0f, 0.0f },
-		{  0.5f, -0.5f, -0.5f, 0.0f, 1.0f },
-		{ -0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
-		{  0.5f, -0.5f,  0.5f, 0.0f, 0.0f },
-		{ -0.5f, -0.5f, -0.5f, 1.0f, 1.0f },
-		{ -0.5f, -0.5f,  0.5f, 1.0f, 0.0f },
-	};
-
-	int vBufferSize = sizeof(vList);
-	numCubeVertices = vBufferSize / sizeof(Vertex);
-
-	//vertexBuffer = new TW3D::TW3DResourceVB(device, vBufferSize, sizeof(Vertex), tempGCL);
-	//vertexBuffer->UpdateData(reinterpret_cast<BYTE*>(vList), vBufferSize);
-
-	commandList->Close();
 
 	TW3DPrimitives::Initialize(resource_manager);
 	cube = new TW3D::TW3DCube(resource_manager);
@@ -454,40 +395,6 @@ void init_dx12() {
 	scissorRect.top = 0;
 	scissorRect.right = width;
 	scissorRect.bottom = height;
-
-	// build projection and view matrix
-	//TWT::Matrix4f tmpMat = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 1000.0f);
-	//cameraProjMat = tmpMat;
-
-	// set starting camera state
-	//cameraPosition = TWT::Vector4f(0.0f, 2.0f, -4.0f, 0.0f);
-	//cameraTarget = TWT::Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
-	//cameraUp = TWT::Vector4f(0.0f, 1.0f, 0.0f, 0.0f);
-
-	// build view matrix
-	//TWT::Vector3f cPos = cameraPosition;
-	//TWT::Vector3f cTarg = cameraTarget;
-	//TWT::Vector3f cUp = cameraUp;
-	//tmpMat = glm::lookAt(cPos, cTarg, cUp);
-	//cameraViewMat = tmpMat;
-
-	// set starting cubes position
-	// first cube
-	cube1Position = TWT::Vector4f(0.0f, 0.0f, 0.0f, 0.0f); // set cube 1's position
-	TWT::Vector3f posVec = cube1Position;
-
-	TWT::Matrix4f tmpMat = glm::translate(TWT::Matrix4f(1), TWT::Vector3f(posVec));
-	cube1RotMat = TWT::Matrix4f(1);
-	cube1WorldMat = tmpMat;
-
-	// second cube
-	cube2PositionOffset = TWT::Vector4f(1.5f, 0.0f, 0.0f, 0.0f);
-	posVec = cube2PositionOffset + cube1Position;
-													// we are rotating around cube1 here, so add cube2's position to cube1
-
-	tmpMat = glm::translate(TWT::Matrix4f(1), TWT::Vector3f(posVec));
-	cube2RotMat = TWT::Matrix4f(1);
-	cube2WorldMat = tmpMat;
 }
 
 void FlushGPU() {
@@ -500,14 +407,16 @@ void UpdatePipeline() {
 
 	commandList->SetPipelineState(pipelineState);
 
-	commandList->SetRenderTarget(offscreen, depthStencil);
+	commandList->BindResources(resource_manager);
+
+	commandList->SetRenderTargets({offscreen, offscreen2}, depthStencil);
 	const float clearColor[] = { 0.f, 0.f, 0.f, 1.f };
 	commandList->ClearRTV(offscreen);
+	commandList->ClearRTV(offscreen2);
 	commandList->ClearDSVDepth(depthStencil, 1.0f);
 
 	//commandList->SetGraphicsRootSignature(rootSignature); // set the root signature
 	//commandList->SetDescriptorHeap(mainDescriptorHeap);
-	commandList->BindResources(resource_manager);
 
 	//CD3DX12_GPU_DESCRIPTOR_HANDLE(mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart(), 1);
 	commandList->BindTexture(2, texture);
@@ -521,7 +430,7 @@ void UpdatePipeline() {
 	camera->Use(commandList);
 	//commandList->SetGraphicsRootCBV(0, cameraCB, 0);
 
-	cube->RecordDraw(commandList, 1);
+	commandList->DrawObject(cube, 1);
 	//commandList->Draw(numCubeVertices);
 
 	//commandList->SetGraphicsRootCBV(0, constantBuffer2, 0);
@@ -540,7 +449,7 @@ void UpdatePipeline() {
 	commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 	//commandList->SetGraphicsRootSignature(blitRootSignature); // set the root signature
-	commandList->BindRTVTexture(0, offscreen);
+	commandList->BindRTVTexture(0, offscreen0);
 	//commandList->SetGraphicsRootDescriptorTable(0, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 	commandList->Draw(4);
@@ -551,83 +460,8 @@ void UpdatePipeline() {
 }
 
 void update() {
-	// update app logic, such as moving the camera or figuring out what objects are in view
-
-	// create rotation matrices
-	TWT::Matrix4f rotXMat = glm::rotate(TWT::Matrix4f(1), 0.01f, TWT::Vector3f(1, 0, 0));
-	TWT::Matrix4f rotYMat = glm::rotate(TWT::Matrix4f(1), 0.02f, TWT::Vector3f(0, 1, 0));
-	TWT::Matrix4f rotZMat = glm::rotate(TWT::Matrix4f(1), 0.03f, TWT::Vector3f(0, 0, 1));
-
-	// add rotation to cube1's rotation matrix and store it
-	TWT::Matrix4f rotMat = cube1RotMat * rotXMat * rotYMat * rotZMat;
-	cube1RotMat = rotMat;
-
-	// create translation matrix for cube 1 from cube 1's position vector
-	TWT::Matrix4f translationMat = translate(TWT::Matrix4f(1), TWT::Vector3f(cube1Position));
-
-	// create cube1's world matrix by first rotating the cube, then positioning the rotated cube
-	TWT::Matrix4f worldMat = rotMat * translationMat;
-
-	// store cube1's world matrix
-	cube1WorldMat = worldMat;
-
-	// update constant buffer for cube1
-	// create the wvp matrix and store in constant buffer
-	//TWT::Matrix4f viewMat = cameraViewMat;
-	//TWT::Matrix4f projMat = cameraProjMat;
-	//TWT::Matrix4f wvpMat = camera.GetViewProjectionMatrix(width, height) * cube1WorldMat;
-	//cbPerObject.wvpMat = wvpMat;
-	
-	glm::vec3 d = normalize(glm::vec3(5));
-	// copy our ConstantBuffer instance to the mapped constant buffer resource
-	//constantBuffer1->Update(&cbPerObject, 0);
-	//memcpy(cbvGPUAddress[frameIndex], &cbPerObject, sizeof(cbPerObject));
-
-	// now do cube2's world matrix
-	// create rotation matrices for cube2
-	rotXMat = glm::rotate(TWT::Matrix4f(1), 0.03f, TWT::Vector3f(1, 0, 0));
-	rotYMat = glm::rotate(TWT::Matrix4f(1), 0.02f, TWT::Vector3f(0, 1, 0));
-	rotZMat = glm::rotate(TWT::Matrix4f(1), 0.01f, TWT::Vector3f(0, 0, 1));
-
-
-	// add rotation to cube2's rotation matrix and store it
-	rotMat = rotZMat * (cube2RotMat * (rotXMat * rotYMat));
-	cube2RotMat = rotMat;
-
-	// create translation matrix for cube 2 to offset it from cube 1 (its position relative to cube1
-	TWT::Matrix4f translationOffsetMat = glm::translate(TWT::Matrix4f(1), TWT::Vector3f(cube2PositionOffset));
-
-	// we want cube 2 to be half the size of cube 1, so we scale it by .5 in all dimensions
-	TWT::Matrix4f scaleMat = glm::scale(TWT::Matrix4f(1), TWT::Vector3f(0.5f));
-
-	// reuse worldMat. 
-	// first we scale cube2. scaling happens relative to point 0,0,0, so you will almost always want to scale first
-	// then we translate it. 
-	// then we rotate it. rotation always rotates around point 0,0,0
-	// finally we move it to cube 1's position, which will cause it to rotate around cube 1
-	worldMat = scaleMat * translationOffsetMat * rotMat * translationMat;
-	
-	//wvpMat = camera.GetViewProjectionMatrix(width, height) * cube2WorldMat; // create wvp matrix
-
-	//cbPerObject.wvpMat = wvpMat; // store transposed wvp matrix in constant buffer
-
-	// copy our ConstantBuffer instance to the mapped constant buffer resource
-	//constantBuffer2->Update(&cbPerObject, 0);
-	//memcpy(cbvGPUAddress[frameIndex] + ConstantBufferPerObjectAlignedSize, &cbPerObject, sizeof(cbPerObject));
-
-	// store cube2's world matrix
-	cube2WorldMat = worldMat;
-
 	cube->transform.AdjustRotation(TWT::Vector3f(0.01f));
 	camera->UpdateConstantBuffer(width, height);
-	/*double t = TWU::GetTime();
-	for (int i = 0; i < 10000; i++) {
-		constantBuffer1->Update(&cbPerObject, 0);
-		constantBuffer2->Update(&cbPerObject, 0);
-	}
-	double t2 = TWU::GetTime();
-	TWU::CPrintln(t2 - t);*/
-
 }
 
 void render() {
@@ -660,6 +494,7 @@ void on_resize() {
 		renderTargets[n]->Release();
 
 	offscreen->Release();
+	offscreen2->Release();
 
 	depthStencil->Release();
 
@@ -670,6 +505,7 @@ void on_resize() {
 	for (UINT n = 0; n < TW3D::TW3DSwapChain::BufferCount; n++)
 		renderTargets[n]->Create(swapChain->GetBuffer(n));
 	offscreen->Create(width, height);
+	offscreen2->Create(width, height);
 
 	depthStencil->Create(width, height);
 }
@@ -721,6 +557,7 @@ void cleanup() {
 	};
 
 	delete offscreen;
+	delete offscreen2;
 
 	//delete constantBuffer1;
 	//delete mainDescriptorHeap;

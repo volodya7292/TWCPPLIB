@@ -1,6 +1,5 @@
 #pragma once
 #include "TW3DDevice.h"
-#include "TW3DRootParameter.h"
 
 namespace TW3D {
 	class TW3DRootSignature {
@@ -10,7 +9,10 @@ namespace TW3D {
 
 		ID3D12RootSignature* Get();
 
-		void SetParameter(TWT::UInt Index, TW3DRootParameter Parameter);
+		void SetParameter(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, D3D12_ROOT_PARAMETER_TYPE Type);
+		void SetParameterSV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register);
+		void SetParameterCBV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register);
+		
 
 		void AddSampler(TWT::UInt Register, D3D12_SHADER_VISIBILITY ShaderVisibility, D3D12_FILTER Filter = D3D12_FILTER_MIN_MAG_MIP_POINT,
 			D3D12_TEXTURE_ADDRESS_MODE AddressMode = D3D12_TEXTURE_ADDRESS_MODE_WRAP, TWT::UInt MaxAnisotropy = 0);
@@ -19,7 +21,7 @@ namespace TW3D {
 
 	private:
 		ID3D12RootSignature* RootSignature;
-		TWT::Vector<TW3DRootParameter> RootParameters;
+		TWT::Vector<D3D12_ROOT_PARAMETER> RootParameters;
 		TWT::Vector<D3D12_STATIC_SAMPLER_DESC> Samplers;
 		D3D12_ROOT_SIGNATURE_DESC Desc;
 	};

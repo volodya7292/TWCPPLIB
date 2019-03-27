@@ -69,6 +69,11 @@ namespace TWT {
 
 	TWT::Char*   WideToMultibyte(const std::wstring &wstr);
 	std::wstring MultibyteToWide(const std::string &str);
+
+	template<class T>
+	inline void Copy(const Vector<T>& Source, Vector<T>& Destination) {
+		std::copy(Source.begin(), Source.end(), std::back_inserter(Destination));
+	}
 }
 
 std::ostream&  operator << (std::ostream& os, const TWT::String& t);

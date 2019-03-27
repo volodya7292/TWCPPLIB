@@ -9,9 +9,19 @@ struct VS_OUTPUT
     float2 texCoord: TEXCOORD;
 };
 
-float4 main(VS_OUTPUT input) : SV_TARGET
+struct GBuffer {
+	float4 out0;
+	float4 out1;
+};
+
+GBuffer main(VS_OUTPUT input) : SV_TARGET
 {
     // return interpolated color
 
-    return lerp(t1.Sample(s1, input.texCoord), tex.Sample(texs, input.texCoord), 0.5);
+	GBuffer g;
+	g.out0 = lerp(t1.Sample(s1, input.texCoord), tex.Sample(texs, input.texCoord), 0.5);
+	g.out1 = float4(1, 1, 0, 1);
+
+	return g;
+    //return lerp(t1.Sample(s1, input.texCoord), tex.Sample(texs, input.texCoord), 0.5);
 }

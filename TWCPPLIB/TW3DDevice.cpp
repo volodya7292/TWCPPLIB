@@ -35,7 +35,7 @@ void TW3D::TW3DDevice::CreateGraphicsCommandList(D3D12_COMMAND_LIST_TYPE type, I
 void TW3D::TW3DDevice::CreateFence(TWT::UInt64 initialValue, D3D12_FENCE_FLAGS flags, ID3D12Fence1** fence) {
 	TWU::SuccessAssert(device->CreateFence(initialValue, flags, IID_PPV_ARGS(fence)));
 }
-
+#include <comdef.h>
 void TW3D::TW3DDevice::CreateRootSignature(ID3DBlob* signature, ID3D12RootSignature** rootSignature) {
 	TWU::SuccessAssert(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(rootSignature)));
 }

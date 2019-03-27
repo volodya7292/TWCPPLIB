@@ -262,6 +262,7 @@ void TWU::SuccessAssert(HRESULT hr) {
 	if (FAILED(hr)) {
 		TWT::Char s_str[64] = {};
 		sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<TWT::UInt>(hr));
+
 		throw std::runtime_error(s_str);
 	}
 }

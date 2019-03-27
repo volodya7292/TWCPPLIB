@@ -4,6 +4,7 @@
 #include "TW3DResourceVB.h"
 #include "TW3DResourceCB.h"
 #include "TW3DResourceManager.h"
+#include "TW3DObject.h"
 
 TW3D::TW3DGraphicsCommandList::TW3DGraphicsCommandList(TW3D::TW3DDevice* device, D3D12_COMMAND_LIST_TYPE type) {
 	device->CreateCommandAllocator(type, &CommandAllocator);
@@ -54,8 +55,11 @@ void TW3D::TW3DGraphicsCommandList::SetRenderTarget(TW3DResourceRTV* RTV, TW3DRe
 	commandList->OMSetRenderTargets(1, &RTV->GetRTVCPUHandle(), false, &DSV->GetCPUHandle());
 }
 
-void TW3D::TW3DGraphicsCommandList::SetRenderTargets(TWT::UInt RTVDescriptorCount, const D3D12_CPU_DESCRIPTOR_HANDLE* RTVDescriptors, TW3DResourceDSV* DSV) {
-	commandList->OMSetRenderTargets(RTVDescriptorCount, RTVDescriptors, false, &DSV->GetCPUHandle());
+void TW3D::TW3DGraphicsCommandList::SetRenderTargets(const TWT::Vector<TW3DResourceRTV*>& RTVs, TW3DResourceDSV* DSV) {
+	TWT::Vector<D3D12_CPU_DESCRIPTOR_HANDLE> handles(RTVs.size());
+	for (int i = 0; i < RTVs.size(); i++)
+		handles[i] = RTVs[i]->GetRTVCPUHandle();
+	commandList->OMSetRenderTargets(RTVs.size(), handles.data(), false, &DSV->GetCPUHandle());
 }
 
 void TW3D::TW3DGraphicsCommandList::ClearRTV(TW3DResourceRTV* RTV) {
@@ -136,6 +140,10 @@ void TW3D::TW3DGraphicsCommandList::BindTexture(TWT::UInt RootParameterIndex, TW
 
 void TW3D::TW3DGraphicsCommandList::BindRTVTexture(TWT::UInt RootParameterIndex, TW3DResourceRTV* RTV) {
 	commandList->SetGraphicsRootDescriptorTable(RootParameterIndex, RTV->GetSRVGPUHandle());
+}
+
+void TW3D::TW3DGraphicsCommandList::DrawObject(TW3DObject* object, TWT::UInt ModelCBRootParameterIndex) {
+	object->RecordDraw(this, ModelCBRootParameterIndex);
 }
 
 void TW3D::TW3DGraphicsCommandList::Reset() {
