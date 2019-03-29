@@ -27,6 +27,8 @@ namespace TW3D {
 		TWT::UInt GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE heapType);
 		TWT::UInt64 GetCopyableFootprints(const D3D12_RESOURCE_DESC* resourceDesc, TWT::UInt subResCount);
 
+		ID3D12Device5* Get();
+
 	private:
 		TW3DAdapter* adapter;
 		ID3D12Device5* device;

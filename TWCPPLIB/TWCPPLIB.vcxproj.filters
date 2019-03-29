@@ -156,6 +156,15 @@
     <ClInclude Include="TW3DTempGCL.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
+    <ClInclude Include="Raytracing.hlsl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RayTracingHlslCompat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HlslCompat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -264,5 +273,9 @@
     <FxCompile Include="VertexShader.hlsl" />
     <FxCompile Include="VertexOffscreenBlit.hlsl" />
     <FxCompile Include="PixelOffscreenBlit.hlsl" />
+    <FxCompile Include="Raytracing.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

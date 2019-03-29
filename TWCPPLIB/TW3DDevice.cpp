@@ -68,6 +68,10 @@ TWT::UInt64 TW3D::TW3DDevice::GetCopyableFootprints(const D3D12_RESOURCE_DESC* r
 	return totalBytes;
 }
 
+ID3D12Device5* TW3D::TW3DDevice::Get() {
+	return device;
+}
+
 TWT::UInt TW3D::TW3DDevice::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE heapType) {
 	return device->GetDescriptorHandleIncrementSize(heapType);
 }

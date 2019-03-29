@@ -33,6 +33,10 @@ TWT::Vector3f TW3D::TW3DPerspectiveCamera::GetRotation() {
 	return rotation;
 }
 
+void TW3D::TW3DPerspectiveCamera::SetRotation(TWT::Vector3f Rotation) {
+	rotation = glm::mod(Rotation, 360.0f);
+}
+
 void TW3D::TW3DPerspectiveCamera::UpdateConstantBuffer(TWT::UInt Width, TWT::UInt Height, TW3DResourceCB* ConstantBuffer) {
 	TWT::DefaultCameraCB cb;
 	cb.proj_view = GetProjectionViewMatrix(Width, Height);

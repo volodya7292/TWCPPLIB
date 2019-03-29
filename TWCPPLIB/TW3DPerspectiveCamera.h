@@ -15,6 +15,8 @@ namespace TW3D {
 		TWT::Matrix4f GetProjectionViewMatrix(TWT::UInt Width, TWT::UInt Height);
 		TWT::Vector3f GetRotation();
 
+		void SetRotation(TWT::Vector3f Rotation);
+
 		void UpdateConstantBuffer(TWT::UInt Width, TWT::UInt Height, TW3DResourceCB* ConstantBuffer = nullptr);
 		void Use(TW3DGraphicsCommandList* CommandList);
 

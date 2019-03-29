@@ -19,8 +19,14 @@
 #include <stdint.h>
 #include <dxgi1_6.h>
 #include <wincodec.h>
+
+#ifdef _DEBUG
 #include <dxgidebug.h>
+#endif
+
 #include <d3dx12.h>
+#include <d3d12raytracingfallback.h>
+#include <D3D12RaytracingHelpers.hpp>
 
 #include <wrl.h>
 using Microsoft::WRL::ComPtr;
