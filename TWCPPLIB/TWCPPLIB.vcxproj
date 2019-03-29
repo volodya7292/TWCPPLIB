@@ -274,10 +274,7 @@
     <ProjectReference />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="HlslCompat.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Raytracing.hlsl.h" />
-    <ClInclude Include="RayTracingHlslCompat.h" />
     <ClInclude Include="TW3DPerspectiveCamera.h" />
     <ClInclude Include="TW3DAdapter.h" />
     <ClInclude Include="TW3DCube.h" />

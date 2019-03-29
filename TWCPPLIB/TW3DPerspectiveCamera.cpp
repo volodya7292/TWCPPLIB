@@ -1,8 +1,9 @@
 #include "pch.h"
 #include "TW3DPerspectiveCamera.h"
 
-TW3D::TW3DPerspectiveCamera::TW3DPerspectiveCamera(TW3DResourceManager* ResourceManager, TWT::Float FOVY, TWT::Vector3f Position, TWT::Vector3f Rotation, TWT::Float ZNear, TWT::Float ZFar) :
-	FOVY(FOVY), Position(Position), rotation(Rotation), ZNear(ZNear), ZFar(ZFar)
+TW3D::TW3DPerspectiveCamera::TW3DPerspectiveCamera(TW3DResourceManager* ResourceManager, TWT::UInt Width, TWT::UInt Height,
+	TWT::Float FOVY, TWT::Vector3f Position, TWT::Vector3f Rotation, TWT::Float ZNear, TWT::Float ZFar) :
+	Width(Width), Height(Height), FOVY(FOVY), Position(Position), rotation(Rotation), ZNear(ZNear), ZFar(ZFar)
 {
 	if (ResourceManager)
 		constant_buffer = ResourceManager->CreateConstantBuffer(sizeof(TWT::DefaultCameraCB));
@@ -13,7 +14,7 @@ TW3D::TW3DPerspectiveCamera::~TW3DPerspectiveCamera() {
 		delete constant_buffer;
 }
 
-TWT::Matrix4f TW3D::TW3DPerspectiveCamera::GetProjectionMatrix(TWT::UInt Width, TWT::UInt Height) {
+TWT::Matrix4f TW3D::TW3DPerspectiveCamera::GetProjectionMatrix() {
 	TWT::Matrix4f f = glm::perspective(glm::radians(FOVY), (float)Width / Height, ZNear, ZFar);
 	return f;
 }
@@ -25,21 +26,29 @@ TWT::Matrix4f TW3D::TW3DPerspectiveCamera::GetViewMatrix() {
 	return m * TWT::Translate(TWT::Matrix4f(1), -Position);
 }
 
-TWT::Matrix4f TW3D::TW3DPerspectiveCamera::GetProjectionViewMatrix(TWT::UInt Width, TWT::UInt Height) {
-	return GetProjectionMatrix(Width, Height) * GetViewMatrix();
+TWT::Matrix4f TW3D::TW3DPerspectiveCamera::GetProjectionViewMatrix() {
+	return GetProjectionMatrix() * GetViewMatrix();
 }
 
 TWT::Vector3f TW3D::TW3DPerspectiveCamera::GetRotation() {
 	return rotation;
 }
 
+TWT::Float TW3D::TW3DPerspectiveCamera::GetRatioX() {
+	return tan(glm::radians(FOVY) / 2.0f) * ((float)Width / Height);
+}
+
+TWT::Float TW3D::TW3DPerspectiveCamera::GetRatioY() {
+	return tan(glm::radians(FOVY) / 2.0f);
+}
+
 void TW3D::TW3DPerspectiveCamera::SetRotation(TWT::Vector3f Rotation) {
 	rotation = glm::mod(Rotation, 360.0f);
 }
 
-void TW3D::TW3DPerspectiveCamera::UpdateConstantBuffer(TWT::UInt Width, TWT::UInt Height, TW3DResourceCB* ConstantBuffer) {
+void TW3D::TW3DPerspectiveCamera::UpdateConstantBuffer(TW3DResourceCB* ConstantBuffer) {
 	TWT::DefaultCameraCB cb;
-	cb.proj_view = GetProjectionViewMatrix(Width, Height);
+	cb.proj_view = GetProjectionViewMatrix();
 
 	if (ConstantBuffer)
 		ConstantBuffer->Update(&cb, 0);

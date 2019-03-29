@@ -14,7 +14,6 @@
 #include "TW3DCube.h"
 #include "TW3DPrimitives.h"
 #include "TW3DPerspectiveCamera.h"
-#include "Raytracing.hlsl.h"
 
 static TW3D::TW3DScene*					scene;
 static TW3D::TW3DRenderer*				renderer;
@@ -44,11 +43,13 @@ namespace LocalRootSignatureParams {
 	};
 }
 struct SceneConstantBuffer {
-	TWT::Matrix4f projectionToWorld;
+	//TWT::Matrix4f projectionToWorld;
+	TWT::Vector4f cameraData; // ratioX, ratioY, FOVY
 	TWT::Vector4f cameraPosition;
 	TWT::Vector4f lightPosition;
 	TWT::Vector4f lightAmbientColor;
 	TWT::Vector4f lightDiffuseColor;
+	TWT::Matrix4f cameraView;
 };
 struct CubeConstantBuffer {
 	TWT::Vector4f albedo;
@@ -58,13 +59,15 @@ struct Vertex {
 	TWT::Vector3f position;
 	TWT::Vector3f normal;
 };
-typedef UINT16 Index;
-union AlignedSceneConstantBuffer {
-	SceneConstantBuffer constants;
-	uint8_t alignmentPadding[D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT];
-};
-static AlignedSceneConstantBuffer*  m_mappedConstantData;
-static ID3D12Resource*       m_perFrameConstants;
+//typedef UINT16 Index;
+//static SceneConstantBuffer* m_mappedConstantData;
+static TW3D::TW3DResourceCB* m_mappedConstantData;
+//union AlignedSceneConstantBuffer {
+//	SceneConstantBuffer constants;
+//	uint8_t alignmentPadding[D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT];
+//};
+//static AlignedSceneConstantBuffer*  m_mappedConstantData;
+//static ID3D12Resource*       m_perFrameConstants;
 static ID3D12RaytracingFallbackDevice* m_fallbackDevice;
 static ID3D12RaytracingFallbackCommandList* m_fallbackCommandList;
 static ID3D12RaytracingFallbackStateObject* m_fallbackStateObject;
@@ -76,9 +79,9 @@ static UINT m_descriptorsAllocated;
 static UINT m_descriptorSize;
 static CubeConstantBuffer m_cubeCB;
 static SceneConstantBuffer m_sceneCB[TW3D::TW3DSwapChain::BufferCount];
-static ID3D12Resource* m_indexBuffer;
-static D3D12_CPU_DESCRIPTOR_HANDLE m_indexBuffer_cpuDescriptorHandle;
-static D3D12_GPU_DESCRIPTOR_HANDLE m_indexBuffer_gpuDescriptorHandle;
+//static ID3D12Resource* m_indexBuffer;
+//static D3D12_CPU_DESCRIPTOR_HANDLE m_indexBuffer_cpuDescriptorHandle;
+//static D3D12_GPU_DESCRIPTOR_HANDLE m_indexBuffer_gpuDescriptorHandle;
 static ID3D12Resource* m_vertexBuffer;
 static D3D12_CPU_DESCRIPTOR_HANDLE m_vertexBuffer_cpuDescriptorHandle;
 static D3D12_GPU_DESCRIPTOR_HANDLE m_vertexBuffer_gpuDescriptorHandle;
@@ -110,7 +113,7 @@ static TW3D::TW3DPipelineState* blitPipelineState;
 
 static TW3D::TW3DResourceRTV* renderTargets[TW3D::TW3DSwapChain::BufferCount];
 static TW3D::TW3DResourceDSV* depthStencil;
-static TW3D::TW3DResourceRTV *offscreen, *offscreen2;
+static TW3D::TW3DResourceRTV* offscreen, *offscreen2;
 static TW3D::TW3DResourceSV* texture;
 static TW3D::TW3DResourceSV* texture2;
 
@@ -124,7 +127,7 @@ static D3D12_RECT scissorRect; // the area to draw in. pixels outside that area 
 
 
 
-static int numCubeVertices; // the number of indices to draw the cube
+//static int numCubeVertices; // the number of indices to draw the cube
 
 static TW3D::TW3DPerspectiveCamera* camera;
 
@@ -388,7 +391,7 @@ void init_dx12() {
 	depthStencil = new TW3D::TW3DResourceDSV(device);
 	depthStencil->Create(width, height);
 
-	camera = new TW3D::TW3DPerspectiveCamera(resource_manager, 45, TWT::Vector3f(0.0f, 0.0f, 4.0f), TWT::Vector3f(0, 0, 0));
+	camera = new TW3D::TW3DPerspectiveCamera(resource_manager, width, height, 70, TWT::Vector3f(-3.0f, 4.0f, 3.0f), TWT::Vector3f(45, 45, 0));
 
 
 	texture = resource_manager->CreateTexture2D(L"D:\\тест.png");
@@ -508,9 +511,9 @@ void BuildAccelerationStructures() {
 
 	D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
 	geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-	geometryDesc.Triangles.IndexBuffer = m_indexBuffer->GetGPUVirtualAddress();
-	geometryDesc.Triangles.IndexCount = static_cast<UINT>(m_indexBuffer->GetDesc().Width) / sizeof(Index);
-	geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
+	//geometryDesc.Triangles.IndexBuffer = m_indexBuffer->GetGPUVirtualAddress();
+	geometryDesc.Triangles.IndexCount = 0; //static_cast<UINT>(m_indexBuffer->GetDesc().Width) / sizeof(Index);
+	//geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
 	geometryDesc.Triangles.Transform3x4 = 0;
 	geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 	geometryDesc.Triangles.VertexCount = static_cast<UINT>(m_vertexBuffer->GetDesc().Width) / sizeof(Vertex);
@@ -625,24 +628,27 @@ void BuildAccelerationStructures() {
 void CreateConstantBuffers() {
 	auto frameCount = swapChain->BufferCount;
 
-	// Create the constant buffer memory and map the CPU and GPU addresses
-	const D3D12_HEAP_PROPERTIES uploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+	//// Create the constant buffer memory and map the CPU and GPU addresses
+	//const D3D12_HEAP_PROPERTIES uploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 
-	// Allocate one constant buffer per frame, since it gets updated every frame.
-	size_t cbSize = frameCount * sizeof(AlignedSceneConstantBuffer);
-	const D3D12_RESOURCE_DESC constantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(cbSize);
+	//UINT AlignedElementSize = (sizeof(SceneConstantBuffer) + 255) & ~255;
+	//// Allocate one constant buffer per frame, since it gets updated every frame.
+	//size_t cbSize = frameCount * AlignedElementSize;
+	//const D3D12_RESOURCE_DESC constantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(cbSize);
 
-	device->CreateCommittedResource(
-		&uploadHeapProperties,
-		D3D12_HEAP_FLAG_NONE,
-		&constantBufferDesc,
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		&m_perFrameConstants);
+	//device->CreateCommittedResource(
+	//	&uploadHeapProperties,
+	//	D3D12_HEAP_FLAG_NONE,
+	//	&constantBufferDesc,
+	//	D3D12_RESOURCE_STATE_GENERIC_READ,
+	//	&m_perFrameConstants);
 
-	// Map the constant buffer and cache its heap pointers.
-	// We don't unmap this until the app closes. Keeping buffer mapped for the lifetime of the resource is okay.
-	CD3DX12_RANGE readRange(0, 0);        // We do not intend to read from this resource on the CPU.
-	TWU::SuccessAssert(m_perFrameConstants->Map(0, nullptr, reinterpret_cast<void**>(&m_mappedConstantData)));
+	//// Map the constant buffer and cache its heap pointers.
+	//// We don't unmap this until the app closes. Keeping buffer mapped for the lifetime of the resource is okay.
+	//CD3DX12_RANGE readRange(0, 0);        // We do not intend to read from this resource on the CPU.
+	//TWU::SuccessAssert(m_perFrameConstants->Map(0, nullptr, reinterpret_cast<void**>(&m_mappedConstantData)));
+
+	m_mappedConstantData = new TW3D::TW3DResourceCB(device, sizeof(SceneConstantBuffer), frameCount);
 }
 
 // Shader record = {{Shader ID}, {RootArguments}}
@@ -788,7 +794,9 @@ void BuildShaderTables() {
 		struct RootArguments {
 			CubeConstantBuffer cb;
 		} rootArguments;
+		m_cubeCB.albedo = TWT::Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 		rootArguments.cb = m_cubeCB;
+
 
 		UINT numShaderRecords = 1;
 		UINT shaderRecordSize = shaderIdentifierSize + sizeof(rootArguments);
@@ -820,10 +828,11 @@ void init_dxr() {
 	TWU::SuccessAssert(D3D12CreateRaytracingFallbackDevice(device->Get(), CreateRaytracingFallbackDeviceFlags::ForceComputeFallback, 0, IID_PPV_ARGS(&m_fallbackDevice)));
 	m_fallbackDevice->QueryRaytracingCommandList(commandList->Get(), IID_PPV_ARGS(&m_fallbackCommandList));
 
+	m_cubeCB.albedo = TWT::Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 
 	CD3DX12_DESCRIPTOR_RANGE ranges[2]; // Perfomance TIP: Order from most frequent to least frequent.
 	ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);  // 1 output texture
-	ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1);  // 2 static index and vertex buffers.
+	ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);  // 2 static index and vertex buffers.
 
 	CD3DX12_ROOT_PARAMETER rootParameters[GlobalRootSignatureParams::Count];
 	rootParameters[GlobalRootSignatureParams::OutputViewSlot].InitAsDescriptorTable(1, &ranges[0]);
@@ -943,7 +952,7 @@ void init_dxr() {
 
 
 	// Cube indices.
-	Index indices[] =
+	/*Index indices[] =
 	{
 		3,1,0,
 		2,1,3,
@@ -962,17 +971,21 @@ void init_dxr() {
 
 		22,20,21,
 		23,20,22
-	};
+	};*/
 
 	// Cube vertices positions and corresponding triangle normals.
 	Vertex vertices[] =
 	{
-		{ TWT::Vector3f(-1.0f, 1.0f, -1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
+		{ TWT::Vector3f(-1.0f, 1.0f, 1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
 		{ TWT::Vector3f(1.0f, 1.0f, -1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
+		{ TWT::Vector3f(-1.0f, 1.0f, -1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
+
 		{ TWT::Vector3f(1.0f, 1.0f, 1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
+		{ TWT::Vector3f(1.0f, 1.0f, -1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
 		{ TWT::Vector3f(-1.0f, 1.0f, 1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
 
-		{ TWT::Vector3f(-1.0f, -1.0f, -1.0f), TWT::Vector3f(0.0f, -1.0f, 0.0f) },
+		
+		/*{ TWT::Vector3f(-1.0f, -1.0f, -1.0f), TWT::Vector3f(0.0f, -1.0f, 0.0f) },
 		{ TWT::Vector3f(1.0f, -1.0f, -1.0f), TWT::Vector3f(0.0f, -1.0f, 0.0f) },
 		{ TWT::Vector3f(1.0f, -1.0f, 1.0f), TWT::Vector3f(0.0f, -1.0f, 0.0f) },
 		{ TWT::Vector3f(-1.0f, -1.0f, 1.0f), TWT::Vector3f(0.0f, -1.0f, 0.0f) },
@@ -995,15 +1008,15 @@ void init_dxr() {
 		{ TWT::Vector3f(-1.0f, -1.0f, 1.0f), TWT::Vector3f(0.0f, 0.0f, 1.0f) },
 		{ TWT::Vector3f(1.0f, -1.0f, 1.0f), TWT::Vector3f(0.0f, 0.0f, 1.0f) },
 		{ TWT::Vector3f(1.0f, 1.0f, 1.0f), TWT::Vector3f(0.0f, 0.0f, 1.0f) },
-		{ TWT::Vector3f(-1.0f, 1.0f, 1.0f), TWT::Vector3f(0.0f, 0.0f, 1.0f) },
+		{ TWT::Vector3f(-1.0f, 1.0f, 1.0f), TWT::Vector3f(0.0f, 0.0f, 1.0f) },*/
 	};
 
-	AllocateUploadBuffer(device->Get(), indices, sizeof(indices), &m_indexBuffer);
+	//AllocateUploadBuffer(device->Get(), indices, sizeof(indices), &m_indexBuffer);
 	AllocateUploadBuffer(device->Get(), vertices, sizeof(vertices), &m_vertexBuffer);
 
 	// Vertex buffer is passed to the shader along with index buffer as a descriptor table.
 	// Vertex buffer descriptor must follow index buffer descriptor in the descriptor heap.
-	UINT descriptorIndexIB = CreateBufferSRV(m_indexBuffer, &m_indexBuffer_cpuDescriptorHandle, &m_indexBuffer_gpuDescriptorHandle, sizeof(indices)/4, 0);
+	//UINT descriptorIndexIB = CreateBufferSRV(m_indexBuffer, &m_indexBuffer_cpuDescriptorHandle, &m_indexBuffer_gpuDescriptorHandle, sizeof(indices)/4, 0);
 	UINT descriptorIndexVB = CreateBufferSRV(m_vertexBuffer, &m_vertexBuffer_cpuDescriptorHandle, &m_vertexBuffer_gpuDescriptorHandle, ARRAYSIZE(vertices), sizeof(vertices[0]));
 
 	BuildAccelerationStructures();
@@ -1032,16 +1045,27 @@ void DoRaytracing() {
 	auto SetCommonPipelineState = [&] (auto* descriptorSetCommandList) {
 		descriptorSetCommandList->SetDescriptorHeaps(1, &m_descriptorHeap);
 		// Set index and successive vertex buffer decriptor tables
-		commandList->Get()->SetComputeRootDescriptorTable(GlobalRootSignatureParams::VertexBuffersSlot, m_indexBuffer_gpuDescriptorHandle);
+		//commandList->Get()->SetComputeRootDescriptorTable(GlobalRootSignatureParams::VertexBuffersSlot, m_descriptorHeap->GetGPUDescriptorHandleForHeapStart());
 		commandList->Get()->SetComputeRootDescriptorTable(GlobalRootSignatureParams::OutputViewSlot, m_raytracingOutputResourceUAVGpuDescriptor);
 	};
 
 	commandList->Get()->SetComputeRootSignature(m_raytracingGlobalRootSignature);
 
 	// Copy the updated scene constant buffer to GPU.
-	memcpy(&m_mappedConstantData[frameIndex].constants, &m_sceneCB[frameIndex], sizeof(m_sceneCB[frameIndex]));
-	auto cbGpuAddress = m_perFrameConstants->GetGPUVirtualAddress() + frameIndex * sizeof(m_mappedConstantData[0]);
-	commandList->Get()->SetComputeRootConstantBufferView(GlobalRootSignatureParams::SceneConstantSlot, cbGpuAddress);
+	//UINT AlignedElementSize = (sizeof(SceneConstantBuffer) + 255) & ~255;
+	//// Allocate one constant buffer per frame, since it gets updated every frame.
+	//size_t cbSize = frameCount * AlignedElementSize;
+
+	//auto cbGpuAddress = m_perFrameConstants->GetGPUVirtualAddress() + frameIndex * AlignedElementSize;// sizeof(m_mappedConstantData[0]);
+
+	//memcpy(GPUAddress + ElementIndex * AlignedElementSize, Data, AlignedElementSize);
+
+	//memcpy(&m_mappedConstantData[frameIndex].constants, &m_sceneCB[frameIndex], sizeof(m_sceneCB[frameIndex]));
+
+	//commandList->Get()->SetComputeRootConstantBufferView(GlobalRootSignatureParams::SceneConstantSlot, cbGpuAddress);
+	commandList->Get()->SetComputeRootConstantBufferView(GlobalRootSignatureParams::SceneConstantSlot, m_mappedConstantData->GetAddress(frameIndex));
+	//commandList->Get()->SetComputeRootConstantBufferView(GlobalRootSignatureParams::SceneConstantSlot, );
+		
 
 	// Bind the heaps, acceleration structure and dispatch rays.
 	D3D12_DISPATCH_RAYS_DESC dispatchDesc = {};
@@ -1068,19 +1092,19 @@ void CopyRaytracingOutputToBackbuffer() {
 
 void UpdatePipeline() {
 
-	m_sceneCB[frameIndex].cameraPosition = TWT::Vector4f(0.0f, 2.0f, -5.0f, 1.0f);
-	m_sceneCB[frameIndex].projectionToWorld = glm::inverse(camera->GetProjectionMatrix(width, height) * camera->GetViewMatrix());
-	m_sceneCB[frameIndex].lightDiffuseColor = TWT::Vector4f(0.5f, 0.0f, 0.0f, 1.0f);
-	m_sceneCB[frameIndex].lightAmbientColor = TWT::Vector4f(0.5f, 0.5f, 0.5f, 1.0f);
-	m_sceneCB[frameIndex].lightPosition = TWT::Vector4f(0.0f, 1.8f, -3.0f, 0.0f);
+	m_sceneCB[frameIndex].cameraPosition = TWT::Vector4f(camera->Position, 1);
+	//m_sceneCB[frameIndex].projectionToWorld = camera->GetProjectionViewMatrix();
+	m_sceneCB[frameIndex].cameraView = camera->GetViewMatrix();
+	m_sceneCB[frameIndex].lightDiffuseColor = TWT::Vector4f(1);
+	m_sceneCB[frameIndex].lightAmbientColor = TWT::Vector4f(0, 0, 0, 1);
+	m_sceneCB[frameIndex].lightPosition = TWT::Vector4f(-3.0f, 4.0f, 3.0f, 0);
+	m_sceneCB[frameIndex].cameraData.x = camera->GetRatioX();
+	m_sceneCB[frameIndex].cameraData.y = camera->GetRatioY();
+	m_sceneCB[frameIndex].cameraData.z = camera->FOVY;
 
-	m_cubeCB.albedo = TWT::Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+	//camera->Position.z += 0.1;
 
-
-
-	TWT::Vector3f r = camera->GetRotation();
-	r.y += 5;
-	camera->SetRotation(r);
+	m_mappedConstantData->Update(&m_sceneCB[frameIndex], frameIndex);
 
 	//TWT::Vector4f m_eye( 0.0f, 2.0f, 6.0f, 1.0f);
 	//TWT::Vector4f m_at(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1265,12 +1289,12 @@ void cleanup() {
 	TWU::DXSafeRelease(m_fallbackStateObject);
 	TWU::DXSafeRelease(m_raytracingGlobalRootSignature);
 	TWU::DXSafeRelease(m_raytracingLocalRootSignature);
-	TWU::DXSafeRelease(m_indexBuffer);
+	//TWU::DXSafeRelease(m_indexBuffer);
 	TWU::DXSafeRelease(m_vertexBuffer);
 	TWU::DXSafeRelease(m_descriptorHeap);
 	TWU::DXSafeRelease(m_topLevelAccelerationStructure);
 	TWU::DXSafeRelease(m_bottomLevelAccelerationStructure);
-	TWU::DXSafeRelease(m_perFrameConstants);
+	//TWU::DXSafeRelease(m_perFrameConstants);
 	TWU::DXSafeRelease(m_raytracingOutput);
 	/*TWU::DXSafeRelease(m_missShaderTable);
 	TWU::DXSafeRelease(m_hitGroupShaderTable);
