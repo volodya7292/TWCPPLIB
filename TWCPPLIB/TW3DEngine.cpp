@@ -59,7 +59,7 @@ struct Vertex {
 	TWT::Vector3f position;
 	TWT::Vector3f normal;
 };
-//typedef UINT16 Index;
+typedef UINT16 Index;
 //static SceneConstantBuffer* m_mappedConstantData;
 static TW3D::TW3DResourceCB* m_mappedConstantData;
 //union AlignedSceneConstantBuffer {
@@ -79,9 +79,9 @@ static UINT m_descriptorsAllocated;
 static UINT m_descriptorSize;
 static CubeConstantBuffer m_cubeCB;
 static SceneConstantBuffer m_sceneCB[TW3D::TW3DSwapChain::BufferCount];
-//static ID3D12Resource* m_indexBuffer;
-//static D3D12_CPU_DESCRIPTOR_HANDLE m_indexBuffer_cpuDescriptorHandle;
-//static D3D12_GPU_DESCRIPTOR_HANDLE m_indexBuffer_gpuDescriptorHandle;
+static ID3D12Resource* m_indexBuffer;
+static D3D12_CPU_DESCRIPTOR_HANDLE m_indexBuffer_cpuDescriptorHandle;
+static D3D12_GPU_DESCRIPTOR_HANDLE m_indexBuffer_gpuDescriptorHandle;
 static ID3D12Resource* m_vertexBuffer;
 static D3D12_CPU_DESCRIPTOR_HANDLE m_vertexBuffer_cpuDescriptorHandle;
 static D3D12_GPU_DESCRIPTOR_HANDLE m_vertexBuffer_gpuDescriptorHandle;
@@ -511,9 +511,9 @@ void BuildAccelerationStructures() {
 
 	D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
 	geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-	//geometryDesc.Triangles.IndexBuffer = m_indexBuffer->GetGPUVirtualAddress();
-	geometryDesc.Triangles.IndexCount = 0; //static_cast<UINT>(m_indexBuffer->GetDesc().Width) / sizeof(Index);
-	//geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
+	geometryDesc.Triangles.IndexBuffer = m_indexBuffer->GetGPUVirtualAddress();
+	geometryDesc.Triangles.IndexCount = static_cast<UINT>(m_indexBuffer->GetDesc().Width) / sizeof(Index);
+	geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
 	geometryDesc.Triangles.Transform3x4 = 0;
 	geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 	geometryDesc.Triangles.VertexCount = static_cast<UINT>(m_vertexBuffer->GetDesc().Width) / sizeof(Vertex);
@@ -832,7 +832,7 @@ void init_dxr() {
 
 	CD3DX12_DESCRIPTOR_RANGE ranges[2]; // Perfomance TIP: Order from most frequent to least frequent.
 	ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);  // 1 output texture
-	ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);  // 2 static index and vertex buffers.
+	ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1);  // 2 static index and vertex buffers.
 
 	CD3DX12_ROOT_PARAMETER rootParameters[GlobalRootSignatureParams::Count];
 	rootParameters[GlobalRootSignatureParams::OutputViewSlot].InitAsDescriptorTable(1, &ranges[0]);
@@ -952,7 +952,7 @@ void init_dxr() {
 
 
 	// Cube indices.
-	/*Index indices[] =
+	Index indices[] =
 	{
 		3,1,0,
 		2,1,3,
@@ -971,21 +971,17 @@ void init_dxr() {
 
 		22,20,21,
 		23,20,22
-	};*/
+	};
 
 	// Cube vertices positions and corresponding triangle normals.
 	Vertex vertices[] =
 	{
-		{ TWT::Vector3f(-1.0f, 1.0f, 1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
-		{ TWT::Vector3f(1.0f, 1.0f, -1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
 		{ TWT::Vector3f(-1.0f, 1.0f, -1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
-
-		{ TWT::Vector3f(1.0f, 1.0f, 1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
 		{ TWT::Vector3f(1.0f, 1.0f, -1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
+		{ TWT::Vector3f(1.0f, 1.0f, 1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
 		{ TWT::Vector3f(-1.0f, 1.0f, 1.0f), TWT::Vector3f(0.0f, 1.0f, 0.0f) },
 
-		
-		/*{ TWT::Vector3f(-1.0f, -1.0f, -1.0f), TWT::Vector3f(0.0f, -1.0f, 0.0f) },
+		{ TWT::Vector3f(-1.0f, -1.0f, -1.0f), TWT::Vector3f(0.0f, -1.0f, 0.0f) },
 		{ TWT::Vector3f(1.0f, -1.0f, -1.0f), TWT::Vector3f(0.0f, -1.0f, 0.0f) },
 		{ TWT::Vector3f(1.0f, -1.0f, 1.0f), TWT::Vector3f(0.0f, -1.0f, 0.0f) },
 		{ TWT::Vector3f(-1.0f, -1.0f, 1.0f), TWT::Vector3f(0.0f, -1.0f, 0.0f) },
@@ -1008,16 +1004,17 @@ void init_dxr() {
 		{ TWT::Vector3f(-1.0f, -1.0f, 1.0f), TWT::Vector3f(0.0f, 0.0f, 1.0f) },
 		{ TWT::Vector3f(1.0f, -1.0f, 1.0f), TWT::Vector3f(0.0f, 0.0f, 1.0f) },
 		{ TWT::Vector3f(1.0f, 1.0f, 1.0f), TWT::Vector3f(0.0f, 0.0f, 1.0f) },
-		{ TWT::Vector3f(-1.0f, 1.0f, 1.0f), TWT::Vector3f(0.0f, 0.0f, 1.0f) },*/
+		{ TWT::Vector3f(-1.0f, 1.0f, 1.0f), TWT::Vector3f(0.0f, 0.0f, 1.0f) },
 	};
 
-	//AllocateUploadBuffer(device->Get(), indices, sizeof(indices), &m_indexBuffer);
+	AllocateUploadBuffer(device->Get(), indices, sizeof(indices), &m_indexBuffer);
 	AllocateUploadBuffer(device->Get(), vertices, sizeof(vertices), &m_vertexBuffer);
 
 	// Vertex buffer is passed to the shader along with index buffer as a descriptor table.
 	// Vertex buffer descriptor must follow index buffer descriptor in the descriptor heap.
-	//UINT descriptorIndexIB = CreateBufferSRV(m_indexBuffer, &m_indexBuffer_cpuDescriptorHandle, &m_indexBuffer_gpuDescriptorHandle, sizeof(indices)/4, 0);
+	UINT descriptorIndexIB = CreateBufferSRV(m_indexBuffer, &m_indexBuffer_cpuDescriptorHandle, &m_indexBuffer_gpuDescriptorHandle, sizeof(indices)/4, 0);
 	UINT descriptorIndexVB = CreateBufferSRV(m_vertexBuffer, &m_vertexBuffer_cpuDescriptorHandle, &m_vertexBuffer_gpuDescriptorHandle, ARRAYSIZE(vertices), sizeof(vertices[0]));
+	ThrowIfFalse(descriptorIndexVB == descriptorIndexIB + 1);
 
 	BuildAccelerationStructures();
 	CreateConstantBuffers();
@@ -1045,7 +1042,7 @@ void DoRaytracing() {
 	auto SetCommonPipelineState = [&] (auto* descriptorSetCommandList) {
 		descriptorSetCommandList->SetDescriptorHeaps(1, &m_descriptorHeap);
 		// Set index and successive vertex buffer decriptor tables
-		//commandList->Get()->SetComputeRootDescriptorTable(GlobalRootSignatureParams::VertexBuffersSlot, m_descriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		commandList->Get()->SetComputeRootDescriptorTable(GlobalRootSignatureParams::VertexBuffersSlot, m_indexBuffer_gpuDescriptorHandle);
 		commandList->Get()->SetComputeRootDescriptorTable(GlobalRootSignatureParams::OutputViewSlot, m_raytracingOutputResourceUAVGpuDescriptor);
 	};
 

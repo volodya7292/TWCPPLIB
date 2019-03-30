@@ -32,7 +32,8 @@ struct Vertex {
 
 RaytracingAccelerationStructure Scene : register(t0, space0);
 RWTexture2D<float4> RenderTarget : register(u0);
-StructuredBuffer<Vertex> Vertices : register(t1, space0);
+ByteAddressBuffer Indices : register(t1, space0);
+StructuredBuffer<Vertex> Vertices : register(t2, space0);
 
 ConstantBuffer<SceneConstantBuffer> g_sceneCB : register(b0);
 ConstantBuffer<CubeConstantBuffer> g_cubeCB : register(b1);
@@ -152,7 +153,7 @@ void MyClosestHitShader(inout RayPayload payload, in MyAttributes attr)
 //    const uint3 indices = Load3x16BitIndices(baseIndex);
 
 
-    float4 diffuseColor = CalculateDiffuseLighting(hitPosition, normalize(Vertices[0].normal));
+    float4 diffuseColor = CalculateDiffuseLighting(hitPosition, normalize(Vertices[baseIndex * 2].normal));
     float4 color = diffuseColor;
 
     payload.color = color;
