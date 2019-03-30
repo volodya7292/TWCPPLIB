@@ -142,16 +142,7 @@ void MyRaygenShader()
 void MyClosestHitShader(inout RayPayload payload, in MyAttributes attr)
 {
     float3 hitPosition = HitWorldPosition();
-
-    // Get the base index of the triangle's first 16 bit index.
-    //uint indexSizeInBytes = 2;
-    //uint indicesPerTriangle = 3;
-    //uint triangleIndexStride = indicesPerTriangle * indexSizeInBytes;
     uint baseIndex = PrimitiveIndex();
-
-    // Load up 3 16 bit indices for the triangle.
-//    const uint3 indices = Load3x16BitIndices(baseIndex);
-
 
     float4 diffuseColor = CalculateDiffuseLighting(hitPosition, normalize(Vertices[baseIndex * 2].normal));
     float4 color = diffuseColor;
