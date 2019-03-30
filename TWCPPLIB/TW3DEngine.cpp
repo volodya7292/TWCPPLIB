@@ -1286,17 +1286,17 @@ void cleanup() {
 	TWU::DXSafeRelease(m_fallbackStateObject);
 	TWU::DXSafeRelease(m_raytracingGlobalRootSignature);
 	TWU::DXSafeRelease(m_raytracingLocalRootSignature);
-	//TWU::DXSafeRelease(m_indexBuffer);
+	TWU::DXSafeRelease(m_indexBuffer);
 	TWU::DXSafeRelease(m_vertexBuffer);
 	TWU::DXSafeRelease(m_descriptorHeap);
 	TWU::DXSafeRelease(m_topLevelAccelerationStructure);
 	TWU::DXSafeRelease(m_bottomLevelAccelerationStructure);
-	//TWU::DXSafeRelease(m_perFrameConstants);
-	TWU::DXSafeRelease(m_raytracingOutput);
-	/*TWU::DXSafeRelease(m_missShaderTable);
-	TWU::DXSafeRelease(m_hitGroupShaderTable);
 	TWU::DXSafeRelease(m_rayGenShaderTable);
-	TWU::DXSafeRelease(m_raytracingOutput);*/
+	TWU::DXSafeRelease(m_raytracingOutput);
+	TWU::DXSafeRelease(m_missShaderTable);
+	TWU::DXSafeRelease(m_hitGroupShaderTable);
+	TWU::DXSafeRelease(m_raytracingOutput);
+	delete m_mappedConstantData;
 
 	TW3DPrimitives::Cleanup();
 
