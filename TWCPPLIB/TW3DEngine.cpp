@@ -46,6 +46,7 @@ static TW3D::TW3DResourceRTV* renderTargets[TW3D::TW3DSwapChain::BufferCount];
 static TW3D::TW3DResourceDSV* depthStencil;
 static TW3D::TW3DResourceRTV* offscreen, *offscreen2;
 static TW3D::TW3DResourceUAV* uavTex;
+static TW3D::TW3DResourceUAV* uavBuf;
 static TW3D::TW3DResourceSR* texture;
 static TW3D::TW3DResourceSR* texture2;
 
@@ -231,6 +232,7 @@ void init_dx12() {
 	rootSignature->SetParameterCBV(1, D3D12_SHADER_VISIBILITY_VERTEX, 1);
 	rootSignature->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_PIXEL, 0, 2);
 	rootSignature->SetParameterUAV(3, D3D12_SHADER_VISIBILITY_PIXEL, 0);
+	rootSignature->SetParameterUAV(4, D3D12_SHADER_VISIBILITY_PIXEL, 1);
 	rootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->AddSampler(1, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->Create(device);
@@ -285,7 +287,7 @@ void init_dx12() {
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	blendDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
-	
+
 	pipelineState = new TW3D::TW3DGraphicsPipelineState(
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
 		swapChain->GetDescription().SampleDesc,
@@ -321,6 +323,7 @@ void init_dx12() {
 
 	TW3D::TW3DRootSignature* computeRootSignature = new TW3D::TW3DRootSignature();
 	computeRootSignature->SetParameterUAV(0, D3D12_SHADER_VISIBILITY_ALL, 0);
+	computeRootSignature->SetParameterUAV(1, D3D12_SHADER_VISIBILITY_ALL, 1);
 	//computeRootSignature->SetParameterSV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);
 	//computeRootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	computeRootSignature->Create(device);
@@ -342,7 +345,13 @@ void init_dx12() {
 	texture = resource_manager->CreateTexture2D(L"D:\\тест.png");
 	texture2 = resource_manager->CreateTexture2D(L"D:\\test2.png");
 
+	struct tet {
+		TWT::Vector4f gov;
+		TWT::Vector4f a;
+	};
+
 	uavTex = resource_manager->CreateUnorderedAccessView(width, height, DXGI_FORMAT_R8G8B8A8_UNORM);
+	uavBuf = resource_manager->CreateUnorderedAccessView(width, sizeof(tet));
 
 	fence[frameIndex]->Flush(commandQueue);
 	fence[frameIndex]->Flush(computeCommandQueue);
@@ -374,7 +383,8 @@ void UpdatePipeline() {
 	computeCommandList->Reset();
 	computeCommandList->SetPipelineState(computePipelineState);
 	computeCommandList->BindResources(resource_manager);
-	computeCommandList->BindUAVTexture(0, uavTex);
+	computeCommandList->BindUAV(0, uavTex);
+	computeCommandList->BindUAV(1, uavBuf);
 	computeCommandList->Dispatch(width, height);
 	computeCommandList->Close();
 
@@ -394,7 +404,8 @@ void UpdatePipeline() {
 	commandList->ClearDSVDepth(depthStencil, 1.0f);
 
 	commandList->BindTexture(2, texture);
-	commandList->BindUAVTexture(3, uavTex);
+	commandList->BindUAV(3, uavTex);
+	commandList->BindUAV(4, uavBuf);
 	//commandList->BindTexture(3, texture2);
 
 	commandList->SetViewport(&viewport); // set the viewports
@@ -464,6 +475,7 @@ void on_resize() {
 	offscreen->Release();
 	offscreen2->Release();
 	uavTex->Release();
+	uavBuf->Release();
 
 	depthStencil->Release();
 
@@ -476,6 +488,11 @@ void on_resize() {
 	offscreen->Create(width, height);
 	offscreen2->Create(width, height);
 	uavTex->CreateTexture2D(width, height);
+	struct tet {
+		TWT::Vector4f gov;
+		TWT::Vector4f a;
+	};
+	uavBuf->CreateBuffer(width * sizeof(tet));
 
 	depthStencil->Create(width, height);
 }
@@ -537,6 +554,7 @@ void cleanup() {
 	delete texture;
 	delete texture2;
 	delete uavTex;
+	delete uavBuf;
 	delete cube;
 
 	TW3DPrimitives::Cleanup();

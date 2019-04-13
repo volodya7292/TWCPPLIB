@@ -153,7 +153,7 @@ void TW3D::TW3DGraphicsCommandList::BindRTVTexture(TWT::UInt RootParameterIndex,
 	command_list->SetGraphicsRootDescriptorTable(RootParameterIndex, RTV->GetSRVGPUHandle());
 }
 
-void TW3D::TW3DGraphicsCommandList::BindUAVTexture(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
+void TW3D::TW3DGraphicsCommandList::BindUAV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
 	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 		command_list->SetComputeRootDescriptorTable(RootParameterIndex, UAV->GetGPUHandle());
 	else

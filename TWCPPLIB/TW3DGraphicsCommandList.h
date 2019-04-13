@@ -53,7 +53,7 @@ namespace TW3D {
 		void BindResources(TW3DResourceManager* ResourceManager);
 		void BindTexture(TWT::UInt RootParameterIndex, TW3DResourceSR* SR);
 		void BindRTVTexture(TWT::UInt RootParameterIndex, TW3DResourceRTV* RTV);
-		void BindUAVTexture(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV);
+		void BindUAV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV);
 		void DrawObject(TW3DObject* object, TWT::UInt ModelCBRootParameterIndex);
 
 		void Reset();

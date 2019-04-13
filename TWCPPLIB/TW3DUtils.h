@@ -18,7 +18,7 @@ namespace TWU {
 	WICPixelFormatGUID WICFormatToDXGICompatible(WICPixelFormatGUID& wicFormatGUID);
 
 	// Get the number of bits per pixel for a DXGI format
-	TWT::Int GetDXGIFormatBitsPerPixel(DXGI_FORMAT& dxgiFormat);
+	TWT::Int GetDXGIFormatBitsPerPixel(DXGI_FORMAT dxgiFormat);
 
 	D3D12_DESCRIPTOR_RANGE DXDescriptorRange(TWT::UInt Register, D3D12_DESCRIPTOR_RANGE_TYPE Type);
 

@@ -41,6 +41,18 @@ TW3D::TW3DResourceUAV* TW3D::TW3DResourceManager::CreateUnorderedAccessView(TWT:
 	return uav;
 }
 
+TW3D::TW3DResourceUAV* TW3D::TW3DResourceManager::CreateUnorderedAccessView(TWT::UInt ElementCount, DXGI_FORMAT Format = DXGI_FORMAT_R8_UINT) {
+	TW3DResourceUAV* uav = new TW3DResourceUAV(device, srv_descriptor_heap, Format);
+	uav->CreateBuffer(ElementCount);
+	return uav;
+}
+
+TW3D::TW3DResourceUAV* TW3D::TW3DResourceManager::CreateUnorderedAccessView(TWT::UInt ElementCount, TWT::UInt ElementSizeInBytes) {
+	TW3DResourceUAV* uav = new TW3DResourceUAV(device, srv_descriptor_heap, ElementSizeInBytes);
+	uav->CreateBuffer(ElementCount);
+	return uav;
+}
+
 TW3D::TW3DResourceVB* TW3D::TW3DResourceManager::CreateVertexBuffer(TWT::UInt VertexCount, TWT::UInt SingleVertexSizeInBytes) {
 	return new TW3DResourceVB(device, VertexCount * SingleVertexSizeInBytes, SingleVertexSizeInBytes, temp_gcl);
 }

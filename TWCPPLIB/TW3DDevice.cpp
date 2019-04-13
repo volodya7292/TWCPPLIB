@@ -66,8 +66,8 @@ void TW3D::TW3DDevice::CreateShaderResourceView(ID3D12Resource* resource, const 
 	device->CreateShaderResourceView(resource, desc, destDescriptor);
 }
 
-void TW3D::TW3DDevice::CreateUnorderedAccessView(ID3D12Resource* resource, D3D12_CPU_DESCRIPTOR_HANDLE dest_descriptor) {
-	device->CreateUnorderedAccessView(resource, nullptr, nullptr, dest_descriptor);
+void TW3D::TW3DDevice::CreateUnorderedAccessView(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* desc, D3D12_CPU_DESCRIPTOR_HANDLE dest_descriptor) {
+	device->CreateUnorderedAccessView(resource, nullptr, desc, dest_descriptor);
 }
 
 TWT::UInt64 TW3D::TW3DDevice::GetCopyableFootprints(const D3D12_RESOURCE_DESC* resourceDesc, TWT::UInt subResCount) {

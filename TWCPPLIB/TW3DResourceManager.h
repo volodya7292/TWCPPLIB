@@ -15,6 +15,8 @@ namespace TW3D {
 		TW3DResourceRTV* CreateRenderTargetView(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format, TWT::Vector4f ClearValue);
 		TW3DResourceDSV* CreateDepthStencilView(TWT::UInt Width, TWT::UInt Height);
 		TW3DResourceUAV* CreateUnorderedAccessView(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format);
+		TW3D::TW3DResourceUAV* CreateUnorderedAccessView(TWT::UInt ElementCount, DXGI_FORMAT Format);
+		TW3D::TW3DResourceUAV* CreateUnorderedAccessView(TWT::UInt ElementCount, TWT::UInt ElementSizeInBytes);
 		// By default SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex)
 		TW3DResourceVB* CreateVertexBuffer(TWT::UInt VertexCount, TWT::UInt SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex));
 		TW3DResourceCB* CreateConstantBuffer(TWT::UInt ElementSizeInBytes, TWT::UInt ElementCount = 1);

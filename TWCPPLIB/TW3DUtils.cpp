@@ -101,15 +101,15 @@ WICPixelFormatGUID TWU::WICFormatToDXGICompatible(WICPixelFormatGUID& wicFormatG
 	else return GUID_WICPixelFormatDontCare;
 }
 
-TWT::Int TWU::GetDXGIFormatBitsPerPixel(DXGI_FORMAT& dxgiFormat) {
+TWT::Int TWU::GetDXGIFormatBitsPerPixel(DXGI_FORMAT dxgiFormat) {
 	if (dxgiFormat == DXGI_FORMAT_R32G32B32A32_FLOAT) return 128;
 	else if (dxgiFormat == DXGI_FORMAT_R16G16B16A16_FLOAT) return 64;
 	else if (dxgiFormat == DXGI_FORMAT_R16G16B16A16_UNORM) return 64;
 	else if (dxgiFormat == DXGI_FORMAT_R8G8B8A8_UNORM) return 32;
 	else if (dxgiFormat == DXGI_FORMAT_B8G8R8A8_UNORM) return 32;
 	else if (dxgiFormat == DXGI_FORMAT_B8G8R8X8_UNORM) return 32;
+	else if (dxgiFormat == DXGI_FORMAT_R32_TYPELESS) return 32;
 	else if (dxgiFormat == DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM) return 32;
-
 	else if (dxgiFormat == DXGI_FORMAT_R10G10B10A2_UNORM) return 32;
 	else if (dxgiFormat == DXGI_FORMAT_B5G5R5A1_UNORM) return 16;
 	else if (dxgiFormat == DXGI_FORMAT_B5G6R5_UNORM) return 16;
@@ -117,6 +117,7 @@ TWT::Int TWU::GetDXGIFormatBitsPerPixel(DXGI_FORMAT& dxgiFormat) {
 	else if (dxgiFormat == DXGI_FORMAT_R16_FLOAT) return 16;
 	else if (dxgiFormat == DXGI_FORMAT_R16_UNORM) return 16;
 	else if (dxgiFormat == DXGI_FORMAT_R8_UNORM) return 8;
+	else if (dxgiFormat == DXGI_FORMAT_R8_UINT) return 8;
 	else if (dxgiFormat == DXGI_FORMAT_A8_UNORM) return 8;
 }
 
