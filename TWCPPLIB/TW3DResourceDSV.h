@@ -4,7 +4,7 @@
 namespace TW3D {
 	class TW3DResourceDSV : public TW3DResource {
 	public:
-		TW3DResourceDSV(TW3DDevice* Device);
+		TW3DResourceDSV(TW3DDevice* Device, TW3DDescriptorHeap* DSVDescriptorHeap);
 		~TW3DResourceDSV();
 
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle();
@@ -13,7 +13,8 @@ namespace TW3D {
 		void Release();
 
 	private:
-		TW3DDescriptorHeap* DescriptorHeap;
+		TW3DDescriptorHeap* DSVDescriptorHeap;
+		TWT::Int DSVIndex = 0;
 	};
 }
 

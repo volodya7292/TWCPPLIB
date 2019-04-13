@@ -22,7 +22,7 @@ namespace TW3D {
 		static TW3DResource* CreateCBStaging(TW3DDevice* Device);
 
 	protected:
-		TW3DDevice*     Device;
-		ID3D12Resource* Resource;
+		TW3DDevice*     Device = nullptr;
+		ID3D12Resource* Resource = nullptr;
 	};
 }

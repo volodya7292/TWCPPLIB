@@ -55,6 +55,12 @@
     <Filter Include="Source Files\TW3DEngine\TW3DSystem">
       <UniqueIdentifier>{376f94a8-21d7-4220-8b01-21568baa5926}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\TW3DEngine\TW3DRayTracing">
+      <UniqueIdentifier>{f9b8a12e-b7eb-4b4f-8f64-b001b1382cca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TW3DEngine\TW3DRayTracing">
+      <UniqueIdentifier>{2fa718e8-ccac-4ad7-97dd-11239a29f2ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TW3DEngine.h">
@@ -79,9 +85,6 @@
       <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
     <ClInclude Include="TW3DResourceRTV.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DResourceSV.h">
       <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
     <ClInclude Include="TW3DResource.h">
@@ -126,9 +129,6 @@
     <ClInclude Include="TW3DAdapter.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DCommandQueue.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DDescriptorHeap.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
@@ -144,9 +144,6 @@
     <ClInclude Include="TW3DGraphicsCommandList.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DPipelineState.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DRootSignature.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
@@ -155,6 +152,27 @@
     </ClInclude>
     <ClInclude Include="TW3DTempGCL.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DCommandQueue.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DRTAccelerationStructureBL.h">
+      <Filter>Header Files\TW3DEngine\TW3DRayTracing</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DRTAccelerationStructureTL.h">
+      <Filter>Header Files\TW3DEngine\TW3DRayTracing</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DGraphicsPipelineState.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DComputePipelineState.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DResourceSR.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DResourceUAV.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -184,9 +202,6 @@
       <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
     <ClCompile Include="TW3DResourceRTV.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DResourceSV.cpp">
       <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
     <ClCompile Include="TW3DResourceVB.cpp">
@@ -246,9 +261,6 @@
     <ClCompile Include="TW3DGraphicsCommandList.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DPipelineState.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
     <ClCompile Include="TW3DRootSignature.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
@@ -258,15 +270,30 @@
     <ClCompile Include="TW3DTempGCL.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
+    <ClCompile Include="TW3DRTAccelerationStructureBL.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DRayTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DRTAccelerationStructureTL.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DRayTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DGraphicsPipelineState.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DComputePipelineState.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DResourceSR.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DResourceUAV.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl" />
     <FxCompile Include="VertexShader.hlsl" />
     <FxCompile Include="VertexOffscreenBlit.hlsl" />
     <FxCompile Include="PixelOffscreenBlit.hlsl" />
-    <FxCompile Include="Raytracing.hlsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <FxCompile Include="RayTrace.hlsl" />
   </ItemGroup>
 </Project>

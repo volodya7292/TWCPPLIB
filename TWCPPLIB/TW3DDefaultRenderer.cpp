@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "TW3DDefaultRenderer.h"
 #include "TW3DSwapChain.h"
-#include "TW3DPipelineState.h"
+#include "TW3DGraphicsPipelineState.h"
 
-static TW3D::TW3DPipelineState *opaque_raster_ps, *blit_ps;
+static TW3D::TW3DGraphicsPipelineState *opaque_raster_ps, *blit_ps;
 static TW3D::TW3DResourceDSV* depthStencil;
 static TW3D::TW3DResourceRTV* offscreen;
 
@@ -17,7 +17,7 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	ranges[0] = TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
 	ranges[1] = TWU::DXDescriptorRange(2, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
 */
-	TW3DRootSignature* rootSignature = new TW3DRootSignature(2,
+	TW3DRootSignature* rootSignature = new TW3DRootSignature(
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
@@ -27,18 +27,18 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	/*rootSignature->SetParameter(0, TW3D::TW3DRootParameter::CreateCBV(0, D3D12_SHADER_VISIBILITY_VERTEX));
 	rootSignature->SetParameter(1, TW3D::TW3DRootParameter::CreateCBV(1, D3D12_SHADER_VISIBILITY_VERTEX));*/
 
-	rootSignature->SetParameterSV(2, D3D12_SHADER_VISIBILITY_PIXEL, 0);
-	rootSignature->SetParameterSV(3, D3D12_SHADER_VISIBILITY_PIXEL, 2);
+	rootSignature->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_PIXEL, 0);
+	rootSignature->SetParameterSRV(3, D3D12_SHADER_VISIBILITY_PIXEL, 2);
 	rootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->AddSampler(1, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->Create(device);
 
 
-	TW3DRootSignature* blitRootSignature = new TW3D::TW3DRootSignature(1,
+	TW3DRootSignature* blitRootSignature = new TW3D::TW3DRootSignature(
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
-	rootSignature->SetParameterSV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);
+	rootSignature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);
 	//blitRootSignature->SetParameter(0, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV)));
 	blitRootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	blitRootSignature->Create(device);
@@ -86,7 +86,7 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	blendDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
 
-	opaque_raster_ps = new TW3D::TW3DPipelineState(
+	opaque_raster_ps = new TW3D::TW3DGraphicsPipelineState(
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
 		SwapChain->GetDescription().SampleDesc,
 		rastDesc,
@@ -104,7 +104,7 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
 	depthDesc.DepthEnable = FALSE;
 
-	blit_ps = new TW3D::TW3DPipelineState(
+	blit_ps = new TW3D::TW3DGraphicsPipelineState(
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
 		SwapChain->GetDescription().SampleDesc,
 		rastDesc,

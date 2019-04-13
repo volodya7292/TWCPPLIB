@@ -25,8 +25,6 @@
 #endif
 
 #include <d3dx12.h>
-#include <d3d12raytracingfallback.h>
-#include <D3D12RaytracingHelpers.hpp>
 
 #include <wrl.h>
 using Microsoft::WRL::ComPtr;

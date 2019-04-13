@@ -4,13 +4,15 @@
 namespace TW3D {
 	class TW3DRootSignature {
 	public:
-		TW3DRootSignature(TWT::UInt RootParamCount, D3D12_ROOT_SIGNATURE_FLAGS SignatureFlags);
+		TW3DRootSignature(D3D12_ROOT_SIGNATURE_FLAGS SignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_NONE);
 		~TW3DRootSignature();
 
 		ID3D12RootSignature* Get();
 
-		void SetParameter(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, D3D12_ROOT_PARAMETER_TYPE Type);
-		void SetParameterSV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register);
+		void SetParameter(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, D3D12_ROOT_PARAMETER_TYPE DescriptorType);
+		void SetParameterTable(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, D3D12_DESCRIPTOR_RANGE_TYPE DescriptorType, TWT::UInt DescriptorCount = 1);
+		void SetParameterSRV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, TWT::UInt DescriptorCount = 1);
+		void SetParameterUAV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, TWT::UInt DescriptorCount = 1);
 		void SetParameterCBV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register);
 		
 
@@ -20,9 +22,10 @@ namespace TW3D {
 		void Create(TW3D::TW3DDevice* device);
 
 	private:
-		ID3D12RootSignature* RootSignature;
-		TWT::Vector<D3D12_ROOT_PARAMETER> RootParameters;
-		TWT::Vector<D3D12_STATIC_SAMPLER_DESC> Samplers;
-		D3D12_ROOT_SIGNATURE_DESC Desc;
+		ID3D12RootSignature* root_signature = nullptr;
+		TWT::Vector<D3D12_ROOT_PARAMETER> root_parameters;
+		TWT::Vector<D3D12_STATIC_SAMPLER_DESC> samplers;
+		D3D12_ROOT_SIGNATURE_DESC desc;
+		TWT::UInt parameter_count = 0;
 	};
 }

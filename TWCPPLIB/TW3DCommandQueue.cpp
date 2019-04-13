@@ -38,3 +38,7 @@ void TW3D::TW3DCommandQueue::SignalFence(ID3D12Fence1* fence, TWT::UInt64 value)
 TW3D::TW3DCommandQueue* TW3D::TW3DCommandQueue::CreateDirect(TW3DDevice* device) {
 	return new TW3DCommandQueue(device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 }
+
+TW3D::TW3DCommandQueue* TW3D::TW3DCommandQueue::CreateCompute(TW3DDevice* device) {
+	return new TW3DCommandQueue(device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+}

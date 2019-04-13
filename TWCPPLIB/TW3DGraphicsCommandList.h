@@ -1,11 +1,13 @@
 #pragma once
 #include "TW3DResourceDSV.h"
 #include "TW3DResourceRTV.h"
-#include "TW3DPipelineState.h"
+#include "TW3DResourceUAV.h"
+#include "TW3DGraphicsPipelineState.h"
+#include "TW3DComputePipelineState.h"
 #include "TW3DRootSignature.h"
 
 namespace TW3D {
-	class TW3DResourceSV;
+	class TW3DResourceSR;
 	class TW3DResourceVB;
 	class TW3DResourceCB;
 	class TW3DResourceManager;
@@ -27,7 +29,8 @@ namespace TW3D {
 		void ResourceBarriers(const TWT::Vector<D3D12_RESOURCE_BARRIER>& barriers);
 		void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 		void ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
-		void SetPipelineState(TW3DPipelineState* PipelineState);
+		void SetPipelineState(TW3DGraphicsPipelineState* PipelineState);
+		void SetPipelineState(TW3D::TW3DComputePipelineState* PipelineState);
 		void SetRenderTarget(TW3DResourceRTV* RTV, TW3DResourceDSV* DSV);
 		void SetRenderTargets(const TWT::Vector<TW3DResourceRTV*>& RTVs, TW3DResourceDSV* DSV);
 		void ClearRTV(TW3DResourceRTV* RTV);
@@ -45,19 +48,23 @@ namespace TW3D {
 		void SetIndexBuffer(const D3D12_INDEX_BUFFER_VIEW* view);
 		void Draw(TWT::UInt VertexCountPerInstance, TWT::UInt StartVertexLocation = 0, TWT::UInt InstanceCount = 1, TWT::UInt StartInstanceLocation = 0);
 		void DrawIndexed(TWT::UInt IndexCountPerInstance, TWT::UInt StartIndexLocation = 0, TWT::UInt InstanceCount = 1, TWT::UInt StartInstanceLocation = 0, TWT::Int BaseVertexLocation = 0);
+		void Dispatch(TWT::UInt ThreadGroupCountX = 1, TWT::UInt ThreadGroupCountY = 1, TWT::UInt ThreadGroupCountZ = 1);
 
 		void BindResources(TW3DResourceManager* ResourceManager);
-		void BindTexture(TWT::UInt RootParameterIndex, TW3DResourceSV* SV);
+		void BindTexture(TWT::UInt RootParameterIndex, TW3DResourceSR* SR);
 		void BindRTVTexture(TWT::UInt RootParameterIndex, TW3DResourceRTV* RTV);
+		void BindUAVTexture(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV);
 		void DrawObject(TW3DObject* object, TWT::UInt ModelCBRootParameterIndex);
 
 		void Reset();
 		void Close();
 
 		static TW3DGraphicsCommandList* CreateDirect(TW3DDevice* device);
+		static TW3DGraphicsCommandList* CreateCompute(TW3DDevice* device);
 
 	private:
-		ID3D12GraphicsCommandList* commandList;
-		ID3D12CommandAllocator* CommandAllocator;
+		ID3D12GraphicsCommandList* command_list;
+		ID3D12CommandAllocator* command_allocator;
+		D3D12_COMMAND_LIST_TYPE type;
 	};
 }

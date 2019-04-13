@@ -1,19 +1,17 @@
 #include "pch.h"
 #include "TW3DResourceDSV.h"
 
-TW3D::TW3DResourceDSV::TW3DResourceDSV(TW3DDevice* Device) :
-	TW3DResource(Device)
+TW3D::TW3DResourceDSV::TW3DResourceDSV(TW3DDevice* Device, TW3DDescriptorHeap* DSVDescriptorHeap) :
+	TW3DResource(Device), DSVDescriptorHeap(DSVDescriptorHeap)
 {
-	DescriptorHeap = TW3D::TW3DDescriptorHeap::CreateForDSV(Device);
+	DSVIndex = DSVDescriptorHeap->Allocate();
 }
 
 TW3D::TW3DResourceDSV::~TW3DResourceDSV() {
-	//Release();
-	delete DescriptorHeap;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceDSV::GetCPUHandle() {
-	return DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	return DSVDescriptorHeap->GetCPUHandle(DSVIndex);
 }
 
 void TW3D::TW3DResourceDSV::Create(TWT::UInt Width, TWT::UInt Height) {

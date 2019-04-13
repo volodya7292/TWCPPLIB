@@ -5,9 +5,8 @@
 namespace TW3D {
 	class TW3DResourceRTV : public TW3DResource {
 	public:
-		TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TWT::Int RTVIndex);
-		TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TWT::Int RTVIndex,
-			TW3DDescriptorHeap* SRVDescriptorHeap, TWT::Int SRVIndex, DXGI_FORMAT Format, TWT::Vector4f ClearValue);
+		TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap);
+		TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TW3DDescriptorHeap* SRVDescriptorHeap, DXGI_FORMAT Format, TWT::Vector4f ClearValue);
 		~TW3DResourceRTV();
 
 		D3D12_CPU_DESCRIPTOR_HANDLE GetRTVCPUHandle();
@@ -23,6 +22,6 @@ namespace TW3D {
 		TW3DDescriptorHeap* SRVDescriptorHeap;
 		D3D12_RESOURCE_DESC ImageDesc = {};
 		TWT::Vector4f       ClearValue;
-		TWT::Int RTVIndex, SRVIndex;
+		TWT::Int RTVIndex = 0, SRVIndex = 0;
 	};
 }

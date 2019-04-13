@@ -1,16 +1,18 @@
 #include "pch.h"
 #include "TW3DResourceRTV.h"
 
-TW3D::TW3DResourceRTV::TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TWT::Int RTVIndex) :
-	TW3DResource(Device), RTVDescriptorHeap(RTVDescriptorHeap), RTVIndex(RTVIndex)
+TW3D::TW3DResourceRTV::TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap) :
+	TW3DResource(Device), RTVDescriptorHeap(RTVDescriptorHeap)
 {
+	RTVIndex = RTVDescriptorHeap->Allocate();
 }
 
-TW3D::TW3DResourceRTV::TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TWT::Int RTVIndex,
-	TW3DDescriptorHeap* SRVDescriptorHeap, TWT::Int SRVIndex, DXGI_FORMAT Format, TWT::Vector4f ClearValue) :
-	TW3DResource(Device), RTVDescriptorHeap(RTVDescriptorHeap), RTVIndex(RTVIndex), SRVDescriptorHeap(SRVDescriptorHeap), SRVIndex(SRVIndex), ClearValue(ClearValue)
+TW3D::TW3DResourceRTV::TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TW3DDescriptorHeap* SRVDescriptorHeap, DXGI_FORMAT Format, TWT::Vector4f ClearValue) :
+	TW3DResource(Device), RTVDescriptorHeap(RTVDescriptorHeap), SRVDescriptorHeap(SRVDescriptorHeap), ClearValue(ClearValue)
 {
-	ImageDesc.Format = Format;
+	RTVIndex = RTVDescriptorHeap->Allocate();
+	SRVIndex = SRVDescriptorHeap->Allocate();
+	ImageDesc = CD3DX12_RESOURCE_DESC::Tex2D(Format, 0, 0, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
 }
 
 TW3D::TW3DResourceRTV::~TW3DResourceRTV() {
@@ -41,16 +43,8 @@ void TW3D::TW3DResourceRTV::Create(TWT::UInt Width, TWT::UInt Height) {
 	desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	desc.Texture2D.MipLevels = 1;
 
-	ImageDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	ImageDesc.Width = Width;
 	ImageDesc.Height = Height;
-	ImageDesc.MipLevels = 1;
-	ImageDesc.DepthOrArraySize = 1;
-	ImageDesc.Alignment = 0;
-	ImageDesc.SampleDesc.Count = 1; // This is the number of samples per pixel, we just want 1 sample
-	ImageDesc.SampleDesc.Quality = 0; // The quality level of the samples. Higher is better quality, but worse performance
-	ImageDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN; // The arrangement of the pixels. Setting to unknown lets the driver choose the most efficient one
-	ImageDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET; // no flags
 	
 	D3D12_CLEAR_VALUE optClearValue = { ImageDesc.Format, { ClearValue.x, ClearValue.y, ClearValue.z, ClearValue.w } };
 	Device->CreateCommittedResource(
@@ -61,9 +55,7 @@ void TW3D::TW3DResourceRTV::Create(TWT::UInt Width, TWT::UInt Height) {
 		&Resource, &optClearValue);
 
 	Device->CreateShaderResourceView(Resource, &desc, SRVDescriptorHeap->GetCPUHandle(SRVIndex));
-
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = GetRTVCPUHandle();
-	Device->CreateRenderTargetView(Resource, rtvHandle);
+	Device->CreateRenderTargetView(Resource, GetRTVCPUHandle());
 }
 
 void TW3D::TW3DResourceRTV::Release() {

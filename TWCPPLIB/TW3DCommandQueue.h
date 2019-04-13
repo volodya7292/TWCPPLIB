@@ -16,6 +16,7 @@ namespace TW3D {
 		void SignalFence(ID3D12Fence1* fence, TWT::UInt64 value);
 
 		static TW3DCommandQueue* CreateDirect(TW3DDevice* device);
+		static TW3DCommandQueue* CreateCompute(TW3DDevice* device);
 
 	private:
 		ID3D12CommandQueue* commandQueue;

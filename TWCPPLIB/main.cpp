@@ -15,7 +15,6 @@ int main() {
 	TW3D::Initialize(info);
 
 	scene = new TW3D::TW3DScene();
-	
 
 	TW3D::Start();
 }

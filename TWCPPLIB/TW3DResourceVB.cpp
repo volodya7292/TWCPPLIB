@@ -47,3 +47,7 @@ void TW3D::TW3DResourceVB::UpdateData(const void* Data, TWT::UInt Size) {
 TWT::UInt TW3D::TW3DResourceVB::GetVertexCount() {
 	return VertexCount;
 }
+
+TWT::UInt TW3D::TW3DResourceVB::GetSizeInBytes() {
+	return Size;
+}
