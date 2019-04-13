@@ -12,7 +12,7 @@ namespace TW3D {
 
 		virtual void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex);
 
-		TW3DTransform transform;
+		TW3DTransform Transform;
 		
 	protected:
 		TW3DResourceCB* ConstantBuffer;

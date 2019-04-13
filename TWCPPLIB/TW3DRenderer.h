@@ -9,7 +9,17 @@ namespace TW3D {
 		TW3DRenderer() = default;
 		virtual ~TW3DRenderer() = default;
 		virtual void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height);
-		virtual void UpdateCommandList(TW3DGraphicsCommandList* CommandList, TW3DScene* Scene);
+		virtual void Resize(TWT::UInt Width, TWT::UInt Height);
+		virtual void Record(TW3DScene* Scene, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStencilOutput);
+		// Per frame
+		virtual void Execute();
+
+	protected:
+		TWT::Bool Initialized = false;
+		TW3DResourceManager* ResourceManager;
+		TW3DSwapChain* SwapChain;
+		TWT::UInt Width;
+		TWT::UInt Height;
 	};
 }
 

@@ -19,7 +19,7 @@ namespace TW3D {
 
 		void SetRotation(TWT::Vector3f Rotation);
 		void UpdateConstantBuffer(TW3DResourceCB* ConstantBuffer = nullptr);
-		void Use(TW3DGraphicsCommandList* CommandList);
+		TW3DResourceCB* GetConstantBuffer();
 
 		TWT::UInt Width, Height;
 		TWT::Float FOVY, ZNear, ZFar;

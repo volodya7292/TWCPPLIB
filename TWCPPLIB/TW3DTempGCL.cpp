@@ -5,7 +5,6 @@ TW3D::TW3DTempGCL::TW3DTempGCL(TW3DDevice* Device) {
 	Fence = new TW3DFence(Device);
 	CommandQueue = new TW3DCommandQueue(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	CommandList = new TW3DGraphicsCommandList(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
-	CommandList->Close();
 }
 
 TW3D::TW3DTempGCL::~TW3DTempGCL() {

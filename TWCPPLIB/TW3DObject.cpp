@@ -10,14 +10,14 @@ TW3D::TW3DObject::~TW3DObject() {
 }
 
 void TW3D::TW3DObject::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex) {
-	if (transform.Changed) {
-		transform.Changed = false;
+	if (Transform.Changed) {
+		Transform.Changed = false;
 
 		TWT::DefaultPerObjectCB cb;
-		cb.model = transform.GetModelMatrix();
+		cb.model = Transform.GetModelMatrix();
 
 		ConstantBuffer->Update(&cb, 0);
 	}
 
-	CommandList->SetGraphicsRootCBV(ModelCBRootParameterIndex, ConstantBuffer, 0);
+	CommandList->SetRootCBV(ModelCBRootParameterIndex, ConstantBuffer, 0);
 }

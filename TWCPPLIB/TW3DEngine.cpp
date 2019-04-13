@@ -21,6 +21,8 @@ static TW3D::TW3DScene*					scene;
 static TW3D::TW3DRenderer*				renderer;
 static TW3D::TW3DResourceManager*		resource_manager;
 
+static void (*on_update)() = nullptr;
+
 static TWT::UInt		width, height;
 static TWT::String		title;
 static TWT::Bool		fullscreen, vsync;
@@ -33,33 +35,34 @@ static TW3D::TW3DAdapter*		adapter;
 static TW3D::TW3DDevice*		device;
 static TW3D::TW3DSwapChain*		swapChain;
 
-static TW3D::TW3DCommandQueue* commandQueue;
-static TW3D::TW3DCommandQueue* computeCommandQueue;
-static TW3D::TW3DGraphicsCommandList* commandList;
-static TW3D::TW3DGraphicsCommandList* computeCommandList;
+//static TW3D::TW3DCommandQueue* commandQueue;
+//static TW3D::TW3DCommandQueue* computeCommandQueue;
+//static TW3D::TW3DGraphicsCommandList* commandList;
+//static TW3D::TW3DGraphicsCommandList* computeCommandList;
 static TW3D::TW3DFence* fence[TW3D::TW3DSwapChain::BufferCount];
-static TW3D::TW3DGraphicsPipelineState* pipelineState;
-static TW3D::TW3DGraphicsPipelineState* blitPipelineState;
-static TW3D::TW3DComputePipelineState* computePipelineState;
+//static TW3D::TW3DGraphicsPipelineState* pipelineState;
+//static TW3D::TW3DGraphicsPipelineState* blitPipelineState;
+//static TW3D::TW3DComputePipelineState* computePipelineState;
 
 static TW3D::TW3DResourceRTV* renderTargets[TW3D::TW3DSwapChain::BufferCount];
 static TW3D::TW3DResourceDSV* depthStencil;
-static TW3D::TW3DResourceRTV* offscreen, *offscreen2;
-static TW3D::TW3DResourceUAV* uavTex;
-static TW3D::TW3DResourceUAV* uavBuf;
-static TW3D::TW3DResourceSR* texture;
-static TW3D::TW3DResourceSR* texture2;
+//static TW3D::TW3DResourceRTV* offscreen, *offscreen2;
+//static TW3D::TW3DResourceUAV* uavTex;
+//static TW3D::TW3DResourceUAV* uavBuf;
+//static TW3D::TW3DResourceSR* texture;
+//static TW3D::TW3DResourceSR* texture2;
+//static TW3D::TW3DResourceSR* textureArray;
 
-static TW3D::TW3DCube* cube;
+//static TW3D::TW3DCube* cube;
 
 void on_resize();
 
 static int frameIndex; // current rtv we are on
-static D3D12_VIEWPORT viewport; // area that output from rasterizer will be stretched to.
-static D3D12_RECT scissorRect; // the area to draw in. pixels outside that area will not be drawn onto
+//static D3D12_VIEWPORT viewport; // area that output from rasterizer will be stretched to.
+//static D3D12_RECT scissorRect; // the area to draw in. pixels outside that area will not be drawn onto
 
 
-static TW3D::TW3DPerspectiveCamera* camera;
+//static TW3D::TW3DPerspectiveCamera* camera;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
@@ -197,24 +200,24 @@ void init_dx12() {
 
 	resource_manager = new TW3D::TW3DResourceManager(device);
 
-	commandQueue = TW3D::TW3DCommandQueue::CreateDirect(device);
-	computeCommandQueue = TW3D::TW3DCommandQueue::CreateCompute(device);
-	swapChain = new TW3D::TW3DSwapChain(factory, commandQueue, hwnd, width, height, vsync);
+	//commandQueue = TW3D::TW3DCommandQueue::CreateDirect(device);
+	//computeCommandQueue = TW3D::TW3DCommandQueue::CreateCompute(device);
+	swapChain = new TW3D::TW3DSwapChain(factory, resource_manager->GetDirectCommandQueue(), hwnd, width, height, vsync);
 
 	frameIndex = swapChain->GetCurrentBufferIndex();
 
 	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++)
 		renderTargets[i] = resource_manager->CreateRenderTargetView(swapChain->GetBuffer(i));
 
-	offscreen = resource_manager->CreateRenderTargetView(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
-	offscreen2 = resource_manager->CreateRenderTargetView(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
+	//offscreen = resource_manager->CreateRenderTargetView(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
+	//offscreen2 = resource_manager->CreateRenderTargetView(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
 
 
-	commandList = TW3D::TW3DGraphicsCommandList::CreateDirect(device);
-	commandList->Close();
+	//commandList = TW3D::TW3DGraphicsCommandList::CreateDirect(device);
+	//commandList->Close();
 
-	computeCommandList = TW3D::TW3DGraphicsCommandList::CreateCompute(device);
-	computeCommandList->Close();
+	//computeCommandList = TW3D::TW3DGraphicsCommandList::CreateCompute(device);
+	//computeCommandList->Close();
 
 	// create the fences
 	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++) {
@@ -222,234 +225,241 @@ void init_dx12() {
 	}
 	
 
-	TW3D::TW3DRootSignature* rootSignature = new TW3D::TW3DRootSignature(
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
+	//TW3D::TW3DRootSignature* rootSignature = new TW3D::TW3DRootSignature(
+	//	D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
+	//	D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+	//	D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+	//	D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
 
-	rootSignature->SetParameterCBV(0, D3D12_SHADER_VISIBILITY_VERTEX, 0);
-	rootSignature->SetParameterCBV(1, D3D12_SHADER_VISIBILITY_VERTEX, 1);
-	rootSignature->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_PIXEL, 0, 2);
-	rootSignature->SetParameterUAV(3, D3D12_SHADER_VISIBILITY_PIXEL, 0);
-	rootSignature->SetParameterUAV(4, D3D12_SHADER_VISIBILITY_PIXEL, 1);
-	rootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
-	rootSignature->AddSampler(1, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
-	rootSignature->Create(device);
+	//rootSignature->SetParameterCBV(0, D3D12_SHADER_VISIBILITY_VERTEX, 0);
+	//rootSignature->SetParameterCBV(1, D3D12_SHADER_VISIBILITY_VERTEX, 1);
+	//rootSignature->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_PIXEL, 0, 2);
+	//rootSignature->SetParameterUAV(3, D3D12_SHADER_VISIBILITY_PIXEL, 0);
+	//rootSignature->SetParameterUAV(4, D3D12_SHADER_VISIBILITY_PIXEL, 1);
+	//rootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
+	//rootSignature->AddSampler(1, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
+	//rootSignature->Create(device);
 
-	TW3D::TW3DRootSignature* blitRootSignature = new TW3D::TW3DRootSignature(
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
-	blitRootSignature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);
-	blitRootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
-	blitRootSignature->Create(device);
-
-
-	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> inputLayout(2);
-	inputLayout[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	inputLayout[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-
-	D3D12_RASTERIZER_DESC rastDesc = {};
-	rastDesc.FillMode = D3D12_FILL_MODE_SOLID;
-	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
-	rastDesc.FrontCounterClockwise = TRUE;
-	rastDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
-	rastDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
-	rastDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-	rastDesc.DepthClipEnable = FALSE;
-	rastDesc.MultisampleEnable = FALSE;
-	rastDesc.AntialiasedLineEnable = FALSE;
-	rastDesc.ForcedSampleCount = 0;
-	rastDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-
-	D3D12_DEPTH_STENCIL_DESC depthDesc = {};
-	depthDesc.DepthEnable = TRUE;
-	depthDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	depthDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
-	depthDesc.StencilEnable = FALSE;
-	depthDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
-	depthDesc.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
-	const D3D12_DEPTH_STENCILOP_DESC defaultStencilOp = { D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_COMPARISON_FUNC_ALWAYS };
-	depthDesc.FrontFace = defaultStencilOp;
-	depthDesc.BackFace = defaultStencilOp;
-
-	D3D12_BLEND_DESC blendDesc = {};
-	blendDesc.AlphaToCoverageEnable = FALSE;
-	blendDesc.IndependentBlendEnable = FALSE;
-	blendDesc.RenderTarget[0].BlendEnable = FALSE;
-	blendDesc.RenderTarget[0].LogicOpEnable = FALSE;
-	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
-	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;
-	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-	blendDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
-
-	pipelineState = new TW3D::TW3DGraphicsPipelineState(
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
-		swapChain->GetDescription().SampleDesc,
-		rastDesc,
-		depthDesc,
-		blendDesc,
-		rootSignature,
-		2);
-	pipelineState->SetRTVFormat(0, DXGI_FORMAT_R8G8B8A8_UNORM);
-	pipelineState->SetRTVFormat(1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	pipelineState->SetVertexShader("VertexShader.cso");
-	pipelineState->SetPixelShader("PixelShader.cso");
-	pipelineState->SetInputLayout(inputLayout);
-	pipelineState->Create(device);
+	//TW3D::TW3DRootSignature* blitRootSignature = new TW3D::TW3DRootSignature(
+	//	D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+	//	D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+	//	D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
+	//blitRootSignature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);
+	//blitRootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
+	//blitRootSignature->Create(device);
 
 
-	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
-	depthDesc.DepthEnable = FALSE;
+	//TWT::Vector<D3D12_INPUT_ELEMENT_DESC> inputLayout(2);
+	//inputLayout[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	//inputLayout[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
-	blitPipelineState = new TW3D::TW3DGraphicsPipelineState(
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
-		swapChain->GetDescription().SampleDesc,
-		rastDesc,
-		depthDesc,
-		blendDesc,
-		blitRootSignature,
-		1);
-	blitPipelineState->SetRTVFormat(0, DXGI_FORMAT_R8G8B8A8_UNORM);
-	blitPipelineState->SetVertexShader("VertexOffscreenBlit.cso");
-	blitPipelineState->SetPixelShader("PixelOffscreenBlit.cso");
-	blitPipelineState->Create(device);
+	//D3D12_RASTERIZER_DESC rastDesc = {};
+	//rastDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	//rastDesc.CullMode = D3D12_CULL_MODE_NONE;
+	//rastDesc.FrontCounterClockwise = TRUE;
+	//rastDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+	//rastDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+	//rastDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+	//rastDesc.DepthClipEnable = FALSE;
+	//rastDesc.MultisampleEnable = FALSE;
+	//rastDesc.AntialiasedLineEnable = FALSE;
+	//rastDesc.ForcedSampleCount = 0;
+	//rastDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	//D3D12_DEPTH_STENCIL_DESC depthDesc = {};
+	//depthDesc.DepthEnable = TRUE;
+	//depthDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	//depthDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+	//depthDesc.StencilEnable = FALSE;
+	//depthDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+	//depthDesc.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+	//const D3D12_DEPTH_STENCILOP_DESC defaultStencilOp = { D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_COMPARISON_FUNC_ALWAYS };
+	//depthDesc.FrontFace = defaultStencilOp;
+	//depthDesc.BackFace = defaultStencilOp;
+
+	//D3D12_BLEND_DESC blendDesc = {};
+	//blendDesc.AlphaToCoverageEnable = FALSE;
+	//blendDesc.IndependentBlendEnable = FALSE;
+	//blendDesc.RenderTarget[0].BlendEnable = FALSE;
+	//blendDesc.RenderTarget[0].LogicOpEnable = FALSE;
+	//blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
+	//blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;
+	//blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	//blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	//blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	//blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	//blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	//blendDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
+
+	//pipelineState = new TW3D::TW3DGraphicsPipelineState(
+	//	D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+	//	swapChain->GetDescription().SampleDesc,
+	//	rastDesc,
+	//	depthDesc,
+	//	blendDesc,
+	//	rootSignature,
+	//	2);
+	//pipelineState->SetRTVFormat(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+	//pipelineState->SetRTVFormat(1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	//pipelineState->SetVertexShader("VertexShader.cso");
+	//pipelineState->SetPixelShader("PixelShader.cso");
+	//pipelineState->SetInputLayout(inputLayout);
+	//pipelineState->Create(device);
 
 
-	TW3D::TW3DRootSignature* computeRootSignature = new TW3D::TW3DRootSignature();
-	computeRootSignature->SetParameterUAV(0, D3D12_SHADER_VISIBILITY_ALL, 0);
-	computeRootSignature->SetParameterUAV(1, D3D12_SHADER_VISIBILITY_ALL, 1);
-	//computeRootSignature->SetParameterSV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);
-	//computeRootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
-	computeRootSignature->Create(device);
+	//rastDesc.CullMode = D3D12_CULL_MODE_NONE;
+	//depthDesc.DepthEnable = FALSE;
 
-	computePipelineState = new TW3D::TW3DComputePipelineState(computeRootSignature);
-	computePipelineState->SetShader("RayTrace.cso");
-	computePipelineState->Create(device);
+	//blitPipelineState = new TW3D::TW3DGraphicsPipelineState(
+	//	D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+	//	swapChain->GetDescription().SampleDesc,
+	//	rastDesc,
+	//	depthDesc,
+	//	blendDesc,
+	//	blitRootSignature,
+	//	1);
+	//blitPipelineState->SetRTVFormat(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+	//blitPipelineState->SetVertexShader("VertexOffscreenBlit.cso");
+	//blitPipelineState->SetPixelShader("PixelOffscreenBlit.cso");
+	//blitPipelineState->Create(device);
+
+
+	//TW3D::TW3DRootSignature* computeRootSignature = new TW3D::TW3DRootSignature();
+	//computeRootSignature->SetParameterUAV(0, D3D12_SHADER_VISIBILITY_ALL, 0);
+	//computeRootSignature->SetParameterUAV(1, D3D12_SHADER_VISIBILITY_ALL, 1);
+	////computeRootSignature->SetParameterSV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);
+	////computeRootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
+	//computeRootSignature->Create(device);
+
+	//computePipelineState = new TW3D::TW3DComputePipelineState(computeRootSignature);
+	//computePipelineState->SetShader("RayTrace.cso");
+	//computePipelineState->Create(device);
 
 
 	TW3DPrimitives::Initialize(resource_manager);
-	cube = new TW3D::TW3DCube(resource_manager);
+	//cube = new TW3D::TW3DCube(resource_manager);
 
 	// Create the depth/stencil buffer
 	depthStencil = resource_manager->CreateDepthStencilView(width, height);
 
-	camera = new TW3D::TW3DPerspectiveCamera(resource_manager, width, height, 45, TWT::Vector3f(0.0f, 0.0f, 3.0f), TWT::Vector3f(0, 0, 0));
+	//camera = new TW3D::TW3DPerspectiveCamera(resource_manager, width, height, 45, TWT::Vector3f(0.0f, 0.0f, 3.0f), TWT::Vector3f(0, 0, 0));
 
 
-	texture = resource_manager->CreateTexture2D(L"D:\\тест.png");
-	texture2 = resource_manager->CreateTexture2D(L"D:\\test2.png");
+	//texture = resource_manager->CreateTexture2D(L"D:\\тест.png");
+	//texture2 = resource_manager->CreateTexture2D(L"D:\\test2.png");
+
+	//textureArray = resource_manager->CreateTextureArray2D(1024, 1024, 10, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 	struct tet {
 		TWT::Vector4f gov;
 		TWT::Vector4f a;
 	};
 
-	uavTex = resource_manager->CreateUnorderedAccessView(width, height, DXGI_FORMAT_R8G8B8A8_UNORM);
-	uavBuf = resource_manager->CreateUnorderedAccessView(width, sizeof(tet));
+	//uavTex = resource_manager->CreateUnorderedAccessView(width, height, DXGI_FORMAT_R8G8B8A8_UNORM);
+	//uavBuf = resource_manager->CreateUnorderedAccessView(width, sizeof(tet));
 
-	fence[frameIndex]->Flush(commandQueue);
-	fence[frameIndex]->Flush(computeCommandQueue);
+	//fence[frameIndex]->Flush(commandQueue);
+	//fence[frameIndex]->Flush(computeCommandQueue);
 
 
-	// Fill out the Viewport
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.Width = static_cast<FLOAT>(width);
-	viewport.Height = static_cast<FLOAT>(height);
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
+	//// Fill out the Viewport
+	//viewport.TopLeftX = 0;
+	//viewport.TopLeftY = 0;
+	//viewport.Width = static_cast<FLOAT>(width);
+	//viewport.Height = static_cast<FLOAT>(height);
+	//viewport.MinDepth = 0.0f;
+	//viewport.MaxDepth = 1.0f;
 
-	// Fill out a scissor rect
-	scissorRect.left = 0;
-	scissorRect.top = 0;
-	scissorRect.right = width;
-	scissorRect.bottom = height;
+	//// Fill out a scissor rect
+	//scissorRect.left = 0;
+	//scissorRect.top = 0;
+	//scissorRect.right = width;
+	//scissorRect.bottom = height;
 }
 
 void FlushGPU() {
 	for (UINT n = 0; n < TW3D::TW3DSwapChain::BufferCount; n++)
-		fence[n]->Flush(computeCommandQueue);
-	for (UINT n = 0; n < TW3D::TW3DSwapChain::BufferCount; n++)
-		fence[n]->Flush(commandQueue);
+		resource_manager->Flush(fence[n]);
 }
 
 void UpdatePipeline() {
-	computeCommandList->Reset();
-	computeCommandList->SetPipelineState(computePipelineState);
-	computeCommandList->BindResources(resource_manager);
-	computeCommandList->BindUAV(0, uavTex);
-	computeCommandList->BindUAV(1, uavBuf);
-	computeCommandList->Dispatch(width, height);
-	computeCommandList->Close();
+	//computeCommandList->Reset();
+	//computeCommandList->SetPipelineState(computePipelineState);
+	//computeCommandList->BindResources(resource_manager);
+	//computeCommandList->BindUAV(0, uavTex);
+	//computeCommandList->BindUAV(1, uavBuf);
+	//computeCommandList->Dispatch(width, height);
+	//computeCommandList->Close();
 
 
 
 
-	commandList->Reset();
+	//commandList->Reset();
 
-	commandList->SetPipelineState(pipelineState);
+	//commandList->SetPipelineState(pipelineState);
 
-	commandList->BindResources(resource_manager);
+	//commandList->BindResources(resource_manager);
 
-	commandList->SetRenderTargets({offscreen, offscreen2}, depthStencil);
-	const float clearColor[] = { 0.f, 0.f, 0.f, 1.f };
-	commandList->ClearRTV(offscreen);
-	commandList->ClearRTV(offscreen2);
-	commandList->ClearDSVDepth(depthStencil, 1.0f);
+	//commandList->SetRenderTargets({offscreen, offscreen2}, depthStencil);
+	//const float clearColor[] = { 0.f, 0.f, 0.f, 1.f };
+	//commandList->ClearRTV(offscreen);
+	//commandList->ClearRTV(offscreen2);
+	//commandList->ClearDSVDepth(depthStencil, 1.0f);
 
-	commandList->BindTexture(2, texture);
-	commandList->BindUAV(3, uavTex);
-	commandList->BindUAV(4, uavBuf);
-	//commandList->BindTexture(3, texture2);
+	//commandList->BindTexture(2, texture);
+	//commandList->BindUAV(3, uavTex);
+	//commandList->BindUAV(4, uavBuf);
+	////commandList->BindTexture(3, texture2);
 
-	commandList->SetViewport(&viewport); // set the viewports
-	commandList->SetScissor(&scissorRect); // set the scissor rects
-	commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // set the primitive topology
+	//commandList->SetViewport(&viewport); // set the viewports
+	//commandList->SetScissor(&scissorRect); // set the scissor rects
+	//commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // set the primitive topology
 
-	camera->Use(commandList);
-
-
-	commandList->DrawObject(cube, 1);
+	//commandList->BindCameraCBV(0, camera);
 
 
-	commandList->SetPipelineState(blitPipelineState);
+	//commandList->DrawObject(cube, 1);
 
-	commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-	commandList->SetRenderTarget(renderTargets[frameIndex], depthStencil);
-	commandList->ClearRTV(renderTargets[frameIndex]);
-	commandList->ClearDSVDepth(depthStencil, 1.0f);
-	commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	//commandList->SetPipelineState(blitPipelineState);
 
-	commandList->BindRTVTexture(0, offscreen);
+	//commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-	commandList->Draw(4);
+	//commandList->SetRenderTarget(renderTargets[frameIndex], depthStencil);
+	//commandList->ClearRTV(renderTargets[frameIndex]);
+	//commandList->ClearDSVDepth(depthStencil, 1.0f);
+	//commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	//commandList->BindRTVTexture(0, offscreen);
 
-	commandList->Close();
+	//commandList->Draw(4);
+
+	//commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+
+	//commandList->Close();
+
+	renderer->Record(scene, renderTargets[frameIndex], depthStencil);
 }
 
 void update() {
-	cube->transform.AdjustRotation(TWT::Vector3f(0.01f));
-	camera->UpdateConstantBuffer();
+	//cube->transform.AdjustRotation(TWT::Vector3f(0.01f));
+	//camera->UpdateConstantBuffer();
+	if (on_update != nullptr)
+		on_update();
 }
 
 void render() {
-	fence[frameIndex]->Flush(computeCommandQueue);
-	fence[frameIndex]->Flush(commandQueue);
+	resource_manager->Flush(fence[frameIndex]);
+	//FlushGPU();
+	//fence[frameIndex]->Flush(computeCommandQueue);
+	//fence[frameIndex]->Flush(commandQueue);
 	frameIndex = swapChain->GetCurrentBufferIndex();
 
 	UpdatePipeline(); // update the pipeline by sending commands to the commandqueue
 
-	computeCommandQueue->ExecuteCommandList(computeCommandList);
-	commandQueue->ExecuteCommandList(commandList);
+	renderer->Execute();
+	//computeCommandQueue->ExecuteCommandList(computeCommandList);
+	//commandQueue->ExecuteCommandList(commandList);
 
 	swapChain->Present();
 }
@@ -463,19 +473,22 @@ void on_resize() {
 	width = std::max(clientRect.right - clientRect.left, 1L);
 	height = std::max(clientRect.bottom - clientRect.top, 1L);
 
-	viewport.Width = static_cast<FLOAT>(width);
+	scene->Camera->Width = width;
+	scene->Camera->Height = height;
+
+	/*viewport.Width = static_cast<FLOAT>(width);
 	viewport.Height = static_cast<FLOAT>(height);
 
 	scissorRect.right = width;
-	scissorRect.bottom = height;
+	scissorRect.bottom = height;*/
 
 	for (UINT n = 0; n < TW3D::TW3DSwapChain::BufferCount; n++)
 		renderTargets[n]->Release();
 
-	offscreen->Release();
+	/*offscreen->Release();
 	offscreen2->Release();
 	uavTex->Release();
-	uavBuf->Release();
+	uavBuf->Release();*/
 
 	depthStencil->Release();
 
@@ -485,14 +498,14 @@ void on_resize() {
 
 	for (UINT n = 0; n < TW3D::TW3DSwapChain::BufferCount; n++)
 		renderTargets[n]->Create(swapChain->GetBuffer(n));
-	offscreen->Create(width, height);
+	/*offscreen->Create(width, height);
 	offscreen2->Create(width, height);
-	uavTex->CreateTexture2D(width, height);
+	uavTex->CreateTexture2D(width, height);*/
 	struct tet {
 		TWT::Vector4f gov;
 		TWT::Vector4f a;
 	};
-	uavBuf->CreateBuffer(width * sizeof(tet));
+	//uavBuf->CreateBuffer(width * sizeof(tet));
 
 	depthStencil->Create(width, height);
 }
@@ -531,31 +544,32 @@ void cleanup() {
 	delete swapChain;
 
 	delete resource_manager;
-	delete camera;
+	/*delete camera;
 
 	delete commandQueue;
 	delete commandList;
 	delete computeCommandQueue;
-	delete computeCommandList;
+	delete computeCommandList;*/
 
 	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; ++i) {
 		delete renderTargets[i];
 		delete fence[i];
 	};
 
-	delete offscreen;
+	/*delete offscreen;
 	delete offscreen2;
 
 	delete pipelineState;
 	delete blitPipelineState;
-	delete computePipelineState;
+	delete computePipelineState;*/
 
 	delete depthStencil;
-	delete texture;
+	/*delete texture;
 	delete texture2;
+	delete textureArray;
 	delete uavTex;
 	delete uavBuf;
-	delete cube;
+	delete cube;*/
 
 	TW3DPrimitives::Cleanup();
 
@@ -568,11 +582,11 @@ void cleanup() {
 }
 
 void TW3D::Initialize(const InitializeInfo& info) {
-	width = info.width;
-	height = info.height;
-	title = info.title;
-	fullscreen = info.fullscreen;
-	vsync = info.vsync;
+	width = info.Width;
+	height = info.Height;
+	title = info.Title;
+	fullscreen = info.FullScreen;
+	vsync = info.VSync;
 
 	init_window();
 	init_dx12();
@@ -585,12 +599,19 @@ void TW3D::Start() {
 
 void TW3D::SetScene(TW3DScene* Scene) {
 	scene = Scene;
+	scene->Camera->Width = width;
+	scene->Camera->Height = height;
 }
 
 void TW3D::SetRenderer(TW3DRenderer* Renderer) {
 	renderer = Renderer;
+	renderer->Initialize(resource_manager, swapChain, width, height);
 }
 
-TW3D::TW3DResourceManager* GetResourceManager() {
+void TW3D::SetOnUpdateEvent(void(*OnUpdate)()) {
+	on_update = OnUpdate;
+}
+
+TW3D::TW3DResourceManager* TW3D::GetResourceManager() {
 	return resource_manager;
 }

@@ -5,12 +5,14 @@
 #include "TW3DResourceCB.h"
 #include "TW3DResourceManager.h"
 #include "TW3DObject.h"
+#include "TW3DPerspectiveCamera.h"
 
 TW3D::TW3DGraphicsCommandList::TW3DGraphicsCommandList(TW3D::TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type) :
-	type(Type)
+	Type(Type)
 {
-	Device->CreateCommandAllocator(type, &command_allocator);
-	Device->CreateGraphicsCommandList(type, command_allocator, &command_list);
+	Device->CreateCommandAllocator(Type, &command_allocator);
+	Device->CreateGraphicsCommandList(Type, command_allocator, &command_list);
+	command_list->Close();
 }
 
 TW3D::TW3DGraphicsCommandList::~TW3DGraphicsCommandList() {
@@ -50,12 +52,12 @@ void TW3D::TW3DGraphicsCommandList::ResourceBarrier(ID3D12Resource* Resource, D3
 
 void TW3D::TW3DGraphicsCommandList::SetPipelineState(TW3D::TW3DGraphicsPipelineState* PipelineState) {
 	command_list->SetPipelineState(PipelineState->Get());
-	command_list->SetGraphicsRootSignature(PipelineState->RootSignature->Get());
+	SetRootSignature(PipelineState->RootSignature);
 }
 
 void TW3D::TW3DGraphicsCommandList::SetPipelineState(TW3D::TW3DComputePipelineState* PipelineState) {
 	command_list->SetPipelineState(PipelineState->Get());
-	command_list->SetComputeRootSignature(PipelineState->RootSignature->Get());
+	SetRootSignature(PipelineState->RootSignature);
 }
 
 void TW3D::TW3DGraphicsCommandList::SetRenderTarget(TW3DResourceRTV* RTV, TW3DResourceDSV* DSV) {
@@ -79,8 +81,11 @@ void TW3D::TW3DGraphicsCommandList::ClearDSVDepth(TW3DResourceDSV* DSV, TWT::Flo
 	command_list->ClearDepthStencilView(DSV->GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH, Depth, 0, 0, nullptr);
 }
 
-void TW3D::TW3DGraphicsCommandList::SetGraphicsRootSignature(TW3DRootSignature* RootSignature) {
-	command_list->SetGraphicsRootSignature(RootSignature->Get());
+void TW3D::TW3DGraphicsCommandList::SetRootSignature(TW3DRootSignature* RootSignature) {
+	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+		command_list->SetComputeRootSignature(RootSignature->Get());
+	else
+		command_list->SetGraphicsRootSignature(RootSignature->Get());
 }
 
 void TW3D::TW3DGraphicsCommandList::SetDescriptorHeap(TW3DDescriptorHeap* heap) {
@@ -97,12 +102,18 @@ void TW3D::TW3DGraphicsCommandList::SetDescriptorHeaps(TWT::Vector<TW3DDescripto
 	command_list->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), nativeHeaps.data());
 }
 
-void TW3D::TW3DGraphicsCommandList::SetGraphicsRootDescriptorTable(TWT::UInt RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor) {
-	command_list->SetGraphicsRootDescriptorTable(RootParameterIndex, BaseDescriptor);
+void TW3D::TW3DGraphicsCommandList::SetRootDescriptorTable(TWT::UInt RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor) {
+	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+		command_list->SetComputeRootDescriptorTable(RootParameterIndex, BaseDescriptor);
+	else
+		command_list->SetGraphicsRootDescriptorTable(RootParameterIndex, BaseDescriptor);
 }
 
-void TW3D::TW3DGraphicsCommandList::SetGraphicsRootCBV(TWT::UInt RootParameterIndex, TW3DResourceCB* CB, TWT::UInt ElementIndex) {
-	command_list->SetGraphicsRootConstantBufferView(RootParameterIndex, CB->GetAddress(ElementIndex));
+void TW3D::TW3DGraphicsCommandList::SetRootCBV(TWT::UInt RootParameterIndex, TW3DResourceCB* CB, TWT::UInt ElementIndex) {
+	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+		command_list->SetComputeRootConstantBufferView(RootParameterIndex, CB->GetAddress(ElementIndex));
+	else
+		command_list->SetGraphicsRootConstantBufferView(RootParameterIndex, CB->GetAddress(ElementIndex));
 }
 
 void TW3D::TW3DGraphicsCommandList::SetViewport(const D3D12_VIEWPORT* viewport) {
@@ -154,10 +165,14 @@ void TW3D::TW3DGraphicsCommandList::BindRTVTexture(TWT::UInt RootParameterIndex,
 }
 
 void TW3D::TW3DGraphicsCommandList::BindUAV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
-	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 		command_list->SetComputeRootDescriptorTable(RootParameterIndex, UAV->GetGPUHandle());
 	else
 		command_list->SetGraphicsRootDescriptorTable(RootParameterIndex, UAV->GetGPUHandle());
+}
+
+void TW3D::TW3DGraphicsCommandList::BindCameraCBV(TWT::UInt RootParameterIndex, TW3DPerspectiveCamera* Camera) {
+	SetRootCBV(RootParameterIndex, Camera->GetConstantBuffer());
 }
 
 void TW3D::TW3DGraphicsCommandList::DrawObject(TW3DObject* object, TWT::UInt ModelCBRootParameterIndex) {

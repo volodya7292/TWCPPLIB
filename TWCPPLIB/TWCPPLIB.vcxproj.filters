@@ -61,6 +61,9 @@
     <Filter Include="Header Files\TW3DEngine\TW3DRayTracing">
       <UniqueIdentifier>{2fa718e8-ccac-4ad7-97dd-11239a29f2ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Shaders">
+      <UniqueIdentifier>{b39a3dd0-0123-4934-8ded-05fc311c31ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TW3DEngine.h">
@@ -290,10 +293,26 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="PixelShader.hlsl" />
-    <FxCompile Include="VertexShader.hlsl" />
-    <FxCompile Include="VertexOffscreenBlit.hlsl" />
-    <FxCompile Include="PixelOffscreenBlit.hlsl" />
-    <FxCompile Include="RayTrace.hlsl" />
+    <FxCompile Include="PixelOffscreenBlit.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PixelShader.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="RayTrace.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexOffscreenBlit.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="GBuffer.v.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="GBuffer.p.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

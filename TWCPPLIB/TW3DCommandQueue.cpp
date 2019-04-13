@@ -22,7 +22,7 @@ void TW3D::TW3DCommandQueue::ExecuteCommandList(TW3DGraphicsCommandList* command
 	commandQueue->ExecuteCommandLists(1, &native_list);
 }
 
-void TW3D::TW3DCommandQueue::ExecuteCommandLists(TWT::Vector<TW3DGraphicsCommandList*> commandLists) {
+void TW3D::TW3DCommandQueue::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& commandLists) {
 	TWT::Vector<ID3D12CommandList*> nativeLists(commandLists.size());
 
 	for (TWT::UInt i = 0; i < nativeLists.size(); i++)

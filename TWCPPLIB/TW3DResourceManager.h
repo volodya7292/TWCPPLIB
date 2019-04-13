@@ -3,6 +3,7 @@
 #include "TW3DResourceCB.h"
 #include "TW3DResourceSR.h"
 #include "TW3DResourceUAV.h"
+#include "TW3DCommandQueue.h"
 #include "TW3DTypes.h"
 
 namespace TW3D {
@@ -21,9 +22,19 @@ namespace TW3D {
 		TW3DResourceVB* CreateVertexBuffer(TWT::UInt VertexCount, TWT::UInt SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex));
 		TW3DResourceCB* CreateConstantBuffer(TWT::UInt ElementSizeInBytes, TWT::UInt ElementCount = 1);
 		TW3DResourceSR* CreateTexture2D(TWT::WString Filename);
+		TW3DResourceSR* CreateTextureArray2D(TWT::UInt Width, TWT::UInt Height, TWT::UInt Depth, DXGI_FORMAT Format);
+		TW3DGraphicsCommandList* CreateDirectCommandList();
+		TW3DGraphicsCommandList* CreateComputeCommandList();
+
+		void ExecuteCommandList(TW3DGraphicsCommandList* CommandList);
+		// Command lists must be of the same type
+		void ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists);
+
+		void Flush(TW3D::TW3DFence* Fence);
 
 		TW3DDevice* GetDevice();
 		TW3DDescriptorHeap* GetSVDescriptorHeap();
+		TW3DCommandQueue* GetDirectCommandQueue();
 
 	private:
 		TW3DDevice* device;
@@ -31,5 +42,7 @@ namespace TW3D {
 		TW3DDescriptorHeap* rtv_descriptor_heap = nullptr;
 		TW3DDescriptorHeap* dsv_descriptor_heap = nullptr;
 		TW3DDescriptorHeap* srv_descriptor_heap = nullptr;
+		TW3DCommandQueue* direct_command_queue;
+		TW3DCommandQueue* compute_command_queue;
 	};
 }

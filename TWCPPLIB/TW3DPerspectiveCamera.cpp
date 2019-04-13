@@ -15,8 +15,7 @@ TW3D::TW3DPerspectiveCamera::~TW3DPerspectiveCamera() {
 }
 
 TWT::Matrix4f TW3D::TW3DPerspectiveCamera::GetProjectionMatrix() {
-	TWT::Matrix4f f = glm::perspective(glm::radians(FOVY), (float)Width / Height, ZNear, ZFar);
-	return f;
+	return glm::perspective(glm::radians(FOVY), (float)Width / Height, ZNear, ZFar);
 }
 
 TWT::Matrix4f TW3D::TW3DPerspectiveCamera::GetViewMatrix() {
@@ -56,6 +55,6 @@ void TW3D::TW3DPerspectiveCamera::UpdateConstantBuffer(TW3DResourceCB* ConstantB
 		constant_buffer->Update(&cb, 0);
 }
 
-void TW3D::TW3DPerspectiveCamera::Use(TW3DGraphicsCommandList* CommandList) {
-	CommandList->SetGraphicsRootCBV(0, constant_buffer, 0);
+TW3D::TW3DResourceCB* TW3D::TW3DPerspectiveCamera::GetConstantBuffer() {
+	return constant_buffer;
 }

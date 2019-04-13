@@ -4,7 +4,7 @@
 TW3D::TW3DResourceSR::TW3DResourceSR(TW3DDevice* Device, TW3DDescriptorHeap* SRVDescriptorHeap, TW3DTempGCL* TempGCL) :
 	TW3DResource(Device), SRVDescriptorHeap(SRVDescriptorHeap), TempGCL(TempGCL)
 {	
-	
+	SRVIndex = SRVDescriptorHeap->Allocate();
 }
 
 TW3D::TW3DResourceSR::~TW3DResourceSR() {
@@ -12,8 +12,6 @@ TW3D::TW3DResourceSR::~TW3DResourceSR() {
 }
 
 void TW3D::TW3DResourceSR::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format) {
-	SRVIndex = SRVDescriptorHeap->Allocate();
-
 	D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
 	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	desc.Format = Format;
@@ -22,6 +20,28 @@ void TW3D::TW3DResourceSR::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORM
 
 	ImageDesc = CD3DX12_RESOURCE_DESC::Tex2D(Format, Width, Height, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 	
+	Device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&ImageDesc,
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		&Resource);
+
+	Device->CreateShaderResourceView(Resource, &desc, SRVDescriptorHeap->GetCPUHandle(SRVIndex));
+}
+
+void TW3D::TW3DResourceSR::CreateArray2D(TWT::UInt Width, TWT::UInt Height, TWT::UInt Depth, DXGI_FORMAT Format) {
+	D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
+	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	desc.Format = Format;
+	desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+	desc.Texture2DArray.MipLevels = 1;
+	desc.Texture2DArray.ArraySize = Depth;
+	desc.Texture2DArray.FirstArraySlice = 0;
+	desc.Texture2DArray.MostDetailedMip = 0;
+
+	ImageDesc = CD3DX12_RESOURCE_DESC::Tex2D(Format, Width, Height, Depth, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+
 	Device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,

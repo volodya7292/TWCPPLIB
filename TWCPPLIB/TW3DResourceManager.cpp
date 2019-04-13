@@ -8,6 +8,8 @@ TW3D::TW3DResourceManager::TW3DResourceManager(TW3DDevice* Device) :
 	rtv_descriptor_heap = TW3DDescriptorHeap::CreateForRTV(device, 1024);
 	dsv_descriptor_heap = TW3DDescriptorHeap::CreateForDSV(device, 1024);
 	srv_descriptor_heap = TW3DDescriptorHeap::CreateForSR(device, 1024);
+	direct_command_queue = TW3DCommandQueue::CreateDirect(device);
+	compute_command_queue = TW3DCommandQueue::CreateCompute(device);
 }
 
 TW3D::TW3DResourceManager::~TW3DResourceManager() {
@@ -15,6 +17,8 @@ TW3D::TW3DResourceManager::~TW3DResourceManager() {
 	delete rtv_descriptor_heap;
 	delete dsv_descriptor_heap;
 	delete srv_descriptor_heap;
+	delete direct_command_queue;
+	delete compute_command_queue;
 }
 
 TW3D::TW3DResourceRTV* TW3D::TW3DResourceManager::CreateRenderTargetView(ID3D12Resource* Buffer) {
@@ -65,10 +69,47 @@ TW3D::TW3DResourceSR* TW3D::TW3DResourceManager::CreateTexture2D(TWT::WString Fi
 	return TW3DResourceSR::Create2D(device, srv_descriptor_heap, Filename, temp_gcl);
 }
 
+TW3D::TW3DResourceSR* TW3D::TW3DResourceManager::CreateTextureArray2D(TWT::UInt Width, TWT::UInt Height, TWT::UInt Depth, DXGI_FORMAT Format) {
+	TW3DResourceSR* sr = new TW3DResourceSR(device, srv_descriptor_heap, temp_gcl);
+	sr->CreateArray2D(Width, Height, Depth, Format);
+	return sr;
+}
+
+TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::CreateDirectCommandList() {
+	return TW3DGraphicsCommandList::CreateDirect(device);
+}
+
+TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::CreateComputeCommandList() {
+	return TW3DGraphicsCommandList::CreateCompute(device);
+}
+
+void TW3D::TW3DResourceManager::ExecuteCommandList(TW3DGraphicsCommandList* CommandList) {
+	if (CommandList->Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+		direct_command_queue->ExecuteCommandList(CommandList);
+	else
+		compute_command_queue->ExecuteCommandList(CommandList);
+}
+
+void TW3D::TW3DResourceManager::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists) {
+	if (CommandLists[0]->Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+		direct_command_queue->ExecuteCommandLists(CommandLists);
+	else
+		compute_command_queue->ExecuteCommandLists(CommandLists);
+}
+
+void TW3D::TW3DResourceManager::Flush(TW3D::TW3DFence* Fence) {
+	Fence->Flush(direct_command_queue);
+	Fence->Flush(compute_command_queue);
+}
+
 TW3D::TW3DDevice* TW3D::TW3DResourceManager::GetDevice() {
 	return device;
 }
 
 TW3D::TW3DDescriptorHeap* TW3D::TW3DResourceManager::GetSVDescriptorHeap() {
 	return srv_descriptor_heap;
+}
+
+TW3D::TW3DCommandQueue* TW3D::TW3DResourceManager::GetDirectCommandQueue() {
+	return direct_command_queue;
 }

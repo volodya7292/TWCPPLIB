@@ -9,6 +9,7 @@ namespace TW3D {
 		~TW3DResourceSR();
 
 		void Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format);
+		void CreateArray2D(TWT::UInt Width, TWT::UInt Height, TWT::UInt Depth, DXGI_FORMAT Format);
 		void Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow);
 
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle();

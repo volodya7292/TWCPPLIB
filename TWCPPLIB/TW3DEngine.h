@@ -6,17 +6,19 @@
 
 namespace TW3D {
 	struct InitializeInfo {
-		TWT::UInt		width;
-		TWT::UInt		height;
-		TWT::String		title;
-		TWT::Bool		fullscreen;
-		TWT::Bool		vsync;
+		TWT::UInt Width;
+		TWT::UInt Height;
+		TWT::String	Title;
+		TWT::Bool FullScreen;
+		TWT::Bool VSync;
 	};
 
 	void Initialize(const InitializeInfo& info);
 	void Start();
 	void SetScene(TW3DScene* Scene);
-	void SetRenderer(TW3DRenderer* RenderingMethod);
+	void SetRenderer(TW3DRenderer* Renderer);
+
+	void SetOnUpdateEvent(void (*OnUpdate)());
 
 	TW3DResourceManager* GetResourceManager();
 }

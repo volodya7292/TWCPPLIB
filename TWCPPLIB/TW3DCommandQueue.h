@@ -11,7 +11,7 @@ namespace TW3D {
 		ID3D12CommandQueue* Get();
 	
 		void ExecuteCommandList(TW3DGraphicsCommandList* commandList);
-		void ExecuteCommandLists(TWT::Vector<TW3DGraphicsCommandList*> commandLists);
+		void ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& commandLists);
 
 		void SignalFence(ID3D12Fence1* fence, TWT::UInt64 value);
 

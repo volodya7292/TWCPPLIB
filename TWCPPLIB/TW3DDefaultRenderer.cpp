@@ -3,46 +3,28 @@
 #include "TW3DSwapChain.h"
 #include "TW3DGraphicsPipelineState.h"
 
-static TW3D::TW3DGraphicsPipelineState *opaque_raster_ps, *blit_ps;
-static TW3D::TW3DResourceDSV* depthStencil;
-static TW3D::TW3DResourceRTV* offscreen;
-
 TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 }
 
 void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height) {
+	TW3DRenderer::Initialize(ResourceManager, SwapChain, Width, Height);
+
 	TW3DDevice* device = ResourceManager->GetDevice();
 
-	/*TWT::Vector<D3D12_DESCRIPTOR_RANGE> ranges(2);
-	ranges[0] = TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
-	ranges[1] = TWU::DXDescriptorRange(2, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
-*/
+
 	TW3DRootSignature* rootSignature = new TW3DRootSignature(
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
 	rootSignature->SetParameterCBV(0, D3D12_SHADER_VISIBILITY_VERTEX, 0);
-	rootSignature->SetParameterCBV(0, D3D12_SHADER_VISIBILITY_VERTEX, 1);
-	/*rootSignature->SetParameter(0, TW3D::TW3DRootParameter::CreateCBV(0, D3D12_SHADER_VISIBILITY_VERTEX));
-	rootSignature->SetParameter(1, TW3D::TW3DRootParameter::CreateCBV(1, D3D12_SHADER_VISIBILITY_VERTEX));*/
-
+	rootSignature->SetParameterCBV(1, D3D12_SHADER_VISIBILITY_VERTEX, 1);
 	rootSignature->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_PIXEL, 0);
-	rootSignature->SetParameterSRV(3, D3D12_SHADER_VISIBILITY_PIXEL, 2);
+	rootSignature->SetParameterSRV(3, D3D12_SHADER_VISIBILITY_PIXEL, 1);
+	rootSignature->SetParameterSRV(4, D3D12_SHADER_VISIBILITY_PIXEL, 2);
 	rootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
-	rootSignature->AddSampler(1, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
+	//rootSignature->AddSampler(1, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->Create(device);
-
-
-	TW3DRootSignature* blitRootSignature = new TW3D::TW3DRootSignature(
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
-	rootSignature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);
-	//blitRootSignature->SetParameter(0, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV)));
-	blitRootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
-	blitRootSignature->Create(device);
-
 
 	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> inputLayout(2);
 	inputLayout[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
@@ -95,14 +77,24 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 		rootSignature,
 		1);
 	opaque_raster_ps->SetRTVFormat(0, DXGI_FORMAT_R8G8B8A8_UNORM);
-	opaque_raster_ps->SetVertexShader("VertexShader.cso");
-	opaque_raster_ps->SetPixelShader("PixelShader.cso");
+	opaque_raster_ps->SetVertexShader("GBuffer.v.cso");
+	opaque_raster_ps->SetPixelShader("GBuffer.p.cso");
 	opaque_raster_ps->SetInputLayout(inputLayout);
 	opaque_raster_ps->Create(device);
 
 
 	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
 	depthDesc.DepthEnable = FALSE;
+
+
+	TW3DRootSignature* blitRootSignature = new TW3D::TW3DRootSignature(
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
+	blitRootSignature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);
+	//blitRootSignature->SetParameter(0, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV)));
+	blitRootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
+	blitRootSignature->Create(device);
 
 	blit_ps = new TW3D::TW3DGraphicsPipelineState(
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
@@ -123,52 +115,93 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	//offscreen->Create(Width, Height);
 
 	depthStencil = ResourceManager->CreateDepthStencilView(Width, Height);
+
+	command_list = ResourceManager->CreateDirectCommandList();
+
+	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, Width, Height);
+	scissor = CD3DX12_RECT(0, 0, Width, Height);
 }
 
-void TW3D::TW3DDefaultRenderer::UpdateCommandList(TW3DGraphicsCommandList* CommandList, TW3DScene* Scene) {
-	CommandList->Reset();
+void TW3D::TW3DDefaultRenderer::Resize(TWT::UInt Width, TWT::UInt Height) {
+	TW3DRenderer::Resize(Width, Height);
 
-	CommandList->SetPipelineState(opaque_raster_ps);
+	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, Width, Height);
+	scissor = CD3DX12_RECT(0, 0, Width, Height);
+}
 
-	//CommandList->SetRenderTarget(offscreen, depthStencil);
+void TW3D::TW3DDefaultRenderer::Record(TW3DScene* Scene, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStencilOutput) {
+	command_list->Reset();
+
+	command_list->SetPipelineState(opaque_raster_ps);
+	command_list->BindResources(ResourceManager);
+
+	command_list->ResourceBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+	command_list->SetRenderTarget(ColorOutput, DepthStencilOutput);
+	command_list->ClearRTV(ColorOutput);
+	command_list->ClearDSVDepth(DepthStencilOutput);
+	command_list->SetViewport(&viewport);
+	command_list->SetScissor(&scissor);
+	command_list->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	
+	command_list->BindCameraCBV(0, Scene->Camera);
+
+	for (TW3DObject* object : Scene->objects) {
+		command_list->DrawObject(object, 1);
+	}
+
+	command_list->ResourceBarrier(ColorOutput, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+
+	command_list->Close();
+
+
+
+
+	//commandList->Reset();
+
+	//commandList->SetPipelineState(pipelineState);
+
+	//commandList->BindResources(resource_manager);
+
+	//commandList->SetRenderTargets({ offscreen, offscreen2 }, depthStencil);
 	//const float clearColor[] = { 0.f, 0.f, 0.f, 1.f };
-	//CommandList->ClearRTV(offscreen);
-	//CommandList->ClearDSVDepth(depthStencil, 1.0f);
+	//commandList->ClearRTV(offscreen);
+	//commandList->ClearRTV(offscreen2);
+	//commandList->ClearDSVDepth(depthStencil, 1.0f);
 
-	//CommandList->SetGraphicsRootSignature(rootSignature); // set the root signature
-	//CommandList->SetDescriptorHeap(mainDescriptorHeap);
+	//commandList->BindTexture(2, texture);
+	//commandList->BindUAV(3, uavTex);
+	//commandList->BindUAV(4, uavBuf);
+	////commandList->BindTexture(3, texture2);
 
-	//CommandList->SetGraphicsRootDescriptorTable(1, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	//CommandList->SetViewport(&viewport); // set the viewports
-	//CommandList->SetScissor(&scissorRect); // set the scissor rects
-	//CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // set the primitive topology
-	////CommandList->SetVertexBuffer(0, vertexBuffer); // set the vertex buffer (using the vertex buffer view)
+	//commandList->SetViewport(&viewport); // set the viewports
+	//commandList->SetScissor(&scissorRect); // set the scissor rects
+	//commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // set the primitive topology
 
-	//CommandList->SetGraphicsRootCBV(0, constantBuffer, 0);
-	//cube->RecordDraw(CommandList);
-	////CommandList->Draw(numCubeVertices);
-
-	//CommandList->SetGraphicsRootCBV(0, constantBuffer, 1);
-	//cube->RecordDraw(CommandList);
-	////CommandList->Draw(numCubeVertices);
+	//camera->Use(commandList);
 
 
+	//commandList->DrawObject(cube, 1);
 
-	//CommandList->SetPipelineState(blitPipelineState);
 
-	//CommandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	//commandList->SetPipelineState(blitPipelineState);
 
-	//CommandList->SetRenderTarget(renderTargets[frameIndex], depthStencil);
-	//CommandList->ClearRTV(renderTargets[frameIndex]);
-	//CommandList->ClearDSVDepth(depthStencil, 1.0f);
-	//CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	//commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-	//CommandList->SetGraphicsRootSignature(blitRootSignature); // set the root signature
-	//CommandList->SetGraphicsRootDescriptorTable(0, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	//commandList->SetRenderTarget(renderTargets[frameIndex], depthStencil);
+	//commandList->ClearRTV(renderTargets[frameIndex]);
+	//commandList->ClearDSVDepth(depthStencil, 1.0f);
+	//commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	//CommandList->Draw(4);
+	//commandList->BindRTVTexture(0, offscreen);
 
-	//CommandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	//commandList->Draw(4);
 
-	CommandList->Close();
+	//commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+
+	//commandList->Close();
+}
+
+void TW3D::TW3DDefaultRenderer::Execute() {
+	ResourceManager->ExecuteCommandList(command_list);
 }
