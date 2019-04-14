@@ -79,6 +79,10 @@ TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::CreateDirectCommandLis
 	return TW3DGraphicsCommandList::CreateDirect(device);
 }
 
+TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::CreateBundleCommandList() {
+	return TW3DGraphicsCommandList::CreateBundle(device);
+}
+
 TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::CreateComputeCommandList() {
 	return TW3DGraphicsCommandList::CreateCompute(device);
 }

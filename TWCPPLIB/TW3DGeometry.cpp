@@ -6,6 +6,10 @@ TW3D::TW3DGeometry::TW3DGeometry(TW3DResourceManager* ResourceManager, TWT::UInt
 {
 }
 
+void TW3D::TW3DGeometry::Update() {
+	TW3DObject::Update();
+}
+
 void TW3D::TW3DGeometry::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex) {
 	TW3DObject::RecordDraw(CommandList, ModelCBRootParameterIndex);
 }

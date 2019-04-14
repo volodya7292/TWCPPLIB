@@ -6,6 +6,7 @@ TW3D::TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) {
 }
 
 TW3D::TW3DScene::~TW3DScene() {
+	delete Camera;
 }
 
 void TW3D::TW3DScene::AddObject(TW3DObject* Object) {

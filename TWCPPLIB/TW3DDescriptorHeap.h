@@ -20,7 +20,7 @@ namespace TW3D {
 
 	private:
 		ID3D12DescriptorHeap* descriptor_heap;
-		TWT::UInt descriptor_count;
+		TWT::UInt descriptor_count = 0;
 		const TWT::UInt IncrementSize;
 	};
 }

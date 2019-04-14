@@ -3,6 +3,7 @@
 #include "TW3DCube.h"
 #include "TW3DDefaultRenderer.h"
 
+TW3D::TW3DDefaultRenderer* defaultRenderer;
 TW3D::TW3DScene* scene;
 TW3D::TW3DCube* cube;
 
@@ -11,13 +12,14 @@ void on_update() {
 	scene->Camera->UpdateConstantBuffer();
 }
 
+void on_cleanup() {
+	delete cube;
+	delete scene;
+	delete defaultRenderer;
+}
+
 int main() {
-	TW3D::InitializeInfo info;
-	info.Width = 1280;
-	info.Height = 720;
-	info.Title = "GOVNO!";
-	info.FullScreen = false;
-	info.VSync = true;
+	TW3D::InitializeInfo info = {};
 	TW3D::Initialize(info);
 
 	TW3D::TW3DResourceManager* RM = TW3D::GetResourceManager();
@@ -29,11 +31,13 @@ int main() {
 	scene->Camera->FOVY = 45;
 	scene->Camera->Position.z = 3;
 
-	TW3D::TW3DDefaultRenderer* defaultRenderer = new TW3D::TW3DDefaultRenderer();
+	defaultRenderer = new TW3D::TW3DDefaultRenderer();
+	defaultRenderer->SetScene(scene);
+
 	TW3D::SetRenderer(defaultRenderer);
-	TW3D::SetScene(scene);
 
 	TW3D::SetOnUpdateEvent(on_update);
+	TW3D::SetOnCleanupEvent(on_cleanup);
 
 	TW3D::Start();
 }

@@ -8,6 +8,7 @@ namespace TW3D {
 		TW3DGeometry(TW3DResourceManager* ResourceManager, TWT::UInt ConstantBufferSize);
 		virtual ~TW3DGeometry() = default;
 
+		virtual void Update();
 		virtual void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex);
 
 	protected:

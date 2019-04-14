@@ -9,7 +9,7 @@ TW3D::TW3DObject::~TW3DObject() {
 	delete ConstantBuffer;
 }
 
-void TW3D::TW3DObject::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex) {
+void TW3D::TW3DObject::Update() {
 	if (Transform.Changed) {
 		Transform.Changed = false;
 
@@ -18,6 +18,8 @@ void TW3D::TW3DObject::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UIn
 
 		ConstantBuffer->Update(&cb, 0);
 	}
+}
 
+void TW3D::TW3DObject::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex) {
 	CommandList->SetRootCBV(ModelCBRootParameterIndex, ConstantBuffer, 0);
 }

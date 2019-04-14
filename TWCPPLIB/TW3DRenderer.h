@@ -10,16 +10,21 @@ namespace TW3D {
 		virtual ~TW3DRenderer() = default;
 		virtual void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height);
 		virtual void Resize(TWT::UInt Width, TWT::UInt Height);
-		virtual void Record(TW3DScene* Scene, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStencilOutput);
+		virtual void Record(const TWT::Vector<TW3DResourceRTV*>& ColorOutputs, TW3DResourceDSV* DepthStesncilOutput);
 		// Per frame
-		virtual void Execute();
+		virtual void Update();
+		virtual void Execute(TWT::UInt BackBufferIndex);
+
+		void SetScene(TW3DScene* Scene);
 
 	protected:
 		TWT::Bool Initialized = false;
-		TW3DResourceManager* ResourceManager;
-		TW3DSwapChain* SwapChain;
-		TWT::UInt Width;
-		TWT::UInt Height;
+		TW3DResourceManager* ResourceManager = nullptr;
+		TW3DSwapChain* SwapChain = nullptr;
+		TWT::UInt Width = 0;
+		TWT::UInt Height = 0;
+
+		TW3D::TW3DScene* Scene;
 	};
 }
 

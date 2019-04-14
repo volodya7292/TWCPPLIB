@@ -186,10 +186,25 @@ void TW3D::TW3DGraphicsCommandList::Reset() {
 
 void TW3D::TW3DGraphicsCommandList::Close() {
 	TWU::SuccessAssert(command_list->Close());
+	empty = false;
+}
+
+void TW3D::TW3DGraphicsCommandList::EmptyReset() {
+	Reset();
+	Close();
+	empty = true;
+}
+
+TWT::Bool TW3D::TW3DGraphicsCommandList::IsEmpty() {
+	return empty;
 }
 
 TW3D::TW3DGraphicsCommandList* TW3D::TW3DGraphicsCommandList::CreateDirect(TW3DDevice* device) {
 	return new TW3DGraphicsCommandList(device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+}
+
+TW3D::TW3DGraphicsCommandList* TW3D::TW3DGraphicsCommandList::CreateBundle(TW3DDevice* device) {
+	return new TW3DGraphicsCommandList(device, D3D12_COMMAND_LIST_TYPE_BUNDLE);
 }
 
 TW3D::TW3DGraphicsCommandList* TW3D::TW3DGraphicsCommandList::CreateCompute(TW3DDevice* device) {

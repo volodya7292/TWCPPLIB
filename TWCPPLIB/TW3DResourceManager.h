@@ -24,6 +24,7 @@ namespace TW3D {
 		TW3DResourceSR* CreateTexture2D(TWT::WString Filename);
 		TW3DResourceSR* CreateTextureArray2D(TWT::UInt Width, TWT::UInt Height, TWT::UInt Depth, DXGI_FORMAT Format);
 		TW3DGraphicsCommandList* CreateDirectCommandList();
+		TW3DGraphicsCommandList* CreateBundleCommandList();
 		TW3DGraphicsCommandList* CreateComputeCommandList();
 
 		void ExecuteCommandList(TW3DGraphicsCommandList* CommandList);
@@ -43,6 +44,7 @@ namespace TW3D {
 		TW3DDescriptorHeap* dsv_descriptor_heap = nullptr;
 		TW3DDescriptorHeap* srv_descriptor_heap = nullptr;
 		TW3DCommandQueue* direct_command_queue;
+		TW3DCommandQueue* bundle_command_queue;
 		TW3DCommandQueue* compute_command_queue;
 	};
 }

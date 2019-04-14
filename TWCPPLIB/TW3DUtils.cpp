@@ -119,6 +119,7 @@ TWT::Int TWU::GetDXGIFormatBitsPerPixel(DXGI_FORMAT dxgiFormat) {
 	else if (dxgiFormat == DXGI_FORMAT_R8_UNORM) return 8;
 	else if (dxgiFormat == DXGI_FORMAT_R8_UINT) return 8;
 	else if (dxgiFormat == DXGI_FORMAT_A8_UNORM) return 8;
+	return 0;
 }
 
 D3D12_DESCRIPTOR_RANGE TWU::DXDescriptorRange(TWT::UInt Register, D3D12_DESCRIPTOR_RANGE_TYPE Type) {
@@ -153,7 +154,7 @@ TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& 
 
 	if (wicFactory == NULL) {
 		// Initialize the COM library
-		CoInitialize(NULL);
+		SuccessAssert(CoInitialize(NULL));
 
 		// create the WIC factory
 		hr = CoCreateInstance(

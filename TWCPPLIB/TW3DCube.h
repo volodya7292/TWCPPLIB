@@ -7,6 +7,7 @@ namespace TW3D {
 		TW3DCube(TW3DResourceManager* ResourceManager);
 		~TW3DCube() = default;
 
+		void Update();
 		void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex);
 	};
 }

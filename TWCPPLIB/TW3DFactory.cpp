@@ -38,7 +38,7 @@ void TW3D::TW3DFactory::CheckFeatureSupport(DXGI_FEATURE feature, void *featureS
 }
 
 TWT::Bool TW3D::TW3DFactory::CheckTearingSupport() {
-	BOOL allowTearing;
+	BOOL allowTearing = false;
 	TWU::SuccessAssert(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing)));
 	return allowTearing;
 }

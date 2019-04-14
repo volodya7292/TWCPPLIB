@@ -4,6 +4,10 @@
 #include "TW3DGraphicsPipelineState.h"
 
 TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
+	delete opaque_raster_ps;
+	delete blit_ps;
+	for (size_t i = 0; i < TW3D::TW3DSwapChain::BufferCount * 2; i++)
+		delete command_lists[i];
 }
 
 void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height) {
@@ -92,7 +96,6 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
 	blitRootSignature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);
-	//blitRootSignature->SetParameter(0, TW3D::TW3DRootParameter(D3D12_SHADER_VISIBILITY_PIXEL, TWU::DXDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV)));
 	blitRootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	blitRootSignature->Create(device);
 
@@ -109,99 +112,65 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	blit_ps->SetPixelShader("PixelOffscreenBlit.cso");
 	blit_ps->Create(device);
 
+	for (size_t i = 0; i < TW3D::TW3DSwapChain::BufferCount * 2; i++)
+		command_lists.push_back(ResourceManager->CreateDirectCommandList());
 
-
-	//offscreen = new TW3D::TW3DResourceRTV(device, rtvDescriptorHeap, TW3D::TW3DSwapChain::BufferCount, mainDescriptorHeap, 2, DXGI_FORMAT_R8G8B8A8_UNORM, TWT::Vector4f(0, 0, 0, 1));
-	//offscreen->Create(Width, Height);
-
-	depthStencil = ResourceManager->CreateDepthStencilView(Width, Height);
-
-	command_list = ResourceManager->CreateDirectCommandList();
-
-	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, Width, Height);
-	scissor = CD3DX12_RECT(0, 0, Width, Height);
+	Resize(Width, Height);
 }
 
 void TW3D::TW3DDefaultRenderer::Resize(TWT::UInt Width, TWT::UInt Height) {
 	TW3DRenderer::Resize(Width, Height);
 
-	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, Width, Height);
+	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<TWT::Float>(Width), static_cast<TWT::Float>(Height));
 	scissor = CD3DX12_RECT(0, 0, Width, Height);
+
+	for (size_t i = 0; i < command_lists.size(); i++) {
+		command_lists[i]->EmptyReset();
+	}
 }
 
-void TW3D::TW3DDefaultRenderer::Record(TW3DScene* Scene, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStencilOutput) {
-	command_list->Reset();
+void TW3D::TW3DDefaultRenderer::Record(const TWT::Vector<TW3DResourceRTV*>& ColorOutputs, TW3DResourceDSV* DepthStencilOutput) {
+	for (size_t i = 0; i < TW3DSwapChain::BufferCount; i++) {
+		TW3DGraphicsCommandList* command_list = current_record_index == 0 ? command_lists[i * 2] : command_lists[i * 2 + 1];
 
-	command_list->SetPipelineState(opaque_raster_ps);
-	command_list->BindResources(ResourceManager);
+		command_list->Reset();
 
-	command_list->ResourceBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		command_list->SetPipelineState(opaque_raster_ps);
+		command_list->BindResources(ResourceManager);
 
-	command_list->SetRenderTarget(ColorOutput, DepthStencilOutput);
-	command_list->ClearRTV(ColorOutput);
-	command_list->ClearDSVDepth(DepthStencilOutput);
-	command_list->SetViewport(&viewport);
-	command_list->SetScissor(&scissor);
-	command_list->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	
-	command_list->BindCameraCBV(0, Scene->Camera);
+		command_list->ResourceBarrier(ColorOutputs[i], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-	for (TW3DObject* object : Scene->objects) {
-		command_list->DrawObject(object, 1);
+		command_list->SetRenderTarget(ColorOutputs[i], DepthStencilOutput);
+		command_list->ClearRTV(ColorOutputs[i]);
+		command_list->ClearDSVDepth(DepthStencilOutput);
+		command_list->SetViewport(&viewport);
+		command_list->SetScissor(&scissor);
+		command_list->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		command_list->BindCameraCBV(0, Scene->Camera);
+
+		for (TW3DObject* object : Scene->objects) {
+			command_list->DrawObject(object, 1);
+		}
+
+		command_list->ResourceBarrier(ColorOutputs[i], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+
+		command_list->Close();
 	}
 
-	command_list->ResourceBarrier(ColorOutput, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-
-	command_list->Close();
-
-
-
-
-	//commandList->Reset();
-
-	//commandList->SetPipelineState(pipelineState);
-
-	//commandList->BindResources(resource_manager);
-
-	//commandList->SetRenderTargets({ offscreen, offscreen2 }, depthStencil);
-	//const float clearColor[] = { 0.f, 0.f, 0.f, 1.f };
-	//commandList->ClearRTV(offscreen);
-	//commandList->ClearRTV(offscreen2);
-	//commandList->ClearDSVDepth(depthStencil, 1.0f);
-
-	//commandList->BindTexture(2, texture);
-	//commandList->BindUAV(3, uavTex);
-	//commandList->BindUAV(4, uavBuf);
-	////commandList->BindTexture(3, texture2);
-
-	//commandList->SetViewport(&viewport); // set the viewports
-	//commandList->SetScissor(&scissorRect); // set the scissor rects
-	//commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // set the primitive topology
-
-	//camera->Use(commandList);
-
-
-	//commandList->DrawObject(cube, 1);
-
-
-	//commandList->SetPipelineState(blitPipelineState);
-
-	//commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-	//commandList->SetRenderTarget(renderTargets[frameIndex], depthStencil);
-	//commandList->ClearRTV(renderTargets[frameIndex]);
-	//commandList->ClearDSVDepth(depthStencil, 1.0f);
-	//commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-
-	//commandList->BindRTVTexture(0, offscreen);
-
-	//commandList->Draw(4);
-
-	//commandList->ResourceBarrier(renderTargets[frameIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-
-	//commandList->Close();
+	current_record_index = (current_record_index + 1) % 2;
 }
 
-void TW3D::TW3DDefaultRenderer::Execute() {
+void TW3D::TW3DDefaultRenderer::Update() {
+	for (TW3DObject* object : Scene->objects)
+		object->Update();
+}
+
+void TW3D::TW3DDefaultRenderer::Execute(TWT::UInt BackBufferIndex) {
+	TW3DGraphicsCommandList* command_list = current_record_index == 0 ? command_lists[BackBufferIndex * 2 + 1] : command_lists[BackBufferIndex * 2];
+
+	while (command_list->IsEmpty())
+		Sleep(1);
+
 	ResourceManager->ExecuteCommandList(command_list);
 }

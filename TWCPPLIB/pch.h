@@ -12,8 +12,10 @@
 #include <fstream>
 #include <codecvt>
 #include <chrono>
+#include <thread>
 #include <vector>
 #include <string>
+#include <mutex>
 #include <array>
 
 #include <stdint.h>

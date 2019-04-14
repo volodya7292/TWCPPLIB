@@ -60,8 +60,11 @@ namespace TW3D {
 
 		void Reset();
 		void Close();
+		void EmptyReset();
+		TWT::Bool IsEmpty();
 
 		static TW3DGraphicsCommandList* CreateDirect(TW3DDevice* device);
+		static TW3DGraphicsCommandList* CreateBundle(TW3DDevice* device);
 		static TW3DGraphicsCommandList* CreateCompute(TW3DDevice* device);
 
 		const D3D12_COMMAND_LIST_TYPE Type;
@@ -69,5 +72,7 @@ namespace TW3D {
 	private:
 		ID3D12GraphicsCommandList* command_list;
 		ID3D12CommandAllocator* command_allocator;
+
+		TWT::Bool empty = true;
 	};
 }

@@ -16,6 +16,6 @@ namespace TW3D {
 		ID3D12Fence1* fence;
 		TWT::UInt64 flushValue;
 
-		HANDLE fenceEvent;
+		HANDLE fenceEvent = NULL;
 	};
 }

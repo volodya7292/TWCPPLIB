@@ -10,6 +10,7 @@ namespace TW3D {
 		TW3DObject(TW3DResourceManager* ResourceManager, TWT::UInt ConstantBufferSize);
 		virtual ~TW3DObject();
 
+		virtual void Update();
 		virtual void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex);
 
 		TW3DTransform Transform;

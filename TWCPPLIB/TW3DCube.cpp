@@ -8,6 +8,10 @@ TW3D::TW3DCube::TW3DCube(TW3DResourceManager* ResourceManager) :
 	VertexBuffer = TW3DPrimitives::GetCubeVertexBuffer();
 }
 
+void TW3D::TW3DCube::Update() {
+	TW3DGeometry::Update();
+}
+
 void TW3D::TW3DCube::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex) {
 	TW3DGeometry::RecordDraw(CommandList, ModelCBRootParameterIndex);
 
