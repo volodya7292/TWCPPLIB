@@ -17,17 +17,17 @@
 #include "TW3DPrimitives.h"
 #include "TW3DPerspectiveCamera.h"
 
-static TWT::Vector<std::thread> threads;
-static std::mutex resize_mutex;
-
-static const TWT::UInt engine_thread_count = 1;
-
-static TW3D::TW3DRenderer* renderer;
-static TW3D::TW3DResourceManager* resource_manager;
-
 static void (*on_update)() = nullptr;
 static void (*on_cleanup)() = nullptr;
 static TWT::UInt(*on_thread_tick)(TWT::UInt ThreadID, TWT::UInt ThreadCount);
+
+static const TWT::UInt engine_thread_count = 1;
+
+static TWT::Vector<std::thread>    threads;
+static std::mutex                  resize_mutex;
+
+static TW3D::TW3DRenderer*           renderer;
+static TW3D::TW3DResourceManager*    resource_manager;
 
 static TWT::UInt      width, height;
 static TWT::String    title;
@@ -46,7 +46,7 @@ static TW3D::TW3DSwapChain*    swapChain;
 
 static TWT::Vector<TW3D::TW3DResourceRTV*> renderTargets(TW3D::TW3DSwapChain::BufferCount);
 
-static TW3D::TW3DFence*          fence[TW3D::TW3DSwapChain::BufferCount];
+static TW3D::TW3DFence*          fence;
 static TW3D::TW3DResourceDSV*    depthStencil;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -140,11 +140,10 @@ void init_dx12() {
 	device = new TW3D::TW3DDevice(adapter);
 	resource_manager = new TW3D::TW3DResourceManager(device);
 	swapChain = new TW3D::TW3DSwapChain(factory, resource_manager->GetDirectCommandQueue(), hwnd, width, height, vsync);
+	fence = new TW3D::TW3DFence(device);
 
-	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++) {
+	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++)
 		renderTargets[i] = resource_manager->CreateRenderTargetView(swapChain->GetBuffer(i));
-		fence[i] = new TW3D::TW3DFence(device);
-	}
 
 	// Create the depth/stencil buffer
 	depthStencil = resource_manager->CreateDepthStencilView(width, height);
@@ -154,8 +153,7 @@ void init_dx12() {
 }
 
 void FlushGPU() {
-	for (UINT n = 0; n < TW3D::TW3DSwapChain::BufferCount; n++)
-		resource_manager->Flush(fence[n]);
+	resource_manager->Flush(fence);
 }
 
 void update() {
@@ -165,15 +163,19 @@ void update() {
 }
 
 void render() {
-	resource_manager->Flush(fence[current_frame_index]);
+	FlushGPU();
 	renderer->Execute(swapChain->GetCurrentBufferIndex());
 	swapChain->Present();
 }
 
 TWT::UInt thread_tick(TWT::UInt thread_id, TWT::UInt thread_count) {
 	if (thread_id == 0) { // Command list record
-		synchronized(resize_mutex)
-			renderer->Record(renderTargets, depthStencil);
+		FlushGPU();
+		synchronized(resize_mutex) {
+			for (size_t i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++)
+				renderer->Record(i, renderTargets[i], depthStencil);
+			renderer->AdjustRecordIndex();
+		}
 		return 30;
 	} else {
 		if (on_thread_tick)
@@ -254,11 +256,10 @@ void cleanup() {
 	delete swapChain;
 	delete resource_manager;
 	delete depthStencil;
+	delete fence;
 
-	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; ++i) {
+	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; ++i)
 		delete renderTargets[i];
-		delete fence[i];
-	};
 
 	TW3DPrimitives::Cleanup();
 

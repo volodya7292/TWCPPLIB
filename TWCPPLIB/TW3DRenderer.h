@@ -10,7 +10,8 @@ namespace TW3D {
 		virtual ~TW3DRenderer() = default;
 		virtual void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height);
 		virtual void Resize(TWT::UInt Width, TWT::UInt Height);
-		virtual void Record(const TWT::Vector<TW3DResourceRTV*>& ColorOutputs, TW3DResourceDSV* DepthStesncilOutput);
+		virtual void Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStesncilOutput);
+		void AdjustRecordIndex();
 		// Per frame
 		virtual void Update();
 		virtual void Execute(TWT::UInt BackBufferIndex);
@@ -25,6 +26,10 @@ namespace TW3D {
 		TWT::UInt Height = 0;
 
 		TW3D::TW3DScene* Scene;
+
+		TWT::Vector<TW3D::TW3DGraphicsCommandList*> command_lists;
+		TW3DGraphicsCommandList* record_cl;
+		TWT::UInt current_record_index = 0;
 	};
 }
 

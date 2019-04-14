@@ -16,7 +16,12 @@ void TW3D::TW3DRenderer::Resize(TWT::UInt Width, TWT::UInt Height) {
 	Scene->Camera->Height = Height;
 }
 
-void TW3D::TW3DRenderer::Record(const TWT::Vector<TW3DResourceRTV*>& ColorOutputs, TW3DResourceDSV* DepthStencilOutput) {
+void TW3D::TW3DRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStesncilOutput) {
+	record_cl = current_record_index == 0 ? command_lists[BackBufferIndex * 2] : command_lists[BackBufferIndex * 2 + 1];
+}
+
+void TW3D::TW3DRenderer::AdjustRecordIndex() {
+	current_record_index = (current_record_index + 1) % 2;
 }
 
 void TW3D::TW3DRenderer::Update() {

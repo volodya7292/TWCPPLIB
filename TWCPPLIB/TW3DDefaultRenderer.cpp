@@ -129,36 +129,32 @@ void TW3D::TW3DDefaultRenderer::Resize(TWT::UInt Width, TWT::UInt Height) {
 	}
 }
 
-void TW3D::TW3DDefaultRenderer::Record(const TWT::Vector<TW3DResourceRTV*>& ColorOutputs, TW3DResourceDSV* DepthStencilOutput) {
-	for (size_t i = 0; i < TW3DSwapChain::BufferCount; i++) {
-		TW3DGraphicsCommandList* command_list = current_record_index == 0 ? command_lists[i * 2] : command_lists[i * 2 + 1];
+void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStencilOutput) {
+	TW3D::TW3DRenderer::Record(BackBufferIndex, ColorOutput, DepthStencilOutput);
+	
+	record_cl->Reset();
 
-		command_list->Reset();
+	record_cl->SetPipelineState(opaque_raster_ps);
+	record_cl->BindResources(ResourceManager);
 
-		command_list->SetPipelineState(opaque_raster_ps);
-		command_list->BindResources(ResourceManager);
+	record_cl->ResourceBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-		command_list->ResourceBarrier(ColorOutputs[i], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	record_cl->SetRenderTarget(ColorOutput, DepthStencilOutput);
+	record_cl->ClearRTV(ColorOutput);
+	record_cl->ClearDSVDepth(DepthStencilOutput);
+	record_cl->SetViewport(&viewport);
+	record_cl->SetScissor(&scissor);
+	record_cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		command_list->SetRenderTarget(ColorOutputs[i], DepthStencilOutput);
-		command_list->ClearRTV(ColorOutputs[i]);
-		command_list->ClearDSVDepth(DepthStencilOutput);
-		command_list->SetViewport(&viewport);
-		command_list->SetScissor(&scissor);
-		command_list->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	record_cl->BindCameraCBV(0, Scene->Camera);
 
-		command_list->BindCameraCBV(0, Scene->Camera);
-
-		for (TW3DObject* object : Scene->objects) {
-			command_list->DrawObject(object, 1);
-		}
-
-		command_list->ResourceBarrier(ColorOutputs[i], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-
-		command_list->Close();
+	for (TW3DObject* object : Scene->objects) {
+		record_cl->DrawObject(object, 1);
 	}
 
-	current_record_index = (current_record_index + 1) % 2;
+	record_cl->ResourceBarrier(ColorOutput, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+
+	record_cl->Close();
 }
 
 void TW3D::TW3DDefaultRenderer::Update() {
