@@ -7,7 +7,7 @@ namespace TW3D {
 	class TW3DRenderer {
 	public:
 		TW3DRenderer() = default;
-		virtual ~TW3DRenderer() = default;
+		virtual ~TW3DRenderer();
 		virtual void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height);
 		virtual void Resize(TWT::UInt Width, TWT::UInt Height);
 		virtual void Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStesncilOutput);

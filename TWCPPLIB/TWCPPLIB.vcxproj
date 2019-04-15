@@ -285,7 +285,6 @@
     <ClInclude Include="TW3DRenderer.h" />
     <ClInclude Include="TW3DResource.h" />
     <ClInclude Include="TW3DCommandQueue.h" />
-    <ClInclude Include="TW3DFence.h" />
     <ClInclude Include="TW3DGraphicsCommandList.h" />
     <ClInclude Include="TW3DDescriptorHeap.h" />
     <ClInclude Include="TW3DDevice.h" />
@@ -332,7 +331,6 @@
     <ClCompile Include="TW3DRenderer.cpp" />
     <ClCompile Include="TW3DResource.cpp" />
     <ClCompile Include="TW3DCommandQueue.cpp" />
-    <ClCompile Include="TW3DFence.cpp" />
     <ClCompile Include="TW3DGraphicsCommandList.cpp" />
     <ClCompile Include="TW3DDescriptorHeap.cpp" />
     <ClCompile Include="TW3DDevice.cpp" />

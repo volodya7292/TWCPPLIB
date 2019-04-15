@@ -1,6 +1,5 @@
 #pragma once
 #include "TW3DCommandQueue.h"
-#include "TW3DFence.h"
 
 namespace TW3D {
 	class TW3DTempGCL {
@@ -16,7 +15,6 @@ namespace TW3D {
 		void Execute();
 
 	private:
-		TW3DFence* Fence;
 		TW3DCommandQueue* CommandQueue;
 		TW3DGraphicsCommandList* CommandList;
 	};

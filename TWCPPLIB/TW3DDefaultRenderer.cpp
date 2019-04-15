@@ -6,8 +6,6 @@
 TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete opaque_raster_ps;
 	delete blit_ps;
-	for (size_t i = 0; i < TW3D::TW3DSwapChain::BufferCount * 2; i++)
-		delete command_lists[i];
 }
 
 void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height) {
@@ -111,11 +109,6 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	blit_ps->SetVertexShader("VertexOffscreenBlit.cso");
 	blit_ps->SetPixelShader("PixelOffscreenBlit.cso");
 	blit_ps->Create(device);
-
-	for (size_t i = 0; i < TW3D::TW3DSwapChain::BufferCount * 2; i++)
-		command_lists.push_back(ResourceManager->CreateDirectCommandList());
-
-	Resize(Width, Height);
 }
 
 void TW3D::TW3DDefaultRenderer::Resize(TWT::UInt Width, TWT::UInt Height) {
@@ -123,10 +116,6 @@ void TW3D::TW3DDefaultRenderer::Resize(TWT::UInt Width, TWT::UInt Height) {
 
 	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<TWT::Float>(Width), static_cast<TWT::Float>(Height));
 	scissor = CD3DX12_RECT(0, 0, Width, Height);
-
-	for (size_t i = 0; i < command_lists.size(); i++) {
-		command_lists[i]->EmptyReset();
-	}
 }
 
 void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStencilOutput) {

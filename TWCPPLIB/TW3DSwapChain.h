@@ -18,13 +18,13 @@ namespace TW3D {
 		void Resize(TWT::UInt width, TWT::UInt height);
 		void Present();
 
+		TWT::Bool VSync;
+
 		static const TWT::UInt BufferCount = 3;
 
 	private:
 		IDXGISwapChain4* swapChain;
 		DXGI_SWAP_CHAIN_DESC1 desc;
-
-		TWT::Bool vsync;
 
 		const TWT::Bool tearing;
 	};

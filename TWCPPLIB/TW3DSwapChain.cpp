@@ -2,7 +2,7 @@
 #include "TW3DSwapChain.h"
 
 TW3D::TW3DSwapChain::TW3DSwapChain(TW3D::TW3DFactory* factory, TW3DCommandQueue* commandQueue, HWND hwnd, TWT::UInt width, TWT::UInt height, TWT::Bool vsync) :
-	vsync(vsync), tearing(factory->CheckTearingSupport())
+	VSync(vsync), tearing(factory->CheckTearingSupport())
 {
 	DXGI_SAMPLE_DESC sampleDesc = {};
 	sampleDesc.Count = 1; // multisample count (no multisampling, so we just put 1, since we still need 1 sample)
@@ -58,5 +58,5 @@ void TW3D::TW3DSwapChain::Resize(TWT::UInt width, TWT::UInt height) {
 }
 
 void TW3D::TW3DSwapChain::Present() {
-	swapChain->Present(vsync ? 1 : 0, tearing && !vsync && !GetFullscreen() ? DXGI_PRESENT_ALLOW_TEARING : 0);
+	swapChain->Present(VSync ? 1 : 0, tearing && !VSync && !GetFullscreen() ? DXGI_PRESENT_ALLOW_TEARING : 0);
 }

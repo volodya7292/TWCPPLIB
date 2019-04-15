@@ -5,21 +5,22 @@
 namespace TW3D {
 	class TW3DCommandQueue {
 	public:
-		TW3DCommandQueue(TW3DDevice* device, D3D12_COMMAND_LIST_TYPE type);
+		TW3DCommandQueue(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type);
 		~TW3DCommandQueue();
 
 		ID3D12CommandQueue* Get();
-	
-		void ExecuteCommandList(TW3DGraphicsCommandList* commandList);
-		void ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& commandLists);
 
-		void SignalFence(ID3D12Fence1* fence, TWT::UInt64 value);
+		void FlushCommands();
+		void ExecuteCommandList(TW3DGraphicsCommandList* CommandList);
+		void ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists);
 
-		static TW3DCommandQueue* CreateDirect(TW3DDevice* device);
-		static TW3DCommandQueue* CreateCompute(TW3DDevice* device);
+		static TW3DCommandQueue* CreateDirect(TW3DDevice* Device);
+		static TW3DCommandQueue* CreateCompute(TW3DDevice* Device);
 
 	private:
-		ID3D12CommandQueue* commandQueue;
+		ID3D12CommandQueue* command_queue;
+		ID3D12Fence1* fence;
+		TWT::UInt64 fence_flush_value;
 	};
 }
 

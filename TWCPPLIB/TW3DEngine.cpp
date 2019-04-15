@@ -2,20 +2,7 @@
 #include "TW3DEngine.h"
 #include "TW3DDevice.h"
 #include "TW3DSwapChain.h"
-#include "TW3DFence.h"
-#include "TW3DResourceDSV.h"
-#include "TW3DResourceRTV.h"
-#include "TW3DResourceUAV.h"
-#include "TW3DResourceSR.h"
-#include "TW3DResourceVB.h"
-#include "TW3DTempGCL.h"
-#include "TW3DGraphicsPipelineState.h"
-#include "TW3DComputePipelineState.h"
-#include "TW3DRootSignature.h"
-#include "TW3DResourceCB.h"
-#include "TW3DCube.h"
 #include "TW3DPrimitives.h"
-#include "TW3DPerspectiveCamera.h"
 
 static void (*on_update)() = nullptr;
 static void (*on_cleanup)() = nullptr;
@@ -31,7 +18,7 @@ static TW3D::TW3DResourceManager*    resource_manager;
 
 static TWT::UInt      width, height;
 static TWT::String    title;
-static TWT::Bool      fullscreen, vsync;
+static TWT::Bool      fullscreen = false;
 static TWT::UInt      additional_thread_count;
 
 static TWT::Bool      running, minimized = false;
@@ -44,23 +31,12 @@ static TW3D::TW3DAdapter*      adapter;
 static TW3D::TW3DDevice*       device;
 static TW3D::TW3DSwapChain*    swapChain;
 
-static TWT::Vector<TW3D::TW3DResourceRTV*> renderTargets(TW3D::TW3DSwapChain::BufferCount);
-
-static TW3D::TW3DFence*          fence;
-static TW3D::TW3DResourceDSV*    depthStencil;
+static TWT::Vector<TW3D::TW3DResourceRTV*>    renderTargets(TW3D::TW3DSwapChain::BufferCount);
+static TW3D::TW3DResourceDSV*                 depthStencil;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void init_window() {
-	if (fullscreen) {
-		HMONITOR hmon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-		MONITORINFO mi = { sizeof(mi) };
-		GetMonitorInfo(hmon, &mi);
-
-		width = mi.rcMonitor.right - mi.rcMonitor.left;
-		height = mi.rcMonitor.bottom - mi.rcMonitor.top;
-	}
-
 	TWT::WString wstrtitle = title.Wide();
 	const TWT::WChar* wtitle = wstrtitle.data.c_str();
 
@@ -105,9 +81,6 @@ void init_window() {
 		return;
 	}
 
-	if (fullscreen)
-		SetWindowLong(hwnd, GWL_STYLE, 0);
-
 	SetForegroundWindow(hwnd);
 	SetFocus(hwnd);
 	ShowWindow(hwnd, SW_SHOW);
@@ -139,21 +112,15 @@ void init_dx12() {
 	adapter = adapters[0];
 	device = new TW3D::TW3DDevice(adapter);
 	resource_manager = new TW3D::TW3DResourceManager(device);
-	swapChain = new TW3D::TW3DSwapChain(factory, resource_manager->GetDirectCommandQueue(), hwnd, width, height, vsync);
-	fence = new TW3D::TW3DFence(device);
+	swapChain = new TW3D::TW3DSwapChain(factory, resource_manager->GetDirectCommandQueue(), hwnd, width, height, true);
 
 	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++)
 		renderTargets[i] = resource_manager->CreateRenderTargetView(swapChain->GetBuffer(i));
 
-	// Create the depth/stencil buffer
 	depthStencil = resource_manager->CreateDepthStencilView(width, height);
 
 	current_frame_index = swapChain->GetCurrentBufferIndex();
 	TW3DPrimitives::Initialize(resource_manager);
-}
-
-void FlushGPU() {
-	resource_manager->Flush(fence);
 }
 
 void update() {
@@ -163,14 +130,13 @@ void update() {
 }
 
 void render() {
-	FlushGPU();
 	renderer->Execute(swapChain->GetCurrentBufferIndex());
 	swapChain->Present();
 }
 
 TWT::UInt thread_tick(TWT::UInt thread_id, TWT::UInt thread_count) {
 	if (thread_id == 0) { // Command list record
-		FlushGPU();
+		resource_manager->FlushCommandLists();
 		synchronized(resize_mutex) {
 			for (size_t i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++)
 				renderer->Record(i, renderTargets[i], depthStencil);
@@ -186,7 +152,7 @@ TWT::UInt thread_tick(TWT::UInt thread_id, TWT::UInt thread_count) {
 }
 
 void on_resize() {
-	FlushGPU();
+	resource_manager->FlushCommandLists();
 
 	synchronized(resize_mutex) {
 		RECT clientRect = {};
@@ -205,7 +171,8 @@ void on_resize() {
 			renderTargets[n]->Create(swapChain->GetBuffer(n));
 		depthStencil->Create(width, height);
 
-		renderer->Resize(width, height);
+		if (renderer)
+			renderer->Resize(width, height);
 	}
 }
 
@@ -243,7 +210,7 @@ void main_loop() {
 	for (size_t i = 0; i < total_thread_count; i++)
 		threads[i].join();
 
-	FlushGPU();
+	resource_manager->FlushCommandLists();
 }
 
 void cleanup() {
@@ -256,7 +223,6 @@ void cleanup() {
 	delete swapChain;
 	delete resource_manager;
 	delete depthStencil;
-	delete fence;
 
 	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; ++i)
 		delete renderTargets[i];
@@ -278,8 +244,6 @@ void TW3D::Initialize(const InitializeInfo& info) {
 	width = info.Width;
 	height = info.Height;
 	title = info.Title;
-	fullscreen = info.FullScreen;
-	vsync = info.VSync;
 
 	init_window();
 	init_dx12();
@@ -292,10 +256,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (wParam == VK_ESCAPE) {
 			running = false;
 			DestroyWindow(hwnd);
-		} else if (wParam == VK_F11) {
-			fullscreen = !fullscreen;
-			swapChain->SetFullscreen(fullscreen);
-			on_resize();
 		}
 		return 0;
 
@@ -315,7 +275,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				on_resize();
 			}
 		}
-
 		return 0;
 
 	case WM_EXITSIZEMOVE:
@@ -337,9 +296,30 @@ void TW3D::Start() {
 	cleanup();
 }
 
+TWT::Bool TW3D::GetFullScreen() {
+	return fullscreen;
+}
+
+void TW3D::SetFullScreen(TWT::Bool FullScreen) {
+	if (fullscreen != FullScreen) {
+		fullscreen = FullScreen;
+		swapChain->SetFullscreen(fullscreen);
+		on_resize();
+	}
+}
+
+TWT::Bool TW3D::GetVSync() {
+	return swapChain->VSync;
+}
+
+void TW3D::SetVSync(TWT::Bool VSync) {
+	swapChain->VSync = VSync;
+}
+
 void TW3D::SetRenderer(TW3DRenderer* Renderer) {
 	renderer = Renderer;
 	renderer->Initialize(resource_manager, swapChain, width, height);
+	renderer->Resize(width, height);
 }
 
 void TW3D::SetOnUpdateEvent(void(*OnUpdate)()) {

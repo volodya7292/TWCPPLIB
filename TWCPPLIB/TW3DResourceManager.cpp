@@ -87,7 +87,13 @@ TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::CreateComputeCommandLi
 	return TW3DGraphicsCommandList::CreateCompute(device);
 }
 
+void TW3D::TW3DResourceManager::FlushCommandLists() {
+	compute_command_queue->FlushCommands();
+	direct_command_queue->FlushCommands();
+}
+
 void TW3D::TW3DResourceManager::ExecuteCommandList(TW3DGraphicsCommandList* CommandList) {
+	FlushCommandLists();
 	if (CommandList->Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
 		direct_command_queue->ExecuteCommandList(CommandList);
 	else
@@ -95,15 +101,11 @@ void TW3D::TW3DResourceManager::ExecuteCommandList(TW3DGraphicsCommandList* Comm
 }
 
 void TW3D::TW3DResourceManager::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists) {
+	FlushCommandLists();
 	if (CommandLists[0]->Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
 		direct_command_queue->ExecuteCommandLists(CommandLists);
 	else
 		compute_command_queue->ExecuteCommandLists(CommandLists);
-}
-
-void TW3D::TW3DResourceManager::Flush(TW3D::TW3DFence* Fence) {
-	Fence->Flush(direct_command_queue);
-	Fence->Flush(compute_command_queue);
 }
 
 TW3D::TW3DDevice* TW3D::TW3DResourceManager::GetDevice() {

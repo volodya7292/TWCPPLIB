@@ -2,7 +2,6 @@
 #include "TW3DTempGCL.h"
 
 TW3D::TW3DTempGCL::TW3DTempGCL(TW3DDevice* Device) {
-	Fence = new TW3DFence(Device);
 	CommandQueue = new TW3DCommandQueue(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	CommandList = new TW3DGraphicsCommandList(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 }
@@ -10,7 +9,6 @@ TW3D::TW3DTempGCL::TW3DTempGCL(TW3DDevice* Device) {
 TW3D::TW3DTempGCL::~TW3DTempGCL() {
 	delete CommandList;
 	delete CommandQueue;
-	delete Fence;
 }
 
 void TW3D::TW3DTempGCL::UpdateSubresources(ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate, D3D12_SUBRESOURCE_DATA* SrcData,
@@ -29,5 +27,5 @@ void TW3D::TW3DTempGCL::Reset() {
 void TW3D::TW3DTempGCL::Execute() {
 	CommandList->Close();
 	CommandQueue->ExecuteCommandList(CommandList);
-	Fence->Flush(CommandQueue);
+	CommandQueue->FlushCommands();
 }

@@ -141,9 +141,6 @@
     <ClInclude Include="TW3DFactory.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DFence.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DGraphicsCommandList.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
@@ -256,9 +253,6 @@
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
     <ClCompile Include="TW3DFactory.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DFence.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
     <ClCompile Include="TW3DGraphicsCommandList.cpp">

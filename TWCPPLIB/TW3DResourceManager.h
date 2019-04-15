@@ -27,11 +27,10 @@ namespace TW3D {
 		TW3DGraphicsCommandList* CreateBundleCommandList();
 		TW3DGraphicsCommandList* CreateComputeCommandList();
 
+		void FlushCommandLists();
 		void ExecuteCommandList(TW3DGraphicsCommandList* CommandList);
 		// Command lists must be of the same type
 		void ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists);
-
-		void Flush(TW3D::TW3DFence* Fence);
 
 		TW3DDevice* GetDevice();
 		TW3DDescriptorHeap* GetSVDescriptorHeap();
@@ -39,10 +38,10 @@ namespace TW3D {
 
 	private:
 		TW3DDevice* device;
-		TW3DTempGCL* temp_gcl = nullptr;
-		TW3DDescriptorHeap* rtv_descriptor_heap = nullptr;
-		TW3DDescriptorHeap* dsv_descriptor_heap = nullptr;
-		TW3DDescriptorHeap* srv_descriptor_heap = nullptr;
+		TW3DTempGCL* temp_gcl;
+		TW3DDescriptorHeap* rtv_descriptor_heap;
+		TW3DDescriptorHeap* dsv_descriptor_heap;
+		TW3DDescriptorHeap* srv_descriptor_heap;
 		TW3DCommandQueue* direct_command_queue;
 		TW3DCommandQueue* bundle_command_queue;
 		TW3DCommandQueue* compute_command_queue;
