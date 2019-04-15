@@ -10,7 +10,8 @@ namespace TW3D {
 
 		void Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format);
 		void CreateArray2D(TWT::UInt Width, TWT::UInt Height, TWT::UInt Depth, DXGI_FORMAT Format);
-		void Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow);
+		void Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow, TWT::UInt Depth = 0);
+		void Upload2D(TWT::WString filename, TWT::UInt Depth = 0);
 
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle();
 
@@ -20,6 +21,7 @@ namespace TW3D {
 		TW3DTempGCL* TempGCL;
 		TW3DDescriptorHeap* SRVDescriptorHeap;
 		D3D12_RESOURCE_DESC ImageDesc = {};
+		TWT::UInt8* gpu_address = nullptr;
 		TWT::Int SRVIndex;
 	};
 }

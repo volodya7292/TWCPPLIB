@@ -51,6 +51,7 @@ void TW3D::TW3DResourceUAV::CreateBuffer(TWT::UInt ElementCount) {
 		&desc,
 		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
 		&Resource);
+	Resource->SetName(L"TW3DResourceUAV Buffer");
 
 	Device->CreateShaderResourceView(Resource, &srv_desc, SRVDescriptorHeap->GetCPUHandle(SRVIndex));
 	Device->CreateUnorderedAccessView(Resource, &uav_desc, SRVDescriptorHeap->GetCPUHandle(SRVIndex + 1));
@@ -66,6 +67,7 @@ void TW3D::TW3DResourceUAV::CreateTexture2D(TWT::UInt Width, TWT::UInt Height) {
 		&desc,
 		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
 		&Resource);
+	Resource->SetName(L"TW3DResourceUAV 2D");
 
 	Device->CreateShaderResourceView(Resource, nullptr, SRVDescriptorHeap->GetCPUHandle(SRVIndex));
 	Device->CreateUnorderedAccessView(Resource, nullptr, SRVDescriptorHeap->GetCPUHandle(SRVIndex + 1));

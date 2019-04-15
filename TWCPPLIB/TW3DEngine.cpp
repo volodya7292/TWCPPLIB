@@ -4,9 +4,12 @@
 #include "TW3DSwapChain.h"
 #include "TW3DPrimitives.h"
 
-static void (*on_update)() = nullptr;
-static void (*on_cleanup)() = nullptr;
-static TWT::UInt(*on_thread_tick)(TWT::UInt ThreadID, TWT::UInt ThreadCount);
+TW3D::DefaultHandler       on_update, on_cleanup;
+TW3D::ThreadTickHandler    on_thread_tick;
+TW3D::KeyHandler           on_key_down, on_key_up;
+TW3D::CharHandler          on_char;
+
+static TWT::Vector<TWT::Bool> KeysDown(1024);
 
 static const TWT::UInt engine_thread_count = 1;
 
@@ -87,6 +90,11 @@ void init_window() {
 	UpdateWindow(hwnd);
 }
 
+void init_input() {
+	for (size_t i = 0; i < KeysDown.size(); i++)
+		KeysDown[i] = false;
+}
+
 void init_dx12() {
 	TWT::UInt dxgi_factory_flags = 0;
 
@@ -145,7 +153,7 @@ TWT::UInt thread_tick(TWT::UInt thread_id, TWT::UInt thread_count) {
 		return 30;
 	} else {
 		if (on_thread_tick)
-			return on_thread_tick(thread_id, thread_count);
+			return on_thread_tick(thread_id - engine_thread_count, thread_count - engine_thread_count);
 	}
 
 	return 50;
@@ -235,38 +243,51 @@ void cleanup() {
 #ifdef _DEBUG
 	ComPtr<IDXGIDebug1> dxgiDebug;
 	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug)))) {
-		dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
+		dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
 	}
 #endif // _DEBUG
 }
 
 void TW3D::Initialize(const InitializeInfo& info) {
-	width = info.Width;
-	height = info.Height;
+	width = info.WindowWidth;
+	height = info.WindowHeight;
 	title = info.Title;
 
 	init_window();
+	init_input();
 	init_dx12();
 }
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
 	case WM_KEYDOWN:
-		if (wParam == VK_ESCAPE) {
-			running = false;
-			DestroyWindow(hwnd);
+		if (!KeysDown[wParam]) {
+			KeysDown[wParam] = true;
+			if (on_key_down)
+				on_key_down(wParam);
 		}
 		return 0;
 
-	case WM_SIZE:
-		if ((UINT)wParam == SIZE_MAXIMIZED) {
-			on_resize();
-		} else if ((UINT)wParam == SIZE_MINIMIZED) {
-			minimized = true;
-		} else if ((UINT)wParam == SIZE_RESTORED) { // unminimized
-			minimized = false;
+	case WM_KEYUP:
+		if (KeysDown[wParam]) {
+			KeysDown[wParam] = false;
+			if (on_key_up)
+				on_key_up(wParam);
 		}
+		return 0;
+
+	case WM_CHAR:
+		if (on_char)
+			on_char(wParam);
+		return 0;
+
+	case WM_SIZE:
+		if ((UINT)wParam == SIZE_MAXIMIZED)
+			on_resize();
+		else if ((UINT)wParam == SIZE_MINIMIZED)
+			minimized = true;
+		else if ((UINT)wParam == SIZE_RESTORED) // unminimized
+			minimized = false;
 
 		if (swapChain) {
 			TWT::Bool govno = swapChain->GetFullscreen();
@@ -296,6 +317,11 @@ void TW3D::Start() {
 	cleanup();
 }
 
+void TW3D::Shutdown() {
+	running = false;
+	DestroyWindow(hwnd);
+}
+
 TWT::Bool TW3D::GetFullScreen() {
 	return fullscreen;
 }
@@ -312,6 +338,32 @@ TWT::Bool TW3D::GetVSync() {
 	return swapChain->VSync;
 }
 
+TWT::Bool TW3D::IsKeyDown(TWT::UInt KeyCode) {
+	return KeysDown[KeyCode];
+}
+
+TWT::Vector2u TW3D::GetCursorPosition() {
+	POINT pos;
+	GetCursorPos(&pos);
+	return TWT::Vector2u(pos.x, pos.y);
+}
+
+TWT::Vector2u TW3D::GetWindowPosition() {
+	RECT rect;
+	GetWindowRect(hwnd, &rect);
+	RECT rect2 = {};
+	AdjustWindowRect(&rect2, WS_OVERLAPPEDWINDOW, FALSE);
+	return TWT::Vector2u(rect.left - rect2.left, rect.top - rect2.top);
+}
+
+TWT::Vector2u TW3D::GetWindowCenterPosition() {
+	return GetWindowPosition() + TWT::Vector2u(width, height) / 2u;
+}
+
+TWT::Vector2u TW3D::GetCurrentWindowSize() {
+	return TWT::Vector2u(width, height);
+}
+
 void TW3D::SetVSync(TWT::Bool VSync) {
 	swapChain->VSync = VSync;
 }
@@ -322,16 +374,28 @@ void TW3D::SetRenderer(TW3DRenderer* Renderer) {
 	renderer->Resize(width, height);
 }
 
-void TW3D::SetOnUpdateEvent(void(*OnUpdate)()) {
+void TW3D::SetOnUpdateEvent(DefaultHandler OnUpdate) {
 	on_update = OnUpdate;
 }
 
-void TW3D::SetOnThreadTickEvent(TWT::UInt(*OnThreadTick)(TWT::UInt ThreadID, TWT::UInt ThreadCount)) {
+void TW3D::SetOnCleanupEvent(DefaultHandler OnCleanup) {
+	on_cleanup = OnCleanup;
+}
+
+void TW3D::SetOnThreadTickEvent(ThreadTickHandler OnThreadTick) {
 	on_thread_tick = OnThreadTick;
 }
 
-void TW3D::SetOnCleanupEvent(void(*OnCleanup)()) {
-	on_cleanup = OnCleanup;
+void TW3D::SetOnKeyDownEvent(KeyHandler OnKeyDown) {
+	on_key_down = OnKeyDown;
+}
+
+void TW3D::SetOnKeyUpEvent(KeyHandler OnKeyUp) {
+	on_key_up = OnKeyUp;
+}
+
+void TW3D::SetOnCharEvent(CharHandler OnChar) {
+	on_char = OnChar;
 }
 
 TW3D::TW3DResourceManager* TW3D::GetResourceManager() {

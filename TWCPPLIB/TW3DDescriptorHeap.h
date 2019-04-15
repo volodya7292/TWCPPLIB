@@ -4,7 +4,7 @@
 namespace TW3D {
 	class TW3DDescriptorHeap {
 	public:
-		TW3DDescriptorHeap(TW3DDevice* device, D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flags, TWT::UInt count);
+		TW3DDescriptorHeap(TW3DDevice* Device, D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS Flags, TWT::UInt DescriptorCount);
 		~TW3DDescriptorHeap();
 
 		ID3D12DescriptorHeap* Get();

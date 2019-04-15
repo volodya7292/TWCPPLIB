@@ -53,6 +53,7 @@ void TW3D::TW3DResourceRTV::Create(TWT::UInt Width, TWT::UInt Height) {
 		&ImageDesc,
 		D3D12_RESOURCE_STATE_RENDER_TARGET,
 		&Resource, &optClearValue);
+	Resource->SetName(L"TW3DResourceRTV");
 
 	Device->CreateShaderResourceView(Resource, &desc, SRVDescriptorHeap->GetCPUHandle(SRVIndex));
 	Device->CreateRenderTargetView(Resource, GetRTVCPUHandle());

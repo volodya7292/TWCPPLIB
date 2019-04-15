@@ -18,14 +18,15 @@ void TW3D::TW3DResourceSR::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORM
 	desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	desc.Texture2D.MipLevels = 1;
 
-	ImageDesc = CD3DX12_RESOURCE_DESC::Tex2D(Format, Width, Height, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	ImageDesc = CD3DX12_RESOURCE_DESC::Tex2D(Format, Width, Height, 1, 1, 1, 0);
 	
 	Device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&ImageDesc,
-		D3D12_RESOURCE_STATE_COPY_DEST,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 		&Resource);
+	Resource->SetName(L"TW3DResourceSR 2D");
 
 	Device->CreateShaderResourceView(Resource, &desc, SRVDescriptorHeap->GetCPUHandle(SRVIndex));
 }
@@ -40,19 +41,20 @@ void TW3D::TW3DResourceSR::CreateArray2D(TWT::UInt Width, TWT::UInt Height, TWT:
 	desc.Texture2DArray.FirstArraySlice = 0;
 	desc.Texture2DArray.MostDetailedMip = 0;
 
-	ImageDesc = CD3DX12_RESOURCE_DESC::Tex2D(Format, Width, Height, Depth, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	ImageDesc = CD3DX12_RESOURCE_DESC::Tex2D(Format, Width, Height, Depth, 1, 1, 0);
 
 	Device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&ImageDesc,
-		D3D12_RESOURCE_STATE_COPY_DEST,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 		&Resource);
+	Resource->SetName(L"TW3DResourceSR 2D Array");
 
 	Device->CreateShaderResourceView(Resource, &desc, SRVDescriptorHeap->GetCPUHandle(SRVIndex));
 }
 
-void TW3D::TW3DResourceSR::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow) {
+void TW3D::TW3DResourceSR::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow, TWT::UInt Depth) {
 	D3D12_SUBRESOURCE_DATA textureData = {};
 	textureData.pData = &Data[0]; // pointer to our image data
 	textureData.RowPitch = BytesPerRow; // size of all our triangle vertex data
@@ -67,13 +69,25 @@ void TW3D::TW3DResourceSR::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow) {
 		&CD3DX12_RESOURCE_DESC::Buffer(textureUploadBufferSize),
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		&textureBufferUploadHeap);
+	Resource->SetName(L"TW3DResource Upload 2D Heap");
 
 	TempGCL->Reset();
-	TempGCL->UpdateSubresources(Resource, textureBufferUploadHeap, &textureData);
+	TempGCL->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+	TempGCL->UpdateSubresources(Resource, textureBufferUploadHeap, &textureData, 1, 0, Depth);
 	TempGCL->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	TempGCL->Execute();
 
 	TWU::DXSafeRelease(textureBufferUploadHeap);
+}
+
+void TW3D::TW3DResourceSR::Upload2D(TWT::WString filename, TWT::UInt Depth) {
+	D3D12_RESOURCE_DESC textureDesc;
+	TWT::Int imageBytesPerRow;
+	TWT::Byte* imageData;
+	int imageSize = TWU::LoadImageDataFromFile(&imageData, textureDesc, filename, imageBytesPerRow);
+
+	Upload2D(imageData, imageBytesPerRow, Depth);
+	delete imageData;
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceSR::GetGPUHandle() {

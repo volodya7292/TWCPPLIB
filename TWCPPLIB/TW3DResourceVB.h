@@ -5,7 +5,7 @@
 namespace TW3D {
 	class TW3DResourceVB : public TW3DResource {
 	public:
-		TW3DResourceVB(TW3DDevice* Device, TWT::UInt Size, TWT::UInt SingleVertexSize, TW3DTempGCL* TempGCL);
+		TW3DResourceVB(TW3DDevice* Device, TWT::UInt Size, TWT::UInt SingleVertexSize);
 		~TW3DResourceVB();
 
 		D3D12_VERTEX_BUFFER_VIEW GetView();
@@ -14,9 +14,8 @@ namespace TW3D {
 		TWT::UInt GetSizeInBytes();
 
 	private:
-		TW3DTempGCL* TempGCL;
-		ID3D12Resource* UploadHeap;
 		D3D12_VERTEX_BUFFER_VIEW View;
-		TWT::UInt Size, SingleVertexSize, VertexCount;
+		TWT::UInt8* gpu_address = nullptr;
+		TWT::UInt Size, SingleVertexSize, VertexCount = 0;
 	};
 }

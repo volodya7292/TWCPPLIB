@@ -18,6 +18,21 @@ void on_cleanup() {
 	delete defaultRenderer;
 }
 
+void on_key_down(TWT::UInt KeyCode) {
+	switch (KeyCode) {
+	case VK_ESCAPE:
+		TW3D::Shutdown();
+		break;
+	case VK_F11:
+		TW3D::SetFullScreen(!TW3D::GetFullScreen());
+		break;
+	}
+}
+
+void on_char(TWT::WChar Symbol) {
+	TWU::CPrintln(Symbol);
+}
+
 int main() {
 	TW3D::InitializeInfo info = {};
 	TW3D::Initialize(info);
@@ -38,6 +53,8 @@ int main() {
 
 	TW3D::SetOnUpdateEvent(on_update);
 	TW3D::SetOnCleanupEvent(on_cleanup);
+	TW3D::SetOnKeyDownEvent(on_key_down);
+	TW3D::SetOnCharEvent(on_char);
 
 	TW3D::Start();
 }

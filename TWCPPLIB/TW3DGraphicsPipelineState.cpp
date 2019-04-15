@@ -65,4 +65,5 @@ void TW3D::TW3DGraphicsPipelineState::SetInputLayout(const TWT::Vector<D3D12_INP
 
 void TW3D::TW3DGraphicsPipelineState::Create(TW3DDevice* Device) {
 	Device->CreateGraphicsPipelineState(&desc, &pipeline_state);
+	pipeline_state->SetName(L"TW3DGraphicsPipelineState");
 }

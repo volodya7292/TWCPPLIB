@@ -12,6 +12,7 @@ TW3D::TW3DResourceCB::TW3DResourceCB(TW3DDevice* Device, TWT::UInt ElementSize, 
 		&CD3DX12_RESOURCE_DESC::Buffer(AlignedElementSize * ElementCount),
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		&Resource);
+	Resource->SetName(L"TW3DResourceCB");
 
 	TWU::SuccessAssert(Resource->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&GPUAddress)));
 }

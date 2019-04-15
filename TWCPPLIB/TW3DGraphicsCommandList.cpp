@@ -12,6 +12,8 @@ TW3D::TW3DGraphicsCommandList::TW3DGraphicsCommandList(TW3D::TW3DDevice* Device,
 {
 	Device->CreateCommandAllocator(Type, &command_allocator);
 	Device->CreateGraphicsCommandList(Type, command_allocator, &command_list);
+	command_list->SetName(L"TW3DGraphicsCommandList");
+	command_allocator->SetName(L"ID3D12CommandAllocator");
 	command_list->Close();
 }
 

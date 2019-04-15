@@ -32,6 +32,7 @@ void TW3D::TW3DResourceDSV::Create(TWT::UInt Width, TWT::UInt Height) {
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,
 		&Resource,
 		&depthOptimizedClearValue);
+	Resource->SetName(L"TW3DResourceDSV");
 
 	Device->CreateDepthStencilView(Resource, GetCPUHandle(), &desc);
 }

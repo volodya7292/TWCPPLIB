@@ -6,6 +6,7 @@ TW3D::TW3DDevice::TW3DDevice(TW3D::TW3DAdapter* adapter) :
 {
 	adapter->CreateDevice(&device);
 	device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &SupportedFeatures, sizeof(SupportedFeatures));
+	device->SetName(L"TW3DDevice");
 }
 
 TW3D::TW3DDevice::~TW3DDevice() {

@@ -2,11 +2,13 @@ Texture2DArray<float4> diffuseTex : register(t0);
 Texture2DArray<float4> normalTex : register(t1);
 Texture2DArray<float4> roughTex : register(t2);
 
+Texture2D<float4> testTex : register(t3);
+
 sampler sam : register(s0);
 
 struct VS_OUTPUT {
 	float4 pos: SV_POSITION;
-	float2 texCoord: TEXCOORD;
+	float2 tex_coord: TEXCOORD;
 };
 
 //struct GBuffer {
@@ -24,6 +26,6 @@ float4 main(VS_OUTPUT input) : SV_TARGET
 
 	g.out0 = buffer[input.pos.x].o * lerp(OutputTexture[input.pos.xy], g.out0, 0.3);*/
 
-	return float4(1, 0.3, 1, 0);
+	return diffuseTex.Sample(sam, float3(input.tex_coord, 0));
 	//return lerp(t1.Sample(s1, input.texCoord), tex.Sample(texs, input.texCoord), 0.5);
 }

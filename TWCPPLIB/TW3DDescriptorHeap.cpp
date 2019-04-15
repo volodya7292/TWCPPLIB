@@ -1,15 +1,16 @@
 #include "pch.h"
 #include "TW3DDescriptorHeap.h"
 
-TW3D::TW3DDescriptorHeap::TW3DDescriptorHeap(TW3DDevice* Device, D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS Flags, TWT::UInt Count) :
+TW3D::TW3DDescriptorHeap::TW3DDescriptorHeap(TW3DDevice* Device, D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS Flags, TWT::UInt DescriptorCount) :
 	IncrementSize(Device->GetDescriptorHandleIncrementSize(Type))
 {
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 	desc.Type = Type;
-	desc.NumDescriptors = Count;
+	desc.NumDescriptors = DescriptorCount;
 	desc.Flags = Flags;
 
 	Device->CreateDescriptorHeap(&desc, &descriptor_heap);
+	descriptor_heap->SetName(L"TW3DDescriptorHeap");
 }
 
 TW3D::TW3DDescriptorHeap::~TW3DDescriptorHeap() {

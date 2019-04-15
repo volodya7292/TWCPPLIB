@@ -29,4 +29,5 @@ void TW3D::TW3DComputePipelineState::SetShader(const std::string& Filename) {
 
 void TW3D::TW3DComputePipelineState::Create(TW3DDevice* Device) {
 	Device->CreateComputePipelineState(&desc, &pipeline_state);
+	pipeline_state->SetName(L"TW3DComputePipelineState");
 }

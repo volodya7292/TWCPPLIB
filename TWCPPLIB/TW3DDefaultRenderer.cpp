@@ -3,9 +3,12 @@
 #include "TW3DSwapChain.h"
 #include "TW3DGraphicsPipelineState.h"
 
+TW3D::TW3DResourceSR* texture;
+
 TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete opaque_raster_ps;
 	delete blit_ps;
+	delete texture;
 }
 
 void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height) {
@@ -24,6 +27,7 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	rootSignature->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_PIXEL, 0);
 	rootSignature->SetParameterSRV(3, D3D12_SHADER_VISIBILITY_PIXEL, 1);
 	rootSignature->SetParameterSRV(4, D3D12_SHADER_VISIBILITY_PIXEL, 2);
+	rootSignature->SetParameterSRV(5, D3D12_SHADER_VISIBILITY_PIXEL, 3);
 	rootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	//rootSignature->AddSampler(1, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	rootSignature->Create(device);
@@ -109,6 +113,11 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	blit_ps->SetVertexShader("VertexOffscreenBlit.cso");
 	blit_ps->SetPixelShader("PixelOffscreenBlit.cso");
 	blit_ps->Create(device);
+
+	texture = ResourceManager->CreateTextureArray2D(720, 720, 10, DXGI_FORMAT_R8G8B8A8_UNORM);
+	texture->Upload2D(L"D:/тест.png", 0);
+	texture->Upload2D(L"D:/тест2.png", 1);
+	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");
 }
 
 void TW3D::TW3DDefaultRenderer::Resize(TWT::UInt Width, TWT::UInt Height) {
@@ -136,6 +145,7 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 	record_cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	record_cl->BindCameraCBV(0, Scene->Camera);
+	record_cl->BindTexture(2, texture);
 
 	for (TW3DObject* object : Scene->objects) {
 		record_cl->DrawObject(object, 1);

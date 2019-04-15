@@ -6,6 +6,7 @@ TW3D::TW3DResource::TW3DResource(TW3DDevice* Device, const CD3DX12_HEAP_PROPERTI
 	Device(Device)
 {
 	Device->CreateCommittedResource(HeapProperties, HeapFlags, ResourceDescription, ResourceStates, &Resource, OptimizedClearValue);
+	Resource->SetName(L"TW3DResource");
 }
 
 TW3D::TW3DResource::TW3DResource(ID3D12Resource* resource) : 
