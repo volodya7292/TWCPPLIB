@@ -4,7 +4,7 @@
 namespace TW3D {
 	class TW3DRootSignature {
 	public:
-		TW3DRootSignature(D3D12_ROOT_SIGNATURE_FLAGS SignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_NONE);
+		TW3DRootSignature(TWT::Bool AllowGeometryShader = false, TWT::Bool AllowVertexShader = true, TWT::Bool AllowPixelShader = true, TWT::Bool AllowInputAssembler = true);
 		~TW3DRootSignature();
 
 		ID3D12RootSignature* Get();

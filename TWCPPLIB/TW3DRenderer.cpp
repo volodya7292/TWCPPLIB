@@ -12,6 +12,7 @@ void TW3D::TW3DRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSw
 	this->Width = Width;
 	this->Height = Height;
 	Initialized = true;
+	Device = ResourceManager->GetDevice();
 
 	for (size_t i = 0; i < TW3D::TW3DSwapChain::BufferCount * 2; i++)
 		command_lists.push_back(ResourceManager->CreateDirectCommandList());

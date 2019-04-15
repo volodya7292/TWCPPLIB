@@ -13,7 +13,9 @@ namespace TW3D {
 		void Execute(TWT::UInt BackBufferIndex);
 
 	private:
-		TW3DGraphicsPipelineState *opaque_raster_ps = 0, *blit_ps = 0;
+		void CreateGBufferResources();
+
+		TW3DGraphicsPipelineState *gbuffer_ps = 0, *blit_ps = 0;
 
 		D3D12_VIEWPORT viewport = D3D12_VIEWPORT();
 		D3D12_RECT scissor = D3D12_RECT();

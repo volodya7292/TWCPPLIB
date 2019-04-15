@@ -20,6 +20,7 @@ namespace TW3D {
 
 	protected:
 		TWT::Bool Initialized = false;
+		TW3DDevice* Device = nullptr;
 		TW3DResourceManager* ResourceManager = nullptr;
 		TW3DSwapChain* SwapChain = nullptr;
 		TWT::UInt Width = 0;

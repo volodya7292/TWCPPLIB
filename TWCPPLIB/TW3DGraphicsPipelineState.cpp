@@ -56,14 +56,30 @@ void TW3D::TW3DGraphicsPipelineState::SetDSVFormat(DXGI_FORMAT Format) {
 }
 
 void TW3D::TW3DGraphicsPipelineState::SetInputLayout(const TWT::Vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout) {
-	D3D12_INPUT_LAYOUT_DESC inputLayoutdesc = {};
-	inputLayoutdesc.NumElements = static_cast<UINT>(InputLayout.size());
-	inputLayoutdesc.pInputElementDescs = InputLayout.data();
-
-	desc.InputLayout = inputLayoutdesc;
+	desc.InputLayout.NumElements = static_cast<UINT>(InputLayout.size());
+	desc.InputLayout.pInputElementDescs = InputLayout.data();
 }
 
 void TW3D::TW3DGraphicsPipelineState::Create(TW3DDevice* Device) {
 	Device->CreateGraphicsPipelineState(&desc, &pipeline_state);
 	pipeline_state->SetName(L"TW3DGraphicsPipelineState");
+}
+
+TWT::Vector<D3D12_INPUT_ELEMENT_DESC> TW3D::CreateInputLayout(TWT::Vector<InputLayoutElement> Elements) {
+	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> descs;
+	for (InputLayoutElement element : Elements) {
+		switch (element) {
+		case TW3D::POSITION_ILE:
+			descs.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 });
+			break;
+		case TW3D::TEXCOORD_ILE:
+			descs.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 });
+			break;
+		case TW3D::NORMAL_ILE:
+			descs.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 });
+			break;
+		}
+	}
+
+	return descs;
 }

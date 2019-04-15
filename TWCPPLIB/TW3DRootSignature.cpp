@@ -1,8 +1,18 @@
 #include "pch.h"
 #include "TW3DRootSignature.h"
 
-TW3D::TW3DRootSignature::TW3DRootSignature(D3D12_ROOT_SIGNATURE_FLAGS SignatureFlags) {
-	desc.Flags = SignatureFlags;
+TW3D::TW3DRootSignature::TW3DRootSignature(TWT::Bool AllowGeometryShader, TWT::Bool AllowVertexShader, TWT::Bool AllowPixelShader, TWT::Bool AllowInputAssembler) {
+	desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS | D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS;
+
+	if (!AllowGeometryShader)
+		desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+	if (!AllowVertexShader)
+		desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
+	if (!AllowPixelShader)
+		desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+	if (AllowInputAssembler)
+		desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
 	root_parameters.resize(64);
 }
 

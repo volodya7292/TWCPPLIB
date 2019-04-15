@@ -1,7 +1,14 @@
 #pragma once
 #include "TW3DRootSignature.h"
+#include "TW3DTypes.h"
 
 namespace TW3D {
+	enum InputLayoutElement {
+		POSITION_ILE,
+		TEXCOORD_ILE,
+		NORMAL_ILE
+	};
+
 	class TW3DGraphicsPipelineState {
 	public:
 		TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, DXGI_SAMPLE_DESC SampleDesc, D3D12_RASTERIZER_DESC RasterizerState,
@@ -24,4 +31,7 @@ namespace TW3D {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
 		ID3D12PipelineState* pipeline_state;
 	};
+
+
+	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> CreateInputLayout(TWT::Vector<InputLayoutElement> Elements);
 }

@@ -8,10 +8,19 @@ namespace TWT {
 	using Vector4f = glm::vec4;
 	using Matrix4f = glm::mat4;
 
+	
+	const static DXGI_FORMAT RGBA8Unorm = DXGI_FORMAT_R8G8B8A8_UNORM;
+	const static DXGI_FORMAT RGBA16Float = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	const static DXGI_FORMAT RGBA32Float = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	const static DXGI_FORMAT D24UnormS8 = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
 	struct DefaultVertex {
-		DefaultVertex(TWT::Float x, TWT::Float y, TWT::Float z, TWT::Float u, TWT::Float v) : Pos(x, y, z), TexCoord(u, v) {}
+		DefaultVertex(TWT::Float x, TWT::Float y, TWT::Float z, TWT::Float u, TWT::Float v, TWT::Float nx, TWT::Float ny, TWT::Float nz) :
+			Pos(x, y, z), TexCoord(u, v), Normal(nx, ny, nz) {}
+
 		TWT::Vector3f Pos;
 		TWT::Vector2f TexCoord;
+		TWT::Vector3f Normal;
 	};
 
 	struct DefaultCameraCB {

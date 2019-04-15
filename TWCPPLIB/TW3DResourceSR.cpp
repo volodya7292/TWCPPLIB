@@ -85,7 +85,6 @@ void TW3D::TW3DResourceSR::Upload2D(TWT::WString filename, TWT::UInt Depth) {
 	TWT::Int imageBytesPerRow;
 	TWT::Byte* imageData;
 	int imageSize = TWU::LoadImageDataFromFile(&imageData, textureDesc, filename, imageBytesPerRow);
-
 	Upload2D(imageData, imageBytesPerRow, Depth);
 	delete imageData;
 }
