@@ -1,5 +1,6 @@
 #pragma once
 #include "TW3DObject.h"
+#include "TW3DRTAccelerationStructureTL.h"
 #include "TW3DPerspectiveCamera.h"
 
 namespace TW3D {
@@ -10,6 +11,7 @@ namespace TW3D {
 
 		void AddObject(TW3DObject* Object);
 
+		TW3DRTAccelerationStructureTL* tlas;
 		TW3DPerspectiveCamera* Camera;
 		std::unordered_set<TW3DObject*> objects;
 	};

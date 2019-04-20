@@ -7,9 +7,9 @@ Texture2D<float4> testTex : register(t3);
 sampler sam : register(s0);
 
 struct VS_OUTPUT {
-	float4           pos : SV_POSITION;
-	float2     tex_coord : TEXCOORD;
-	linear float3 normal : OBJECTNORMAL;
+	float4               pos : SV_POSITION;
+	float2         tex_coord : TEXCOORD;
+	linear float3 obj_normal : OBJECTNORMAL;
 };
 
 struct GBuffer {
@@ -50,8 +50,8 @@ float4 main(VS_OUTPUT input) : SV_TARGET
 	// The 'linearZ' buffer
 	float linearZ = input.pos.z * input.pos.w;
     float maxChangeZ = max(abs(ddx(linearZ)), abs(ddy(linearZ)));
-//float objNorm    = asfloat(dirToOct(normalize(vsOut.normalObj)));
-//float4 svgfLinearZOut = float4(linearZ, maxChangeZ, vsOut.base.prevPosH.z, objNorm);
+    float objNorm    = asfloat(dirToOct(normalize(input.obj_normal)));
+	//float4 svgfLinearZOut = float4(linearZ, maxChangeZ, vsOut.base.prevPosH.z, objNorm);
 
 //// The 'motion vector' buffer
 //float2 svgfMotionVec = calcMotionVector(vsOut.base.prevPosH, pos.xy, gBufSize.zw) +

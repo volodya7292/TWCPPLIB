@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "TW3DPrimitives.h"
 
-static TW3D::TW3DResourceVB* CubeVertexBuffer;
+static TW3D::TW3DVertexMesh* CubeVertexMesh;
 
 void TW3DPrimitives::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
-	CubeVertexBuffer = ResourceManager->CreateVertexBuffer(36);
+	TW3D::TW3DVertexBuffer* CubeVertexBuffer = ResourceManager->CreateVertexBuffer(36);
 	
 	TWT::DefaultVertex vertices[] = {
 		// front face
@@ -56,13 +56,14 @@ void TW3DPrimitives::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 		{ -0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f },
 	};
 
-	CubeVertexBuffer->UpdateData(vertices, sizeof(vertices));
+	CubeVertexBuffer->Update(vertices, sizeof(vertices) / sizeof(TWT::DefaultVertex));
+	CubeVertexMesh = new TW3D::TW3DVertexMesh({CubeVertexBuffer});
 }
 
 void TW3DPrimitives::Cleanup() {
-	delete CubeVertexBuffer;
+	delete CubeVertexMesh->VertexBuffers[0];
 }
 
-TW3D::TW3DResourceVB* TW3DPrimitives::GetCubeVertexBuffer() {
-	return CubeVertexBuffer;
+TW3D::TW3DVertexMesh* TW3DPrimitives::GetCubeVertexMesh() {
+	return CubeVertexMesh;
 }

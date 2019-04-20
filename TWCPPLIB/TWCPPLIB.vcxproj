@@ -288,7 +288,8 @@
     <ClInclude Include="TW3DResourceUAV.h" />
     <ClInclude Include="TW3DResourceVB.h" />
     <ClInclude Include="TW3DRootSignature.h" />
-    <ClInclude Include="TW3DRTAccelerationStructureBL.h" />
+    <ClInclude Include="TW3DVertexBuffer.h" />
+    <ClInclude Include="TW3DVertexMesh.h" />
     <ClInclude Include="TW3DRTAccelerationStructureTL.h" />
     <ClInclude Include="TW3DScene.h" />
     <ClInclude Include="TW3DSwapChain.h" />
@@ -334,7 +335,8 @@
     <ClCompile Include="TW3DResourceUAV.cpp" />
     <ClCompile Include="TW3DResourceVB.cpp" />
     <ClCompile Include="TW3DRootSignature.cpp" />
-    <ClCompile Include="TW3DRTAccelerationStructureBL.cpp" />
+    <ClCompile Include="TW3DVertexBuffer.cpp" />
+    <ClCompile Include="TW3DVertexMesh.cpp" />
     <ClCompile Include="TW3DRTAccelerationStructureTL.cpp" />
     <ClCompile Include="TW3DScene.cpp" />
     <ClCompile Include="TW3DSwapChain.cpp" />
@@ -365,6 +367,16 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="GlobalVertexBuffer.v.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
     </FxCompile>
     <FxCompile Include="PixelOffscreenBlit.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

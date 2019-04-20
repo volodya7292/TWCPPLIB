@@ -16,6 +16,14 @@ TW3D::TW3DGraphicsPipelineState::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOL
 	desc.SampleMask = 0xffffffff;
 }
 
+TW3D::TW3DGraphicsPipelineState::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, TW3DRootSignature* RootSignature) :
+	TW3DGraphicsPipelineState(PrimitiveTopologyType, {1, 0}, CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT), CD3DX12_BLEND_DESC(D3D12_DEFAULT), RootSignature, 0)
+{
+	desc.DepthStencilState.DepthEnable = false;
+	desc.DepthStencilState.StencilEnable = false;
+}
+
 TW3D::TW3DGraphicsPipelineState::~TW3DGraphicsPipelineState() {
 	TWU::DXSafeRelease(pipeline_state);
 	delete RootSignature;

@@ -6,6 +6,7 @@ namespace TWT {
 	using Vector2u = glm::uvec2;
 	using Vector3f = glm::vec3;
 	using Vector4f = glm::vec4;
+	using Vector4u = glm::uvec4;
 	using Matrix4f = glm::mat4;
 
 	
@@ -27,8 +28,12 @@ namespace TWT {
 		TWT::Matrix4f proj_view;
 	};
 
-	struct DefaultPerObjectCB {
+	struct DefaultVertexMeshCB {
 		TWT::Matrix4f model;
+	};
+
+	struct DefaultVertexBufferCB {
+		TWT::Vector4u vertex_offset;
 	};
 
 	inline Matrix4f Translate(Matrix4f Matrix, TWT::Vector3f Position) {

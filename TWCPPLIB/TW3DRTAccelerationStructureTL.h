@@ -1,25 +1,22 @@
 #pragma once
-#include "TW3DRTAccelerationStructureBL.h"
 #include "TW3DResourceManager.h"
-#include "TW3DTransform.h"
+#include "TW3DVertexMesh.h"
 
 namespace TW3D {
-	struct TW3DRTAccelerationStructureBLInstance
-	{
-		TW3DRTAccelerationStructureBL* BLAS;
-		TW3DTransform Transform;
-	};
-
 	class TW3DRTAccelerationStructureTL
 	{
 	public:
-		TW3DRTAccelerationStructureTL(const TWT::Vector<TW3DRTAccelerationStructureBL*>& BLASes,
-			const TWT::Vector<TW3DRTAccelerationStructureBLInstance*>& BLASInstances, TW3DResourceManager* ResourceManager);
+		TW3DRTAccelerationStructureTL(const TWT::Vector<TW3DVertexMeshInstance*>& VertexMeshInstances);
 		~TW3DRTAccelerationStructureTL();
+
+		void AddBLASInstance(TW3DVertexMeshInstance* BLASInstance);
 
 		void Build();
 
 	private:
+		// Global Vertex Buffer
 		TW3DResourceVB* gvb;
+
+		TWT::Vector<TW3DVertexMeshInstance*> BLAS_instances;
 	};
 }

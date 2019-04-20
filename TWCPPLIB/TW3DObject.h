@@ -1,8 +1,7 @@
 #pragma once
 #include "TW3DTypes.h"
-#include "TW3DTransform.h"
-#include "TW3DGraphicsCommandList.h"
 #include "TW3DResourceManager.h"
+#include "TW3DVertexMesh.h"
 
 namespace TW3D {
 	class TW3DObject {
@@ -12,9 +11,9 @@ namespace TW3D {
 
 		virtual void Update();
 		virtual void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex);
-
-		TW3DTransform Transform;
 		
+		TW3DVertexMeshInstance VMInstance;
+
 	protected:
 		TW3DResourceCB* ConstantBuffer;
 	};

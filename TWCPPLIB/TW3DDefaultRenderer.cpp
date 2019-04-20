@@ -7,14 +7,16 @@ TW3D::TW3DResourceSR* texture;
 
 TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete gbuffer_ps;
-	delete blit_ps;
+	delete gvb_ps;
+	//delete blit_ps;
 	delete texture;
+	delete gvb;
 }
 
 void TW3D::TW3DDefaultRenderer::CreateGBufferResources() {
 	TW3DRootSignature* root_signature = new TW3DRootSignature();
 	root_signature->SetParameterCBV(0, D3D12_SHADER_VISIBILITY_VERTEX, 0); // Camera CB
-	root_signature->SetParameterCBV(1, D3D12_SHADER_VISIBILITY_VERTEX, 1); // Model CB
+	root_signature->SetParameterCBV(1, D3D12_SHADER_VISIBILITY_VERTEX, 1); // Vertex mesh CB
 	root_signature->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_PIXEL, 0);  // Diffuse
 	root_signature->SetParameterSRV(3, D3D12_SHADER_VISIBILITY_PIXEL, 1);  // Normal
 	root_signature->SetParameterSRV(4, D3D12_SHADER_VISIBILITY_PIXEL, 2);  // Roughness
@@ -44,9 +46,26 @@ void TW3D::TW3DDefaultRenderer::CreateGBufferResources() {
 	gbuffer_ps->Create(Device);
 }
 
+void TW3D::TW3DDefaultRenderer::CreateGVBResources() {
+	TW3DRootSignature* root_signature = new TW3DRootSignature(false, true, false);
+	root_signature->SetParameterCBV(0, D3D12_SHADER_VISIBILITY_VERTEX, 0); // Vertex mesh CB
+	root_signature->SetParameterUAV(1, D3D12_SHADER_VISIBILITY_VERTEX, 0); // Global Vertex Buffer UAV
+	root_signature->Create(Device);
+
+	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({ POSITION_ILE, TEXCOORD_ILE, NORMAL_ILE });
+
+	gvb_ps = new TW3D::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, root_signature);
+	gvb_ps->SetVertexShader("GlobalVertexBuffer.v.cso");
+	gvb_ps->SetInputLayout(input_layout);
+	gvb_ps->Create(Device);
+
+	gvb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(TWT::DefaultVertex));
+}
+
 void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height) {
 	TW3DRenderer::Initialize(ResourceManager, SwapChain, Width, Height);
 	CreateGBufferResources();
+	CreateGVBResources();
 
 	/*rastDesc.CullMode = D3D12_CULL_MODE_NONE;
 	depthDesc.DepthEnable = FALSE;
@@ -90,9 +109,34 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 	TW3D::TW3DRenderer::Record(BackBufferIndex, ColorOutput, DepthStencilOutput);
 	
 	record_cl->Reset();
-
-	record_cl->SetPipelineState(gbuffer_ps);
 	record_cl->BindResources(ResourceManager);
+	record_cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
+	// Global Vertex Buffer record
+	// -------------------------------------------------------------------------------------------------------------------------
+	record_cl->SetPipelineState(gvb_ps);
+	record_cl->BindUAV(1, gvb);
+	TWT::UInt VertexOffset = 0;
+	gvb_vertex_buffers.clear();
+	for (TW3DObject* object : Scene->objects)
+		for (TW3DVertexBuffer* vb : object->VMInstance.VertexMesh->VertexBuffers)
+			if (gvb_vertex_buffers.find(vb) == gvb_vertex_buffers.end()) {
+				gvb_vertex_buffers.emplace(vb);
+
+				vb->SetVertexOffset(VertexOffset);
+				VertexOffset += vb->GetVertexCount();
+
+				record_cl->SetVertexBuffer(0, vb->GetVBResource());
+				record_cl->SetRootCBV(0, vb->GetCBResource(), 0);
+				record_cl->Draw(vb->GetVertexCount());
+			}
+	gvb_vertex_count = VertexOffset + 1;
+
+
+	// GBuffer record
+	// -------------------------------------------------------------------------------------------------------------------------
+	record_cl->SetPipelineState(gbuffer_ps);
 
 	record_cl->ResourceBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
@@ -101,7 +145,6 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 	record_cl->ClearDSVDepth(DepthStencilOutput);
 	record_cl->SetViewport(&viewport);
 	record_cl->SetScissor(&scissor);
-	record_cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	record_cl->BindCameraCBV(0, Scene->Camera);
 	record_cl->BindTexture(2, texture);
@@ -116,8 +159,9 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 }
 
 void TW3D::TW3DDefaultRenderer::Update() {
-	for (TW3DObject* object : Scene->objects)
+	for (TW3DObject* object : Scene->objects) {
 		object->Update();
+	}
 }
 
 void TW3D::TW3DDefaultRenderer::Execute(TWT::UInt BackBufferIndex) {

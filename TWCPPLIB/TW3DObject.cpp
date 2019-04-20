@@ -10,11 +10,11 @@ TW3D::TW3DObject::~TW3DObject() {
 }
 
 void TW3D::TW3DObject::Update() {
-	if (Transform.Changed) {
-		Transform.Changed = false;
+	if (VMInstance.Transform.Changed) {
+		VMInstance.Transform.Changed = false;
 
-		TWT::DefaultPerObjectCB cb;
-		cb.model = Transform.GetModelMatrix();
+		TWT::DefaultVertexMeshCB cb;
+		cb.model = VMInstance.Transform.GetModelMatrix();
 
 		ConstantBuffer->Update(&cb, 0);
 	}

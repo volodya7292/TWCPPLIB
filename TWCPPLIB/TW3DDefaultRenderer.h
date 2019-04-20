@@ -14,8 +14,14 @@ namespace TW3D {
 
 	private:
 		void CreateGBufferResources();
+		void CreateGVBResources();
 
-		TW3DGraphicsPipelineState *gbuffer_ps = 0, *blit_ps = 0;
+		TW3DGraphicsPipelineState *gbuffer_ps, *gvb_ps;
+
+		std::unordered_set<TW3DVertexBuffer*> gvb_vertex_buffers;
+		TW3DResourceUAV* gvb;
+		TWT::UInt gvb_vertex_count;
+		//*blit_ps;
 
 		D3D12_VIEWPORT viewport = D3D12_VIEWPORT();
 		D3D12_RECT scissor = D3D12_RECT();

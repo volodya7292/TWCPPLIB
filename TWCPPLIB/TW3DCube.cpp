@@ -3,9 +3,9 @@
 #include "TW3DPrimitives.h"
 
 TW3D::TW3DCube::TW3DCube(TW3DResourceManager* ResourceManager) :
-	TW3DGeometry(ResourceManager, sizeof(TWT::DefaultPerObjectCB))
+	TW3DGeometry(ResourceManager, sizeof(TWT::DefaultVertexBufferCB))
 {
-	VertexBuffer = TW3DPrimitives::GetCubeVertexBuffer();
+	VMInstance.VertexMesh = TW3DPrimitives::GetCubeVertexMesh();
 }
 
 void TW3D::TW3DCube::Update() {
@@ -15,7 +15,7 @@ void TW3D::TW3DCube::Update() {
 void TW3D::TW3DCube::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex) {
 	TW3DGeometry::RecordDraw(CommandList, ModelCBRootParameterIndex);
 
-	CommandList->SetVertexBuffer(0, VertexBuffer);
+	CommandList->SetVertexBuffer(0, VMInstance.VertexMesh->VertexBuffers[0]->GetVBResource());
 
 	CommandList->Draw(36);
 }

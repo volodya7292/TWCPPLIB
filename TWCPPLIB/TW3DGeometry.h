@@ -1,5 +1,4 @@
 #pragma once
-#include "TW3DResourceVB.h"
 #include "TW3DObject.h"
 
 namespace TW3D {
@@ -10,8 +9,5 @@ namespace TW3D {
 
 		virtual void Update();
 		virtual void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex);
-
-	protected:
-		TW3DResourceVB* VertexBuffer;
 	};
 }

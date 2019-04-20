@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TW3DResourceCB.h"
 
-TW3D::TW3DResourceCB::TW3DResourceCB(TW3DDevice* Device, TWT::UInt ElementSize, TWT::UInt ElementCount) :
+TW3D::TW3DResourceCB::TW3DResourceCB(TW3DDevice* Device, TWT::UInt ElementCount, TWT::UInt ElementSize) :
 	TW3DResource(Device)
 {
 	AlignedElementSize = (ElementSize + 255) & ~255;
