@@ -317,5 +317,19 @@
     <FxCompile Include="GlobalVertexBuffer.v.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="MeshAccelerationStructure.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="CalculateMortonCodes.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="CalculateBoundingBox.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="HLSLHelper.hlsli">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -23,7 +23,12 @@ void TW3D::TW3DVertexBuffer::Update(const void* Data, TWT::UInt VertexCount) {
 	vertex_buffer->UpdateData(Data, VertexCount);
 }
 
+TWT::UInt TW3D::TW3DVertexBuffer::GetVertexOffset() {
+	return GVBVertexOffset;
+}
+
 void TW3D::TW3DVertexBuffer::SetVertexOffset(TWT::UInt VertexOffset) {
+	GVBVertexOffset = VertexOffset;
 	TWT::DefaultVertexBufferCB cb;
 	cb.vertex_offset.x = VertexOffset;
 	constant_buffer->Update(&cb, 0);

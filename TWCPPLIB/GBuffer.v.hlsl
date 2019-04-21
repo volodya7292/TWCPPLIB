@@ -1,8 +1,4 @@
-struct VS_INPUT {
-	float3       pos : POSITION;
-	float2 tex_coord : TEXCOORD;
-	float3    normal : NORMAL;
-};
+#include "HLSLHelper.hlsli"
 
 struct VS_OUTPUT {
 	float4           pos : SV_POSITION;
@@ -14,14 +10,14 @@ struct Camera {
 	float4x4 proj_view;
 };
 
-struct PerVertexMesh {
+struct VertexMeshInstance {
 	float4x4 model;
 };
 
 ConstantBuffer<Camera> camera : register(b0);
-ConstantBuffer<PerVertexMesh> vertex_mesh : register(b1);
+ConstantBuffer<VertexMeshInstance> vertex_mesh : register(b1);
 
-VS_OUTPUT main(VS_INPUT input, uint vertex_id : SV_VertexID) {
+VS_OUTPUT main(Vertex input, uint vertex_id : SV_VertexID) {
 	VS_OUTPUT output;
 	output.pos = mul(mul(camera.proj_view, vertex_mesh.model), float4(input.pos, 1));
 	output.tex_coord = input.tex_coord;

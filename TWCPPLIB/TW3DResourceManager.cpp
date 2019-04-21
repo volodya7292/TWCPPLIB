@@ -55,8 +55,8 @@ TW3D::TW3DVertexBuffer* TW3D::TW3DResourceManager::CreateVertexBuffer(TWT::UInt 
 	return new TW3DVertexBuffer(device, VertexCount, SingleVertexSizeInBytes, temp_gcl);
 }
 
-TW3D::TW3DResourceCB* TW3D::TW3DResourceManager::CreateConstantBuffer(TWT::UInt ElementSizeInBytes, TWT::UInt ElementCount) {
-	return new TW3DResourceCB(device, ElementSizeInBytes, ElementCount);
+TW3D::TW3DResourceCB* TW3D::TW3DResourceManager::CreateConstantBuffer(TWT::UInt ElementCount, TWT::UInt ElementSizeInBytes) {
+	return new TW3DResourceCB(device, ElementCount, ElementSizeInBytes);
 }
 
 TW3D::TW3DResourceSR* TW3D::TW3DResourceManager::CreateTexture2D(TWT::WString Filename) {

@@ -15,10 +15,17 @@ namespace TW3D {
 	private:
 		void CreateGBufferResources();
 		void CreateGVBResources();
+		void CreateBBCalculatorResources();
+		void CreateMortonCalculatorResources();
+		void BuildVMAccelerationStructure(TW3DVertexMesh* VertexMesh);
+
+		TW3DGraphicsCommandList* morton_calc_cl;
 
 		TW3DGraphicsPipelineState *gbuffer_ps, *gvb_ps;
+		TW3DComputePipelineState *bb_calc_ps, *morton_calc_ps;
 
 		std::unordered_set<TW3DVertexBuffer*> gvb_vertex_buffers;
+		std::unordered_set<TW3DVertexMesh*>   gvb_vertex_meshes;
 		TW3DResourceUAV* gvb;
 		TWT::UInt gvb_vertex_count;
 		//*blit_ps;

@@ -167,10 +167,11 @@ void TW3D::TW3DGraphicsCommandList::BindRTVTexture(TWT::UInt RootParameterIndex,
 }
 
 void TW3D::TW3DGraphicsCommandList::BindUAV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
-	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
-		command_list->SetComputeRootDescriptorTable(RootParameterIndex, UAV->GetGPUHandle());
-	else
-		command_list->SetGraphicsRootDescriptorTable(RootParameterIndex, UAV->GetGPUHandle());
+	SetRootDescriptorTable(RootParameterIndex, UAV->GetGPUUAVHandle());
+}
+
+void TW3D::TW3DGraphicsCommandList::BindUAVSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
+	SetRootDescriptorTable(RootParameterIndex, UAV->GetGPUSRVHandle());
 }
 
 void TW3D::TW3DGraphicsCommandList::BindCameraCBV(TWT::UInt RootParameterIndex, TW3DPerspectiveCamera* Camera) {

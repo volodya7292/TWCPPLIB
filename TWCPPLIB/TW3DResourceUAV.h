@@ -8,7 +8,8 @@ namespace TW3D {
 		TW3DResourceUAV(TW3DDevice* Device, TW3DDescriptorHeap* SRVDescriptorHeap, DXGI_FORMAT Format);
 		~TW3DResourceUAV();
 
-		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle();
+		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRVHandle();
+		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUUAVHandle();
 
 		void CreateBuffer(TWT::UInt ElementCount);
 		void CreateTexture2D(TWT::UInt Width, TWT::UInt Height);

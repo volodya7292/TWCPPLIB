@@ -12,6 +12,7 @@ namespace TW3D {
 		TW3DResourceCB* GetCBResource();
 
 		void Update(const void* Data, TWT::UInt VertexCount);
+		TWT::UInt GetVertexOffset();
 		void SetVertexOffset(TWT::UInt VertexOffset);
 		TWT::UInt GetVertexCount();
 		TWT::UInt GetSizeInBytes();
@@ -19,5 +20,6 @@ namespace TW3D {
 	private:
 		TW3DResourceVB* vertex_buffer;
 		TW3DResourceCB* constant_buffer;
+		TWT::UInt GVBVertexOffset;
 	};
 }

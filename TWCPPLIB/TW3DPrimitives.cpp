@@ -57,11 +57,12 @@ void TW3DPrimitives::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 	};
 
 	CubeVertexBuffer->Update(vertices, sizeof(vertices) / sizeof(TWT::DefaultVertex));
-	CubeVertexMesh = new TW3D::TW3DVertexMesh({CubeVertexBuffer});
+	CubeVertexMesh = new TW3D::TW3DVertexMesh(ResourceManager, {CubeVertexBuffer});
 }
 
 void TW3DPrimitives::Cleanup() {
 	delete CubeVertexMesh->VertexBuffers[0];
+	delete CubeVertexMesh;
 }
 
 TW3D::TW3DVertexMesh* TW3DPrimitives::GetCubeVertexMesh() {

@@ -35,7 +35,11 @@ TW3D::TW3DResourceUAV::~TW3DResourceUAV() {
 
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceUAV::GetGPUHandle() {
+D3D12_GPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceUAV::GetGPUSRVHandle() {
+	return SRVDescriptorHeap->GetGPUHandle(SRVIndex);
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceUAV::GetGPUUAVHandle() {
 	return SRVDescriptorHeap->GetGPUHandle(SRVIndex + 1);
 }
 

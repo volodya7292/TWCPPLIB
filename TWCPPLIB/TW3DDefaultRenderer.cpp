@@ -8,6 +8,9 @@ TW3D::TW3DResourceSR* texture;
 TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete gbuffer_ps;
 	delete gvb_ps;
+	delete morton_calc_ps;
+	delete bb_calc_ps;
+	delete morton_calc_cl;
 	//delete blit_ps;
 	delete texture;
 	delete gvb;
@@ -62,10 +65,62 @@ void TW3D::TW3DDefaultRenderer::CreateGVBResources() {
 	gvb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(TWT::DefaultVertex));
 }
 
+void TW3D::TW3DDefaultRenderer::CreateBBCalculatorResources() {
+	TW3DRootSignature* root_signature = new TW3DRootSignature(false, false, false);
+	root_signature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
+	root_signature->SetParameterUAV(1, D3D12_SHADER_VISIBILITY_ALL, 0); // Bounding box UAV
+	root_signature->SetParameterCBV(2, D3D12_SHADER_VISIBILITY_ALL, 0); // Vertex mesh CBV
+	root_signature->Create(Device);
+
+	bb_calc_ps = new TW3DComputePipelineState(root_signature);
+	bb_calc_ps->SetShader("CalculateBoundingBox.cso");
+	bb_calc_ps->Create(Device);
+}
+
+void TW3D::TW3DDefaultRenderer::CreateMortonCalculatorResources() {
+	TW3DRootSignature* root_signature = new TW3DRootSignature(false, false, false);
+	root_signature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
+	root_signature->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Bounding box Buffer SRV
+	root_signature->SetParameterUAV(2, D3D12_SHADER_VISIBILITY_ALL, 0); // Morton codes buffer UAV
+	root_signature->SetParameterCBV(3, D3D12_SHADER_VISIBILITY_ALL, 0); // Vertex mesh CBV
+	root_signature->Create(Device);
+
+	morton_calc_ps = new TW3DComputePipelineState(root_signature);
+	morton_calc_ps->SetShader("CalculateMortonCodes.cso");
+	morton_calc_ps->Create(Device);
+
+	morton_calc_cl = ResourceManager->CreateComputeCommandList();
+}
+
+void TW3D::TW3DDefaultRenderer::BuildVMAccelerationStructure(TW3DVertexMesh* VertexMesh) {
+	morton_calc_cl->Reset();
+	morton_calc_cl->BindResources(ResourceManager);
+
+	// Calculate bounding box
+	morton_calc_cl->SetPipelineState(bb_calc_ps);
+	morton_calc_cl->BindUAVSRV(0, gvb);
+	morton_calc_cl->BindUAV(1, VertexMesh->GetBBBufferResource());
+	morton_calc_cl->SetRootCBV(2, VertexMesh->GetCBResource());
+	morton_calc_cl->Dispatch(VertexMesh->GetVertexCount());
+
+	// Calculate morton codes
+	morton_calc_cl->SetPipelineState(morton_calc_ps);
+	morton_calc_cl->BindUAVSRV(0, gvb);
+	morton_calc_cl->BindUAVSRV(1, VertexMesh->GetBBBufferResource());
+	morton_calc_cl->BindUAV(2, VertexMesh->GetMCBufferResource());
+	morton_calc_cl->SetRootCBV(3, VertexMesh->GetCBResource());
+	morton_calc_cl->Dispatch(VertexMesh->GetVertexCount());
+
+	morton_calc_cl->Close();
+	ResourceManager->ExecuteCommandList(morton_calc_cl);
+}
+
 void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height) {
 	TW3DRenderer::Initialize(ResourceManager, SwapChain, Width, Height);
 	CreateGBufferResources();
 	CreateGVBResources();
+	CreateBBCalculatorResources();
+	CreateMortonCalculatorResources();
 
 	/*rastDesc.CullMode = D3D12_CULL_MODE_NONE;
 	depthDesc.DepthEnable = FALSE;
@@ -114,7 +169,7 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 	record_cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 
-	// Global Vertex Buffer record
+	// Build Global Vertex Buffer
 	// -------------------------------------------------------------------------------------------------------------------------
 	record_cl->SetPipelineState(gvb_ps);
 	record_cl->BindUAV(1, gvb);
@@ -135,7 +190,10 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 	gvb_vertex_count = VertexOffset + 1;
 
 
-	// GBuffer record
+	// Build Vertex Mesh acceleration structures
+	// -------------------------------------------------------------------------------------------------------------------------
+
+	// Render GBuffer
 	// -------------------------------------------------------------------------------------------------------------------------
 	record_cl->SetPipelineState(gbuffer_ps);
 
@@ -168,4 +226,11 @@ void TW3D::TW3DDefaultRenderer::Update() {
 void TW3D::TW3DDefaultRenderer::Execute(TWT::UInt BackBufferIndex) {
 	TW3DRenderer::Execute(BackBufferIndex);
 	ResourceManager->ExecuteCommandList(execute_cl);
+
+	gvb_vertex_meshes.clear();
+	for (TW3DObject* object : Scene->objects)
+		if (gvb_vertex_meshes.find(object->VMInstance.VertexMesh) == gvb_vertex_meshes.end()) {
+			gvb_vertex_meshes.emplace(object->VMInstance.VertexMesh);
+			BuildVMAccelerationStructure(object->VMInstance.VertexMesh);
+		}
 }
