@@ -144,7 +144,6 @@ void render() {
 
 TWT::UInt thread_tick(TWT::UInt thread_id, TWT::UInt thread_count) {
 	if (thread_id == 0) { // Command list record
-		resource_manager->FlushCommandLists();
 		synchronized(resize_mutex) {
 			for (size_t i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++)
 				renderer->Record(i, renderTargets[i], depthStencil);
@@ -229,11 +228,12 @@ void cleanup() {
 	delete adapter;
 	delete device;
 	delete swapChain;
-	delete resource_manager;
 	delete depthStencil;
 
 	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; ++i)
 		delete renderTargets[i];
+
+	delete resource_manager;
 
 	TW3DPrimitives::Cleanup();
 

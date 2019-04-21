@@ -81,13 +81,26 @@ TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::CreateComputeCommandLi
 	return TW3DGraphicsCommandList::CreateCompute(device);
 }
 
+TWT::Bool TW3D::TW3DResourceManager::IsCommandListRunning(TW3DGraphicsCommandList* CommandList) {
+	if (CommandList->Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+		return direct_command_queue->IsCommandListRunning(CommandList);
+	else
+		return compute_command_queue->IsCommandListRunning(CommandList);
+}
+
+void TW3D::TW3DResourceManager::FlushCommandList(TW3DGraphicsCommandList* CommandList) {
+	if (CommandList->Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+		direct_command_queue->FlushCommandList(CommandList);
+	else
+		compute_command_queue->FlushCommandList(CommandList);
+}
+
 void TW3D::TW3DResourceManager::FlushCommandLists() {
 	compute_command_queue->FlushCommands();
 	direct_command_queue->FlushCommands();
 }
 
 void TW3D::TW3DResourceManager::ExecuteCommandList(TW3DGraphicsCommandList* CommandList) {
-	FlushCommandLists();
 	if (CommandList->Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
 		direct_command_queue->ExecuteCommandList(CommandList);
 	else
@@ -95,7 +108,6 @@ void TW3D::TW3DResourceManager::ExecuteCommandList(TW3DGraphicsCommandList* Comm
 }
 
 void TW3D::TW3DResourceManager::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists) {
-	FlushCommandLists();
 	if (CommandLists[0]->Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
 		direct_command_queue->ExecuteCommandLists(CommandLists);
 	else

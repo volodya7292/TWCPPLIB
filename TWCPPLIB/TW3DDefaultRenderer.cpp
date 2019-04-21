@@ -107,7 +107,8 @@ void TW3D::TW3DDefaultRenderer::Resize(TWT::UInt Width, TWT::UInt Height) {
 
 void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStencilOutput) {
 	TW3D::TW3DRenderer::Record(BackBufferIndex, ColorOutput, DepthStencilOutput);
-	
+
+
 	record_cl->Reset();
 	record_cl->BindResources(ResourceManager);
 	record_cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -165,10 +166,6 @@ void TW3D::TW3DDefaultRenderer::Update() {
 }
 
 void TW3D::TW3DDefaultRenderer::Execute(TWT::UInt BackBufferIndex) {
-	TW3DGraphicsCommandList* command_list = current_record_index == 0 ? command_lists[BackBufferIndex * 2 + 1] : command_lists[BackBufferIndex * 2];
-
-	while (command_list->IsEmpty())
-		Sleep(1);
-
-	ResourceManager->ExecuteCommandList(command_list);
+	TW3DRenderer::Execute(BackBufferIndex);
+	ResourceManager->ExecuteCommandList(execute_cl);
 }

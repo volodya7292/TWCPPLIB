@@ -26,6 +26,8 @@ namespace TW3D {
 		TW3DGraphicsCommandList* CreateBundleCommandList();
 		TW3DGraphicsCommandList* CreateComputeCommandList();
 
+		TWT::Bool IsCommandListRunning(TW3DGraphicsCommandList* CommandList);
+		void FlushCommandList(TW3DGraphicsCommandList* CommandList);
 		void FlushCommandLists();
 		void ExecuteCommandList(TW3DGraphicsCommandList* CommandList);
 		// Command lists must be of the same type

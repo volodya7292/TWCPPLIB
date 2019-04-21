@@ -29,7 +29,7 @@ namespace TW3D {
 		TW3D::TW3DScene* Scene;
 
 		TWT::Vector<TW3D::TW3DGraphicsCommandList*> command_lists;
-		TW3DGraphicsCommandList* record_cl;
+		TW3DGraphicsCommandList *record_cl, *execute_cl;
 		TWT::UInt current_record_index = 0;
 	};
 }

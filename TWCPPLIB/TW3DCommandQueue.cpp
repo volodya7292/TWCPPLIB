@@ -21,36 +21,48 @@ ID3D12CommandQueue* TW3D::TW3DCommandQueue::Get() {
 	return command_queue;
 }
 
-void TW3D::TW3DCommandQueue::FlushCommands() {
-	TWU::SuccessAssert(command_queue->Signal(fence, ++fence_flush_value));
+TWT::Bool TW3D::TW3DCommandQueue::IsCommandListRunning(TW3DGraphicsCommandList* CommandList) {
+	return fence->GetCompletedValue() < CommandList->SignalValue;
+}
 
-	// if the current fence value is still less than "fenceValue", then we know the GPU has not finished executing
-	// the command queue since it has not reached the "commandQueue->Signal(fence, fenceValue)" command
+void TW3D::TW3DCommandQueue::FlushCommandList(TW3DGraphicsCommandList* CommandList) {
 	if (fence->GetCompletedValue() < fence_flush_value) {
-		// we have the fence create an event which is signaled once the fence's current value is "fenceValue"
+		HANDLE fenceEvent = NULL;
+		TWU::SuccessAssert(fence->SetEventOnCompletion(CommandList->SignalValue, fenceEvent));
+		WaitForSingleObject(fenceEvent, INFINITE);
+	}
+}
+
+void TW3D::TW3DCommandQueue::FlushCommands() {
+	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value));
+	if (fence->GetCompletedValue() < fence_flush_value) {
 		HANDLE fenceEvent = NULL;
 		TWU::SuccessAssert(fence->SetEventOnCompletion(fence_flush_value, fenceEvent));
-
-		// We will wait until the fence has triggered the event that it's current value has reached "fenceValue". once it's value
-		// has reached "fenceValue", we know the command queue has finished executing
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
 }
 
 void TW3D::TW3DCommandQueue::ExecuteCommandList(TW3DGraphicsCommandList* CommandList) {
 	FlushCommands();
+	CommandList->SignalValue = ++fence_flush_value;
+
 	ID3D12CommandList* native_list = CommandList->Get();
 	command_queue->ExecuteCommandLists(1, &native_list);
+	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value));
 }
 
-void TW3D::TW3DCommandQueue::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& ÑommandLists) {
+void TW3D::TW3DCommandQueue::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists) {
 	FlushCommands();
+	fence_flush_value++;
 
-	TWT::Vector<ID3D12CommandList*> nativeLists(ÑommandLists.size());
-	for (TWT::UInt i = 0; i < nativeLists.size(); i++)
-		nativeLists[i] = ÑommandLists[i]->Get();
+	TWT::Vector<ID3D12CommandList*> nativeLists(CommandLists.size());
+	for (TWT::UInt i = 0; i < nativeLists.size(); i++) {
+		nativeLists[i] = CommandLists[i]->Get();
+		CommandLists[i]->SignalValue = fence_flush_value;
+	}
 
 	command_queue->ExecuteCommandLists(static_cast<UINT>(nativeLists.size()), nativeLists.data());
+	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value));
 }
 
 TW3D::TW3DCommandQueue* TW3D::TW3DCommandQueue::CreateDirect(TW3DDevice* Âevice) {

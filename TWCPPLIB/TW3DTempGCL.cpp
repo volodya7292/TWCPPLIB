@@ -27,5 +27,5 @@ void TW3D::TW3DTempGCL::Reset() {
 void TW3D::TW3DTempGCL::Execute() {
 	CommandList->Close();
 	CommandQueue->ExecuteCommandList(CommandList);
-	CommandQueue->FlushCommands();
+	CommandQueue->FlushCommandList(CommandList);
 }
