@@ -6,7 +6,7 @@ TW3D::TW3DVertexMesh::TW3DVertexMesh(TW3DResourceManager* ResourceManager, const
 {
 	constant_buffer = ResourceManager->CreateConstantBuffer(1, sizeof(TWT::DefaultVertexMeshCB));
 	morton_codes_buffer = ResourceManager->CreateUnorderedAccessView(GetVertexCount(), sizeof(TWT::UInt));
-	bounding_box_buffer = ResourceManager->CreateUnorderedAccessView(1, sizeof(TWT::Bounds));
+	bounding_box_buffer = ResourceManager->CreateUnorderedAccessView(GetVertexCount() / 3, sizeof(TWT::Bounds));
 
 	TWT::DefaultVertexMeshCB cb;
 	cb.vertex_info.x = VertexBuffers[0]->GetVertexOffset();

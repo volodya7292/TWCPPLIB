@@ -41,14 +41,17 @@ inline float3 computeCenter(float3 cmin, float3 cmax, float3 min, float3 max) {
 	return tmpMin + d * axis;
 }
 
-
-
 [numthreads(THREAD_GROUP_1D_WIDTH, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-	float Cmin = bounding_box[0].pMin;
-	float Cmax = bounding_box[0].pMax;
+	float3 Cmin = bounding_box[0].pMin;
+	float3 Cmax = bounding_box[0].pMax;
 
-	//float3 center = computeCenter(Cmin, Cmax, temp[i].bounds.pMin, temp[i].bounds.pMax);
-	//uint code = code = morton3D(center);
+	float3 pMin = min(gvb[DTid.x].pos, min(gvb[DTid.x + 1].pos, gvb[DTid.x + 2].pos));
+	float3 pMax = max(gvb[DTid.x].pos, max(gvb[DTid.x + 1].pos, gvb[DTid.x + 2].pos));
+
+	float3 center = computeCenter(Cmin, Cmax, pMin, pMax);
+	uint code = morton3D(center);
+
+	morton_codes[DTid.x] = code;
 }

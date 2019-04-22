@@ -118,6 +118,13 @@ void TW3D::TW3DGraphicsCommandList::SetRootCBV(TWT::UInt RootParameterIndex, TW3
 		command_list->SetGraphicsRootConstantBufferView(RootParameterIndex, CB->GetAddress(ElementIndex));
 }
 
+void TW3D::TW3DGraphicsCommandList::SetRoot32BitConstant(TWT::UInt RootParameterIndex, TWT::UInt Data, TWT::UInt DestOffsetIn32BitValues) {
+	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+		command_list->SetComputeRoot32BitConstant(RootParameterIndex, Data, DestOffsetIn32BitValues);
+	else
+		command_list->SetGraphicsRoot32BitConstant(RootParameterIndex, Data, DestOffsetIn32BitValues);
+}
+
 void TW3D::TW3DGraphicsCommandList::SetViewport(const D3D12_VIEWPORT* viewport) {
 	command_list->RSSetViewports(1, viewport);
 }

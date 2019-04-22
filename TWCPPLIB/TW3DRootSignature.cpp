@@ -60,6 +60,15 @@ void TW3D::TW3DRootSignature::SetParameterCBV(TWT::UInt Index, D3D12_SHADER_VISI
 	SetParameter(Index, ShaderVisibility, Register, D3D12_ROOT_PARAMETER_TYPE_CBV);
 }
 
+void TW3D::TW3DRootSignature::SetParameterConstants(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, TWT::UInt Num32BitValues) {
+	root_parameters[Index] = {};
+	root_parameters[Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	root_parameters[Index].Constants = CD3DX12_ROOT_CONSTANTS(Num32BitValues, Register);
+	root_parameters[Index].ShaderVisibility = ShaderVisibility;
+
+	parameter_count++;
+}
+
 void TW3D::TW3DRootSignature::AddSampler(TWT::UInt Register, D3D12_SHADER_VISIBILITY ShaderVisibility, D3D12_FILTER Filter, D3D12_TEXTURE_ADDRESS_MODE AddressMode, TWT::UInt MaxAnisotropy) {
 	D3D12_STATIC_SAMPLER_DESC sampler = {};
 	sampler.Filter = Filter;
@@ -89,8 +98,9 @@ void TW3D::TW3DRootSignature::Create(TW3D::TW3DDevice* device) {
 	ID3DBlob* signature;
 	D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1_0, &signature, &errorBuff);
 
-	for (const D3D12_ROOT_PARAMETER& param : root_parameters)
-		delete[] param.DescriptorTable.pDescriptorRanges;
+	for (size_t i = 0; i < parameter_count; i++)
+		if (root_parameters[i].ParameterType == D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE)
+			delete[] root_parameters[i].DescriptorTable.pDescriptorRanges;
 
 	if (errorBuff) {
 		TWT::Char* errors = static_cast<TWT::Char*>(errorBuff->GetBufferPointer());

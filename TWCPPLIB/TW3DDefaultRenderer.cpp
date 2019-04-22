@@ -58,7 +58,7 @@ void TW3D::TW3DDefaultRenderer::CreateGVBResources() {
 	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({ POSITION_ILE, TEXCOORD_ILE, NORMAL_ILE });
 
 	gvb_ps = new TW3D::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, root_signature);
-	gvb_ps->SetVertexShader("GlobalVertexBuffer.v.cso");
+	gvb_ps->SetVertexShader("BuildGlobalVertexBuffer.v.cso");
 	gvb_ps->SetInputLayout(input_layout);
 	gvb_ps->Create(Device);
 
@@ -70,11 +70,13 @@ void TW3D::TW3DDefaultRenderer::CreateBBCalculatorResources() {
 	root_signature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
 	root_signature->SetParameterUAV(1, D3D12_SHADER_VISIBILITY_ALL, 0); // Bounding box UAV
 	root_signature->SetParameterCBV(2, D3D12_SHADER_VISIBILITY_ALL, 0); // Vertex mesh CBV
+	root_signature->SetParameterConstants(3, D3D12_SHADER_VISIBILITY_ALL, 1, 2); // Input data constants
 	root_signature->Create(Device);
 
 	bb_calc_ps = new TW3DComputePipelineState(root_signature);
-	bb_calc_ps->SetShader("CalculateBoundingBox.cso");
+	bb_calc_ps->SetShader("CalculateBoundingBox.c.cso");
 	bb_calc_ps->Create(Device);
+
 }
 
 void TW3D::TW3DDefaultRenderer::CreateMortonCalculatorResources() {
@@ -86,7 +88,7 @@ void TW3D::TW3DDefaultRenderer::CreateMortonCalculatorResources() {
 	root_signature->Create(Device);
 
 	morton_calc_ps = new TW3DComputePipelineState(root_signature);
-	morton_calc_ps->SetShader("CalculateMortonCodes.cso");
+	morton_calc_ps->SetShader("CalculateMortonCodes.c.cso");
 	morton_calc_ps->Create(Device);
 
 	morton_calc_cl = ResourceManager->CreateComputeCommandList();
@@ -96,12 +98,24 @@ void TW3D::TW3DDefaultRenderer::BuildVMAccelerationStructure(TW3DVertexMesh* Ver
 	morton_calc_cl->Reset();
 	morton_calc_cl->BindResources(ResourceManager);
 
+	
 	// Calculate bounding box
 	morton_calc_cl->SetPipelineState(bb_calc_ps);
 	morton_calc_cl->BindUAVSRV(0, gvb);
 	morton_calc_cl->BindUAV(1, VertexMesh->GetBBBufferResource());
 	morton_calc_cl->SetRootCBV(2, VertexMesh->GetCBResource());
-	morton_calc_cl->Dispatch(VertexMesh->GetVertexCount());
+	int element_count = VertexMesh->GetVertexCount() / 3;
+	TWT::UInt iteration = 0;
+	do {
+		morton_calc_cl->SetRoot32BitConstant(3, iteration, 0);
+		morton_calc_cl->SetRoot32BitConstant(3, element_count, 1);
+
+		element_count = ceil(element_count / 16.0f);
+		morton_calc_cl->Dispatch(element_count);
+		
+		iteration++;
+	} while (element_count > 1);
+
 
 	// Calculate morton codes
 	morton_calc_cl->SetPipelineState(morton_calc_ps);
@@ -109,7 +123,9 @@ void TW3D::TW3DDefaultRenderer::BuildVMAccelerationStructure(TW3DVertexMesh* Ver
 	morton_calc_cl->BindUAVSRV(1, VertexMesh->GetBBBufferResource());
 	morton_calc_cl->BindUAV(2, VertexMesh->GetMCBufferResource());
 	morton_calc_cl->SetRootCBV(3, VertexMesh->GetCBResource());
-	morton_calc_cl->Dispatch(VertexMesh->GetVertexCount());
+	morton_calc_cl->Dispatch(VertexMesh->GetVertexCount() / 3);
+
+
 
 	morton_calc_cl->Close();
 	ResourceManager->ExecuteCommandList(morton_calc_cl);

@@ -17,5 +17,5 @@ void TW3D::TW3DCube::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt 
 
 	CommandList->SetVertexBuffer(0, VMInstance.VertexMesh->VertexBuffers[0]->GetVBResource());
 
-	CommandList->Draw(36);
+	CommandList->Draw(VMInstance.VertexMesh->VertexBuffers[0]->GetVertexCount());
 }

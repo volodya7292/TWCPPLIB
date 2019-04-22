@@ -4,6 +4,14 @@
 
 #define MachineEpsilon 5.96e-08
 
+bool less(in float3 v0, in float3 v1) {
+	return v0.x < v1.x && v0.y < v1.y && v0.z < v1.z;
+}
+
+bool greater(in float3 v0, in float3 v1) {
+	return v0.x > v1.x && v0.y > v1.y && v0.z > v1.z;
+}
+
 struct Vertex {
 	float3       pos : POSITION;
 	float2 tex_coord : TEXCOORD;
