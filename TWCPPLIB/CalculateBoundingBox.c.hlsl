@@ -7,7 +7,8 @@ struct VertexMesh {
 };
 
 struct InputData {
-	uint4 data; // .x - iteration count, .y - element count
+	uint iteration_count;
+	uint element_count;
 };
 
 StructuredBuffer<Vertex> gvb : register(t0);
@@ -20,19 +21,19 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	float3 pMin;
 	float3 pMax;
 
-	uint iteration = input.data.x;
-	uint element_count = input.data.y;
+	uint iteration = input.iteration_count;
+	uint element_count = input.element_count;
 
 	if (iteration == 0) {
 		for (uint i = 0; i < PRIMITIVES_PER_THREAD; i++) {
-			uint prim_index = vertex_mesh.vertex_info.x + DTid.x * PRIMITIVES_PER_THREAD * 3 + i * 3;
+			uint vert_index = vertex_mesh.vertex_info.x + DTid.x * PRIMITIVES_PER_THREAD * 3 + i * 3;
 
-			if (prim_index >= vertex_mesh.vertex_info.x + vertex_mesh.vertex_info.y)
+			if (vert_index >= vertex_mesh.vertex_info.x + vertex_mesh.vertex_info.y)
 				break;
 
-			float3 v0 = gvb[prim_index].pos;
-			float3 v1 = gvb[prim_index + 1].pos;
-			float3 v2 = gvb[prim_index + 2].pos;
+			float3 v0 = gvb[vert_index].pos;
+			float3 v1 = gvb[vert_index + 1].pos;
+			float3 v2 = gvb[vert_index + 2].pos;
 
 			if (i == 0) {
 				pMin = min(v0, min(v1, v2));
@@ -44,12 +45,12 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		}
 	} else {
 		for (uint i = 0; i < PRIMITIVES_PER_THREAD; i++) {
-			uint prim_index = vertex_mesh.vertex_info.x + DTid.x * PRIMITIVES_PER_THREAD * 3 * iteration + i * 3;
+			uint vert_index = vertex_mesh.vertex_info.x + DTid.x * PRIMITIVES_PER_THREAD * 3 * iteration + i * 3;
 
-			if (prim_index >= vertex_mesh.vertex_info.x + vertex_mesh.vertex_info.y)
+			if (vert_index >= vertex_mesh.vertex_info.x + vertex_mesh.vertex_info.y)
 				break;
 
-			Bounds bounds = bounding_box[prim_index];
+			Bounds bounds = bounding_box[vert_index];
 
 			if (i == 0) {
 				pMin = bounds.pMin;

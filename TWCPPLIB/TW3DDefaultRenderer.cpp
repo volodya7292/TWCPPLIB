@@ -10,8 +10,10 @@ TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete gvb_ps;
 	delete morton_calc_ps;
 	delete bb_calc_ps;
+	delete morton_sort_ps;
+
 	delete morton_calc_cl;
-	//delete blit_ps;
+	
 	delete texture;
 	delete gvb;
 }
@@ -84,7 +86,8 @@ void TW3D::TW3DDefaultRenderer::CreateMortonCalculatorResources() {
 	root_signature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
 	root_signature->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Bounding box Buffer SRV
 	root_signature->SetParameterUAV(2, D3D12_SHADER_VISIBILITY_ALL, 0); // Morton codes buffer UAV
-	root_signature->SetParameterCBV(3, D3D12_SHADER_VISIBILITY_ALL, 0); // Vertex mesh CBV
+	root_signature->SetParameterUAV(3, D3D12_SHADER_VISIBILITY_ALL, 1); // Morton code indices buffer UAV
+	root_signature->SetParameterCBV(4, D3D12_SHADER_VISIBILITY_ALL, 0); // Vertex mesh CBV
 	root_signature->Create(Device);
 
 	morton_calc_ps = new TW3DComputePipelineState(root_signature);
@@ -94,6 +97,18 @@ void TW3D::TW3DDefaultRenderer::CreateMortonCalculatorResources() {
 	morton_calc_cl = ResourceManager->CreateComputeCommandList();
 }
 
+void TW3D::TW3DDefaultRenderer::CreateMortonSorterResources() {
+	TW3DRootSignature* root_signature = new TW3DRootSignature(false, false, false);
+	root_signature->SetParameterUAV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Morton codes buffer UAV
+	root_signature->SetParameterUAV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Morton code indices buffer UAV
+	root_signature->SetParameterConstants(2, D3D12_SHADER_VISIBILITY_ALL, 0, 1); // Input data constant
+	root_signature->Create(Device);
+
+	morton_sort_ps = new TW3DComputePipelineState(root_signature);
+	morton_sort_ps->SetShader("SortMortonCodes.c.cso");
+	morton_sort_ps->Create(Device);
+}
+
 void TW3D::TW3DDefaultRenderer::BuildVMAccelerationStructure(TW3DVertexMesh* VertexMesh) {
 	morton_calc_cl->Reset();
 	morton_calc_cl->BindResources(ResourceManager);
@@ -101,10 +116,11 @@ void TW3D::TW3DDefaultRenderer::BuildVMAccelerationStructure(TW3DVertexMesh* Ver
 	
 	// Calculate bounding box
 	morton_calc_cl->SetPipelineState(bb_calc_ps);
+	morton_calc_cl->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON);
 	morton_calc_cl->BindUAVSRV(0, gvb);
 	morton_calc_cl->BindUAV(1, VertexMesh->GetBBBufferResource());
 	morton_calc_cl->SetRootCBV(2, VertexMesh->GetCBResource());
-	int element_count = VertexMesh->GetVertexCount() / 3;
+	int element_count = VertexMesh->GetTriangleCount();
 	TWT::UInt iteration = 0;
 	do {
 		morton_calc_cl->SetRoot32BitConstant(3, iteration, 0);
@@ -117,14 +133,28 @@ void TW3D::TW3DDefaultRenderer::BuildVMAccelerationStructure(TW3DVertexMesh* Ver
 	} while (element_count > 1);
 
 
+	morton_calc_cl->ResourceBarrier(VertexMesh->GetBBBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON);
+
+
 	// Calculate morton codes
 	morton_calc_cl->SetPipelineState(morton_calc_ps);
 	morton_calc_cl->BindUAVSRV(0, gvb);
 	morton_calc_cl->BindUAVSRV(1, VertexMesh->GetBBBufferResource());
 	morton_calc_cl->BindUAV(2, VertexMesh->GetMCBufferResource());
-	morton_calc_cl->SetRootCBV(3, VertexMesh->GetCBResource());
-	morton_calc_cl->Dispatch(VertexMesh->GetVertexCount() / 3);
+	morton_calc_cl->BindUAV(3, VertexMesh->GetMCIBufferResource());
+	morton_calc_cl->SetRootCBV(4, VertexMesh->GetCBResource());
+	morton_calc_cl->Dispatch(VertexMesh->GetTriangleCount());
 
+	morton_calc_cl->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	morton_calc_cl->ResourceBarrier(VertexMesh->GetBBBufferResource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+
+	// Sort morton codes
+	morton_calc_cl->SetPipelineState(morton_sort_ps);
+	morton_calc_cl->BindUAV(0, VertexMesh->GetMCBufferResource());
+	morton_calc_cl->BindUAV(1, VertexMesh->GetMCIBufferResource());
+	morton_calc_cl->SetRoot32BitConstant(2, VertexMesh->GetTriangleCount(), 0);
+	morton_calc_cl->Dispatch(VertexMesh->GetTriangleCount());
 
 
 	morton_calc_cl->Close();
@@ -137,31 +167,7 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	CreateGVBResources();
 	CreateBBCalculatorResources();
 	CreateMortonCalculatorResources();
-
-	/*rastDesc.CullMode = D3D12_CULL_MODE_NONE;
-	depthDesc.DepthEnable = FALSE;
-
-
-	TW3DRootSignature* blitRootSignature = new TW3D::TW3DRootSignature(
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
-	blitRootSignature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);
-	blitRootSignature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
-	blitRootSignature->Create(device);
-
-	blit_ps = new TW3D::TW3DGraphicsPipelineState(
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
-		SwapChain->GetDescription().SampleDesc,
-		rastDesc,
-		depthDesc,
-		blendDesc,
-		blitRootSignature,
-		1);
-	blit_ps->SetRTVFormat(0, DXGI_FORMAT_R8G8B8A8_UNORM);
-	blit_ps->SetVertexShader("VertexOffscreenBlit.cso");
-	blit_ps->SetPixelShader("PixelOffscreenBlit.cso");
-	blit_ps->Create(device);*/
+	CreateMortonSorterResources();
 
 	texture = ResourceManager->CreateTextureArray2D(720, 720, 10, DXGI_FORMAT_R8G8B8A8_UNORM);
 	texture->Upload2D(L"D:/тест.png", 0);

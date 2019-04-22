@@ -17,22 +17,35 @@ namespace TW3D {
 		void CreateGVBResources();
 		void CreateBBCalculatorResources();
 		void CreateMortonCalculatorResources();
+		void CreateMortonSorterResources();
 		void BuildVMAccelerationStructure(TW3DVertexMesh* VertexMesh);
 
-		// Bounding Box Calculator
+
+		// GBuffer render
 		// --------------------------------------------------------------------- 
-		TW3DComputePipelineState *bb_calc_ps;
+		TW3DGraphicsPipelineState *gbuffer_ps;
 
-		TW3DGraphicsCommandList* morton_calc_cl;
-
-		TW3DGraphicsPipelineState *gbuffer_ps, *gvb_ps;
-		TW3DComputePipelineState *morton_calc_ps;
-
+		// Global vertex buffer builder
+		// --------------------------------------------------------------------- 
+		TW3DGraphicsPipelineState *gvb_ps;
 		std::unordered_set<TW3DVertexBuffer*> gvb_vertex_buffers;
 		std::unordered_set<TW3DVertexMesh*>   gvb_vertex_meshes;
 		TW3DResourceUAV* gvb;
 		TWT::UInt gvb_vertex_count;
-		//*blit_ps;
+
+		// Mesh bounding box calculator
+		// --------------------------------------------------------------------- 
+		TW3DComputePipelineState* bb_calc_ps;
+
+		// Morton codes calculator
+		// --------------------------------------------------------------------- 
+		TW3DComputePipelineState *morton_calc_ps;
+		TW3DGraphicsCommandList *morton_calc_cl;
+
+		// Morton codes sorter
+		// --------------------------------------------------------------------- 
+		TW3DComputePipelineState* morton_sort_ps;
+
 
 		D3D12_VIEWPORT viewport = D3D12_VIEWPORT();
 		D3D12_RECT scissor = D3D12_RECT();
