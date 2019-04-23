@@ -16,6 +16,7 @@ namespace TW3D {
 		void CreateGraphicsCommandList(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator* commandAllocator, ID3D12GraphicsCommandList** commandList);
 		void CreateFence(TWT::UInt64 initialValue, D3D12_FENCE_FLAGS flags, ID3D12Fence1** fence);
 		void CreateRootSignature(ID3DBlob* signature, ID3D12RootSignature** rootSignature);
+		void CreateCommandSignature(const D3D12_COMMAND_SIGNATURE_DESC *Desc, ID3D12RootSignature* RootSignature, ID3D12CommandSignature** CommandSignature);
 		void CreateGraphicsPipelineState(const D3D12_GRAPHICS_PIPELINE_STATE_DESC *desc, ID3D12PipelineState** pipelineState);
 		void CreateComputePipelineState(const D3D12_COMPUTE_PIPELINE_STATE_DESC* desc, ID3D12PipelineState** pipelineState);
 		void CreateCommittedResource(const D3D12_HEAP_PROPERTIES* heapProperties, D3D12_HEAP_FLAGS heapFlags, const D3D12_RESOURCE_DESC* desc,

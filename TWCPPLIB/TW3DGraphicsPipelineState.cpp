@@ -26,7 +26,8 @@ TW3D::TW3DGraphicsPipelineState::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOL
 
 TW3D::TW3DGraphicsPipelineState::~TW3DGraphicsPipelineState() {
 	TWU::DXSafeRelease(pipeline_state);
-	delete RootSignature;
+	if (RootSignature->DestroyOnPipelineDestroy)
+		delete RootSignature;
 }
 
 ID3D12PipelineState* TW3D::TW3DGraphicsPipelineState::Get() {
@@ -44,6 +45,10 @@ void TW3D::TW3DGraphicsPipelineState::SetVertexShader(const std::string& Filenam
 	desc.VS = bytecode;
 }
 
+void TW3D::TW3DGraphicsPipelineState::SetVertexShader(D3D12_SHADER_BYTECODE ByteCode) {
+	desc.VS = ByteCode;
+}
+
 void TW3D::TW3DGraphicsPipelineState::SetPixelShader(const std::string& Filename) {
 	TWT::Int size;
 	TWT::Byte* data = TWU::ReadFileBytes(Filename, size);
@@ -53,6 +58,10 @@ void TW3D::TW3DGraphicsPipelineState::SetPixelShader(const std::string& Filename
 	bytecode.pShaderBytecode = data;
 
 	desc.PS = bytecode;
+}
+
+void TW3D::TW3DGraphicsPipelineState::SetPixelShader(D3D12_SHADER_BYTECODE ByteCode) {
+	desc.PS = ByteCode;
 }
 
 void TW3D::TW3DGraphicsPipelineState::SetRTVFormat(TWT::UInt Index, DXGI_FORMAT Format) {

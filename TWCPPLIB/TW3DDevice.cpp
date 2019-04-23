@@ -41,6 +41,10 @@ void TW3D::TW3DDevice::CreateRootSignature(ID3DBlob* signature, ID3D12RootSignat
 	TWU::SuccessAssert(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(rootSignature)));
 }
 
+void TW3D::TW3DDevice::CreateCommandSignature(const D3D12_COMMAND_SIGNATURE_DESC* Desc, ID3D12RootSignature* RootSignature, ID3D12CommandSignature** CommandSignature) {
+	TWU::SuccessAssert(device->CreateCommandSignature(Desc, RootSignature, IID_PPV_ARGS(CommandSignature)));
+}
+
 void TW3D::TW3DDevice::CreateGraphicsPipelineState(const D3D12_GRAPHICS_PIPELINE_STATE_DESC* desc, ID3D12PipelineState** pipelineState) {
 	TWU::SuccessAssert(device->CreateGraphicsPipelineState(desc, IID_PPV_ARGS(pipelineState)));
 }

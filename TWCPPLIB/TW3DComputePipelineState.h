@@ -10,6 +10,7 @@ namespace TW3D {
 		ID3D12PipelineState* Get();
 
 		void SetShader(const std::string& Filename);
+		void SetShader(D3D12_SHADER_BYTECODE ByteCode);
 		void Create(TW3DDevice* Device);
 
 		TW3DRootSignature* RootSignature;

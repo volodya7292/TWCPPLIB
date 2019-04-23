@@ -9,7 +9,8 @@ TW3D::TW3DComputePipelineState::TW3DComputePipelineState(TW3DRootSignature* Root
 
 TW3D::TW3DComputePipelineState::~TW3DComputePipelineState() {
 	TWU::DXSafeRelease(pipeline_state);
-	delete RootSignature;
+	if (RootSignature->DestroyOnPipelineDestroy)
+		delete RootSignature;
 }
 
 ID3D12PipelineState* TW3D::TW3DComputePipelineState::Get() {
@@ -25,6 +26,10 @@ void TW3D::TW3DComputePipelineState::SetShader(const std::string& Filename) {
 	bytecode.pShaderBytecode = data;
 
 	desc.CS = bytecode;
+}
+
+void TW3D::TW3DComputePipelineState::SetShader(D3D12_SHADER_BYTECODE ByteCode) {
+	desc.CS = ByteCode;
 }
 
 void TW3D::TW3DComputePipelineState::Create(TW3DDevice* Device) {

@@ -16,7 +16,7 @@ RWStructuredBuffer<Bounds> bounding_box : register(u0);
 ConstantBuffer<VertexMesh> vertex_mesh : register(b0);
 ConstantBuffer<InputData> input : register(b1);
 
-[numthreads(THREAD_GROUP_1D_WIDTH, 1, 1)]
+[numthreads(1, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
 	float3 pMin;
 	float3 pMax;

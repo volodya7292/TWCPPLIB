@@ -42,7 +42,7 @@ inline float3 computeCenter(float3 cmin, float3 cmax, float3 min, float3 max) {
 	return tmpMin + d * axis;
 }
 
-[numthreads(THREAD_GROUP_1D_WIDTH, 1, 1)]
+[numthreads(1, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
 	uint vert_index = vertex_mesh.vertex_info.x + DTid.x * 3;
 

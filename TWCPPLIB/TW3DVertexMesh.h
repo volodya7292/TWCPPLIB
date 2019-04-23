@@ -14,7 +14,7 @@ namespace TW3D {
 		TW3DResourceUAV* GetMCIBufferResource();
 		TWT::UInt GetVertexCount();
 		TWT::UInt GetTriangleCount();
-
+		
 		TWT::Vector<TW3DVertexBuffer*> VertexBuffers;
 
 	private:

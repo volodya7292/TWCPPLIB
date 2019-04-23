@@ -12,7 +12,7 @@ namespace TW3D {
 		void SetParameter(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, D3D12_ROOT_PARAMETER_TYPE DescriptorType);
 		void SetParameterTable(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, D3D12_DESCRIPTOR_RANGE_TYPE DescriptorType, TWT::UInt DescriptorCount = 1);
 		void SetParameterSRV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, TWT::UInt DescriptorCount = 1);
-		void SetParameterUAV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, TWT::UInt DescriptorCount = 1);
+		void SetParameterUAV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register);
 		void SetParameterCBV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register);
 		void SetParameterConstants(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, TWT::UInt Num32BitValues);
 		
@@ -21,6 +21,8 @@ namespace TW3D {
 			D3D12_TEXTURE_ADDRESS_MODE AddressMode = D3D12_TEXTURE_ADDRESS_MODE_WRAP, TWT::UInt MaxAnisotropy = 0);
 
 		void Create(TW3D::TW3DDevice* device);
+
+		TWT::Bool DestroyOnPipelineDestroy = true;
 
 	private:
 		ID3D12RootSignature* root_signature = nullptr;

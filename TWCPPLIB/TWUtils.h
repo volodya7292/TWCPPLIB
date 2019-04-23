@@ -19,6 +19,21 @@ namespace TWU {
 	TWT::Byte* ReadFileBytes(TWT::String filename, TWT::Int& size);
 
 	TWT::Float64 GetTime();
+
+	inline TWT::UInt8 Log2(TWT::UInt64 value) {
+		unsigned long mssb; // most significant set bit
+		unsigned long lssb; // least significant set bit
+
+		if (_BitScanReverse64(&mssb, value) > 0 && _BitScanForward64(&lssb, value) > 0)
+			return uint8_t(mssb + (mssb == lssb ? 0 : 1));
+		else
+			return 0;
+	}
+
+	template <typename T>
+	inline T AlignPowerOfTwo(T value) {
+		return value == 0 ? 0 : 1 << Log2(value);
+	}
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------

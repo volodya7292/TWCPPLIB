@@ -13,7 +13,7 @@ TW3D::TW3DGraphicsCommandList::TW3DGraphicsCommandList(TW3D::TW3DDevice* Device,
 	Device->CreateCommandAllocator(Type, &command_allocator);
 	Device->CreateGraphicsCommandList(Type, command_allocator, &command_list);
 	command_list->SetName(L"TW3DGraphicsCommandList");
-	command_allocator->SetName(L"ID3D12CommandAllocator");
+	command_allocator->SetName(L"TW3D ID3D12CommandAllocator");
 	command_list->Close();
 }
 
@@ -50,6 +50,13 @@ void TW3D::TW3DGraphicsCommandList::ResourceBarrier(TW3DResource* Resource, D3D1
 
 void TW3D::TW3DGraphicsCommandList::ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {
 	command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(Resource, StateBefore, StateAfter));
+}
+
+void TW3D::TW3DGraphicsCommandList::ResourceBarrierUAV(TW3DResourceUAV* UAV, TWT::Bool SRVState) {
+	if (SRVState)
+		ResourceBarrier(UAV, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	else
+		ResourceBarrier(UAV, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 }
 
 void TW3D::TW3DGraphicsCommandList::SetPipelineState(TW3D::TW3DGraphicsPipelineState* PipelineState) {
@@ -125,6 +132,13 @@ void TW3D::TW3DGraphicsCommandList::SetRoot32BitConstant(TWT::UInt RootParameter
 		command_list->SetGraphicsRoot32BitConstant(RootParameterIndex, Data, DestOffsetIn32BitValues);
 }
 
+void TW3D::TW3DGraphicsCommandList::SetRoot32BitConstants(TWT::UInt RootParameterIndex, TWT::UInt Num32BitValuesToSet, const void* Data, TWT::UInt DestOffsetIn32BitValues) {
+	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+		command_list->SetComputeRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, Data, DestOffsetIn32BitValues);
+	else
+		command_list->SetGraphicsRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, Data, DestOffsetIn32BitValues);
+}
+
 void TW3D::TW3DGraphicsCommandList::SetViewport(const D3D12_VIEWPORT* viewport) {
 	command_list->RSSetViewports(1, viewport);
 }
@@ -161,6 +175,12 @@ void TW3D::TW3DGraphicsCommandList::Dispatch(TWT::UInt ThreadGroupCountX, TWT::U
 	command_list->Dispatch(ThreadGroupCountX, ThreadGroupCountY, ThreadGroupCountZ);
 }
 
+void TW3D::TW3DGraphicsCommandList::ExecuteIndirect(ID3D12CommandSignature* CommandSignature, TWT::UInt MaxCommandCount, ID3D12Resource* ArgumentBuffer,
+	TWT::UInt64 ArgumentBufferOffset, ID3D12Resource* CountBuffer, TWT::UInt64 CountBufferOffset)
+{
+	command_list->ExecuteIndirect(CommandSignature, MaxCommandCount, ArgumentBuffer, ArgumentBufferOffset, CountBuffer, CountBufferOffset);
+}
+
 void TW3D::TW3DGraphicsCommandList::BindResources(TW3DResourceManager* ResourceManager) {
 	SetDescriptorHeap(ResourceManager->GetSVDescriptorHeap());
 }
@@ -173,8 +193,11 @@ void TW3D::TW3DGraphicsCommandList::BindRTVTexture(TWT::UInt RootParameterIndex,
 	command_list->SetGraphicsRootDescriptorTable(RootParameterIndex, RTV->GetSRVGPUHandle());
 }
 
-void TW3D::TW3DGraphicsCommandList::BindUAV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
-	SetRootDescriptorTable(RootParameterIndex, UAV->GetGPUUAVHandle());
+void TW3D::TW3DGraphicsCommandList::BindUAV(TWT::UInt RootParameterIndex, TW3DResource* UAV) {
+	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+		command_list->SetComputeRootUnorderedAccessView(RootParameterIndex, UAV->GetGPUVirtualAddress());
+	else
+		command_list->SetGraphicsRootUnorderedAccessView(RootParameterIndex, UAV->GetGPUVirtualAddress());
 }
 
 void TW3D::TW3DGraphicsCommandList::BindUAVSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {

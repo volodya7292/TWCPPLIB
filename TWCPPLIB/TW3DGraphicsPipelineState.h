@@ -19,7 +19,9 @@ namespace TW3D {
 		ID3D12PipelineState* Get();
 
 		void SetVertexShader(const std::string& Filename);
+		void SetVertexShader(D3D12_SHADER_BYTECODE ByteCode);
 		void SetPixelShader(const std::string& Filename);
+		void SetPixelShader(D3D12_SHADER_BYTECODE ByteCode);
 		void SetRTVFormat(TWT::UInt Index, DXGI_FORMAT Format);
 		void SetDSVFormat(DXGI_FORMAT Format);
 		void SetInputLayout(const TWT::Vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout);

@@ -5,9 +5,9 @@ TW3D::TW3DVertexMesh::TW3DVertexMesh(TW3DResourceManager* ResourceManager, const
 	VertexBuffers(move(VertexBuffers))
 {
 	constant_buffer = ResourceManager->CreateConstantBuffer(1, sizeof(TWT::DefaultVertexMeshCB));
-	morton_codes_buffer = ResourceManager->CreateUnorderedAccessView(GetVertexCount() / 3, sizeof(TWT::UInt));
-	morton_indices_buffer = ResourceManager->CreateUnorderedAccessView(GetVertexCount() / 3, sizeof(TWT::UInt));
-	bounding_box_buffer = ResourceManager->CreateUnorderedAccessView(GetVertexCount() / 3, sizeof(TWT::Bounds));
+	morton_codes_buffer = ResourceManager->CreateUnorderedAccessView(GetTriangleCount(), sizeof(TWT::UInt));
+	morton_indices_buffer = ResourceManager->CreateUnorderedAccessView(GetTriangleCount(), sizeof(TWT::UInt));
+	bounding_box_buffer = ResourceManager->CreateUnorderedAccessView(GetTriangleCount(), sizeof(TWT::Bounds));
 
 	TWT::DefaultVertexMeshCB cb;
 	cb.vertex_info.x = VertexBuffers[0]->GetVertexOffset();

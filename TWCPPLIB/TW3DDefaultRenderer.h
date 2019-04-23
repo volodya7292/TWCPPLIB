@@ -1,5 +1,6 @@
 #pragma once
 #include "TW3DRenderer.h"
+#include "TW3DBitonicSort.h"
 
 namespace TW3D {
 	class TW3DDefaultRenderer : public TW3DRenderer {
@@ -44,8 +45,7 @@ namespace TW3D {
 
 		// Morton codes sorter
 		// --------------------------------------------------------------------- 
-		TW3DComputePipelineState* morton_sort_ps;
-
+		TW3DBitonicSort* BitonicSorter;
 
 		D3D12_VIEWPORT viewport = D3D12_VIEWPORT();
 		D3D12_RECT scissor = D3D12_RECT();

@@ -52,8 +52,8 @@ void TW3D::TW3DRootSignature::SetParameterSRV(TWT::UInt Index, D3D12_SHADER_VISI
 	SetParameterTable(Index, ShaderVisibility, Register, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, DescriptorCount);
 }
 
-void TW3D::TW3DRootSignature::SetParameterUAV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, TWT::UInt DescriptorCount) {
-	SetParameterTable(Index, ShaderVisibility, Register, D3D12_DESCRIPTOR_RANGE_TYPE_UAV, DescriptorCount);
+void TW3D::TW3DRootSignature::SetParameterUAV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register) {
+	SetParameter(Index, ShaderVisibility, Register, D3D12_ROOT_PARAMETER_TYPE_UAV);
 }
 
 void TW3D::TW3DRootSignature::SetParameterCBV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register) {

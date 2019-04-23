@@ -8,8 +8,13 @@ TW3D::TW3DCommandQueue::TW3DCommandQueue(TW3DDevice* Device, D3D12_COMMAND_LIST_
 
 	Device->CreateCommandQueue(&desc, &command_queue);
 	Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, &fence);
-	command_queue->SetName(L"TW3DCommandQueue");
 	fence->SetName(L"ID3D12Fence from TW3DCommandQueue");
+
+	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+		command_queue->SetName(L"TW3DCommandQueue Compute");
+	else if (Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+		command_queue->SetName(L"TW3DCommandQueue Direct");
+
 }
 
 TW3D::TW3DCommandQueue::~TW3DCommandQueue() {
@@ -34,7 +39,7 @@ void TW3D::TW3DCommandQueue::FlushCommandList(TW3DGraphicsCommandList* CommandLi
 }
 
 void TW3D::TW3DCommandQueue::FlushCommands() {
-	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value));
+	TWU::SuccessAssert(command_queue->Signal(fence, ++fence_flush_value));
 	if (fence->GetCompletedValue() < fence_flush_value) {
 		HANDLE fenceEvent = NULL;
 		TWU::SuccessAssert(fence->SetEventOnCompletion(fence_flush_value, fenceEvent));

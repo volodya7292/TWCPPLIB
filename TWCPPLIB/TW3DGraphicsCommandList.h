@@ -30,6 +30,7 @@ namespace TW3D {
 		void ResourceBarriers(const TWT::Vector<D3D12_RESOURCE_BARRIER>& barriers);
 		void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 		void ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
+		void ResourceBarrierUAV(TW3DResourceUAV* UAV, TWT::Bool StateSRV);
 		void SetPipelineState(TW3DGraphicsPipelineState* PipelineState);
 		void SetPipelineState(TW3DComputePipelineState* PipelineState);
 		void SetRenderTarget(TW3DResourceRTV* RTV, TW3DResourceDSV* DSV);
@@ -42,6 +43,7 @@ namespace TW3D {
 		void SetRootDescriptorTable(TWT::UInt RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor);
 		void SetRootCBV(TWT::UInt RootParameterIndex, TW3DResourceCB* CB, TWT::UInt ElementIndex = 0);
 		void SetRoot32BitConstant(TWT::UInt RootParameterIndex, TWT::UInt Data, TWT::UInt DestOffsetIn32BitValues);
+		void SetRoot32BitConstants(TWT::UInt RootParameterIndex, TWT::UInt Num32BitValuesToSet, const void* Data, TWT::UInt DestOffsetIn32BitValues);
 		void SetViewport(const D3D12_VIEWPORT *viewport);
 		void SetScissor(const D3D12_RECT* scissor);
 		void SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY PrimitiveTopology);
@@ -51,11 +53,13 @@ namespace TW3D {
 		void Draw(TWT::UInt VertexCountPerInstance, TWT::UInt StartVertexLocation = 0, TWT::UInt InstanceCount = 1, TWT::UInt StartInstanceLocation = 0);
 		void DrawIndexed(TWT::UInt IndexCountPerInstance, TWT::UInt StartIndexLocation = 0, TWT::UInt InstanceCount = 1, TWT::UInt StartInstanceLocation = 0, TWT::Int BaseVertexLocation = 0);
 		void Dispatch(TWT::UInt ThreadGroupCountX = 1, TWT::UInt ThreadGroupCountY = 1, TWT::UInt ThreadGroupCountZ = 1);
+		void ExecuteIndirect(ID3D12CommandSignature* CommandSignature, TWT::UInt MaxCommandCount, ID3D12Resource* ArgumentBuffer,
+			TWT::UInt64 ArgumentBufferOffset, ID3D12Resource* CountBuffer, TWT::UInt64 CountBufferOffset);
 
 		void BindResources(TW3DResourceManager* ResourceManager);
 		void BindTexture(TWT::UInt RootParameterIndex, TW3DResourceSR* SR);
 		void BindRTVTexture(TWT::UInt RootParameterIndex, TW3DResourceRTV* RTV);
-		void BindUAV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV);
+		void BindUAV(TWT::UInt RootParameterIndex, TW3DResource* UAV);
 		void BindUAVSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV);
 		void BindCameraCBV(TWT::UInt RootParameterIndex, TW3DPerspectiveCamera* Camera);
 		void DrawObject(TW3DObject* object, TWT::UInt ModelCBRootParameterIndex);

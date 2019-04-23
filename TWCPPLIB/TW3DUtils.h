@@ -1,6 +1,8 @@
 #pragma once
 #include "TWUtils.h"
 
+#define TW3DCompiledShader(bytecode) CD3DX12_SHADER_BYTECODE((void*)bytecode, sizeof(bytecode))
+
 namespace TWU {
 	// Create a DXGI factory
 	IDXGIFactory7* DXGICreateFactory(TWT::UInt flags);

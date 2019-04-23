@@ -2,7 +2,7 @@
 #include "TW3DDefaultRenderer.h"
 #include "TW3DSwapChain.h"
 #include "TW3DGraphicsPipelineState.h"
-
+#include "TW3DBitonicSort.h"
 TW3D::TW3DResourceSR* texture;
 
 TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
@@ -10,7 +10,8 @@ TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete gvb_ps;
 	delete morton_calc_ps;
 	delete bb_calc_ps;
-	delete morton_sort_ps;
+
+	delete BitonicSorter;
 
 	delete morton_calc_cl;
 	
@@ -68,7 +69,7 @@ void TW3D::TW3DDefaultRenderer::CreateGVBResources() {
 }
 
 void TW3D::TW3DDefaultRenderer::CreateBBCalculatorResources() {
-	TW3DRootSignature* root_signature = new TW3DRootSignature(false, false, false);
+	TW3DRootSignature* root_signature = new TW3DRootSignature(false, false, false, false);
 	root_signature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
 	root_signature->SetParameterUAV(1, D3D12_SHADER_VISIBILITY_ALL, 0); // Bounding box UAV
 	root_signature->SetParameterCBV(2, D3D12_SHADER_VISIBILITY_ALL, 0); // Vertex mesh CBV
@@ -82,7 +83,7 @@ void TW3D::TW3DDefaultRenderer::CreateBBCalculatorResources() {
 }
 
 void TW3D::TW3DDefaultRenderer::CreateMortonCalculatorResources() {
-	TW3DRootSignature* root_signature = new TW3DRootSignature(false, false, false);
+	TW3DRootSignature* root_signature = new TW3DRootSignature(false, false, false, false);
 	root_signature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
 	root_signature->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Bounding box Buffer SRV
 	root_signature->SetParameterUAV(2, D3D12_SHADER_VISIBILITY_ALL, 0); // Morton codes buffer UAV
@@ -98,25 +99,19 @@ void TW3D::TW3DDefaultRenderer::CreateMortonCalculatorResources() {
 }
 
 void TW3D::TW3DDefaultRenderer::CreateMortonSorterResources() {
-	TW3DRootSignature* root_signature = new TW3DRootSignature(false, false, false);
-	root_signature->SetParameterUAV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Morton codes buffer UAV
-	root_signature->SetParameterUAV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Morton code indices buffer UAV
-	root_signature->SetParameterConstants(2, D3D12_SHADER_VISIBILITY_ALL, 0, 1); // Input data constant
-	root_signature->Create(Device);
-
-	morton_sort_ps = new TW3DComputePipelineState(root_signature);
-	morton_sort_ps->SetShader("SortMortonCodes.c.cso");
-	morton_sort_ps->Create(Device);
+	BitonicSorter = new TW3DBitonicSort(ResourceManager);
 }
 
 void TW3D::TW3DDefaultRenderer::BuildVMAccelerationStructure(TW3DVertexMesh* VertexMesh) {
+	ResourceManager->FlushCommandList(morton_calc_cl);
+
 	morton_calc_cl->Reset();
 	morton_calc_cl->BindResources(ResourceManager);
-
 	
+
 	// Calculate bounding box
 	morton_calc_cl->SetPipelineState(bb_calc_ps);
-	morton_calc_cl->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON);
+	morton_calc_cl->ResourceBarrierUAV(VertexMesh->GetBBBufferResource(), false);
 	morton_calc_cl->BindUAVSRV(0, gvb);
 	morton_calc_cl->BindUAV(1, VertexMesh->GetBBBufferResource());
 	morton_calc_cl->SetRootCBV(2, VertexMesh->GetCBResource());
@@ -132,11 +127,12 @@ void TW3D::TW3DDefaultRenderer::BuildVMAccelerationStructure(TW3DVertexMesh* Ver
 		iteration++;
 	} while (element_count > 1);
 
-
-	morton_calc_cl->ResourceBarrier(VertexMesh->GetBBBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON);
+	morton_calc_cl->ResourceBarrierUAV(VertexMesh->GetBBBufferResource(), true);
 
 
 	// Calculate morton codes
+	morton_calc_cl->ResourceBarrierUAV(VertexMesh->GetMCBufferResource(), false);
+	morton_calc_cl->ResourceBarrierUAV(VertexMesh->GetMCIBufferResource(), false);
 	morton_calc_cl->SetPipelineState(morton_calc_ps);
 	morton_calc_cl->BindUAVSRV(0, gvb);
 	morton_calc_cl->BindUAVSRV(1, VertexMesh->GetBBBufferResource());
@@ -145,16 +141,12 @@ void TW3D::TW3DDefaultRenderer::BuildVMAccelerationStructure(TW3DVertexMesh* Ver
 	morton_calc_cl->SetRootCBV(4, VertexMesh->GetCBResource());
 	morton_calc_cl->Dispatch(VertexMesh->GetTriangleCount());
 
-	morton_calc_cl->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	morton_calc_cl->ResourceBarrier(VertexMesh->GetBBBufferResource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
+	//// Sort morton codes
+	BitonicSorter->RecordSort(morton_calc_cl, VertexMesh->GetMCBufferResource(), VertexMesh->GetMCIBufferResource(), VertexMesh->GetTriangleCount(), true);
+	morton_calc_cl->ResourceBarrierUAV(VertexMesh->GetMCBufferResource(), true);
+	morton_calc_cl->ResourceBarrierUAV(VertexMesh->GetMCIBufferResource(), true);
 
-	// Sort morton codes
-	morton_calc_cl->SetPipelineState(morton_sort_ps);
-	morton_calc_cl->BindUAV(0, VertexMesh->GetMCBufferResource());
-	morton_calc_cl->BindUAV(1, VertexMesh->GetMCIBufferResource());
-	morton_calc_cl->SetRoot32BitConstant(2, VertexMesh->GetTriangleCount(), 0);
-	morton_calc_cl->Dispatch(VertexMesh->GetTriangleCount());
 
 
 	morton_calc_cl->Close();
@@ -193,6 +185,7 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 
 	// Build Global Vertex Buffer
 	// -------------------------------------------------------------------------------------------------------------------------
+	record_cl->ResourceBarrierUAV(gvb, false);
 	record_cl->SetPipelineState(gvb_ps);
 	record_cl->BindUAV(1, gvb);
 	TWT::UInt VertexOffset = 0;
@@ -210,6 +203,7 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 				record_cl->Draw(vb->GetVertexCount());
 			}
 	gvb_vertex_count = VertexOffset + 1;
+	record_cl->ResourceBarrierUAV(gvb, true);
 
 
 	// Build Vertex Mesh acceleration structures
@@ -248,6 +242,7 @@ void TW3D::TW3DDefaultRenderer::Update() {
 void TW3D::TW3DDefaultRenderer::Execute(TWT::UInt BackBufferIndex) {
 	TW3DRenderer::Execute(BackBufferIndex);
 	ResourceManager->ExecuteCommandList(execute_cl);
+	ResourceManager->FlushCommandLists();
 
 	gvb_vertex_meshes.clear();
 	for (TW3DObject* object : Scene->objects)

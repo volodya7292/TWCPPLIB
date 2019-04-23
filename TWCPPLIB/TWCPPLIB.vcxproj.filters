@@ -64,6 +64,12 @@
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{b39a3dd0-0123-4934-8ded-05fc311c31ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\TW3DEngine\TW3DModule">
+      <UniqueIdentifier>{3ce63c7c-f218-4dc6-95f7-4387ddd88421}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TW3DModule">
+      <UniqueIdentifier>{b0256958-3d81-4634-a4b7-47b5becb0758}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TW3DEngine.h">
@@ -176,6 +182,9 @@
     </ClInclude>
     <ClInclude Include="TW3DVertexBuffer.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DBitonicSort.h">
+      <Filter>Header Files\TW3DModule</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -291,6 +300,9 @@
     <ClCompile Include="TW3DVertexBuffer.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
+    <ClCompile Include="TW3DBitonicSort.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="RayTrace.hlsl">
@@ -320,12 +332,24 @@
     <FxCompile Include="OffscreenBlit.v.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="SortMortonCodes.c.hlsl">
+    <FxCompile Include="BitonicSortIndirectArgs.c.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="BitonicPreSort.c.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="BitonicOuterSort.c.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="BitonicInnerSort.c.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSLHelper.hlsli">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="BitonicSortCommon.hlsli">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>
