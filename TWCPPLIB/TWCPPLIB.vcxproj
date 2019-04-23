@@ -265,6 +265,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="TW3DBitonicSort.h" />
     <ClInclude Include="TW3DComputePipelineState.h" />
+    <ClInclude Include="TW3DMeshAABBCalculator.h" />
     <ClInclude Include="TW3DPerspectiveCamera.h" />
     <ClInclude Include="TW3DAdapter.h" />
     <ClInclude Include="TW3DCube.h" />
@@ -313,6 +314,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TW3DBitonicSort.cpp" />
     <ClCompile Include="TW3DComputePipelineState.cpp" />
+    <ClCompile Include="TW3DMeshAABBCalculator.cpp" />
     <ClCompile Include="TW3DPerspectiveCamera.cpp" />
     <ClCompile Include="TW3DAdapter.cpp" />
     <ClCompile Include="TW3DCube.cpp" />
@@ -444,6 +446,48 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
     </FxCompile>
+    <None Include="CalculateMeshAABBFromAABBs.c.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">5.1</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='StaticLib|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMeshAABBFromAABBs_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMeshAABBFromAABBs.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMeshAABBFromAABBs_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMeshAABBFromAABBs.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMeshAABBFromAABBs_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMeshAABBFromAABBs.c.h</HeaderFileOutput>
+      <FileType>Document</FileType>
+    </None>
+    <None Include="CalculateMeshAABBFromPrimitives.c.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">5.1</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='StaticLib|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMeshAABBFromPrimitives_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMeshAABBFromPrimitives.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMeshAABBFromPrimitives_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMeshAABBFromPrimitives.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMeshAABBFromPrimitives_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMeshAABBFromPrimitives.c.h</HeaderFileOutput>
+      <FileType>Document</FileType>
+    </None>
     <FxCompile Include="CalculateMortonCodes.c.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>

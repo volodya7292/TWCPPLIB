@@ -18,6 +18,8 @@ ConstantBuffer<InputData> input : register(b1);
 
 [numthreads(1, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
+	if (DTid.x * PRIMITIVES_PER_THREAD >= input.element_count) return;
+
 	float3 pMin;
 	float3 pMax;
 
@@ -45,12 +47,12 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		}
 	} else {
 		for (uint i = 0; i < PRIMITIVES_PER_THREAD; i++) {
-			uint vert_index = vertex_mesh.vertex_info.x + DTid.x * PRIMITIVES_PER_THREAD * 3 * iteration + i * 3;
+			uint prim_index = DTid.x * PRIMITIVES_PER_THREAD * 3 * iteration + i;
 
-			if (vert_index >= vertex_mesh.vertex_info.x + vertex_mesh.vertex_info.y)
-				break;
+			//if (vert_index >= vertex_mesh.vertex_info.x + vertex_mesh.vertex_info.y)
+			//	break;
 
-			Bounds bounds = bounding_box[vert_index];
+			Bounds bounds = bounding_box[prim_index];
 
 			if (i == 0) {
 				pMin = bounds.pMin;

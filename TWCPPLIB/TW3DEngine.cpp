@@ -103,9 +103,9 @@ void init_dx12() {
 		ComPtr<ID3D12Debug> debugController;
 		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(debugController.GetAddressOf())))) {
 			debugController->EnableDebugLayer();
-			//ComPtr<ID3D12Debug1> debugController1;
-			//debugController->QueryInterface(IID_PPV_ARGS(&debugController1));
-			//debugController1->SetEnableGPUBasedValidation(true);
+			ComPtr<ID3D12Debug1> debugController1;
+			debugController->QueryInterface(IID_PPV_ARGS(&debugController1));
+			debugController1->SetEnableGPUBasedValidation(true);
 		} else
 			OutputDebugStringA("WARNING: Direct3D Debug Device is not available\n");
 

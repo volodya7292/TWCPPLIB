@@ -127,7 +127,7 @@ void TW3D::TW3DDefaultRenderer::BuildVMAccelerationStructure(TW3DVertexMesh* Ver
 		iteration++;
 	} while (element_count > 1);
 
-	morton_calc_cl->ResourceBarrierUAV(VertexMesh->GetBBBufferResource(), true);
+	//morton_calc_cl->ResourceBarrierUAV(VertexMesh->GetBBBufferResource(), true);
 
 
 	// Calculate morton codes
