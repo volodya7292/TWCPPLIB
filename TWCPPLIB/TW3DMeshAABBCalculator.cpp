@@ -5,10 +5,10 @@ TW3D::TW3DMeshAABBCalculator::TW3DMeshAABBCalculator(TW3DResourceManager* Resour
 	TW3DDevice* device = ResourceManager->GetDevice();
 
 	TW3DRootSignature* root_signature = new TW3DRootSignature(false, false, false, false);
-	root_signature->SetParameterUAV(InputBuffer, D3D12_SHADER_VISIBILITY_ALL, 2);
+	root_signature->SetParameterUAVBuffer(InputBuffer, D3D12_SHADER_VISIBILITY_ALL, 2);
 	root_signature->SetParameterConstants(InputConstants, D3D12_SHADER_VISIBILITY_ALL, 0, 1);
-	root_signature->SetParameterUAV(InputAABBBuffer, D3D12_SHADER_VISIBILITY_ALL, 0);
-	root_signature->SetParameterUAV(OutputBuffer, D3D12_SHADER_VISIBILITY_ALL, 1);
+	root_signature->SetParameterUAVBuffer(InputAABBBuffer, D3D12_SHADER_VISIBILITY_ALL, 0);
+	root_signature->SetParameterUAVBuffer(OutputBuffer, D3D12_SHADER_VISIBILITY_ALL, 1);
 
 
 	/*m_pCalculateSceneAABBFromPrimitives = new TW3DComputePipelineState(root_signature);

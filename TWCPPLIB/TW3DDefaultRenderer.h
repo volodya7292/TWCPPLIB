@@ -14,12 +14,23 @@ namespace TW3D {
 		void Execute(TWT::UInt BackBufferIndex);
 
 	private:
+		void CreateBlitResources();
 		void CreateGBufferResources();
 		void CreateGVBResources();
 		void CreateBBCalculatorResources();
 		void CreateMortonCalculatorResources();
 		void CreateMortonSorterResources();
+		void CreateLBVHLeavesSetupResources();
+		void CreateLBVHSplitsBuildResources();
+
 		void BuildVMAccelerationStructure(TW3DVertexMesh* VertexMesh);
+		void BlitOutput(TW3DGraphicsCommandList* cl, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* Depth);
+
+		TW3DResourceUAV* rt_output;
+
+		// Mesh AS Build commandl list
+		// --------------------------------------------------------------------- 
+		TW3DGraphicsCommandList *mesh_as_cl;
 
 
 		// GBuffer render
@@ -41,11 +52,26 @@ namespace TW3D {
 		// Morton codes calculator
 		// --------------------------------------------------------------------- 
 		TW3DComputePipelineState *morton_calc_ps;
-		TW3DGraphicsCommandList *morton_calc_cl;
 
 		// Morton codes sorter
 		// --------------------------------------------------------------------- 
 		TW3DBitonicSort* BitonicSorter;
+
+		// Setup LBVH leaves
+		// --------------------------------------------------------------------- 
+		TW3DComputePipelineState *setup_lbvh_leaves_ps;
+
+		// Build LBVH splits
+		// --------------------------------------------------------------------- 
+		TW3DComputePipelineState *build_lbvh_splits_ps;
+
+		// Ray tracing compute
+		// --------------------------------------------------------------------- 
+		TW3DComputePipelineState *rt_ps;
+
+		// Ray tracing compute
+		// --------------------------------------------------------------------- 
+		TW3DGraphicsPipelineState *blit_ps;
 
 		D3D12_VIEWPORT viewport = D3D12_VIEWPORT();
 		D3D12_RECT scissor = D3D12_RECT();

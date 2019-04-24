@@ -81,6 +81,12 @@ TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::CreateComputeCommandLi
 	return TW3DGraphicsCommandList::CreateCompute(device);
 }
 
+void TW3D::TW3DResourceManager::ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {
+	temp_gcl->Reset();
+	temp_gcl->ResourceBarrier(Resource->Get(), StateBefore, StateAfter);
+	temp_gcl->Execute();
+}
+
 TWT::Bool TW3D::TW3DResourceManager::IsCommandListRunning(TW3DGraphicsCommandList* CommandList) {
 	if (CommandList->Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
 		return direct_command_queue->IsCommandListRunning(CommandList);

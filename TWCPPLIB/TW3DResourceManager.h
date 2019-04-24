@@ -25,6 +25,8 @@ namespace TW3D {
 		TW3DGraphicsCommandList* CreateBundleCommandList();
 		TW3DGraphicsCommandList* CreateComputeCommandList();
 
+		void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
+
 		TWT::Bool IsCommandListRunning(TW3DGraphicsCommandList* CommandList);
 		void FlushCommandList(TW3DGraphicsCommandList* CommandList);
 		void FlushCommandLists();

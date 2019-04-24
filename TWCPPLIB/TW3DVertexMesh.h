@@ -8,20 +8,22 @@ namespace TW3D {
 		TW3DVertexMesh(TW3DResourceManager* ResourceManager, const TWT::Vector<TW3DVertexBuffer*>& VertexBuffers);
 		~TW3DVertexMesh();
 
-		TW3DResourceCB* GetCBResource();
 		TW3DResourceUAV* GetBBBufferResource();
 		TW3DResourceUAV* GetMCBufferResource();
 		TW3DResourceUAV* GetMCIBufferResource();
+		TW3DResourceUAV* GetLBVHNodeBufferResource();
+
+		TWT::UInt GetGVBVertexOffset();
 		TWT::UInt GetVertexCount();
 		TWT::UInt GetTriangleCount();
 		
 		TWT::Vector<TW3DVertexBuffer*> VertexBuffers;
 
 	private:
-		TW3DResourceCB* constant_buffer;
 		TW3DResourceUAV* bounding_box_buffer;
 		TW3DResourceUAV* morton_codes_buffer;
 		TW3DResourceUAV* morton_indices_buffer;
+		TW3DResourceUAV* lbvh_node_buffer;
 	};
 
 	struct TW3DVertexMeshInstance {

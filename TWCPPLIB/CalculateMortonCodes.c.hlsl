@@ -1,14 +1,14 @@
 #include "HLSLHelper.hlsli"
 
-struct VertexMesh {
-	uint4 vertex_info;
+struct InputData {
+	uint gvb_vertex_offset;
 };
 
 StructuredBuffer<Vertex> gvb : register(t0);
 StructuredBuffer<Bounds> bounding_box : register(t1);
 RWStructuredBuffer<uint> morton_codes : register(u0);
 RWStructuredBuffer<uint> morton_code_indices : register(u1);
-ConstantBuffer<VertexMesh> vertex_mesh : register(b0);
+ConstantBuffer<InputData> input : register(b0);
 
 inline uint expandBits(uint v) {
 	v = (v * 0x00010001u) & 0xFF0000FFu;
@@ -44,7 +44,7 @@ inline float3 computeCenter(float3 cmin, float3 cmax, float3 min, float3 max) {
 
 [numthreads(1, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
-	uint vert_index = vertex_mesh.vertex_info.x + DTid.x * 3;
+	uint vert_index = input.gvb_vertex_offset + DTid.x * 3;
 
 	float3 Cmin = bounding_box[0].pMin;
 	float3 Cmax = bounding_box[0].pMax;

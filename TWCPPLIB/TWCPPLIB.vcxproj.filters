@@ -317,9 +317,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="RayTrace.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="GBuffer.v.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
@@ -333,9 +330,6 @@
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="CalculateMortonCodes.c.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="BuildMeshAccelerationStructure.c.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="OffscreenBlit.p.hlsl">
@@ -356,11 +350,14 @@
     <FxCompile Include="BitonicSortIndirectArgs.c.hlsl">
       <Filter>Resource Files\Shaders\BitonicSort</Filter>
     </FxCompile>
-    <FxCompile Include="CalculateMeshAABBFromPrimitives.c.hlsl">
-      <Filter>Resource Files\Shaders\MeshAABB</Filter>
+    <FxCompile Include="BuildLBVHSplits.c.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="CalculateMeshAABBFromAABBs.c.hlsl">
-      <Filter>Resource Files\Shaders\MeshAABB</Filter>
+    <FxCompile Include="SetupLBVHLeaves.c.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="RayTrace.c.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -369,6 +366,12 @@
     </None>
     <None Include="BitonicSortCommon.hlsli">
       <Filter>Resource Files\Shaders\BitonicSort</Filter>
+    </None>
+    <None Include="CalculateMeshAABBFromAABBs.c.hlsl">
+      <Filter>Resource Files\Shaders\MeshAABB</Filter>
+    </None>
+    <None Include="CalculateMeshAABBFromPrimitives.c.hlsl">
+      <Filter>Resource Files\Shaders\MeshAABB</Filter>
     </None>
   </ItemGroup>
 </Project>

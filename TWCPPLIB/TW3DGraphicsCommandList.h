@@ -30,7 +30,6 @@ namespace TW3D {
 		void ResourceBarriers(const TWT::Vector<D3D12_RESOURCE_BARRIER>& barriers);
 		void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 		void ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
-		void ResourceBarrierUAV(TW3DResourceUAV* UAV, TWT::Bool StateSRV);
 		void SetPipelineState(TW3DGraphicsPipelineState* PipelineState);
 		void SetPipelineState(TW3DComputePipelineState* PipelineState);
 		void SetRenderTarget(TW3DResourceRTV* RTV, TW3DResourceDSV* DSV);
@@ -59,8 +58,10 @@ namespace TW3D {
 		void BindResources(TW3DResourceManager* ResourceManager);
 		void BindTexture(TWT::UInt RootParameterIndex, TW3DResourceSR* SR);
 		void BindRTVTexture(TWT::UInt RootParameterIndex, TW3DResourceRTV* RTV);
-		void BindUAV(TWT::UInt RootParameterIndex, TW3DResource* UAV);
-		void BindUAVSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV);
+		void BindUAVBuffer(TWT::UInt RootParameterIndex, TW3DResource* UAV);
+		void BindUAVBufferSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV);
+		void BindUAVTexture(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV);
+		void BindUAVTextureSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV);
 		void BindCameraCBV(TWT::UInt RootParameterIndex, TW3DPerspectiveCamera* Camera);
 		void DrawObject(TW3DObject* object, TWT::UInt ModelCBRootParameterIndex);
 

@@ -52,13 +52,6 @@ void TW3D::TW3DGraphicsCommandList::ResourceBarrier(ID3D12Resource* Resource, D3
 	command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(Resource, StateBefore, StateAfter));
 }
 
-void TW3D::TW3DGraphicsCommandList::ResourceBarrierUAV(TW3DResourceUAV* UAV, TWT::Bool SRVState) {
-	if (SRVState)
-		ResourceBarrier(UAV, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-	else
-		ResourceBarrier(UAV, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-}
-
 void TW3D::TW3DGraphicsCommandList::SetPipelineState(TW3D::TW3DGraphicsPipelineState* PipelineState) {
 	command_list->SetPipelineState(PipelineState->Get());
 	SetRootSignature(PipelineState->RootSignature);
@@ -193,14 +186,22 @@ void TW3D::TW3DGraphicsCommandList::BindRTVTexture(TWT::UInt RootParameterIndex,
 	command_list->SetGraphicsRootDescriptorTable(RootParameterIndex, RTV->GetSRVGPUHandle());
 }
 
-void TW3D::TW3DGraphicsCommandList::BindUAV(TWT::UInt RootParameterIndex, TW3DResource* UAV) {
+void TW3D::TW3DGraphicsCommandList::BindUAVBuffer(TWT::UInt RootParameterIndex, TW3DResource* UAV) {
 	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 		command_list->SetComputeRootUnorderedAccessView(RootParameterIndex, UAV->GetGPUVirtualAddress());
 	else
 		command_list->SetGraphicsRootUnorderedAccessView(RootParameterIndex, UAV->GetGPUVirtualAddress());
 }
 
-void TW3D::TW3DGraphicsCommandList::BindUAVSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
+void TW3D::TW3DGraphicsCommandList::BindUAVBufferSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
+	SetRootDescriptorTable(RootParameterIndex, UAV->GetGPUSRVHandle());
+}
+
+void TW3D::TW3DGraphicsCommandList::BindUAVTexture(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
+	SetRootDescriptorTable(RootParameterIndex, UAV->GetGPUUAVHandle());
+}
+
+void TW3D::TW3DGraphicsCommandList::BindUAVTextureSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
 	SetRootDescriptorTable(RootParameterIndex, UAV->GetGPUSRVHandle());
 }
 

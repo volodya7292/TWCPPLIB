@@ -7,6 +7,9 @@ struct VS_OUTPUT {
 };
 
 struct Camera {
+	float4 pos;
+	float4x4 proj;
+	float4x4 view;
 	float4x4 proj_view;
 };
 

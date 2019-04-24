@@ -25,6 +25,9 @@ namespace TWT {
 	};
 
 	struct DefaultCameraCB {
+		TWT::Vector4f pos;
+		TWT::Matrix4f proj;
+		TWT::Matrix4f view;
 		TWT::Matrix4f proj_view;
 	};
 

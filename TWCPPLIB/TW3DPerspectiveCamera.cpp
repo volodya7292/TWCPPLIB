@@ -47,6 +47,9 @@ void TW3D::TW3DPerspectiveCamera::SetRotation(TWT::Vector3f Rotation) {
 
 void TW3D::TW3DPerspectiveCamera::UpdateConstantBuffer(TW3DResourceCB* ConstantBuffer) {
 	TWT::DefaultCameraCB cb;
+	cb.pos = TWT::Vector4f(Position, 1);
+	cb.proj = GetProjectionMatrix();
+	cb.view = GetViewMatrix();
 	cb.proj_view = GetProjectionViewMatrix();
 
 	if (ConstantBuffer)

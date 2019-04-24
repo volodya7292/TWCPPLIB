@@ -2,6 +2,7 @@
 #define THREAD_GROUP_HEIGHT 8
 #define THREAD_GROUP_1D_WIDTH (THREAD_GROUP_WIDTH * THREAD_GROUP_HEIGHT)
 
+#define FLT_MAX        3.402823466e+38f
 #define MachineEpsilon 5.96e-08
 
 bool less(in float3 v0, in float3 v1) {
