@@ -260,7 +260,7 @@ void TW3D::TW3DDefaultRenderer::BuildVMAccelerationStructure(TW3DVertexMesh* Ver
 	mesh_as_cl->SetRoot32BitConstant(3, VertexMesh->GetGVBVertexOffset(), 0);
 	mesh_as_cl->SetRoot32BitConstant(3, VertexMesh->GetTriangleCount(), 1);
 	mesh_as_cl->SetRootCBV(4, Scene->Camera->GetConstantBuffer());
-	mesh_as_cl->Dispatch(Width, Height);
+	mesh_as_cl->Dispatch(ceil(Width / 8.0f), ceil(Height / 8.0f));
 
 
 	mesh_as_cl->Close();

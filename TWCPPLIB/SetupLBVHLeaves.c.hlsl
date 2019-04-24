@@ -23,6 +23,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	nodes[i].bounds.pMin = float3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 	nodes[i].bounds.pMax = float3(FLT_MAX, FLT_MAX, FLT_MAX);
+	nodes[i].primitive_index = -1;
 
 	LBVHNode node;
 	node.primitive_index = i;

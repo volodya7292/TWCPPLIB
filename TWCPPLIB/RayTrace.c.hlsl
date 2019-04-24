@@ -69,7 +69,7 @@ float4 findNearestIntersection(Ray ray) {
 
 	unsigned int stackIndex = 0;
 
-	stackNodes[stackIndex++] = 0;
+	stackNodes[stackIndex++] = uint(-1);
 
 	uint childL, childR, node = 0;
 
@@ -86,66 +86,114 @@ float4 findNearestIntersection(Ray ray) {
 	}*/
 
 	bool lIntersection, rIntersection, traverseL, traverseR;
-	int co = 0;
-	while (node != -1) {
+	
+	uint co = 0;
+	while (node != uint(-1) && co < 100) {
 		lIntersection = rIntersection = traverseL = traverseR = false;
 
 		childL = nodes[node].left_child;
-		//if (childL != 0) {
+		if (childL != uint(-1)) {
 			lIntersection = nodes[childL].bounds.intersect(ray, distance);
 
-			//if (lIntersection && distance < minInter.distance) {
+			if (lIntersection) {
+				//return float4(1, 1, 1, 1);
 				// Leaf node
-				//if (childL->shape != nullptr) {
-
-					uint index = nodes[childL].primitive_index;
-					if (check_intersection(ray, index))
+				if (nodes[childL].primitive_index != uint(-1)) {
+					if (check_intersection(ray, nodes[childL].primitive_index))
 						return float4(1, 1, 1, 1);
-					//intersectionFound = childL->shape->intersection(ray, &curr);
+					//Intersection inter = childL->shape->check_intersection(ray);
+					////intersectionFound = childL->shape->intersection(ray, &curr);
 
 					//if (inter.intersected && (inter.distance < minInter.distance)) {
 					//	minInter = inter;
 					//}
 
-				//} else {
-				//	traverseL = true;
-				//}
-			//}
-		//}
+				} else {
+					traverseL = true;
+				}
+			}
+		}
 
 		childR = nodes[node].right_child;
-		//if (childR != 0) {
+		if (childR != uint(-1)) {
 			rIntersection = nodes[childR].bounds.intersect(ray, distance);
 
-			//if (rIntersection && distance < minInter.distance) {
+			if (rIntersection) {
+				//return float4(1, 1, 1, 1);
 				// Leaf node
-				//if (childR->shape != nullptr) {
-			index = nodes[childR].primitive_index;
-			if (check_intersection(ray, index))
-				return float4(1, 1, 1, 1);
-
+				if (nodes[childR].primitive_index != uint(-1)) {
+					if (check_intersection(ray, nodes[childR].primitive_index))
+						return float4(1, 1, 1, 1);
 					/*Intersection inter = childR->shape->check_intersection(ray);
-
 
 					if (inter.intersected && (inter.distance < minInter.distance)) {
 						minInter = inter;
 					}*/
 
-				//} else {
-				//	traverseR = true;
-				//}
-			//}
-		//}
+				} else {
+					traverseR = true;
+				}
+			}
+		}
+
+		//childL = nodes[node].left_child;
+		////if (childL != 0) {
+		//	lIntersection = nodes[childL].bounds.intersect(ray, distance);
+
+		//	//if (lIntersection && distance < minInter.distance) {
+		//		// Leaf node
+		//		//if (childL->shape != nullptr) {
+
+		//			uint index = nodes[childL].primitive_index;
+		//			if (check_intersection(ray, index))
+		//				return float4(1, 1, 1, 1);
+		//			//intersectionFound = childL->shape->intersection(ray, &curr);
+
+		//			//if (inter.intersected && (inter.distance < minInter.distance)) {
+		//			//	minInter = inter;
+		//			//}
+
+		//		//} else {
+		//		//	traverseL = true;
+		//		//}
+		//	//}
+		////}
+
+		//childR = nodes[node].right_child;
+		////if (childR != 0) {
+		//	rIntersection = nodes[childR].bounds.intersect(ray, distance);
+
+		//	//if (rIntersection && distance < minInter.distance) {
+		//		// Leaf node
+		//		//if (childR->shape != nullptr) {
+		//	index = nodes[childR].primitive_index;
+		//	if (check_intersection(ray, index))
+		//		return float4(1, 1, 1, 1);
+
+		//			/*Intersection inter = childR->shape->check_intersection(ray);
+
+
+		//			if (inter.intersected && (inter.distance < minInter.distance)) {
+		//				minInter = inter;
+		//			}*/
+
+		//		//} else {
+		//		//	traverseR = true;
+		//		//}
+		//	//}
+		////}
 
 
 		if (!traverseL && !traverseR) {
 			node = stackNodes[--stackIndex]; // pop
+
 		} else {
 			node = (traverseL) ? childL : childR;
 			if (traverseL && traverseR) {
 				stackNodes[stackIndex++] = childR; // push
 			}
 		}
+
 		co++;
 	}
 
@@ -164,7 +212,7 @@ float4 findNearestIntersection2(in Ray ray) {
 	return float4(0, 0, 0, 0);
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
 	const int WIDTH = 1280;
