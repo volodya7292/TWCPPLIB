@@ -12,6 +12,13 @@ void on_update() {
 	scene->Camera->UpdateConstantBuffer();
 }
 
+TWT::UInt on_thread_tick(TWT::UInt ThreadID, TWT::UInt ThreadCount) {
+	TWT::String str = "govno FPS: "s + TW3D::GetFPS();
+	TW3D::SetWindowTitle(str);
+
+	return 300;
+}
+
 void on_cleanup() {
 	delete cube;
 	delete scene;
@@ -35,9 +42,10 @@ void on_char(TWT::WChar Symbol) {
 
 int main() {
 	TW3D::InitializeInfo info = {};
+	info.AdditionalThreadCount = 1;
 	TW3D::Initialize(info);
 
-	TW3D::SetVSync(true);
+	TW3D::SetVSync(false);
 
 	TW3D::TW3DResourceManager* RM = TW3D::GetResourceManager();
 
@@ -54,6 +62,7 @@ int main() {
 	TW3D::SetRenderer(defaultRenderer);
 
 	TW3D::SetOnUpdateEvent(on_update);
+	TW3D::SetOnThreadTickEvent(on_thread_tick);
 	TW3D::SetOnCleanupEvent(on_cleanup);
 	TW3D::SetOnKeyDownEvent(on_key_down);
 	TW3D::SetOnCharEvent(on_char);

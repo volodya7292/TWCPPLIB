@@ -103,7 +103,6 @@ void TW3D::TW3DLBVHBuilder::Build(TW3DGraphicsCommandList* CommandList, TW3DReso
 
 		iteration++;
 	} while (element_count > 1);
-	//CommandList->ResourceBarrier(VertexMesh->GetBBBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 	CommandList->ResourceBarriers({
 		TW3D::TW3DTransitionBarrier(VertexMesh->GetBBBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
@@ -112,8 +111,6 @@ void TW3D::TW3DLBVHBuilder::Build(TW3DGraphicsCommandList* CommandList, TW3DReso
 	});
 
 	// Calculate morton codes
-	//CommandList->ResourceBarrier(VertexMesh->GetMCBufferResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	//CommandList->ResourceBarrier(VertexMesh->GetMCIBufferResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	CommandList->SetPipelineState(morton_calc_ps);
 	CommandList->BindUAVBufferSRV(0, GVB);
 	CommandList->BindUAVBufferSRV(1, VertexMesh->GetBBBufferResource());
@@ -125,14 +122,12 @@ void TW3D::TW3DLBVHBuilder::Build(TW3DGraphicsCommandList* CommandList, TW3DReso
 
 	// Sort morton codes
 	bitonic_sorter->RecordSort(CommandList, VertexMesh->GetMCBufferResource(), VertexMesh->GetMCIBufferResource(), VertexMesh->GetTriangleCount(), true);
-	//CommandList->ResourceBarrier(VertexMesh->GetMCBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-	//CommandList->ResourceBarrier(VertexMesh->GetMCIBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 	CommandList->ResourceBarriers({
 		TW3D::TW3DTransitionBarrier(VertexMesh->GetMCBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 		TW3D::TW3DTransitionBarrier(VertexMesh->GetMCIBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
-		TW3D::TW3DTransitionBarrier(VertexMesh->GetMCIBufferResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
-		});
+		TW3D::TW3DTransitionBarrier(VertexMesh->GetLBVHNodeBufferResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+	});
 
 	// Setup LBVH nodes
 	//CommandList->ResourceBarrier(VertexMesh->GetLBVHNodeBufferResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -162,6 +157,9 @@ void TW3D::TW3DLBVHBuilder::Build(TW3DGraphicsCommandList* CommandList, TW3DReso
 	CommandList->BindUAVBuffer(1, VertexMesh->GetLBVHNodeLockBufferResource());
 	CommandList->SetRoot32BitConstant(2, VertexMesh->GetTriangleCount() - 1, 0);
 	CommandList->Dispatch(VertexMesh->GetTriangleCount());
-	CommandList->ResourceBarrier(uav_barrier);
-	CommandList->ResourceBarrier(VertexMesh->GetLBVHNodeBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+	CommandList->ResourceBarriers({
+		TW3D::TW3DUAVBarrier(),
+		TW3D::TW3DTransitionBarrier(VertexMesh->GetLBVHNodeBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
+	});
 }

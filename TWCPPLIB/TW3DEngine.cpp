@@ -4,10 +4,12 @@
 #include "TW3DSwapChain.h"
 #include "TW3DPrimitives.h"
 
-TW3D::DefaultHandler       on_update, on_cleanup;
-TW3D::ThreadTickHandler    on_thread_tick;
-TW3D::KeyHandler           on_key_down, on_key_up;
-TW3D::CharHandler          on_char;
+static TWT::Float delta_time;
+
+static TW3D::DefaultHandler       on_update, on_cleanup;
+static TW3D::ThreadTickHandler    on_thread_tick;
+static TW3D::KeyHandler           on_key_down, on_key_up;
+static TW3D::CharHandler          on_char;
 
 static TWT::Vector<TWT::Bool> KeysDown(1024);
 
@@ -211,9 +213,12 @@ void main_loop() {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		} else {
+			TWT::Float64 t0 = TWU::GetTime();
 			update();
 			if (!minimized)
 				render();
+			TWT::Float64 t1 = TWU::GetTime();
+			delta_time = t1 - t0;
 		}
 	}
 
@@ -254,7 +259,8 @@ void cleanup() {
 void TW3D::Initialize(const InitializeInfo& info) {
 	width = info.WindowWidth;
 	height = info.WindowHeight;
-	title = info.Title;
+	title = info.WindowTitle;
+	additional_thread_count = info.AdditionalThreadCount;
 
 	init_window();
 	init_input();
@@ -367,8 +373,23 @@ TWT::Vector2u TW3D::GetCurrentWindowSize() {
 	return TWT::Vector2u(width, height);
 }
 
+TWT::Float TW3D::GetFPS() {
+	return 1.0f / delta_time;
+}
+
+TWT::Float TW3D::GetDeltaTime() {
+	return delta_time;
+}
+
 void TW3D::SetVSync(TWT::Bool VSync) {
 	swapChain->VSync = VSync;
+}
+
+void TW3D::SetWindowTitle(TWT::String WindowTitle) {
+	title = WindowTitle;
+	TWT::WString wstrtitle = title.Wide();
+	const TWT::WChar* wtitle = wstrtitle.data.c_str();
+	SetWindowText(hwnd, wtitle);
 }
 
 void TW3D::SetRenderer(TW3DRenderer* Renderer) {

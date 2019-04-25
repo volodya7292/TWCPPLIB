@@ -17,14 +17,8 @@ namespace TW3D {
 		void CreateBlitResources();
 		void CreateGBufferResources();
 		void CreateGVBResources();
-		/*void CreateBBCalculatorResources();
-		void CreateMortonCalculatorResources();
-		void CreateMortonSorterResources();
-		void CreateLBVHLeavesSetupResources();
-		void CreateLBVHSplitsBuildResources();
-		void CreateLBVHNodeUpdateBoundariesResources();*/
+		void CreateRTResources();
 
-		void BuildVMAccelerationStructure(TW3DVertexMesh* VertexMesh);
 		void BlitOutput(TW3DGraphicsCommandList* cl, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* Depth);
 
 		TW3DResourceUAV* rt_output;

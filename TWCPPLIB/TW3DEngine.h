@@ -9,7 +9,7 @@ namespace TW3D {
 		// Window main panel height
 		TWT::UInt WindowHeight = 720;
 		// Window title
-		TWT::String	Title = "TW3DEngine";
+		TWT::String	WindowTitle = "TW3DEngine";
 		// Additional threads for application, not for engine
 		TWT::UInt AdditionalThreadCount = 0;
 	};
@@ -26,6 +26,7 @@ namespace TW3D {
 	void SetFullScreen(TWT::Bool Fullscreen);
 	TWT::Bool GetVSync();
 	void SetVSync(TWT::Bool VSync);
+	void SetWindowTitle(TWT::String	WindowTitle);
 	TWT::Bool IsKeyDown(TWT::UInt KeyCode);
 	TWT::Vector2u GetCursorPosition();
 	// Get window global center position without window adjusted bounds
@@ -34,6 +35,9 @@ namespace TW3D {
 	TWT::Vector2u GetWindowPosition();
 	// Get window main panel size
 	TWT::Vector2u GetCurrentWindowSize();
+
+	TWT::Float GetFPS();
+	TWT::Float GetDeltaTime();
 
 	void SetRenderer(TW3DRenderer* Renderer);
 
