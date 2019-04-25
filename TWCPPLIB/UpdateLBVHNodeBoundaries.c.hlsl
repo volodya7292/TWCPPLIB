@@ -4,8 +4,8 @@ struct InputData {
 	uint leaves_offset;
 };
 
-globallycoherent RWStructuredBuffer<LBVHNode> nodes : register(u0);
-globallycoherent RWStructuredBuffer<int> lock : register(u1);
+RWStructuredBuffer<LBVHNode> nodes : register(u0);
+RWStructuredBuffer<int> lock2 : register(u1);
 ConstantBuffer<InputData> input : register(b0);
 
 [numthreads(1, 1, 1)]
@@ -17,34 +17,51 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
 	////Update BB limits
 	//for (int i = 0; i < nObjects; i++) {
-		uint node = nodes[input.leaves_offset + i].parent;
+	uint inode = input.leaves_offset + i;
+		uint node = nodes[inode].parent;
 
-		int oldLock = lock[node];
-		lock[node] += 1;
+		//int oldLock = lock[node];
+		//AllMemoryBarrierWithGroupSync();
+		//lock[node] += 1;
+		//AllMemoryBarrierWithGroupSync();
 
 		//[loop]
-		while (true) {
-			if (oldLock == 0)
-				break;
+		//AllMemoryBarrierWithGroupSync();
 
-			uint leftChild = nodes[node].left_child;
-			uint rightChild = nodes[node].right_child;
+		uint leftChild = nodes[node].left_child;
+		uint rightChild = nodes[node].right_child;
 
-			float3 pMin = min(nodes[leftChild].bounds.pMin, nodes[rightChild].bounds.pMin);
-			float3 pMax = max(nodes[leftChild].bounds.pMax, nodes[rightChild].bounds.pMax);
+		if (leftChild == inode || rightChild == uint(-1)) {
 
-			nodes[node].bounds.pMin = pMin;
-			nodes[node].bounds.pMax = pMax;
+			while (true) {
+				//if (oldLock == 0)
+				//	break;
 
-			//if root
-			if (nodes[node].parent == uint(-1))
-				break;
+				leftChild = nodes[node].left_child;
+				rightChild = nodes[node].right_child;
 
-			node = nodes[node].parent;
 
-			oldLock = lock[node];
-			lock[node] += 1;
+
+				float3 pMin = min(nodes[leftChild].bounds.pMin, nodes[rightChild].bounds.pMin);
+				float3 pMax = max(nodes[leftChild].bounds.pMax, nodes[rightChild].bounds.pMax);
+
+				//AllMemoryBarrierWithGroupSync();
+				nodes[node].bounds.pMin = pMin;
+				nodes[node].bounds.pMax = pMax;
+
+				//if root
+				if (nodes[node].parent == uint(-1))
+					break;
+
+				node = nodes[node].parent;
+
+
+			//oldLock = lock[node];
+			//AllMemoryBarrierWithGroupSync();
+			//lock[node] += 1;
+			}
 		}
+		//AllMemoryBarrierWithGroupSync();
 	//}
 
 	//nodes[i].bounds.pMin = float3(0, 0, 0);
