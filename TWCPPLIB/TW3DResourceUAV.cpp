@@ -80,3 +80,7 @@ void TW3D::TW3DResourceUAV::CreateTexture2D(TWT::UInt Width, TWT::UInt Height) {
 	Device->CreateShaderResourceView(Resource, nullptr, SRVDescriptorHeap->GetCPUHandle(SRVIndex));
 	Device->CreateUnorderedAccessView(Resource, nullptr, SRVDescriptorHeap->GetCPUHandle(SRVIndex + 1));
 }
+
+D3D12_RESOURCE_BARRIER TW3D::TW3DUAVBarrier(TW3DResource* Resource) {
+	return CD3DX12_RESOURCE_BARRIER::UAV(Resource ? Resource->Get() : nullptr);
+}

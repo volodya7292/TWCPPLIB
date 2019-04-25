@@ -263,9 +263,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="TW3DBitonicSort.h" />
+    <ClInclude Include="TW3DBitonicSorter.h" />
     <ClInclude Include="TW3DComputePipelineState.h" />
-    <ClInclude Include="TW3DMeshAABBCalculator.h" />
+    <ClInclude Include="TW3DLBVHBuilder.h" />
     <ClInclude Include="TW3DPerspectiveCamera.h" />
     <ClInclude Include="TW3DAdapter.h" />
     <ClInclude Include="TW3DCube.h" />
@@ -292,7 +292,6 @@
     <ClInclude Include="TW3DRootSignature.h" />
     <ClInclude Include="TW3DVertexBuffer.h" />
     <ClInclude Include="TW3DVertexMesh.h" />
-    <ClInclude Include="TW3DRTAccelerationStructureTL.h" />
     <ClInclude Include="TW3DScene.h" />
     <ClInclude Include="TW3DSwapChain.h" />
     <ClInclude Include="TW3DTempGCL.h" />
@@ -312,9 +311,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="TW3DBitonicSort.cpp" />
+    <ClCompile Include="TW3DBitonicSorter.cpp" />
     <ClCompile Include="TW3DComputePipelineState.cpp" />
-    <ClCompile Include="TW3DMeshAABBCalculator.cpp" />
+    <ClCompile Include="TW3DLBVHBuilder.cpp" />
     <ClCompile Include="TW3DPerspectiveCamera.cpp" />
     <ClCompile Include="TW3DAdapter.cpp" />
     <ClCompile Include="TW3DCube.cpp" />
@@ -341,7 +340,6 @@
     <ClCompile Include="TW3DRootSignature.cpp" />
     <ClCompile Include="TW3DVertexBuffer.cpp" />
     <ClCompile Include="TW3DVertexMesh.cpp" />
-    <ClCompile Include="TW3DRTAccelerationStructureTL.cpp" />
     <ClCompile Include="TW3DScene.cpp" />
     <ClCompile Include="TW3DSwapChain.cpp" />
     <ClCompile Include="TW3DTempGCL.cpp" />
@@ -432,7 +430,7 @@
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BitonicSortIndirectArgs_ByteCode</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BitonicSortIndirectArgs.c.h</HeaderFileOutput>
     </FxCompile>
-    <FxCompile Include="CalculateBoundingBox.c.hlsl">
+    <FxCompile Include="CalculateMeshBoundingBox.c.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Compute</ShaderType>
@@ -445,6 +443,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMeshBoundingBox_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMeshBoundingBox.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMeshBoundingBox_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMeshBoundingBox.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMeshBoundingBox_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMeshBoundingBox.c.h</HeaderFileOutput>
     </FxCompile>
     <FxCompile Include="SetupLBVHNodes.c.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
@@ -459,6 +463,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SetupLBVHNodes_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SetupLBVHNodes.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">SetupLBVHNodes_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">SetupLBVHNodes.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SetupLBVHNodes_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SetupLBVHNodes.c.h</HeaderFileOutput>
     </FxCompile>
     <FxCompile Include="UpdateLBVHNodeBoundaries.c.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
@@ -473,49 +483,13 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">UpdateLBVHNodeBoundaries_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">UpdateLBVHNodeBoundaries.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">UpdateLBVHNodeBoundaries_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">UpdateLBVHNodeBoundaries.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">UpdateLBVHNodeBoundaries_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">UpdateLBVHNodeBoundaries.c.h</HeaderFileOutput>
     </FxCompile>
-    <None Include="CalculateMeshAABBFromAABBs.c.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">5.1</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='StaticLib|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMeshAABBFromAABBs_ByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMeshAABBFromAABBs.c.h</HeaderFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMeshAABBFromAABBs_ByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMeshAABBFromAABBs.c.h</HeaderFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMeshAABBFromAABBs_ByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMeshAABBFromAABBs.c.h</HeaderFileOutput>
-      <FileType>Document</FileType>
-    </None>
-    <None Include="CalculateMeshAABBFromPrimitives.c.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">5.1</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='StaticLib|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMeshAABBFromPrimitives_ByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMeshAABBFromPrimitives.c.h</HeaderFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMeshAABBFromPrimitives_ByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMeshAABBFromPrimitives.c.h</HeaderFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMeshAABBFromPrimitives_ByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMeshAABBFromPrimitives.c.h</HeaderFileOutput>
-      <FileType>Document</FileType>
-    </None>
     <FxCompile Include="CalculateMortonCodes.c.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
@@ -529,6 +503,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMortonCodes_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMortonCodes.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMortonCodes_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMortonCodes.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMortonCodes_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMortonCodes.c.h</HeaderFileOutput>
     </FxCompile>
     <FxCompile Include="GBuffer.p.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -573,6 +553,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BuildLBVHSplits_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BuildLBVHSplits.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">BuildLBVHSplits_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">BuildLBVHSplits.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BuildLBVHSplits_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BuildLBVHSplits.c.h</HeaderFileOutput>
     </FxCompile>
     <FxCompile Include="OffscreenBlit.p.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

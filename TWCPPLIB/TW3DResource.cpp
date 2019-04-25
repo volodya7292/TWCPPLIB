@@ -51,3 +51,7 @@ TW3D::TW3DResource* TW3D::TW3DResource::Create(TW3DDevice* Device, TWT::UInt64 S
 TW3D::TW3DResource* TW3D::TW3DResource::CreateCBStaging(TW3DDevice* Device) {
 	return Create(Device, D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT, true);
 }
+
+D3D12_RESOURCE_BARRIER TW3D::TW3DTransitionBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {
+	return CD3DX12_RESOURCE_BARRIER::Transition(Resource->Get(), StateBefore, StateAfter);
+}

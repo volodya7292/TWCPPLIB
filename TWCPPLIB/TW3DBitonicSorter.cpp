@@ -1,12 +1,12 @@
 #include "pch.h"
-#include "TW3DBitonicSort.h"
+#include "TW3DBitonicSorter.h"
 #include "BitonicInnerSort.c.h"
 #include "BitonicOuterSort.c.h"
 #include "BitonicPreSort.c.h"
 #include "BitonicSortIndirectArgs.c.h"
 
 
-TW3D::TW3DBitonicSort::TW3DBitonicSort(TW3DResourceManager* ResourceManager) {
+TW3D::TW3DBitonicSorter::TW3DBitonicSorter(TW3DResourceManager* ResourceManager) {
 	auto defaultHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 	auto indirectArgBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(cIndirectArgStride * 22 * 23 / 2, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
@@ -23,8 +23,6 @@ TW3D::TW3DBitonicSort::TW3DBitonicSort(TW3DResourceManager* ResourceManager) {
 	m_pRootSignature->Create(device);
 	m_pRootSignature->DestroyOnPipelineDestroy = false;
 
-	//auto rootSignatureDesc = CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC(ARRAYSIZE(parameters), parameters);
-	//CreateRootSignatureHelper(pDevice, rootSignatureDesc, &m_pRootSignature);
 
 	m_pBitonicIndirectArgsCS = new TW3DComputePipelineState(m_pRootSignature);
 	m_pBitonicIndirectArgsCS->SetShader(TW3DCompiledShader(BitonicSortIndirectArgs_ByteCode));
@@ -53,7 +51,7 @@ TW3D::TW3DBitonicSort::TW3DBitonicSort(TW3DResourceManager* ResourceManager) {
 	device->CreateCommandSignature(&commandSignatureDesc, nullptr, &m_pCommandSignature);
 }
 
-TW3D::TW3DBitonicSort::~TW3DBitonicSort() {
+TW3D::TW3DBitonicSorter::~TW3DBitonicSorter() {
 	delete m_pBitonicIndirectArgsCS;
 	delete m_pBitonicInnerSortCS;
 	delete m_pBitonicOuterSortCS;
@@ -63,9 +61,7 @@ TW3D::TW3DBitonicSort::~TW3DBitonicSort() {
 	TWU::DXSafeRelease(m_pCommandSignature);
 }
 
-
-
-void TW3D::TW3DBitonicSort::RecordSort(TW3DGraphicsCommandList* CommandList, TW3DResourceUAV* SortKeyBuffer, TW3DResourceUAV* IndexBuffer, TWT::UInt ElementCount, bool SortAscending) {
+void TW3D::TW3DBitonicSorter::RecordSort(TW3DGraphicsCommandList* CommandList, TW3DResourceUAV* SortKeyBuffer, TW3DResourceUAV* IndexBuffer, TWT::UInt ElementCount, bool SortAscending) {
 	if (ElementCount == 0) return;
 
 	const uint32_t AlignedNumElements = TWU::AlignPowerOfTwo(ElementCount);

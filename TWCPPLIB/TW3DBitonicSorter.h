@@ -2,10 +2,10 @@
 #include "TW3DResourceManager.h"
 
 namespace TW3D {
-	class TW3DBitonicSort {
+	class TW3DBitonicSorter {
 	public:
-		TW3DBitonicSort(TW3DResourceManager* ResourceManager);
-		~TW3DBitonicSort();
+		TW3DBitonicSorter(TW3DResourceManager* ResourceManager);
+		~TW3DBitonicSorter();
 
 		void RecordSort(TW3DGraphicsCommandList* CommandList, TW3DResourceUAV* SortKeyBuffer, TW3DResourceUAV* IndexBuffer,
 			TWT::UInt ElementCount, bool SortAscending);

@@ -73,8 +73,8 @@
     <Filter Include="Resource Files\Shaders\BitonicSort">
       <UniqueIdentifier>{1284d1e6-ccd6-47ad-a77f-3719ae547363}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\Shaders\MeshAABB">
-      <UniqueIdentifier>{a7c206ad-75a2-4126-8519-8fd1a1b9d328}</UniqueIdentifier>
+    <Filter Include="Resource Files\Shaders\LBVH">
+      <UniqueIdentifier>{db1d1817-ab4c-4b8f-bc2c-43d53940f11a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -168,9 +168,6 @@
     <ClInclude Include="TW3DCommandQueue.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DRTAccelerationStructureTL.h">
-      <Filter>Header Files\TW3DEngine\TW3DRayTracing</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DGraphicsPipelineState.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
@@ -189,10 +186,10 @@
     <ClInclude Include="TW3DVertexBuffer.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DBitonicSort.h">
+    <ClInclude Include="TW3DLBVHBuilder.h">
       <Filter>Header Files\TW3DModule</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DMeshAABBCalculator.h">
+    <ClInclude Include="TW3DBitonicSorter.h">
       <Filter>Header Files\TW3DModule</Filter>
     </ClInclude>
   </ItemGroup>
@@ -288,9 +285,6 @@
     <ClCompile Include="TW3DTempGCL.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DRTAccelerationStructureTL.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DRayTracing</Filter>
-    </ClCompile>
     <ClCompile Include="TW3DGraphicsPipelineState.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
@@ -309,10 +303,10 @@
     <ClCompile Include="TW3DVertexBuffer.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DBitonicSort.cpp">
+    <ClCompile Include="TW3DLBVHBuilder.cpp">
       <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DMeshAABBCalculator.cpp">
+    <ClCompile Include="TW3DBitonicSorter.cpp">
       <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
     </ClCompile>
   </ItemGroup>
@@ -324,12 +318,6 @@
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="BuildGlobalVertexBuffer.v.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="CalculateBoundingBox.c.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="CalculateMortonCodes.c.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="OffscreenBlit.p.hlsl">
@@ -350,16 +338,22 @@
     <FxCompile Include="BitonicSortIndirectArgs.c.hlsl">
       <Filter>Resource Files\Shaders\BitonicSort</Filter>
     </FxCompile>
-    <FxCompile Include="BuildLBVHSplits.c.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="RayTrace.c.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="BuildLBVHSplits.c.hlsl">
+      <Filter>Resource Files\Shaders\LBVH</Filter>
+    </FxCompile>
     <FxCompile Include="UpdateLBVHNodeBoundaries.c.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
+      <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
     <FxCompile Include="SetupLBVHNodes.c.hlsl">
+      <Filter>Resource Files\Shaders\LBVH</Filter>
+    </FxCompile>
+    <FxCompile Include="CalculateMortonCodes.c.hlsl">
+      <Filter>Resource Files\Shaders\LBVH</Filter>
+    </FxCompile>
+    <FxCompile Include="CalculateMeshBoundingBox.c.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
@@ -369,12 +363,6 @@
     </None>
     <None Include="BitonicSortCommon.hlsli">
       <Filter>Resource Files\Shaders\BitonicSort</Filter>
-    </None>
-    <None Include="CalculateMeshAABBFromAABBs.c.hlsl">
-      <Filter>Resource Files\Shaders\MeshAABB</Filter>
-    </None>
-    <None Include="CalculateMeshAABBFromPrimitives.c.hlsl">
-      <Filter>Resource Files\Shaders\MeshAABB</Filter>
     </None>
   </ItemGroup>
 </Project>

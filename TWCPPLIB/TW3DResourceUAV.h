@@ -23,4 +23,6 @@ namespace TW3D {
 		D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
 		TWT::UInt element_size;
 	};
+
+	D3D12_RESOURCE_BARRIER TW3DUAVBarrier(TW3DResource* Resource = nullptr);
 }

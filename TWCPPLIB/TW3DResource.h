@@ -27,4 +27,6 @@ namespace TW3D {
 		TW3DDevice*     Device = nullptr;
 		ID3D12Resource* Resource = nullptr;
 	};
+
+	D3D12_RESOURCE_BARRIER TW3DTransitionBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 }
