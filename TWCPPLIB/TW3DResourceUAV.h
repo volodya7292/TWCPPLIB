@@ -9,6 +9,7 @@ namespace TW3D {
 		~TW3DResourceUAV();
 
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRVHandle();
+		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUUAVHandle();
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUUAVHandle();
 
 		void CreateBuffer(TWT::UInt ElementCount);

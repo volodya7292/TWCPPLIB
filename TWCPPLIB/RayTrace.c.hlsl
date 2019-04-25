@@ -19,7 +19,7 @@ ConstantBuffer<InputData> input : register(b0);
 ConstantBuffer<Camera> camera : register(b1);
 
 bool check_intersection_tri(in Ray ray, float3 v0, float3 v1, float3 v2) {
-	float EPSILON = 1e-8;
+	float EPSILON = 1e-8f;
 	float3 edge1 = v1 - v0;
 	float3 edge2 = v2 - v0;
 	float3 h = cross(ray.dir, edge2);
@@ -37,7 +37,7 @@ bool check_intersection_tri(in Ray ray, float3 v0, float3 v1, float3 v2) {
 			if (v >= 0.0 && u + v <= 1.0f) {
 				float t = f * dot(edge2, q);
 
-				float3 interPoint = ray.origin + ray.dir * t;
+				//float3 interPoint = ray.origin + ray.dir * t;
 				//float3 n = dot(normal, normalize(ray.origin - interPoint)) >= 0 ? normal : normal * float3(-1);
 
 				if (t > EPSILON)
@@ -88,7 +88,7 @@ float4 findNearestIntersection(Ray ray) {
 	bool lIntersection, rIntersection, traverseL, traverseR;
 	
 	uint co = 0;
-	while (node != uint(-1) && co < 100) {
+	while (node != uint(-1)) {
 		lIntersection = rIntersection = traverseL = traverseR = false;
 
 		childL = nodes[node].left_child;
@@ -136,54 +136,6 @@ float4 findNearestIntersection(Ray ray) {
 			}
 		}
 
-		//childL = nodes[node].left_child;
-		////if (childL != 0) {
-		//	lIntersection = nodes[childL].bounds.intersect(ray, distance);
-
-		//	//if (lIntersection && distance < minInter.distance) {
-		//		// Leaf node
-		//		//if (childL->shape != nullptr) {
-
-		//			uint index = nodes[childL].primitive_index;
-		//			if (check_intersection(ray, index))
-		//				return float4(1, 1, 1, 1);
-		//			//intersectionFound = childL->shape->intersection(ray, &curr);
-
-		//			//if (inter.intersected && (inter.distance < minInter.distance)) {
-		//			//	minInter = inter;
-		//			//}
-
-		//		//} else {
-		//		//	traverseL = true;
-		//		//}
-		//	//}
-		////}
-
-		//childR = nodes[node].right_child;
-		////if (childR != 0) {
-		//	rIntersection = nodes[childR].bounds.intersect(ray, distance);
-
-		//	//if (rIntersection && distance < minInter.distance) {
-		//		// Leaf node
-		//		//if (childR->shape != nullptr) {
-		//	index = nodes[childR].primitive_index;
-		//	if (check_intersection(ray, index))
-		//		return float4(1, 1, 1, 1);
-
-		//			/*Intersection inter = childR->shape->check_intersection(ray);
-
-
-		//			if (inter.intersected && (inter.distance < minInter.distance)) {
-		//				minInter = inter;
-		//			}*/
-
-		//		//} else {
-		//		//	traverseR = true;
-		//		//}
-		//	//}
-		////}
-
-
 		if (!traverseL && !traverseR) {
 			node = stackNodes[--stackIndex]; // pop
 
@@ -193,8 +145,6 @@ float4 findNearestIntersection(Ray ray) {
 				stackNodes[stackIndex++] = childR; // push
 			}
 		}
-
-		co++;
 	}
 
 	return float4(0, 0, 0, 0);

@@ -10,6 +10,9 @@ TW3D::TW3DVertexMesh::TW3DVertexMesh(TW3DResourceManager* ResourceManager, const
 	morton_indices_buffer = ResourceManager->CreateUnorderedAccessView(triangle_count, sizeof(TWT::UInt));
 	bounding_box_buffer = ResourceManager->CreateUnorderedAccessView(triangle_count, sizeof(TWT::Bounds));
 	lbvh_node_buffer = ResourceManager->CreateUnorderedAccessView(2 * triangle_count - 1, sizeof(TWT::LBVHNode));
+	lbvh_node_lock_buffer = ResourceManager->CreateUnorderedAccessView(triangle_count, sizeof(TWT::Int));
+
+	ResourceManager->ResourceBarrier(lbvh_node_lock_buffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 }
 
 TW3D::TW3DVertexMesh::~TW3DVertexMesh() {
@@ -17,6 +20,7 @@ TW3D::TW3DVertexMesh::~TW3DVertexMesh() {
 	delete morton_codes_buffer;
 	delete morton_indices_buffer;
 	delete lbvh_node_buffer;
+	delete lbvh_node_lock_buffer;
 }
 
 TW3D::TW3DResourceUAV* TW3D::TW3DVertexMesh::GetBBBufferResource() {
@@ -33,6 +37,10 @@ TW3D::TW3DResourceUAV* TW3D::TW3DVertexMesh::GetMCIBufferResource() {
 
 TW3D::TW3DResourceUAV* TW3D::TW3DVertexMesh::GetLBVHNodeBufferResource() {
 	return lbvh_node_buffer;
+}
+
+TW3D::TW3DResourceUAV* TW3D::TW3DVertexMesh::GetLBVHNodeLockBufferResource() {
+	return lbvh_node_lock_buffer;
 }
 
 TWT::UInt TW3D::TW3DVertexMesh::GetGVBVertexOffset() {

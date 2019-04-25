@@ -12,6 +12,7 @@ namespace TW3D {
 		TW3DResourceUAV* GetMCBufferResource();
 		TW3DResourceUAV* GetMCIBufferResource();
 		TW3DResourceUAV* GetLBVHNodeBufferResource();
+		TW3DResourceUAV* GetLBVHNodeLockBufferResource();
 
 		TWT::UInt GetGVBVertexOffset();
 		TWT::UInt GetVertexCount();
@@ -24,6 +25,7 @@ namespace TW3D {
 		TW3DResourceUAV* morton_codes_buffer;
 		TW3DResourceUAV* morton_indices_buffer;
 		TW3DResourceUAV* lbvh_node_buffer;
+		TW3DResourceUAV* lbvh_node_lock_buffer;
 	};
 
 	struct TW3DVertexMeshInstance {

@@ -37,6 +37,8 @@ int main() {
 	TW3D::InitializeInfo info = {};
 	TW3D::Initialize(info);
 
+	TW3D::SetVSync(true);
+
 	TW3D::TW3DResourceManager* RM = TW3D::GetResourceManager();
 
 	scene = new TW3D::TW3DScene(RM);

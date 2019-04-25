@@ -95,6 +95,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
 		nodes[i].left_child = current.left_child;
 		nodes[i].right_child = current.right_child;
+		//nodes[i].bounds.pMin = float3(0, 5, 3);
 	//}
 
 }

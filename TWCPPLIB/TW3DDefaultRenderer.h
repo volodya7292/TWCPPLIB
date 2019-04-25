@@ -22,6 +22,7 @@ namespace TW3D {
 		void CreateMortonSorterResources();
 		void CreateLBVHLeavesSetupResources();
 		void CreateLBVHSplitsBuildResources();
+		void CreateLBVHNodeUpdateBoundariesResources();
 
 		void BuildVMAccelerationStructure(TW3DVertexMesh* VertexMesh);
 		void BlitOutput(TW3DGraphicsCommandList* cl, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* Depth);
@@ -57,19 +58,23 @@ namespace TW3D {
 		// --------------------------------------------------------------------- 
 		TW3DBitonicSort* BitonicSorter;
 
-		// Setup LBVH leaves
+		// Setup LBVH nodes
 		// --------------------------------------------------------------------- 
-		TW3DComputePipelineState *setup_lbvh_leaves_ps;
+		TW3DComputePipelineState *setup_lbvh_nodes_ps;
 
 		// Build LBVH splits
 		// --------------------------------------------------------------------- 
 		TW3DComputePipelineState *build_lbvh_splits_ps;
 
+		// Update LBVH node boundaries
+		// --------------------------------------------------------------------- 
+		TW3DComputePipelineState *update_lbvh_node_boundaries;
+
 		// Ray tracing compute
 		// --------------------------------------------------------------------- 
 		TW3DComputePipelineState *rt_ps;
 
-		// Ray tracing compute
+		// Blit output
 		// --------------------------------------------------------------------- 
 		TW3DGraphicsPipelineState *blit_ps;
 

@@ -353,10 +353,13 @@
     <FxCompile Include="BuildLBVHSplits.c.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="SetupLBVHLeaves.c.hlsl">
+    <FxCompile Include="RayTrace.c.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="RayTrace.c.hlsl">
+    <FxCompile Include="UpdateLBVHNodeBoundaries.c.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SetupLBVHNodes.c.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
