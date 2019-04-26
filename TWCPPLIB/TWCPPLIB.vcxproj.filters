@@ -195,6 +195,15 @@
     <ClInclude Include="TWLogger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DModules.h">
+      <Filter>Header Files\TW3DModule</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DLBVH.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DShaders.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -315,6 +324,15 @@
     <ClCompile Include="TWLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TW3DModules.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DLBVH.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DShaders.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="GBuffer.v.hlsl">
@@ -350,9 +368,6 @@
     <FxCompile Include="BuildLBVHSplits.c.hlsl">
       <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
-    <FxCompile Include="UpdateLBVHNodeBoundaries.c.hlsl">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
-    </FxCompile>
     <FxCompile Include="SetupLBVHNodes.c.hlsl">
       <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
@@ -364,6 +379,9 @@
     </FxCompile>
     <FxCompile Include="BuildGlobalLBVHNodeBuffer.c.hlsl">
       <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="UpdateLBVHNodeBounds.c.hlsl">
+      <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

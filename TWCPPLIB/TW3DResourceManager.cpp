@@ -10,10 +10,12 @@ TW3D::TW3DResourceManager::TW3DResourceManager(TW3DDevice* Device) :
 	srv_descriptor_heap = TW3DDescriptorHeap::CreateForSR(device, 1024);
 	direct_command_queue = TW3DCommandQueue::CreateDirect(device);
 	compute_command_queue = TW3DCommandQueue::CreateCompute(device);
+	temp_compute_cl = CreateComputeCommandList();
 }
 
 TW3D::TW3DResourceManager::~TW3DResourceManager() {
 	delete temp_gcl;
+	delete temp_compute_cl;
 	delete rtv_descriptor_heap;
 	delete dsv_descriptor_heap;
 	delete srv_descriptor_heap;
@@ -79,6 +81,10 @@ TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::CreateBundleCommandLis
 
 TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::CreateComputeCommandList() {
 	return TW3DGraphicsCommandList::CreateCompute(device);
+}
+
+TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::GetTemporaryComputeCommandList() {
+	return temp_compute_cl;
 }
 
 void TW3D::TW3DResourceManager::ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {

@@ -170,6 +170,7 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	CreateBlitResources();
 	CreateGBufferResources();
 	CreateGVBResources();
+	CreateGLBVHNodeBufferResources();
 	CreateRTResources();
 
 	texture = ResourceManager->CreateTextureArray2D(720, 720, 10, DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -246,27 +247,36 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 
 bool build = false;
 void TW3D::TW3DDefaultRenderer::RecordBeforeExecution() {
-	TW3DVertexMesh* mesh = nullptr;
+	TW3DVertexMesh* mesh2 = nullptr;
 
 	gvb_vertex_meshes.clear();
-	for (TW3DObject* object : Scene->objects)
-		if (std::find(gvb_vertex_meshes.begin(), gvb_vertex_meshes.end(), object->VMInstance.VertexMesh) == gvb_vertex_meshes.end()) {
+	TWT::UInt NodeOffset = 0;
+	for (TW3DObject* object : Scene->objects) {
+		TW3DVertexMesh* mesh = object->VMInstance.VertexMesh;
+		if (std::find(gvb_vertex_meshes.begin(), gvb_vertex_meshes.end(), mesh) == gvb_vertex_meshes.end()) {
 		//if (gvb_vertex_meshes.find(object->VMInstance.VertexMesh) == gvb_vertex_meshes.end()) {
 			//gvb_vertex_meshes.emplace(object->VMInstance.VertexMesh);
-			gvb_vertex_meshes.push_back(object->VMInstance.VertexMesh);
+			gvb_vertex_meshes.push_back(mesh);
+
+			mesh->SetGNBOffset(NodeOffset);
+			NodeOffset += mesh->GetNodeCount();
+
+			mesh2 = mesh;
+
 			mesh = object->VMInstance.VertexMesh;
 			//BuildVMAccelerationStructure(object->VMInstance.VertexMesh);
 		}
+	}
 
 
-	/*ResourceManager->FlushCommandList(lbvh_cl);
+	ResourceManager->FlushCommandList(lbvh_cl);
 	lbvh_cl->Reset();
 	lbvh_cl->BindResources(ResourceManager);
 
 	if (!build) {
-		lbvh_builder->Build(lbvh_cl, gvb, mesh);
+		lbvh_builder->Build(lbvh_cl, gvb, mesh2);
 		build = true;
-	}*/
+	}
 
 
 	// Build global LBVH node buffer
@@ -275,7 +285,8 @@ void TW3D::TW3DDefaultRenderer::RecordBeforeExecution() {
 	TWT::UInt VertexOffset = 0;
 	for (TW3DVertexMesh* mesh : gvb_vertex_meshes) {
 		lbvh_cl->BindUAVBufferSRV(1, mesh->GetLBVHNodeBufferResource());
-		lbvh_cl->SetRoot32BitConstant(2, mesh.get)
+		lbvh_cl->SetRoot32BitConstant(2, mesh->GetGNBOffset(), 0);
+		lbvh_cl->Dispatch(mesh->GetNodeCount());
 	}
 
 
@@ -289,10 +300,10 @@ void TW3D::TW3DDefaultRenderer::RecordBeforeExecution() {
 	rt_cl->BindResources(ResourceManager);
 	rt_cl->SetPipelineState(rt_ps);
 	rt_cl->BindUAVBufferSRV(0, gvb);
-	rt_cl->BindUAVBufferSRV(1, mesh->GetLBVHNodeBufferResource());
+	rt_cl->BindUAVBufferSRV(1, mesh2->GetLBVHNodeBufferResource());
 	rt_cl->BindUAVTexture(2, rt_output);
-	rt_cl->SetRoot32BitConstant(3, mesh->GetGVBVertexOffset(), 0);
-	rt_cl->SetRoot32BitConstant(3, mesh->GetTriangleCount(), 1);
+	rt_cl->SetRoot32BitConstant(3, mesh2->GetGVBVertexOffset(), 0);
+	rt_cl->SetRoot32BitConstant(3, mesh2->GetTriangleCount(), 1);
 	rt_cl->SetRootCBV(4, Scene->Camera->GetConstantBuffer());
 	rt_cl->Dispatch(ceil(Width / 8.0f), ceil(Height / 8.0f));
 	rt_cl->Close();

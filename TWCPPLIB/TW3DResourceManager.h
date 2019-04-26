@@ -24,6 +24,7 @@ namespace TW3D {
 		TW3DGraphicsCommandList* CreateDirectCommandList();
 		TW3DGraphicsCommandList* CreateBundleCommandList();
 		TW3DGraphicsCommandList* CreateComputeCommandList();
+		TW3DGraphicsCommandList* GetTemporaryComputeCommandList();
 
 		void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 
@@ -41,6 +42,7 @@ namespace TW3D {
 	private:
 		TW3DDevice* device;
 		TW3DTempGCL* temp_gcl;
+		TW3DGraphicsCommandList* temp_compute_cl;
 		TW3DDescriptorHeap* rtv_descriptor_heap;
 		TW3DDescriptorHeap* dsv_descriptor_heap;
 		TW3DDescriptorHeap* srv_descriptor_heap;

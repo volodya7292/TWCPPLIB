@@ -2,6 +2,8 @@
 #include "TW3DEngine.h"
 #include "TW3DDevice.h"
 #include "TW3DSwapChain.h"
+#include "TW3DShaders.h"
+#include "TW3DModules.h"
 #include "TW3DPrimitives.h"
 #include "TWLogger.h"
 
@@ -149,6 +151,8 @@ void init_dx12() {
 	current_frame_index = swapChain->GetCurrentBufferIndex();
 	logger->LogInfo("DirectX initialization stage 8");
 	TW3DPrimitives::Initialize(resource_manager);
+	TW3DShaders::Initialize(resource_manager);
+	TW3DModules::Initialize(resource_manager);
 	logger->LogInfo("DirectX initialization stage 9");
 
 	logger->LogInfo("DirectX initialized.");

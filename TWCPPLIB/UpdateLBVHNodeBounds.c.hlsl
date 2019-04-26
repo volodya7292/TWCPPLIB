@@ -5,7 +5,6 @@ struct InputData {
 };
 
 RWStructuredBuffer<LBVHNode> nodes : register(u0);
-RWStructuredBuffer<int> lock2 : register(u1);
 ConstantBuffer<InputData> input : register(b0);
 
 [numthreads(1, 1, 1)]

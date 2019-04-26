@@ -17,6 +17,7 @@ namespace TW3D {
 		TWT::UInt GetGVBVertexOffset();
 		TWT::UInt GetGNBOffset();
 		void SetGNBOffset(TWT::UInt NodeOffset);
+		TWT::UInt GetNodeCount();
 		TWT::UInt GetVertexCount();
 		TWT::UInt GetTriangleCount();
 		

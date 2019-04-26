@@ -9,7 +9,7 @@ TW3D::TW3DVertexMesh::TW3DVertexMesh(TW3DResourceManager* ResourceManager, const
 	morton_codes_buffer = ResourceManager->CreateUnorderedAccessView(triangle_count, sizeof(TWT::UInt));
 	morton_indices_buffer = ResourceManager->CreateUnorderedAccessView(triangle_count, sizeof(TWT::UInt));
 	bounding_box_buffer = ResourceManager->CreateUnorderedAccessView(triangle_count, sizeof(TWT::Bounds));
-	lbvh_node_buffer = ResourceManager->CreateUnorderedAccessView(2 * triangle_count - 1, sizeof(TWT::LBVHNode));
+	lbvh_node_buffer = ResourceManager->CreateUnorderedAccessView(GetNodeCount(), sizeof(TWT::LBVHNode));
 	lbvh_node_lock_buffer = ResourceManager->CreateUnorderedAccessView(triangle_count, sizeof(TWT::Int));
 
 	ResourceManager->ResourceBarrier(lbvh_node_lock_buffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -53,6 +53,10 @@ TWT::UInt TW3D::TW3DVertexMesh::GetGNBOffset() {
 
 void TW3D::TW3DVertexMesh::SetGNBOffset(TWT::UInt NodeOffset) {
 	GNBNodeOffset = NodeOffset;
+}
+
+TWT::UInt TW3D::TW3DVertexMesh::GetNodeCount() {
+	return 2 * GetTriangleCount() - 1;
 }
 
 TWT::UInt TW3D::TW3DVertexMesh::GetVertexCount() {

@@ -81,83 +81,87 @@ TW3D::TW3DLBVHBuilder::~TW3DLBVHBuilder() {
 	delete update_lbvh_node_boundaries;
 }
 
-void TW3D::TW3DLBVHBuilder::Build(TW3DGraphicsCommandList* CommandList, TW3DResourceUAV* GVB, TW3DVertexMesh* VertexMesh) {
+void TW3D::TW3DLBVHBuilder::SetCommandList(TW3DGraphicsCommandList* command_list) {
+	command_list = command_list;
+}
+
+void TW3D::TW3DLBVHBuilder::Build(TW3DResourceUAV* GVB, TW3DVertexMesh* VertexMesh) {
 	auto uav_barrier = TW3DUAVBarrier();
 
 	// Calculate bounding box
-	CommandList->SetPipelineState(bounding_box_calc_ps);
-	CommandList->ResourceBarrier(VertexMesh->GetBBBufferResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	CommandList->BindUAVBufferSRV(0, GVB);
-	CommandList->BindUAVBuffer(1, VertexMesh->GetBBBufferResource());
-	CommandList->SetRoot32BitConstant(2, VertexMesh->GetGVBVertexOffset(), 0);
-	CommandList->SetRoot32BitConstant(2, VertexMesh->GetVertexCount(), 1);
+	command_list->SetPipelineState(bounding_box_calc_ps);
+	command_list->ResourceBarrier(VertexMesh->GetBBBufferResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	command_list->BindUAVBufferSRV(0, GVB);
+	command_list->BindUAVBuffer(1, VertexMesh->GetBBBufferResource());
+	command_list->SetRoot32BitConstant(2, VertexMesh->GetGVBVertexOffset(), 0);
+	command_list->SetRoot32BitConstant(2, VertexMesh->GetVertexCount(), 1);
 	int element_count = VertexMesh->GetTriangleCount();
 	TWT::UInt iteration = 0;
 	do {
-		CommandList->SetRoot32BitConstant(2, iteration, 2);
-		CommandList->SetRoot32BitConstant(2, element_count, 3);
+		command_list->SetRoot32BitConstant(2, iteration, 2);
+		command_list->SetRoot32BitConstant(2, element_count, 3);
 
 		element_count = ceil(element_count / 16.0f);
-		CommandList->Dispatch(element_count);
-		CommandList->ResourceBarrier(uav_barrier);
+		command_list->Dispatch(element_count);
+		command_list->ResourceBarrier(uav_barrier);
 
 		iteration++;
 	} while (element_count > 1);
 
-	CommandList->ResourceBarriers({
+	command_list->ResourceBarriers({
 		TW3D::TW3DTransitionBarrier(VertexMesh->GetBBBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 		TW3D::TW3DTransitionBarrier(VertexMesh->GetMCBufferResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
 		TW3D::TW3DTransitionBarrier(VertexMesh->GetMCIBufferResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
 	});
 
 	// Calculate morton codes
-	CommandList->SetPipelineState(morton_calc_ps);
-	CommandList->BindUAVBufferSRV(0, GVB);
-	CommandList->BindUAVBufferSRV(1, VertexMesh->GetBBBufferResource());
-	CommandList->BindUAVBuffer(2, VertexMesh->GetMCBufferResource());
-	CommandList->BindUAVBuffer(3, VertexMesh->GetMCIBufferResource());
-	CommandList->SetRoot32BitConstant(4, VertexMesh->GetGVBVertexOffset(), 0);
-	CommandList->Dispatch(VertexMesh->GetTriangleCount());
-	CommandList->ResourceBarrier(uav_barrier);
+	command_list->SetPipelineState(morton_calc_ps);
+	command_list->BindUAVBufferSRV(0, GVB);
+	command_list->BindUAVBufferSRV(1, VertexMesh->GetBBBufferResource());
+	command_list->BindUAVBuffer(2, VertexMesh->GetMCBufferResource());
+	command_list->BindUAVBuffer(3, VertexMesh->GetMCIBufferResource());
+	command_list->SetRoot32BitConstant(4, VertexMesh->GetGVBVertexOffset(), 0);
+	command_list->Dispatch(VertexMesh->GetTriangleCount());
+	command_list->ResourceBarrier(uav_barrier);
 
 	// Sort morton codes
-	bitonic_sorter->RecordSort(CommandList, VertexMesh->GetMCBufferResource(), VertexMesh->GetMCIBufferResource(), VertexMesh->GetTriangleCount(), true);
+	bitonic_sorter->RecordSort(command_list, VertexMesh->GetMCBufferResource(), VertexMesh->GetMCIBufferResource(), VertexMesh->GetTriangleCount(), true);
 
-	CommandList->ResourceBarriers({
+	command_list->ResourceBarriers({
 		TW3D::TW3DTransitionBarrier(VertexMesh->GetMCBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 		TW3D::TW3DTransitionBarrier(VertexMesh->GetMCIBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 		TW3D::TW3DTransitionBarrier(VertexMesh->GetLBVHNodeBufferResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
 	});
 
 	// Setup LBVH nodes
-	CommandList->SetPipelineState(setup_lbvh_nodes_ps);
-	CommandList->BindUAVBufferSRV(0, GVB);
-	CommandList->BindUAVBufferSRV(1, VertexMesh->GetMCBufferResource());
-	CommandList->BindUAVBufferSRV(2, VertexMesh->GetMCIBufferResource());
-	CommandList->BindUAVBuffer(3, VertexMesh->GetLBVHNodeBufferResource());
-	CommandList->BindUAVBuffer(4, VertexMesh->GetLBVHNodeLockBufferResource());
-	CommandList->SetRoot32BitConstant(5, VertexMesh->GetGVBVertexOffset(), 0);
-	CommandList->SetRoot32BitConstant(5, VertexMesh->GetTriangleCount() - 1, 1);
-	CommandList->Dispatch(2 * VertexMesh->GetTriangleCount() - 1);
-	CommandList->ResourceBarrier(uav_barrier);
+	command_list->SetPipelineState(setup_lbvh_nodes_ps);
+	command_list->BindUAVBufferSRV(0, GVB);
+	command_list->BindUAVBufferSRV(1, VertexMesh->GetMCBufferResource());
+	command_list->BindUAVBufferSRV(2, VertexMesh->GetMCIBufferResource());
+	command_list->BindUAVBuffer(3, VertexMesh->GetLBVHNodeBufferResource());
+	command_list->BindUAVBuffer(4, VertexMesh->GetLBVHNodeLockBufferResource());
+	command_list->SetRoot32BitConstant(5, VertexMesh->GetGVBVertexOffset(), 0);
+	command_list->SetRoot32BitConstant(5, VertexMesh->GetTriangleCount() - 1, 1);
+	command_list->Dispatch(2 * VertexMesh->GetTriangleCount() - 1);
+	command_list->ResourceBarrier(uav_barrier);
 
 	// Build LBVH splits
-	CommandList->SetPipelineState(build_lbvh_splits_ps);
-	CommandList->BindUAVBufferSRV(0, VertexMesh->GetMCBufferResource());
-	CommandList->BindUAVBufferSRV(1, VertexMesh->GetMCIBufferResource());
-	CommandList->BindUAVBuffer(2, VertexMesh->GetLBVHNodeBufferResource());
-	CommandList->SetRoot32BitConstant(3, VertexMesh->GetTriangleCount(), 0);
-	CommandList->Dispatch(VertexMesh->GetTriangleCount() - 1);
-	CommandList->ResourceBarrier(uav_barrier);
+	command_list->SetPipelineState(build_lbvh_splits_ps);
+	command_list->BindUAVBufferSRV(0, VertexMesh->GetMCBufferResource());
+	command_list->BindUAVBufferSRV(1, VertexMesh->GetMCIBufferResource());
+	command_list->BindUAVBuffer(2, VertexMesh->GetLBVHNodeBufferResource());
+	command_list->SetRoot32BitConstant(3, VertexMesh->GetTriangleCount(), 0);
+	command_list->Dispatch(VertexMesh->GetTriangleCount() - 1);
+	command_list->ResourceBarrier(uav_barrier);
 
 	// Update LVBH node boundaries
-	CommandList->SetPipelineState(update_lbvh_node_boundaries);
-	CommandList->BindUAVBuffer(0, VertexMesh->GetLBVHNodeBufferResource());
-	CommandList->BindUAVBuffer(1, VertexMesh->GetLBVHNodeLockBufferResource());
-	CommandList->SetRoot32BitConstant(2, VertexMesh->GetTriangleCount() - 1, 0);
-	CommandList->Dispatch(VertexMesh->GetTriangleCount());
+	command_list->SetPipelineState(update_lbvh_node_boundaries);
+	command_list->BindUAVBuffer(0, VertexMesh->GetLBVHNodeBufferResource());
+	command_list->BindUAVBuffer(1, VertexMesh->GetLBVHNodeLockBufferResource());
+	command_list->SetRoot32BitConstant(2, VertexMesh->GetTriangleCount() - 1, 0);
+	command_list->Dispatch(VertexMesh->GetTriangleCount());
 
-	CommandList->ResourceBarriers({
+	command_list->ResourceBarriers({
 		TW3D::TW3DUAVBarrier(),
 		TW3D::TW3DTransitionBarrier(VertexMesh->GetLBVHNodeBufferResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
 	});
