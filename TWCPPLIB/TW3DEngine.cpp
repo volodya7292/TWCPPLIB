@@ -161,6 +161,7 @@ void update() {
 }
 
 void render() {
+	renderer->RecordBeforeExecution();
 	renderer->Execute(swapChain->GetCurrentBufferIndex());
 	swapChain->Present();
 }
@@ -284,7 +285,7 @@ void TW3D::Initialize(const InitializeInfo& info) {
 	logger = new TW::TWLogger("TW3D");
 #else
 	logger = new TW::TWLogger(info.LogFilename, "TW3D");
-#endif
+#endif // _DEBUG
 
 	init_window();
 	init_input();

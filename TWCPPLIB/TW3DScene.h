@@ -11,6 +11,6 @@ namespace TW3D {
 		void AddObject(TW3DObject* Object);
 
 		TW3DPerspectiveCamera* Camera;
-		std::unordered_set<TW3DObject*> objects;
+		TWT::Vector<TW3DObject*> objects;
 	};
 }

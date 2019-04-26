@@ -8,6 +8,7 @@ TW3D::TW3DResourceSR* texture;
 TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete gbuffer_ps;
 	delete gvb_ps;
+	delete glbvh_nodes_ps;
 	/*delete morton_calc_ps;
 	delete bb_calc_ps;
 	delete setup_lbvh_nodes_ps;
@@ -19,11 +20,13 @@ TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete lbvh_builder;
 	//delete BitonicSorter;
 
-	delete mesh_as_cl;
+	delete lbvh_cl;
+	delete rt_cl;
 
 	delete rt_output;
 	delete texture;
 	delete gvb;
+	delete g_lbvh_nodes;
 }
 
 void TW3D::TW3DDefaultRenderer::CreateBlitResources() {
@@ -106,24 +109,40 @@ void TW3D::TW3DDefaultRenderer::CreateGVBResources() {
 	gvb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(TWT::DefaultVertex));
 }
 
+void TW3D::TW3DDefaultRenderer::CreateGLBVHNodeBufferResources() {
+	g_lbvh_nodes = ResourceManager->CreateUnorderedAccessView(1024, sizeof(TWT::LBVHNode));
+
+	TW3DRootSignature* rs = new TW3DRootSignature(false, false, false, false);
+	rs->SetParameterUAVBuffer(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global LBVH node buffer SRV
+	rs->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 0); // LBVH node buffer SRV
+	rs->SetParameterConstants(2, D3D12_SHADER_VISIBILITY_ALL, 0, 1); // Input data constants
+	rs->Create(Device);
+
+	glbvh_nodes_ps = new TW3DComputePipelineState(rs);
+	glbvh_nodes_ps->SetShader("BuildGlobalLBVHNodeBuffer.c.cso");
+	glbvh_nodes_ps->Create(Device);
+}
+
 void TW3D::TW3DDefaultRenderer::CreateRTResources() {
 	rt_output = ResourceManager->CreateUnorderedAccessView(Width, Height, TWT::RGBA8Unorm);
 	ResourceManager->ResourceBarrier(rt_output, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-	TW3DRootSignature* root_signature2 = new TW3DRootSignature(false, false, false, false);
-	root_signature2->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
-	root_signature2->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // LBVH nodes buffer SRV
-	root_signature2->SetParameterUAVTexture(2, D3D12_SHADER_VISIBILITY_ALL, 0); // Output texture
-	root_signature2->SetParameterConstants(3, D3D12_SHADER_VISIBILITY_ALL, 0, 2); // Input data constants
-	root_signature2->SetParameterCBV(4, D3D12_SHADER_VISIBILITY_ALL, 1); // Camera CBV
-	root_signature2->Create(Device);
+	TW3DRootSignature* rs = new TW3DRootSignature(false, false, false, false);
+	rs->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
+	rs->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // LBVH nodes buffer SRV
+	rs->SetParameterUAVTexture(2, D3D12_SHADER_VISIBILITY_ALL, 0); // Output texture
+	rs->SetParameterConstants(3, D3D12_SHADER_VISIBILITY_ALL, 0, 2); // Input data constants
+	rs->SetParameterCBV(4, D3D12_SHADER_VISIBILITY_ALL, 1); // Camera CBV
+	rs->Create(Device);
 
-	rt_ps = new TW3DComputePipelineState(root_signature2);
+	rt_ps = new TW3DComputePipelineState(rs);
 	rt_ps->SetShader("RayTrace.c.cso");
 	rt_ps->Create(Device);
 
+	rt_cl = ResourceManager->CreateComputeCommandList();
+
 	lbvh_builder = new TW3DLBVHBuilder(ResourceManager);
-	mesh_as_cl = ResourceManager->CreateComputeCommandList();
+	lbvh_cl = ResourceManager->CreateComputeCommandList();
 }
 
 void TW3D::TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* Depth) {
@@ -184,8 +203,8 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 	gvb_vertex_buffers.clear();
 	for (TW3DObject* object : Scene->objects)
 		for (TW3DVertexBuffer* vb : object->VMInstance.VertexMesh->VertexBuffers)
-			if (gvb_vertex_buffers.find(vb) == gvb_vertex_buffers.end()) {
-				gvb_vertex_buffers.emplace(vb);
+			if (std::find(gvb_vertex_buffers.begin(), gvb_vertex_buffers.end(), vb) == gvb_vertex_buffers.end()) {
+				gvb_vertex_buffers.push_back(vb);
 
 				vb->SetVertexOffset(VertexOffset);
 				VertexOffset += vb->GetVertexCount();
@@ -197,9 +216,6 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 	gvb_vertex_count = VertexOffset + 1;
 	record_cl->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
-
-	// Build Vertex Mesh acceleration structures
-	// -------------------------------------------------------------------------------------------------------------------------
 
 	// Render GBuffer
 	// -------------------------------------------------------------------------------------------------------------------------
@@ -228,51 +244,71 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 	record_cl->Close();
 }
 
+bool build = false;
+void TW3D::TW3DDefaultRenderer::RecordBeforeExecution() {
+	TW3DVertexMesh* mesh = nullptr;
+
+	gvb_vertex_meshes.clear();
+	for (TW3DObject* object : Scene->objects)
+		if (std::find(gvb_vertex_meshes.begin(), gvb_vertex_meshes.end(), object->VMInstance.VertexMesh) == gvb_vertex_meshes.end()) {
+		//if (gvb_vertex_meshes.find(object->VMInstance.VertexMesh) == gvb_vertex_meshes.end()) {
+			//gvb_vertex_meshes.emplace(object->VMInstance.VertexMesh);
+			gvb_vertex_meshes.push_back(object->VMInstance.VertexMesh);
+			mesh = object->VMInstance.VertexMesh;
+			//BuildVMAccelerationStructure(object->VMInstance.VertexMesh);
+		}
+
+
+	/*ResourceManager->FlushCommandList(lbvh_cl);
+	lbvh_cl->Reset();
+	lbvh_cl->BindResources(ResourceManager);
+
+	if (!build) {
+		lbvh_builder->Build(lbvh_cl, gvb, mesh);
+		build = true;
+	}*/
+
+
+	// Build global LBVH node buffer
+	lbvh_cl->SetPipelineState(glbvh_nodes_ps);
+	lbvh_cl->BindUAVBuffer(0, g_lbvh_nodes);
+	TWT::UInt VertexOffset = 0;
+	for (TW3DVertexMesh* mesh : gvb_vertex_meshes) {
+		lbvh_cl->BindUAVBufferSRV(1, mesh->GetLBVHNodeBufferResource());
+		lbvh_cl->SetRoot32BitConstant(2, mesh.get)
+	}
+
+
+	lbvh_cl->Close();
+
+
+	// Trace rays
+	// -------------------------------------------------------------------------------------------------------------------------
+	ResourceManager->FlushCommandList(rt_cl);
+	rt_cl->Reset();
+	rt_cl->BindResources(ResourceManager);
+	rt_cl->SetPipelineState(rt_ps);
+	rt_cl->BindUAVBufferSRV(0, gvb);
+	rt_cl->BindUAVBufferSRV(1, mesh->GetLBVHNodeBufferResource());
+	rt_cl->BindUAVTexture(2, rt_output);
+	rt_cl->SetRoot32BitConstant(3, mesh->GetGVBVertexOffset(), 0);
+	rt_cl->SetRoot32BitConstant(3, mesh->GetTriangleCount(), 1);
+	rt_cl->SetRootCBV(4, Scene->Camera->GetConstantBuffer());
+	rt_cl->Dispatch(ceil(Width / 8.0f), ceil(Height / 8.0f));
+	rt_cl->Close();
+}
+
 void TW3D::TW3DDefaultRenderer::Update() {
 	for (TW3DObject* object : Scene->objects) {
 		object->Update();
 	}
 }
 
-bool build = false;
 void TW3D::TW3DDefaultRenderer::Execute(TWT::UInt BackBufferIndex) {
 	TW3DRenderer::Execute(BackBufferIndex);
 	ResourceManager->ExecuteCommandList(execute_cl);
 	ResourceManager->FlushCommandLists();
-
-	TW3DVertexMesh* mesh = nullptr;
-
-	gvb_vertex_meshes.clear();
-	for (TW3DObject* object : Scene->objects)
-		if (gvb_vertex_meshes.find(object->VMInstance.VertexMesh) == gvb_vertex_meshes.end()) {
-			gvb_vertex_meshes.emplace(object->VMInstance.VertexMesh);
-			mesh = object->VMInstance.VertexMesh;
-			//BuildVMAccelerationStructure(object->VMInstance.VertexMesh);
-		}
-
-
-
-	ResourceManager->FlushCommandList(mesh_as_cl);
-	mesh_as_cl->Reset();
-	mesh_as_cl->BindResources(ResourceManager);
-
-	if (!build) {
-		lbvh_builder->Build(mesh_as_cl, gvb, mesh);
-		build = true;
-	}
-
-	// Trace rays
-	mesh_as_cl->SetPipelineState(rt_ps);
-	mesh_as_cl->BindUAVBufferSRV(0, gvb);
-	mesh_as_cl->BindUAVBufferSRV(1, mesh->GetLBVHNodeBufferResource());
-	mesh_as_cl->BindUAVTexture(2, rt_output);
-	mesh_as_cl->SetRoot32BitConstant(3, mesh->GetGVBVertexOffset(), 0);
-	mesh_as_cl->SetRoot32BitConstant(3, mesh->GetTriangleCount(), 1);
-	mesh_as_cl->SetRootCBV(4, Scene->Camera->GetConstantBuffer());
-	mesh_as_cl->Dispatch(ceil(Width / 8.0f), ceil(Height / 8.0f));
-
-	mesh_as_cl->Close();
-	ResourceManager->ExecuteCommandList(mesh_as_cl);
-
+	ResourceManager->ExecuteCommandList(lbvh_cl);
 	ResourceManager->FlushCommandLists();
+	ResourceManager->ExecuteCommandList(rt_cl);
 }

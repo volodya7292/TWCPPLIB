@@ -130,7 +130,6 @@ void TW3D::TW3DLBVHBuilder::Build(TW3DGraphicsCommandList* CommandList, TW3DReso
 	});
 
 	// Setup LBVH nodes
-	//CommandList->ResourceBarrier(VertexMesh->GetLBVHNodeBufferResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	CommandList->SetPipelineState(setup_lbvh_nodes_ps);
 	CommandList->BindUAVBufferSRV(0, GVB);
 	CommandList->BindUAVBufferSRV(1, VertexMesh->GetMCBufferResource());

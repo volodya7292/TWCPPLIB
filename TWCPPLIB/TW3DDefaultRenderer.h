@@ -10,6 +10,7 @@ namespace TW3D {
 		void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height);
 		void Resize(TWT::UInt Width, TWT::UInt Height);
 		void Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStesncilOutput);
+		void RecordBeforeExecution();
 		void Update();
 		void Execute(TWT::UInt BackBufferIndex);
 
@@ -17,16 +18,15 @@ namespace TW3D {
 		void CreateBlitResources();
 		void CreateGBufferResources();
 		void CreateGVBResources();
+		void CreateGLBVHNodeBufferResources();
 		void CreateRTResources();
 
 		void BlitOutput(TW3DGraphicsCommandList* cl, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* Depth);
 
 		TW3DResourceUAV* rt_output;
 
-		// Mesh AS Build commandl list
-		// --------------------------------------------------------------------- 
-		TW3DGraphicsCommandList *mesh_as_cl;
-
+		TW3DGraphicsCommandList* lbvh_cl; // CL for building (global) LBVH node buffer
+		TW3DGraphicsCommandList* rt_cl;   // Ray tracing CL
 
 		// GBuffer render
 		// --------------------------------------------------------------------- 
@@ -35,15 +35,22 @@ namespace TW3D {
 		// Global vertex buffer builder
 		// --------------------------------------------------------------------- 
 		TW3DGraphicsPipelineState *gvb_ps;
-		std::unordered_set<TW3DVertexBuffer*> gvb_vertex_buffers;
-		std::unordered_set<TW3DVertexMesh*>   gvb_vertex_meshes;
+		TWT::Vector<TW3DVertexBuffer*> gvb_vertex_buffers;
+		TWT::Vector<TW3DVertexMesh*>   gvb_vertex_meshes;
 		TW3DResourceUAV* gvb;
 		TWT::UInt gvb_vertex_count;
 
+		// LBVHs global buffer
+		// --------------------------------------------------------------------- 
+		TW3DComputePipelineState *glbvh_nodes_ps;
+		TW3DResourceUAV* g_lbvh_nodes;
+		TWT::UInt g_lbvh_node_count;
+
+
 		// Ray tracing compute
 		// --------------------------------------------------------------------- 
-		TW3DLBVHBuilder* lbvh_builder;
 		TW3DComputePipelineState *rt_ps;
+		TW3DLBVHBuilder* lbvh_builder;
 
 		// Blit output
 		// --------------------------------------------------------------------- 

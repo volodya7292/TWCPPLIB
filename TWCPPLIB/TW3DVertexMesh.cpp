@@ -47,6 +47,14 @@ TWT::UInt TW3D::TW3DVertexMesh::GetGVBVertexOffset() {
 	return VertexBuffers[0]->GetVertexOffset();
 }
 
+TWT::UInt TW3D::TW3DVertexMesh::GetGNBOffset() {
+	return GNBNodeOffset;
+}
+
+void TW3D::TW3DVertexMesh::SetGNBOffset(TWT::UInt NodeOffset) {
+	GNBNodeOffset = NodeOffset;
+}
+
 TWT::UInt TW3D::TW3DVertexMesh::GetVertexCount() {
 	TWT::UInt64 count = 0;
 	for (TW3DVertexBuffer* vb : VertexBuffers)

@@ -362,6 +362,9 @@
     <FxCompile Include="CalculateMeshBoundingBox.c.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="BuildGlobalLBVHNodeBuffer.c.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSLHelper.hlsli">
