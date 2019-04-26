@@ -76,7 +76,7 @@ namespace TW3D {
 
 		const D3D12_COMMAND_LIST_TYPE Type;
 
-		TWT::UInt64 SignalValue;
+		TWT::UInt64 SignalValue = 0;
 
 	private:
 		ID3D12GraphicsCommandList* command_list;

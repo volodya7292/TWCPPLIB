@@ -192,6 +192,9 @@
     <ClInclude Include="TW3DBitonicSorter.h">
       <Filter>Header Files\TW3DModule</Filter>
     </ClInclude>
+    <ClInclude Include="TWLogger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -308,6 +311,9 @@
     </ClCompile>
     <ClCompile Include="TW3DBitonicSorter.cpp">
       <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
+    </ClCompile>
+    <ClCompile Include="TWLogger.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

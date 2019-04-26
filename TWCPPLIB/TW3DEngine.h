@@ -12,6 +12,8 @@ namespace TW3D {
 		TWT::String	WindowTitle = "TW3DEngine";
 		// Additional threads for application, not for engine
 		TWT::UInt AdditionalThreadCount = 0;
+		// Log file
+		TWT::String LogFilename = "";
 	};
 
 	using DefaultHandler       = void(*)();

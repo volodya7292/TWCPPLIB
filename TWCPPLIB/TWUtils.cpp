@@ -35,7 +35,13 @@ TWT::Byte* TWU::ReadFileBytes(TWT::String filename, TWT::Int& size) {
 	return nullptr;
 }
 
-TWT::Float64 TWU::GetTime() {
+TWT::Time TWU::GetTime() {
+	time_t theTime = time(NULL);
+	tm *aTime = localtime(&theTime);
+	return *aTime;
+}
+
+TWT::Float64 TWU::GetTimeSeconds() {
 	TWT::Float64 time = static_cast<TWT::Float64>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 	return time / 1.0e9;
 }

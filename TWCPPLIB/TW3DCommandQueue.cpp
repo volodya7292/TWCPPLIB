@@ -31,7 +31,7 @@ TWT::Bool TW3D::TW3DCommandQueue::IsCommandListRunning(TW3DGraphicsCommandList* 
 }
 
 void TW3D::TW3DCommandQueue::FlushCommandList(TW3DGraphicsCommandList* CommandList) {
-	if (fence->GetCompletedValue() < fence_flush_value) {
+	if (fence->GetCompletedValue() < CommandList->SignalValue) {
 		HANDLE fenceEvent = NULL;
 		TWU::SuccessAssert(fence->SetEventOnCompletion(CommandList->SignalValue, fenceEvent));
 		WaitForSingleObject(fenceEvent, INFINITE);

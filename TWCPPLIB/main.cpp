@@ -43,9 +43,10 @@ void on_char(TWT::WChar Symbol) {
 int main() {
 	TW3D::InitializeInfo info = {};
 	info.AdditionalThreadCount = 1;
+	info.LogFilename = "Log.log"s;
 	TW3D::Initialize(info);
 
-	TW3D::SetVSync(false);
+	TW3D::SetVSync(true);
 
 	TW3D::TW3DResourceManager* RM = TW3D::GetResourceManager();
 

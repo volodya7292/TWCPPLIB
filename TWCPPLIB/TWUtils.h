@@ -18,7 +18,8 @@ namespace TWU {
 	// Read entire file into byte array
 	TWT::Byte* ReadFileBytes(TWT::String filename, TWT::Int& size);
 
-	TWT::Float64 GetTime();
+	TWT::Time GetTime();
+	TWT::Float64 GetTimeSeconds();
 
 	inline TWT::UInt8 Log2(TWT::UInt64 value) {
 		unsigned long mssb; // most significant set bit

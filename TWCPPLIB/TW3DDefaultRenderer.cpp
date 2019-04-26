@@ -273,4 +273,6 @@ void TW3D::TW3DDefaultRenderer::Execute(TWT::UInt BackBufferIndex) {
 
 	mesh_as_cl->Close();
 	ResourceManager->ExecuteCommandList(mesh_as_cl);
+
+	ResourceManager->FlushCommandLists();
 }

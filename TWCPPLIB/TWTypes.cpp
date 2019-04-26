@@ -50,11 +50,6 @@ TWT::String TWT::WString::Multibyte() {
 	//return String(stemp);
 }
 
-//TWT::WString& TWT::WString::operator+(const WString& t) {
-//	data += t.data;
-//	return *this;
-//}
-
 TWT::WString& TWT::WString::operator+=(const WString& t) {
 	data += t.data;
 	return *this;
@@ -92,18 +87,26 @@ std::wostream& operator<<(std::wostream& os, const TWT::WString& t) {
 	return os << t.data;
 }
 
-std::string operator+(const std::string & str, const TWT::String & t) {
+TWT::String operator+(const TWT::String& t, const TWT::String& str) {
+	return t.data + str.data;
+}
+
+std::string operator+(const std::string& str, const TWT::String& t) {
 	return str + t.data;
 }
 
-std::string operator+(const TWT::String & t, const std::string & str) {
+std::string operator+(const TWT::String& t, const std::string& str) {
 	return t.data + str;
 }
 
-std::wstring operator+(const std::wstring & str, const TWT::WString & t) {
+TWT::WString operator+(const TWT::WString& t, const TWT::WString& str) {
+	return t.data + str.data;
+}
+
+std::wstring operator+(const std::wstring& str, const TWT::WString& t) {
 	return str + t.data;
 }
 
-std::wstring operator+(const TWT::WString & t, const std::wstring & str) {
+std::wstring operator+(const TWT::WString& t, const std::wstring& str) {
 	return t.data + str;
 }

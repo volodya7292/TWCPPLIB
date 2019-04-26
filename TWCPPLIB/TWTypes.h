@@ -22,6 +22,8 @@ namespace TWT {
 	using Float   = float;
 	using Float64 = double;
 
+	using Time = tm;
+
 	template<class T>
 	using Vector = std::vector<T>;
 
@@ -88,7 +90,9 @@ std::wostream& operator << (std::wostream& os, const TWT::WString& t);
 //	return std::to_string(t) + str;
 //}
 
+TWT::String  operator+(const TWT::String&  t, const TWT::String&  str);
 std::string  operator+(const std::string&  str, const TWT::String&  t);
 std::string  operator+(const TWT::String&  t, const std::string&  str);
+TWT::WString operator+(const TWT::WString& t, const TWT::WString& str);
 std::wstring operator+(const std::wstring& str, const TWT::WString& t);
 std::wstring operator+(const TWT::WString& t, const std::wstring& str);

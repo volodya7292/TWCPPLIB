@@ -3,6 +3,9 @@
 #include "TW3DDevice.h"
 #include "TW3DSwapChain.h"
 #include "TW3DPrimitives.h"
+#include "TWLogger.h"
+
+static TW::TWLogger* logger;
 
 static TWT::Float delta_time;
 
@@ -90,11 +93,13 @@ void init_window() {
 	SetFocus(hwnd);
 	ShowWindow(hwnd, SW_SHOW);
 	UpdateWindow(hwnd);
+	logger->LogInfo("Window initialized.");
 }
 
 void init_input() {
 	for (size_t i = 0; i < KeysDown.size(); i++)
 		KeysDown[i] = false;
+	logger->LogInfo("User input interface initialized.");
 }
 
 void init_dx12() {
@@ -120,20 +125,33 @@ void init_dx12() {
 	}
 #endif
 
+	logger->LogInfo("DirectX debug layer initialized.");
+
 	factory = new TW3D::TW3DFactory(dxgi_factory_flags);
+	logger->LogInfo("DirectX initialization stage 1");
 	std::vector<TW3D::TW3DAdapter*> adapters = TW3D::TW3DAdapter::ListAvailable(factory, D3D_FEATURE_LEVEL_11_0);
 	adapter = adapters[0];
+	logger->LogInfo("DirectX initialization stage 2");
 	device = new TW3D::TW3DDevice(adapter);
+	logger->LogInfo("DirectX initialization stage 3");
 	resource_manager = new TW3D::TW3DResourceManager(device);
+	logger->LogInfo("DirectX initialization stage 4");
 	swapChain = new TW3D::TW3DSwapChain(factory, resource_manager->GetDirectCommandQueue(), hwnd, width, height, true);
+	logger->LogInfo("DirectX initialization stage 5");
 
 	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++)
 		renderTargets[i] = resource_manager->CreateRenderTargetView(swapChain->GetBuffer(i));
+	logger->LogInfo("DirectX initialization stage 6");
 
 	depthStencil = resource_manager->CreateDepthStencilView(width, height);
+	logger->LogInfo("DirectX initialization stage 7");
 
 	current_frame_index = swapChain->GetCurrentBufferIndex();
+	logger->LogInfo("DirectX initialization stage 8");
 	TW3DPrimitives::Initialize(resource_manager);
+	logger->LogInfo("DirectX initialization stage 9");
+
+	logger->LogInfo("DirectX initialized.");
 }
 
 void update() {
@@ -213,11 +231,11 @@ void main_loop() {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		} else {
-			TWT::Float64 t0 = TWU::GetTime();
+			TWT::Float64 t0 = TWU::GetTimeSeconds();
 			update();
 			if (!minimized)
 				render();
-			TWT::Float64 t1 = TWU::GetTime();
+			TWT::Float64 t1 = TWU::GetTimeSeconds();
 			delta_time = t1 - t0;
 		}
 	}
@@ -232,18 +250,18 @@ void cleanup() {
 	if (swapChain->GetFullscreen())
 		swapChain->SetFullscreen(false);
 
+	delete resource_manager;
 	delete factory;
 	delete adapter;
 	delete device;
 	delete swapChain;
 	delete depthStencil;
-
 	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; ++i)
 		delete renderTargets[i];
 
-	delete resource_manager;
-
 	TW3DPrimitives::Cleanup();
+
+	delete logger;
 
 	if (on_cleanup)
 		on_cleanup();
@@ -261,6 +279,12 @@ void TW3D::Initialize(const InitializeInfo& info) {
 	height = info.WindowHeight;
 	title = info.WindowTitle;
 	additional_thread_count = info.AdditionalThreadCount;
+
+#ifdef _DEBUG
+	logger = new TW::TWLogger("TW3D");
+#else
+	logger = new TW::TWLogger(info.LogFilename, "TW3D");
+#endif
 
 	init_window();
 	init_input();
