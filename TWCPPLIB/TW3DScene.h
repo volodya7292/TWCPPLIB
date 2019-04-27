@@ -22,10 +22,10 @@ namespace TW3D {
 
 		TWT::Vector<std::pair<TW3DVertexBuffer*, TWT::UInt>> vertex_buffers;
 		
-
-		
 		TWT::UInt gvb_vertex_count;
 		TW3DResourceUAV* gnb;
 		TWT::UInt gnb_node_count;
+
+		TW3DLBVH* LBVH;
 	};
 }

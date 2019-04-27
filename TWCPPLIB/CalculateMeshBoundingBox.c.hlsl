@@ -15,8 +15,6 @@ ConstantBuffer<InputData> input : register(b0);
 
 [numthreads(1, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
-	if (DTid.x * PRIMITIVES_PER_THREAD >= input.element_count) return;
-
 	float3 pMin;
 	float3 pMax;
 
@@ -46,10 +44,10 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		}
 	} else {
 		for (uint i = 0; i < PRIMITIVES_PER_THREAD; i++) {
-			uint prim_index = DTid.x * PRIMITIVES_PER_THREAD * 3 * iteration + i;
+			uint prim_index = DTid.x * PRIMITIVES_PER_THREAD * iteration + i;
 
-			//if (vert_index >= gvb_vertex_offset + vertex_count)
-			//	break;
+			if (prim_index >= input.element_count)
+				break;
 
 			Bounds bounds = bounding_box[prim_index];
 

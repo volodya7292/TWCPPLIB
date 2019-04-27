@@ -9,6 +9,8 @@ namespace TW3DShaders {
 		BuildLBVHSplits,
 		UpdateLBVHNodeBounds,
 		BuildGLBVHNB,
+		CalculateLBVHsBoundingBox,
+		CalculateMortonCodesForLBVHs,
 		ComputeShaderCount
 	};
 

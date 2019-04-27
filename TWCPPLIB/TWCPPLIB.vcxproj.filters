@@ -377,6 +377,15 @@
     <FxCompile Include="UpdateLBVHNodeBounds.c.hlsl">
       <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
+    <FxCompile Include="CalculateLBVHsBoundingBox.c.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="CalculateMortonCodesForLBVHs.c.hlsl">
+      <Filter>Resource Files\Shaders\LBVH</Filter>
+    </FxCompile>
+    <FxCompile Include="SetupLBVHNodesFromLBVHs.c.hlsl">
+      <Filter>Resource Files\Shaders\LBVH</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSLHelper.hlsli">

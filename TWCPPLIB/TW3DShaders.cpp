@@ -6,6 +6,8 @@
 #include "BuildLBVHSplits.c.h"
 #include "UpdateLBVHNodeBoundaries.c.h"
 #include "BuildGlobalLBVHNodeBuffer.c.h"
+#include "CalculateLBVHsBoundingBox.c.h"
+#include "CalculateMortonCodesForLBVHs.c.h"
 
 #include "BuildGlobalVertexBuffer.v.h"
 
@@ -24,10 +26,10 @@ void TW3DShaders::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 	rs0->SetParameterConstants(2, D3D12_SHADER_VISIBILITY_ALL, 0, 4); // Input data constants
 	rs0->Create(device);
 
-	TW3D::TW3DComputePipelineState* bounding_box_calc_ps = new TW3D::TW3DComputePipelineState(rs0);
-	bounding_box_calc_ps->SetShader(TW3DCompiledShader(CalculateMeshBoundingBox_ByteCode));
-	bounding_box_calc_ps->Create(device);
-	compute_shaders[CalculateMeshBoundingBox] = bounding_box_calc_ps;
+	TW3D::TW3DComputePipelineState* mesh_bounding_box_calc_ps = new TW3D::TW3DComputePipelineState(rs0);
+	mesh_bounding_box_calc_ps->SetShader(TW3DCompiledShader(CalculateMeshBoundingBox_ByteCode));
+	mesh_bounding_box_calc_ps->Create(device);
+	compute_shaders[CalculateMeshBoundingBox] = mesh_bounding_box_calc_ps;
 
 
 	TW3D::TW3DRootSignature* rs1 = new TW3D::TW3DRootSignature(false, false, false, false);
@@ -94,6 +96,37 @@ void TW3DShaders::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 	glbvh_nodes_ps->Create(device);
 	compute_shaders[BuildGLBVHNB] = glbvh_nodes_ps;
 
+
+	TW3D::TW3DRootSignature* rs6 = new TW3D::TW3DRootSignature(false, false, false, false);
+	rs6->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Node Buffer SRV
+	rs6->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Global Node Buffer offsets SRV
+	rs6->SetParameterUAVBuffer(2, D3D12_SHADER_VISIBILITY_ALL, 0); // Bounding box UAV
+	rs6->SetParameterConstants(3, D3D12_SHADER_VISIBILITY_ALL, 0, 2); // Input data constants
+	rs6->Create(device);
+
+	TW3D::TW3DComputePipelineState* lbvhs_bounding_box_calc_ps = new TW3D::TW3DComputePipelineState(rs6);
+	lbvhs_bounding_box_calc_ps->SetShader(TW3DCompiledShader(CalculateLBVHsBoundingBox_ByteCode));
+	lbvhs_bounding_box_calc_ps->Create(device);
+	compute_shaders[CalculateLBVHsBoundingBox] = lbvhs_bounding_box_calc_ps;
+
+
+	TW3D::TW3DRootSignature* rs7 = new TW3D::TW3DRootSignature(false, false, false, false);
+	rs7->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
+	rs7->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Global Node Buffer offsets SRV
+	rs7->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_ALL, 2); // Bounding box Buffer SRV
+	rs7->SetParameterUAVBuffer(3, D3D12_SHADER_VISIBILITY_ALL, 0); // Morton codes buffer UAV
+	rs7->SetParameterUAVBuffer(4, D3D12_SHADER_VISIBILITY_ALL, 1); // Morton code indices buffer UAV
+	rs7->SetParameterConstants(5, D3D12_SHADER_VISIBILITY_ALL, 0, 1); // Input data constants
+	rs7->Create(device);
+
+	TW3D::TW3DComputePipelineState* lbvhs_morton_calc_ps = new TW3D::TW3DComputePipelineState(rs7);
+	lbvhs_morton_calc_ps->SetShader(TW3DCompiledShader(CalculateMortonCodesForLBVHs_ByteCode));
+	lbvhs_morton_calc_ps->Create(device);
+	compute_shaders[CalculateMortonCodesForLBVHs] = lbvhs_morton_calc_ps;
+
+
+	// -----------------------------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------------------------
 
 
 	TW3D::TW3DRootSignature* grs0 = new TW3D::TW3DRootSignature(false, true, false);

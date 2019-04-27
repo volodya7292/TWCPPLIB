@@ -12,7 +12,7 @@ namespace TW3D {
 		TW3DResourceUAV* GetNodeBuffer();
 
 		void BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffset);
-		void BuildFromLBVHs(TW3DResourceUAV* GNB, TWT::UInt GNBOffset);
+		void BuildFromLBVHs(TW3DResourceUAV* GNB, TWT::UInt GNBOffset, TWT::UInt GNBNodeCount);
 
 	private:
 		TW3DResourceManager* resource_manager;
@@ -20,9 +20,8 @@ namespace TW3D {
 		TW3DResourceUAV* bounding_box_buffer;
 		TW3DResourceUAV* morton_codes_buffer;
 		TW3DResourceUAV* morton_indices_buffer;
-		TW3DResourceUAV* node_buffer = 0;
+		TW3DResourceUAV* node_buffer;
 
-		TWT::Bool resources_initialized = false;
 		TWT::UInt element_count;
 		TWT::UInt node_count;
 	};
