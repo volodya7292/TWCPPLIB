@@ -62,7 +62,7 @@ void TW3D::TW3DLBVH::BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffs
 		TW3D::TW3DTransitionBarrier(morton_indices_buffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
 	});
 
-		// Calculate morton codes
+	// Calculate morton codes
 	cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::CalculateMortonCodes));
 	cl->BindUAVBufferSRV(0, GVB);
 	cl->BindUAVBufferSRV(1, bounding_box_buffer);

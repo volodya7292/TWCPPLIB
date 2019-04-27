@@ -263,7 +263,6 @@
     <ClInclude Include="TW3DBitonicSorter.h" />
     <ClInclude Include="TW3DComputePipelineState.h" />
     <ClInclude Include="TW3DLBVH.h" />
-    <ClInclude Include="TW3DLBVHBuilder.h" />
     <ClInclude Include="TW3DModules.h" />
     <ClInclude Include="TW3DShaders.h" />
     <ClInclude Include="TWLogger.h" />
@@ -315,7 +314,6 @@
     <ClCompile Include="TW3DBitonicSorter.cpp" />
     <ClCompile Include="TW3DComputePipelineState.cpp" />
     <ClCompile Include="TW3DLBVH.cpp" />
-    <ClCompile Include="TW3DLBVHBuilder.cpp" />
     <ClCompile Include="TW3DModules.cpp" />
     <ClCompile Include="TW3DShaders.cpp" />
     <ClCompile Include="TWLogger.cpp" />
@@ -472,6 +470,18 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BuildGlobalLBVHNodeBuffer_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BuildGlobalLBVHNodeBuffer.c.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">BuildGlobalLBVHNodeBuffer_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">BuildGlobalLBVHNodeBuffer.c.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BuildGlobalLBVHNodeBuffer_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BuildGlobalLBVHNodeBuffer.c.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="CalculateMeshBoundingBox.c.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
@@ -606,6 +616,18 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BuildGlobalVertexBuffer_VertexByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BuildGlobalVertexBuffer.v.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">BuildGlobalVertexBuffer_VertexByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">BuildGlobalVertexBuffer.v.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BuildGlobalVertexBuffer_VertexByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BuildGlobalVertexBuffer.v.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="BuildLBVHSplits.c.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>

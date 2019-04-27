@@ -17,7 +17,6 @@ TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete rt_ps;
 	delete blit_ps;
 
-	delete lbvh_builder;
 	//delete BitonicSorter;
 
 	delete lbvh_cl;
@@ -25,8 +24,6 @@ TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 
 	delete rt_output;
 	delete texture;
-	delete gvb;
-	delete g_lbvh_nodes;
 }
 
 void TW3D::TW3DDefaultRenderer::CreateBlitResources() {
@@ -141,7 +138,6 @@ void TW3D::TW3DDefaultRenderer::CreateRTResources() {
 
 	rt_cl = ResourceManager->CreateComputeCommandList();
 
-	lbvh_builder = new TW3DLBVHBuilder(ResourceManager);
 	lbvh_cl = ResourceManager->CreateComputeCommandList();
 }
 

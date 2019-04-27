@@ -1,6 +1,5 @@
 #pragma once
 #include "TW3DRenderer.h"
-#include "TW3DLBVHBuilder.h"
 
 namespace TW3D {
 	class TW3DDefaultRenderer : public TW3DRenderer {
@@ -35,22 +34,15 @@ namespace TW3D {
 		// Global vertex buffer builder
 		// --------------------------------------------------------------------- 
 		TW3DGraphicsPipelineState *gvb_ps;
-		TWT::Vector<TW3DVertexBuffer*> gvb_vertex_buffers;
-		TWT::Vector<TW3DVertexMesh*>   gvb_vertex_meshes;
-		TW3DResourceUAV* gvb;
-		TWT::UInt gvb_vertex_count;
 
 		// LBVHs global buffer
 		// --------------------------------------------------------------------- 
 		TW3DComputePipelineState *glbvh_nodes_ps;
-		TW3DResourceUAV* g_lbvh_nodes;
-		TWT::UInt g_lbvh_node_count;
 
 
 		// Ray tracing compute
 		// --------------------------------------------------------------------- 
 		TW3DComputePipelineState *rt_ps;
-		TW3DLBVHBuilder* lbvh_builder;
 
 		// Blit output
 		// --------------------------------------------------------------------- 

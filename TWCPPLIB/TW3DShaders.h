@@ -2,13 +2,19 @@
 #include "TW3DResourceManager.h"
 
 namespace TW3DShaders {
-	enum TW3DComputeShader {
+	enum ComputeShader {
 		CalculateMeshBoundingBox,
 		CalculateMortonCodes,
 		SetupLBVHNodes,
 		BuildLBVHSplits,
 		UpdateLBVHNodeBounds,
+		BuildGNB,
 		ComputeShaderCount
+	};
+
+	enum GraphicsShader {
+		BuildGVB,
+		GraphicsShaderCount
 	};
 
 	void Initialize(TW3D::TW3DResourceManager* ResourceManager);

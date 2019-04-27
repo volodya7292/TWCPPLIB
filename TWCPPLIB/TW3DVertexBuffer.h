@@ -8,18 +8,13 @@ namespace TW3D {
 		TW3DVertexBuffer(TW3DDevice* Device, TWT::UInt VertexCount, TWT::UInt SingleVertexSize, TW3DTempGCL* TempGCL);
 		~TW3DVertexBuffer();
 
-		TW3DResourceVB* GetVBResource();
-		TW3DResourceCB* GetCBResource();
+		TW3DResourceVB* GetResource();
 
 		void Update(const void* Data, TWT::UInt VertexCount);
-		TWT::UInt GetVertexOffset();
-		void SetVertexOffset(TWT::UInt VertexOffset);
 		TWT::UInt GetVertexCount();
 		TWT::UInt GetSizeInBytes();
 
 	private:
 		TW3DResourceVB* vertex_buffer;
-		TW3DResourceCB* constant_buffer;
-		TWT::UInt GVBVertexOffset;
 	};
 }
