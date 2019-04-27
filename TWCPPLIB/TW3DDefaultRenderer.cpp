@@ -176,7 +176,10 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 
 bool build = false;
 void TW3D::TW3DDefaultRenderer::RecordBeforeExecution() {
-	Scene->RecordBeforeExecution();
+	if (!build) {
+		Scene->RecordBeforeExecution();
+		build = true;
+	}
 
 	auto mesh = Scene->vertex_meshes[0];
 
@@ -207,6 +210,7 @@ void TW3D::TW3DDefaultRenderer::Update() {
 
 void TW3D::TW3DDefaultRenderer::Execute(TWT::UInt BackBufferIndex) {
 	TW3DRenderer::Execute(BackBufferIndex);
+	
 	ResourceManager->ExecuteCommandList(rt_cl);
 	ResourceManager->FlushCommandLists();
 	ResourceManager->ExecuteCommandList(execute_cl);

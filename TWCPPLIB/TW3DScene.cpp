@@ -65,7 +65,8 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	}
 	gcl->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	gcl->Close();
-
+	resource_manager->ExecuteCommandList(gcl);
+	resource_manager->FlushCommandList(gcl);
 
 	// Build LBVHs
 	// -------------------------------------------------------------------------------------------------------------------------
@@ -88,10 +89,6 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	cl->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	cl->Close();
 
-
-	resource_manager->ExecuteCommandList(gcl);
 	resource_manager->ExecuteCommandList(cl);
-
-	resource_manager->FlushCommandList(gcl);
 	resource_manager->FlushCommandList(cl);
 }

@@ -192,6 +192,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
 	//trace_screen_ray({ CAM_POS, dir }, index);
 	float4 color = findNearestIntersection(r);
+	//float4 color = float4(1, 0, 1, 1);
 
 	//tet g = { float4(DTid.x / 1280.0, 0, 0, 1), float4(0, DTid.x / 1280.0, 0, 1) };
 	//buffer[DTid.x] = g;
