@@ -4,7 +4,7 @@
 TW3D::TW3DResourceUAV::TW3DResourceUAV(TW3DDevice* Device, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::UInt ElementSizeInBytes) :
 	TW3DResource(Device), SRVDescriptorHeap(SRVDescriptorHeap), element_size(ElementSizeInBytes) {
 	SRVIndex = SRVDescriptorHeap->Allocate(); // For SRV
-	SRVDescriptorHeap->Allocate(); // For UAV
+	UAVIndex = SRVDescriptorHeap->Allocate(); // For UAV
 
 	desc = CD3DX12_RESOURCE_DESC::Buffer(0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
@@ -26,13 +26,14 @@ TW3D::TW3DResourceUAV::TW3DResourceUAV(TW3DDevice* Device, TW3DDescriptorHeap* S
 	TW3DResource(Device), SRVDescriptorHeap(SRVDescriptorHeap)
 {
 	SRVIndex = SRVDescriptorHeap->Allocate(); // For SRV
-	SRVDescriptorHeap->Allocate(); // For UAV
-
+	UAVIndex = SRVDescriptorHeap->Allocate(); // For UAV
+	
 	desc = CD3DX12_RESOURCE_DESC::Tex2D(Format, 0, 0, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 }
 
 TW3D::TW3DResourceUAV::~TW3DResourceUAV() {
-
+	SRVDescriptorHeap->Free(SRVIndex);
+	SRVDescriptorHeap->Free(UAVIndex);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceUAV::GetGPUSRVHandle() {
@@ -40,11 +41,11 @@ D3D12_GPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceUAV::GetGPUSRVHandle() {
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceUAV::GetCPUUAVHandle() {
-	return SRVDescriptorHeap->GetCPUHandle(SRVIndex + 1);
+	return SRVDescriptorHeap->GetCPUHandle(UAVIndex);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceUAV::GetGPUUAVHandle() {
-	return SRVDescriptorHeap->GetGPUHandle(SRVIndex + 1);
+	return SRVDescriptorHeap->GetGPUHandle(UAVIndex);
 }
 
 void TW3D::TW3DResourceUAV::CreateBuffer(TWT::UInt ElementCount) {
@@ -62,7 +63,7 @@ void TW3D::TW3DResourceUAV::CreateBuffer(TWT::UInt ElementCount) {
 	Resource->SetName(L"TW3DResourceUAV Buffer");
 
 	Device->CreateShaderResourceView(Resource, &srv_desc, SRVDescriptorHeap->GetCPUHandle(SRVIndex));
-	Device->CreateUnorderedAccessView(Resource, &uav_desc, SRVDescriptorHeap->GetCPUHandle(SRVIndex + 1));
+	Device->CreateUnorderedAccessView(Resource, &uav_desc, SRVDescriptorHeap->GetCPUHandle(UAVIndex));
 }
 
 void TW3D::TW3DResourceUAV::CreateTexture2D(TWT::UInt Width, TWT::UInt Height) {
@@ -78,7 +79,7 @@ void TW3D::TW3DResourceUAV::CreateTexture2D(TWT::UInt Width, TWT::UInt Height) {
 	Resource->SetName(L"TW3DResourceUAV 2D");
 
 	Device->CreateShaderResourceView(Resource, nullptr, SRVDescriptorHeap->GetCPUHandle(SRVIndex));
-	Device->CreateUnorderedAccessView(Resource, nullptr, SRVDescriptorHeap->GetCPUHandle(SRVIndex + 1));
+	Device->CreateUnorderedAccessView(Resource, nullptr, SRVDescriptorHeap->GetCPUHandle(UAVIndex));
 }
 
 D3D12_RESOURCE_BARRIER TW3D::TW3DUAVBarrier(TW3DResource* Resource) {

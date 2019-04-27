@@ -18,62 +18,80 @@ TW3D::TW3DScene::~TW3DScene() {
 }
 
 void TW3D::TW3DScene::AddObject(TW3DObject* Object) {
-	objects.push_back(Object);
+	Objects.push_back(Object);
 }
 
 void TW3D::TW3DScene::RecordBeforeExecution() {
+	// Collect vertex buffers & meshes
+	// -------------------------------------------------------------------------------------------------------------------------
+	TWT::UInt VertexOffset = 0;
+	TWT::UInt NodeOffset = 0;
+	vertex_buffers.clear();
+	vertex_meshes.clear();
+	TWT::Vector<TW3DVertexBuffer*> buffers;
+	TWT::Vector<TW3DVertexMesh*> meshes;
+	for (TW3DObject* object : Objects) {
+		TW3DVertexMesh* mesh = object->VMInstance.VertexMesh;
+
+		if (std::find(meshes.begin(), meshes.end(), mesh) == meshes.end()) {
+			meshes.push_back(mesh);
+			vertex_meshes.push_back(std::pair(mesh, std::pair(VertexOffset, NodeOffset)));
+			NodeOffset += mesh->LBVH->GetNodeCount();
+		}
+
+		for (TW3DVertexBuffer* vb : object->VMInstance.VertexMesh->VertexBuffers)
+			if (std::find(buffers.begin(), buffers.end(), vb) == buffers.end()) {
+				buffers.push_back(vb);
+				vertex_buffers.push_back(std::pair(vb, VertexOffset));
+				VertexOffset += vb->GetVertexCount();
+			}
+	}
+	gvb_vertex_count = VertexOffset + 1;
+	gnb_node_count = NodeOffset + 1;
+
+
 	auto gcl = resource_manager->GetTemporaryDirectCommandList();
-	gcl->Reset();
 
 	// Build Global Vertex Buffer
 	// -------------------------------------------------------------------------------------------------------------------------
 	gcl->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	gcl->SetPipelineState(TW3DShaders::GetGraphicsShader(TW3DShaders::BuildGVB));
+	gcl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	gcl->BindUAVBuffer(0, gvb);
-	TWT::UInt VertexOffset = 0;
-	gvb_vertex_buffers.clear();
-	for (TW3DObject* object : objects)
-		for (TW3DVertexBuffer* vb : object->VMInstance.VertexMesh->VertexBuffers)
-			if (std::find(gvb_vertex_buffers.begin(), gvb_vertex_buffers.end(), vb) == gvb_vertex_buffers.end()) {
-				gvb_vertex_buffers.push_back(std::pair(vb, VertexOffset));
-				
-				gcl->SetVertexBuffer(0, vb->GetResource());
-				gcl->SetRoot32BitConstant(0, VertexOffset, 0);
-				gcl->Draw(vb->GetVertexCount());
-
-				VertexOffset += vb->GetVertexCount();
-			}
-	gvb_vertex_count = VertexOffset + 1;
+	for (auto entry : vertex_buffers) {
+		gcl->SetVertexBuffer(0, entry.first->GetResource());
+		gcl->SetRoot32BitConstant(1, entry.second, 0);
+		gcl->Draw(entry.first->GetVertexCount());
+	}
 	gcl->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	gcl->Close();
 
-	resource_manager->ExecuteCommandList(gcl);
-	//resource_manager->FlushCommandList(cl);
+
+	// Build LBVHs
+	// -------------------------------------------------------------------------------------------------------------------------
+	for (auto entry : vertex_meshes)
+		entry.first->LBVH->BuildFromPrimitives(gvb, entry.second.first);
+
 
 	auto cl = resource_manager->GetTemporaryComputeCommandList();
-	cl->Reset();
 
 	// Build Global Node Buffer
 	// -------------------------------------------------------------------------------------------------------------------------
 	cl->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	cl->SetPipelineState(TW3DShaders::GetGraphicsShader(TW3DShaders::BuildGNB));
-	cl->BindUAVBuffer(0, gvb);
-	TWT::UInt NodeOffset = 0;
-	gvb_vertex_meshes.clear();
-	for (TW3DObject* object : objects) {
-		TW3DVertexMesh* mesh = object->VMInstance.VertexMesh;
-		if (std::find(gvb_vertex_meshes.begin(), gvb_vertex_meshes.end(), mesh) == gvb_vertex_meshes.end()) {
-		//if (gvb_vertex_meshes.find(object->VMInstance.VertexMesh) == gvb_vertex_meshes.end()) {
-			//gvb_vertex_meshes.emplace(object->VMInstance.VertexMesh);
-			gvb_vertex_meshes.push_back(std::pair(mesh, NodeOffset));
-
-			mesh->SetGNBOffset(NodeOffset);
-			NodeOffset += mesh->GetNodeCount();
-
-			mesh2 = mesh;
-
-			mesh = object->VMInstance.VertexMesh;
-			//BuildVMAccelerationStructure(object->VMInstance.VertexMesh);
-		}
+	cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::BuildGLBVHNB));
+	cl->BindUAVBuffer(0, gnb);
+	for (auto entry : vertex_meshes) {
+		cl->BindUAVBufferSRV(1, entry.first->LBVH->GetNodeBuffer());
+		cl->SetRoot32BitConstant(2, entry.second.second, 0);
+		cl->Dispatch(entry.first->LBVH->GetNodeCount());
 	}
+	cl->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	cl->Close();
+
+
+	resource_manager->ExecuteCommandList(gcl);
+	resource_manager->ExecuteCommandList(cl);
+
+	resource_manager->FlushCommandList(gcl);
+	resource_manager->FlushCommandList(cl);
 }

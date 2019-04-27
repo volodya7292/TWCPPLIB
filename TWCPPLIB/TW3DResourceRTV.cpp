@@ -16,7 +16,8 @@ TW3D::TW3DResourceRTV::TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* R
 }
 
 TW3D::TW3DResourceRTV::~TW3DResourceRTV() {
-	
+	RTVDescriptorHeap->Free(RTVIndex);
+	SRVDescriptorHeap->Free(SRVIndex);
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceRTV::GetRTVCPUHandle() {

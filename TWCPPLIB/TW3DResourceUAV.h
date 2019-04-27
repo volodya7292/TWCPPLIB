@@ -12,12 +12,17 @@ namespace TW3D {
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUUAVHandle();
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUUAVHandle();
 
+		//void Release();
+
 		void CreateBuffer(TWT::UInt ElementCount);
 		void CreateTexture2D(TWT::UInt Width, TWT::UInt Height);
 
-	private:
 		TW3DDescriptorHeap* SRVDescriptorHeap;
-		TWT::Int SRVIndex = 0;
+		TWT::Int SRVIndex = -1, UAVIndex = -1;
+
+	private:
+		
+		
 		D3D12_RESOURCE_DESC desc;
 		D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
 		D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};

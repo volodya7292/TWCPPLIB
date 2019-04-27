@@ -16,29 +16,17 @@ namespace TW3D {
 	private:
 		void CreateBlitResources();
 		void CreateGBufferResources();
-		void CreateGVBResources();
-		void CreateGLBVHNodeBufferResources();
 		void CreateRTResources();
 
 		void BlitOutput(TW3DGraphicsCommandList* cl, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* Depth);
 
 		TW3DResourceUAV* rt_output;
 
-		TW3DGraphicsCommandList* lbvh_cl; // CL for building (global) LBVH node buffer
 		TW3DGraphicsCommandList* rt_cl;   // Ray tracing CL
 
 		// GBuffer render
 		// --------------------------------------------------------------------- 
 		TW3DGraphicsPipelineState *gbuffer_ps;
-
-		// Global vertex buffer builder
-		// --------------------------------------------------------------------- 
-		TW3DGraphicsPipelineState *gvb_ps;
-
-		// LBVHs global buffer
-		// --------------------------------------------------------------------- 
-		TW3DComputePipelineState *glbvh_nodes_ps;
-
 
 		// Ray tracing compute
 		// --------------------------------------------------------------------- 

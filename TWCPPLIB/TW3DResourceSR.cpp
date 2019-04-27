@@ -8,7 +8,7 @@ TW3D::TW3DResourceSR::TW3DResourceSR(TW3DDevice* Device, TW3DDescriptorHeap* SRV
 }
 
 TW3D::TW3DResourceSR::~TW3DResourceSR() {
-	
+	SRVDescriptorHeap->Free(SRVIndex);
 }
 
 void TW3D::TW3DResourceSR::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format) {

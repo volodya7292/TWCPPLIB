@@ -4,7 +4,7 @@
 
 namespace TW3DPrimitives {
 	void Initialize(TW3D::TW3DResourceManager* ResourceManager);
-	void Cleanup();
+	void Release();
 
 	TW3D::TW3DVertexMesh* GetCubeVertexMesh();
 }

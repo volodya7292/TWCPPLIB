@@ -5,6 +5,7 @@
 #include "SetupLBVHNodes.c.h"
 #include "BuildLBVHSplits.c.h"
 #include "UpdateLBVHNodeBoundaries.c.h"
+#include "BuildGlobalLBVHNodeBuffer.c.h"
 
 #include "BuildGlobalVertexBuffer.v.h"
 
@@ -13,6 +14,7 @@ TWT::Vector<TW3D::TW3DGraphicsPipelineState*> graphics_shaders;
 
 void TW3DShaders::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 	compute_shaders.resize(ComputeShaderCount);
+	graphics_shaders.resize(GraphicsShaderCount);
 
 	TW3D::TW3DDevice* device = ResourceManager->GetDevice();
 
@@ -81,15 +83,29 @@ void TW3DShaders::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 	compute_shaders[UpdateLBVHNodeBounds] = update_lbvh_node_boundaries;
 
 
-
-	TW3D::TW3DRootSignature* rs5 = new TW3D::TW3DRootSignature(false, true, false);
-	rs5->SetParameterUAVBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX, 0); // Global Vertex Buffer UAV
-	rs5->SetParameterConstants(1, D3D12_SHADER_VISIBILITY_VERTEX, 0, 1); // Input data constants
+	TW3D::TW3DRootSignature* rs5 = new TW3D::TW3DRootSignature(false, false, false, false);
+	rs5->SetParameterUAVBuffer(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global LBVH node buffer SRV
+	rs5->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 0); // LBVH node buffer SRV
+	rs5->SetParameterConstants(2, D3D12_SHADER_VISIBILITY_ALL, 0, 1); // Input data constants
 	rs5->Create(device);
 
-	TW3D::TW3DGraphicsPipelineState* gvb_ps = new TW3D::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, rs5);
+	TW3D::TW3DComputePipelineState* glbvh_nodes_ps = new TW3D::TW3DComputePipelineState(rs5);
+	glbvh_nodes_ps->SetShader(TW3DCompiledShader(BuildGlobalLBVHNodeBuffer_ByteCode));
+	glbvh_nodes_ps->Create(device);
+	compute_shaders[BuildGLBVHNB] = glbvh_nodes_ps;
+
+
+
+	TW3D::TW3DRootSignature* grs0 = new TW3D::TW3DRootSignature(false, true, false);
+	grs0->SetParameterUAVBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX, 0); // Global Vertex Buffer UAV
+	grs0->SetParameterConstants(1, D3D12_SHADER_VISIBILITY_VERTEX, 0, 1); // Input data constants
+	grs0->Create(device);
+
+	auto layout = TW3D::CreateInputLayout({ TW3D::POSITION_ILE, TW3D::TEXCOORD_ILE, TW3D::NORMAL_ILE });
+
+	TW3D::TW3DGraphicsPipelineState* gvb_ps = new TW3D::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, grs0);
 	gvb_ps->SetVertexShader(TW3DCompiledShader(BuildGlobalVertexBuffer_VertexByteCode));
-	gvb_ps->SetInputLayout(TW3D::CreateInputLayout({ TW3D::POSITION_ILE, TW3D::TEXCOORD_ILE, TW3D::NORMAL_ILE }));
+	gvb_ps->SetInputLayout(layout);
 	gvb_ps->Create(device);
 	graphics_shaders[BuildGVB] = gvb_ps;
 }

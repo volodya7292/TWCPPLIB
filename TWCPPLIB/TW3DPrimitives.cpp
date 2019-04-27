@@ -155,7 +155,7 @@ void TW3DPrimitives::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 	CubeVertexMesh = new TW3D::TW3DVertexMesh(ResourceManager, {CubeVertexBuffer});
 }
 
-void TW3DPrimitives::Cleanup() {
+void TW3DPrimitives::Release() {
 	delete CubeVertexMesh->VertexBuffers[0];
 	delete CubeVertexMesh;
 }

@@ -255,7 +255,6 @@ void cleanup() {
 	if (swapChain->GetFullscreen())
 		swapChain->SetFullscreen(false);
 
-	delete resource_manager;
 	delete factory;
 	delete adapter;
 	delete device;
@@ -264,12 +263,15 @@ void cleanup() {
 	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; ++i)
 		delete renderTargets[i];
 
-	TW3DPrimitives::Cleanup();
-
-	delete logger;
+	TW3DPrimitives::Release();
+	TW3DShaders::Release();
+	TW3DModules::Release();
 
 	if (on_cleanup)
 		on_cleanup();
+
+	delete resource_manager;
+	delete logger;
 
 #ifdef _DEBUG
 	ComPtr<IDXGIDebug1> dxgiDebug;

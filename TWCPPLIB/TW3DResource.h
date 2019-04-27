@@ -9,12 +9,12 @@ namespace TW3D {
 			const D3D12_RESOURCE_DESC* ResourceDescription, D3D12_RESOURCE_STATES ResourceStates, const D3D12_CLEAR_VALUE* OptimizedClearValue = nullptr);
 		TW3DResource(ID3D12Resource* Resource);
 		TW3DResource(TW3DDevice* Device);
-		~TW3DResource();
+		virtual ~TW3DResource();
 
 		ID3D12Resource* Get();
 		D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress();
 
-		void Release();
+		virtual void Release();
 
 		void Map(TWT::UInt SubResourceIndex, D3D12_RANGE* ReadRange, void** Data);
 

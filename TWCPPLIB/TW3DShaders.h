@@ -8,7 +8,7 @@ namespace TW3DShaders {
 		SetupLBVHNodes,
 		BuildLBVHSplits,
 		UpdateLBVHNodeBounds,
-		BuildGNB,
+		BuildGLBVHNB,
 		ComputeShaderCount
 	};
 

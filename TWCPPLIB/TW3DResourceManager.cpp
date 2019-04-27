@@ -86,10 +86,14 @@ TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::CreateComputeCommandLi
 }
 
 TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::GetTemporaryDirectCommandList() {
+	temp_direct_cl->Reset();
+	temp_direct_cl->BindResources(this);
 	return temp_direct_cl;
 }
 
 TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::GetTemporaryComputeCommandList() {
+	temp_compute_cl->Reset();
+	temp_compute_cl->BindResources(this);
 	return temp_compute_cl;
 }
 

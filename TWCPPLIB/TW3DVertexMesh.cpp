@@ -4,7 +4,7 @@
 TW3D::TW3DVertexMesh::TW3DVertexMesh(TW3DResourceManager* ResourceManager, const TWT::Vector<TW3DVertexBuffer*>& VertexBuffers) :
 	VertexBuffers(move(VertexBuffers))
 {
-	LBVH = new TW3DLBVH(ResourceManager);
+	LBVH = new TW3DLBVH(ResourceManager, GetTriangleCount());
 }
 
 TW3D::TW3DVertexMesh::~TW3DVertexMesh() {

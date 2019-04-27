@@ -4,6 +4,8 @@
 TW3D::TW3DDescriptorHeap::TW3DDescriptorHeap(TW3DDevice* Device, D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS Flags, TWT::UInt DescriptorCount) :
 	IncrementSize(Device->GetDescriptorHandleIncrementSize(Type))
 {
+	memset(free_descriptors, 1, sizeof(free_descriptors));
+
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 	desc.Type = Type;
 	desc.NumDescriptors = DescriptorCount;
@@ -22,7 +24,18 @@ ID3D12DescriptorHeap* TW3D::TW3DDescriptorHeap::Get() {
 }
 
 TWT::Int TW3D::TW3DDescriptorHeap::Allocate() {
-	return descriptor_count++;
+	for (size_t i = 0; i < MAX_DESCRIPTOR_COUNT; i++)
+		if (free_descriptors[i]) {
+			free_descriptors[i] = false;
+			return i;
+		}
+
+	throw std::runtime_error("NO FREE DESCRIPTORS");
+}
+
+void TW3D::TW3DDescriptorHeap::Free(TWT::Int DescriptorIndex) {
+	if (DescriptorIndex >= 0)
+		free_descriptors[DescriptorIndex] = true;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE TW3D::TW3DDescriptorHeap::GetCPUDescriptorHandleForHeapStart() {

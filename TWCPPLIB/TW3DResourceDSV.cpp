@@ -8,6 +8,7 @@ TW3D::TW3DResourceDSV::TW3DResourceDSV(TW3DDevice* Device, TW3DDescriptorHeap* D
 }
 
 TW3D::TW3DResourceDSV::~TW3DResourceDSV() {
+	DSVDescriptorHeap->Free(DSVIndex);
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceDSV::GetCPUHandle() {

@@ -22,6 +22,6 @@ namespace TW3D {
 		TW3DDescriptorHeap* SRVDescriptorHeap;
 		D3D12_RESOURCE_DESC ImageDesc = {};
 		TWT::Vector4f       ClearValue;
-		TWT::Int RTVIndex = 0, SRVIndex = 0;
+		TWT::Int RTVIndex = -1, SRVIndex = -1;
 	};
 }
