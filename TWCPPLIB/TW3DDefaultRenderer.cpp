@@ -86,10 +86,10 @@ void TW3D::TW3DDefaultRenderer::CreateRTResources() {
 
 	TW3DRootSignature* rs = new TW3DRootSignature(false, false, false, false);
 	rs->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
-	rs->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // LBVH nodes buffer SRV
-	rs->SetParameterUAVTexture(2, D3D12_SHADER_VISIBILITY_ALL, 0); // Output texture
-	rs->SetParameterConstants(3, D3D12_SHADER_VISIBILITY_ALL, 0, 2); // Input data constants
-	rs->SetParameterCBV(4, D3D12_SHADER_VISIBILITY_ALL, 1); // Camera CBV
+	rs->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Scene LBVH buffer SRV
+	rs->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_ALL, 2); // Global Node Buffer SRV
+	rs->SetParameterUAVTexture(3, D3D12_SHADER_VISIBILITY_ALL, 0); // Output texture
+	rs->SetParameterCBV(4, D3D12_SHADER_VISIBILITY_ALL, 0); // Camera CBV
 	rs->Create(Device);
 
 	rt_ps = new TW3DComputePipelineState(rs);
@@ -176,12 +176,12 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 
 bool build = false;
 void TW3D::TW3DDefaultRenderer::RecordBeforeExecution() {
-	//if (!build) {
+	if (!build) {
 		Scene->RecordBeforeExecution();
 		build = true;
-	//}
+	}
 
-	auto mesh = Scene->vertex_meshes[0];
+	//auto mesh = Scene->vertex_meshes[0];
 
 
 
@@ -192,10 +192,9 @@ void TW3D::TW3DDefaultRenderer::RecordBeforeExecution() {
 	rt_cl->BindResources(ResourceManager);
 	rt_cl->SetPipelineState(rt_ps);
 	rt_cl->BindUAVBufferSRV(0, Scene->gvb);
-	rt_cl->BindUAVBufferSRV(1, mesh.first->LBVH->GetNodeBuffer());
-	rt_cl->BindUAVTexture(2, rt_output);
-	rt_cl->SetRoot32BitConstant(3, mesh.second.first, 0);
-	rt_cl->SetRoot32BitConstant(3, mesh.first->GetTriangleCount(), 1);
+	rt_cl->BindUAVBufferSRV(1, Scene->GetLBVHNodeBuffer());
+	rt_cl->BindUAVBufferSRV(2, Scene->GetGlobalLBVHNodeBuffer());
+	rt_cl->BindUAVTexture(3, rt_output);
 	rt_cl->SetRootCBV(4, Scene->Camera->GetConstantBuffer());
 	rt_cl->Dispatch(ceil(Width / 8.0f), ceil(Height / 8.0f));
 	rt_cl->ResourceBarrier(TW3DUAVBarrier());

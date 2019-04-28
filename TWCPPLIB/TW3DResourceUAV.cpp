@@ -1,8 +1,9 @@
 #include "pch.h"
 #include "TW3DResourceUAV.h"
+#include "TW3DTempGCL.h"
 
-TW3D::TW3DResourceUAV::TW3DResourceUAV(TW3DDevice* Device, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::UInt ElementSizeInBytes) :
-	TW3DResource(Device), SRVDescriptorHeap(SRVDescriptorHeap), element_size(ElementSizeInBytes) {
+TW3D::TW3DResourceUAV::TW3DResourceUAV(TW3DDevice* Device, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::UInt ElementSizeInBytes, TW3DTempGCL* TempGCL) :
+	TW3DResource(Device), SRVDescriptorHeap(SRVDescriptorHeap), element_size(ElementSizeInBytes), temp_gcl(TempGCL) {
 	SRVIndex = SRVDescriptorHeap->Allocate(); // For SRV
 	UAVIndex = SRVDescriptorHeap->Allocate(); // For UAV
 
@@ -46,6 +47,32 @@ D3D12_CPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceUAV::GetCPUUAVHandle() {
 
 D3D12_GPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceUAV::GetGPUUAVHandle() {
 	return SRVDescriptorHeap->GetGPUHandle(UAVIndex);
+}
+
+void TW3D::TW3DResourceUAV::UpdateData(const void* Data, TWT::UInt ElementCount) {
+	TWT::UInt64 size = ElementCount * element_size;
+
+	D3D12_SUBRESOURCE_DATA upload_data = {};
+	upload_data.pData = Data;
+	upload_data.RowPitch = size;
+	upload_data.SlicePitch = size;
+
+	ID3D12Resource* upload_heap;
+	Device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(size),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		&upload_heap);
+	Resource->SetName(L"TW3DResource Upload Buffer Heap");
+
+	temp_gcl->Reset();
+	temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+	temp_gcl->UpdateSubresources(Resource, upload_heap, &upload_data);
+	temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	temp_gcl->Execute();
+
+	TWU::DXSafeRelease(upload_heap);
 }
 
 void TW3D::TW3DResourceUAV::CreateBuffer(TWT::UInt ElementCount) {

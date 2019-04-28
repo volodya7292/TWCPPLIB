@@ -52,6 +52,10 @@ void TW3D::TW3DGraphicsCommandList::ResourceBarrier(ID3D12Resource* Resource, D3
 	command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(Resource, StateBefore, StateAfter));
 }
 
+void TW3D::TW3DGraphicsCommandList::CopyBufferRegion(TW3DResource* DstBuffer, TWT::UInt64 DstOffset, TW3DResource* SrcBuffer, TWT::UInt64 SrcOffset, TWT::UInt64 ByteCount) {
+	command_list->CopyBufferRegion(DstBuffer->Get(), DstOffset, SrcBuffer->Get(), SrcOffset, ByteCount);
+}
+
 void TW3D::TW3DGraphicsCommandList::SetPipelineState(TW3D::TW3DGraphicsPipelineState* PipelineState) {
 	command_list->SetPipelineState(PipelineState->Get());
 	SetRootSignature(PipelineState->RootSignature);

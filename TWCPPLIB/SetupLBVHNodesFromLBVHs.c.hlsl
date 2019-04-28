@@ -7,8 +7,7 @@ struct InputData {
 
 StructuredBuffer<LBVHNode> gnb : register(t0);
 StructuredBuffer<uint> gnb_offsets : register(t1);
-StructuredBuffer<uint> morton_codes : register(t2);
-StructuredBuffer<uint> morton_code_indices : register(t3);
+StructuredBuffer<uint> morton_code_indices : register(t2);
 RWStructuredBuffer<LBVHNode> nodes : register(u0);
 ConstantBuffer<InputData> input : register(b0);
 
@@ -23,11 +22,11 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	if (i >= input.leaves_offset) {
 		uint node_index = gnb_offsets[i];
-		node.primitive_index = morton_code_indices[i - input.leaves_offset];
+		node.element_index = morton_code_indices[i - input.leaves_offset];
 		node.bounds.pMin = gnb[node_index].bounds.pMin;
 		node.bounds.pMax = gnb[node_index].bounds.pMax;
 	} else {
-		node.primitive_index = -1;
+		node.element_index = -1;
 		node.bounds.pMin = float3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 		node.bounds.pMax = float3(FLT_MAX, FLT_MAX, FLT_MAX);
 	}

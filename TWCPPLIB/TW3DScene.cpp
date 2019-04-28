@@ -9,12 +9,23 @@ TW3D::TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 
 	gvb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(TWT::DefaultVertex));
 	gnb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(TWT::LBVHNode));
+
+	LBVH = new TW3DLBVH(ResourceManager, 1);
 }
 
 TW3D::TW3DScene::~TW3DScene() {
 	delete Camera;
 	delete gvb;
 	delete gnb;
+	delete LBVH;
+}
+
+TW3D::TW3DResourceUAV* TW3D::TW3DScene::GetLBVHNodeBuffer() {
+	return LBVH->GetNodeBuffer();
+}
+
+TW3D::TW3DResourceUAV* TW3D::TW3DScene::GetGlobalLBVHNodeBuffer() {
+	return gnb;
 }
 
 void TW3D::TW3DScene::AddObject(TW3DObject* Object) {
@@ -30,12 +41,14 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	vertex_meshes.clear();
 	TWT::Vector<TW3DVertexBuffer*> buffers;
 	TWT::Vector<TW3DVertexMesh*> meshes;
+	TWT::Vector<TWT::UInt> gnb_node_offsets;
 	for (TW3DObject* object : Objects) {
 		TW3DVertexMesh* mesh = object->VMInstance.VertexMesh;
 
 		if (std::find(meshes.begin(), meshes.end(), mesh) == meshes.end()) {
 			meshes.push_back(mesh);
 			vertex_meshes.push_back(std::pair(mesh, std::pair(VertexOffset, NodeOffset)));
+			gnb_node_offsets.push_back(NodeOffset);
 			NodeOffset += mesh->LBVH->GetNodeCount();
 		}
 
@@ -87,8 +100,11 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 		cl->Dispatch(entry.first->LBVH->GetNodeCount());
 	}
 	cl->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
 	cl->Close();
 
 	resource_manager->ExecuteCommandList(cl);
 	resource_manager->FlushCommandList(cl);
+
+	LBVH->BuildFromLBVHs(gnb, gnb_node_offsets);
 }

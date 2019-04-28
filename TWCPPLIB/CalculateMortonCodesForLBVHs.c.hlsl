@@ -60,5 +60,5 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	uint code = morton3D(center);
 
 	morton_codes[DTid.x] = code;
-	morton_code_indices[DTid.x] = DTid.x;
+	morton_code_indices[DTid.x] = node_index;
 }

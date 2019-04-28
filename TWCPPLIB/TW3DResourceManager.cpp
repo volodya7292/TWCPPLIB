@@ -50,7 +50,7 @@ TW3D::TW3DResourceUAV* TW3D::TW3DResourceManager::CreateUnorderedAccessView(TWT:
 }
 
 TW3D::TW3DResourceUAV* TW3D::TW3DResourceManager::CreateUnorderedAccessView(TWT::UInt ElementCount, TWT::UInt ElementSizeInBytes) {
-	TW3DResourceUAV* uav = new TW3DResourceUAV(device, srv_descriptor_heap, ElementSizeInBytes);
+	TW3DResourceUAV* uav = new TW3DResourceUAV(device, srv_descriptor_heap, ElementSizeInBytes, temp_gcl);
 	uav->CreateBuffer(ElementCount);
 	return uav;
 }

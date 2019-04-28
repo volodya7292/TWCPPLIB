@@ -8,6 +8,8 @@ namespace TW3D {
 		TW3DScene(TW3DResourceManager* ResourceManager);
 		~TW3DScene();
 
+		TW3DResourceUAV* GetLBVHNodeBuffer();
+		TW3DResourceUAV* GetGlobalLBVHNodeBuffer();
 		void AddObject(TW3DObject* Object);
 		void RecordBeforeExecution();
 

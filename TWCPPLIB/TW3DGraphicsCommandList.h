@@ -30,6 +30,7 @@ namespace TW3D {
 		void ResourceBarriers(const TWT::Vector<D3D12_RESOURCE_BARRIER>& barriers);
 		void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 		void ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
+		void CopyBufferRegion(TW3DResource* DstBuffer, TWT::UInt64 DstOffset, TW3DResource* SrcBuffer, TWT::UInt64 SrcOffset, TWT::UInt64 ByteCount);
 		void SetPipelineState(TW3DGraphicsPipelineState* PipelineState);
 		void SetPipelineState(TW3DComputePipelineState* PipelineState);
 		void SetRenderTarget(TW3DResourceRTV* RTV, TW3DResourceDSV* DSV);

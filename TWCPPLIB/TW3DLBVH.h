@@ -12,7 +12,7 @@ namespace TW3D {
 		TW3DResourceUAV* GetNodeBuffer();
 
 		void BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffset);
-		void BuildFromLBVHs(TW3DResourceUAV* GNB, TWT::UInt GNBOffset, TWT::UInt GNBNodeCount);
+		void BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<TWT::UInt>& GNBOffsets);
 
 	private:
 		TW3DResourceManager* resource_manager;

@@ -11,6 +11,7 @@ namespace TW3DShaders {
 		BuildGLBVHNB,
 		CalculateLBVHsBoundingBox,
 		CalculateMortonCodesForLBVHs,
+		SetupLBVHNodesFromLBVHs,
 		ComputeShaderCount
 	};
 

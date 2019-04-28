@@ -30,7 +30,7 @@
 //           float3 pMax;               // Offset:   12
 //
 //       } bounds;                      // Offset:    0
-//       uint primitive_index;          // Offset:   24
+//       uint element_index;            // Offset:   24
 //       uint parent;                   // Offset:   28
 //       uint left_child;               // Offset:   32
 //       uint right_child;              // Offset:   36
@@ -52,7 +52,7 @@
 //           float3 pMax;               // Offset:   12
 //
 //       } bounds;                      // Offset:    0
-//       uint primitive_index;          // Offset:   24
+//       uint element_index;            // Offset:   24
 //       uint parent;                   // Offset:   28
 //       uint left_child;               // Offset:   32
 //       uint right_child;              // Offset:   36
@@ -104,10 +104,10 @@ ret
 
 const BYTE BuildGlobalLBVHNodeBuffer_ByteCode[] =
 {
-     68,  88,  66,  67, 193, 220, 
-    235, 120, 125, 105, 197, 140, 
-    204, 122, 255, 208, 153, 170, 
-     36, 116,   1,   0,   0,   0, 
+     68,  88,  66,  67, 142, 136, 
+    230,  82, 217,   6, 147, 193, 
+    154, 154,  79, 181,  30, 211, 
+    193,  57,   1,   0,   0,   0, 
     244,   5,   0,   0,   5,   0, 
       0,   0,  52,   0,   0,   0, 
     168,   3,   0,   0, 184,   3, 
@@ -216,10 +216,10 @@ const BYTE BuildGlobalLBVHNodeBuffer_ByteCode[] =
       0,   0,   0,   0,   0,   0, 
       0,   0,   0,   0,   0,   0, 
       0,   0,   0,   0,   0,   0, 
-    237,   1,   0,   0, 112, 114, 
-    105, 109, 105, 116, 105, 118, 
-    101,  95, 105, 110, 100, 101, 
-    120,   0,   0,   0,  19,   0, 
+    237,   1,   0,   0, 101, 108, 
+    101, 109, 101, 110, 116,  95, 
+    105, 110, 100, 101, 120,   0, 
+    171, 171,   0,   0,  19,   0, 
       1,   0,   1,   0,   0,   0, 
       0,   0,   0,   0,   0,   0, 
       0,   0,   0,   0,   0,   0, 

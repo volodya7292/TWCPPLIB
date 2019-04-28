@@ -8,6 +8,7 @@
 #include "BuildGlobalLBVHNodeBuffer.c.h"
 #include "CalculateLBVHsBoundingBox.c.h"
 #include "CalculateMortonCodesForLBVHs.c.h"
+#include "SetupLBVHNodesFromLBVHs.c.h"
 
 #include "BuildGlobalVertexBuffer.v.h"
 
@@ -48,11 +49,10 @@ void TW3DShaders::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 
 	TW3D::TW3DRootSignature* rs2 = new TW3D::TW3DRootSignature(false, false, false, false);
 	rs2->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
-	rs2->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Morton codes buffer SRV
-	rs2->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_ALL, 2); // Morton code indices buffer SRV
-	rs2->SetParameterUAVBuffer(3, D3D12_SHADER_VISIBILITY_ALL, 0); // LBVH nodes buffer UAV
+	rs2->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Morton code indices buffer SRV
+	rs2->SetParameterUAVBuffer(2, D3D12_SHADER_VISIBILITY_ALL, 0); // LBVH nodes buffer UAV
 	//rs2->SetParameterUAVBuffer(4, D3D12_SHADER_VISIBILITY_ALL, 1); // LBVH node lock buffer UAV to clear
-	rs2->SetParameterConstants(4, D3D12_SHADER_VISIBILITY_ALL, 0, 2); // Input data constants
+	rs2->SetParameterConstants(3, D3D12_SHADER_VISIBILITY_ALL, 0, 2); // Input data constants
 	rs2->Create(device);
 
 	TW3D::TW3DComputePipelineState* setup_lbvh_nodes_ps = new TW3D::TW3DComputePipelineState(rs2);
@@ -101,7 +101,7 @@ void TW3DShaders::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 	rs6->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Node Buffer SRV
 	rs6->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Global Node Buffer offsets SRV
 	rs6->SetParameterUAVBuffer(2, D3D12_SHADER_VISIBILITY_ALL, 0); // Bounding box UAV
-	rs6->SetParameterConstants(3, D3D12_SHADER_VISIBILITY_ALL, 0, 2); // Input data constants
+	rs6->SetParameterConstants(3, D3D12_SHADER_VISIBILITY_ALL, 0, 3); // Input data constants
 	rs6->Create(device);
 
 	TW3D::TW3DComputePipelineState* lbvhs_bounding_box_calc_ps = new TW3D::TW3DComputePipelineState(rs6);
@@ -123,6 +123,20 @@ void TW3DShaders::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 	lbvhs_morton_calc_ps->SetShader(TW3DCompiledShader(CalculateMortonCodesForLBVHs_ByteCode));
 	lbvhs_morton_calc_ps->Create(device);
 	compute_shaders[CalculateMortonCodesForLBVHs] = lbvhs_morton_calc_ps;
+
+
+	TW3D::TW3DRootSignature* rs8 = new TW3D::TW3DRootSignature(false, false, false, false);
+	rs8->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Node Buffer SRV
+	rs8->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Global Node Buffer offsets SRV
+	rs8->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_ALL, 2); // Morton code indices buffer SRV
+	rs8->SetParameterUAVBuffer(3, D3D12_SHADER_VISIBILITY_ALL, 0); // LBVH nodes buffer UAV
+	rs8->SetParameterConstants(4, D3D12_SHADER_VISIBILITY_ALL, 0, 2); // Input data constants
+	rs8->Create(device);
+
+	TW3D::TW3DComputePipelineState* lbvhs_setup_lbvh_nodes_ps = new TW3D::TW3DComputePipelineState(rs8);
+	lbvhs_setup_lbvh_nodes_ps->SetShader(TW3DCompiledShader(SetupLBVHNodesFromLBVHs_ByteCode));
+	lbvhs_setup_lbvh_nodes_ps->Create(device);
+	compute_shaders[SetupLBVHNodesFromLBVHs] = lbvhs_setup_lbvh_nodes_ps;
 
 
 	// -----------------------------------------------------------------------------------------------------------------------------------

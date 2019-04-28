@@ -56,9 +56,9 @@ void TW3D::TW3DResourceSR::CreateArray2D(TWT::UInt Width, TWT::UInt Height, TWT:
 
 void TW3D::TW3DResourceSR::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow, TWT::UInt Depth) {
 	D3D12_SUBRESOURCE_DATA textureData = {};
-	textureData.pData = &Data[0]; // pointer to our image data
-	textureData.RowPitch = BytesPerRow; // size of all our triangle vertex data
-	textureData.SlicePitch = BytesPerRow * ImageDesc.Height; // also the size of our triangle vertex data
+	textureData.pData = &Data[0];
+	textureData.RowPitch = BytesPerRow;
+	textureData.SlicePitch = BytesPerRow * ImageDesc.Height;
 
 	TWT::UInt64 textureUploadBufferSize = Device->GetCopyableFootprints(&ImageDesc, 1);
 
