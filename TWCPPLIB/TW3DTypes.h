@@ -156,14 +156,6 @@ namespace TWT {
 		}
 	};
 
-	struct LBVHNode {
-		Bounds bounds = Bounds(TWT::Vector3f(FLT_MAX), TWT::Vector3f(-FLT_MAX));
-		TWT::UInt primitive_index = 0;
-		TWT::UInt parent = 0;
-		TWT::UInt left_child = 0;
-		TWT::UInt right_child = 0;
-	};
-
 	inline Matrix4f Translate(Matrix4f Matrix, TWT::Vector3f Position) {
 		return glm::translate(Matrix, Position);
 	}

@@ -8,8 +8,8 @@ struct Camera {
 };
 
 GVB gvb : register(t0);
-RTAS scene : register(t1);
-RTAS gnb : register(t2);
+RTNB scene : register(t1);
+RTNB gnb : register(t2);
 RWTexture2D<float4> rt_output : register(u0);
 ConstantBuffer<Camera> camera : register(b0);
 

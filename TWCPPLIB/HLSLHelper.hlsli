@@ -75,8 +75,9 @@ struct LBVHNode {
 	uint right_child;
 };
 
-typedef StructuredBuffer<LBVHNode> RTAS; // Ray Tracing Acceleration Structure(s)
+typedef StructuredBuffer<LBVHNode> RTNB; // Ray Tracing Node Buffer
 typedef StructuredBuffer<Vertex>   GVB;  // Global Vertex Buffer
+typedef StructuredBuffer<float4x4> GMB;  // Global Matrix Buffer
 
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
@@ -131,7 +132,7 @@ bool triangle_intersection(in Ray ray, in GVB gvb, in uint prim_index, out Trian
 	return triangle_intersection(ray, v0, v1, v2, tri_inter);
 }
 
-bool mesh_rtas_trace_ray(in RTAS rtas, in uint node_offset, in GVB gvb, in Ray ray, out TriangleIntersection tri_inter) {
+bool mesh_rtas_trace_ray(in RTNB rtas, in uint node_offset, in GVB gvb, in Ray ray, out TriangleIntersection tri_inter) {
 	TriangleIntersection minInter, curr, tempInter;
 	minInter.IntersectionDistance = 1000;
 	float distance;
@@ -206,7 +207,7 @@ bool mesh_rtas_trace_ray(in RTAS rtas, in uint node_offset, in GVB gvb, in Ray r
 	return minInter.IntersectionDistance != 1000;
 }
 
-bool scene_rtas_trace_ray(in RTAS rtas, in Ray ray, out uint rtas_node_index) {
+bool scene_rtas_trace_ray(in RTNB rtas, in Ray ray, out uint rtas_node_index) {
 	float minDistance = 1000;
 	float distance;
 
@@ -275,7 +276,7 @@ bool scene_rtas_trace_ray(in RTAS rtas, in Ray ray, out uint rtas_node_index) {
 	return minDistance != 1000;
 }
 
-bool TraceRay(in RTAS SceneAS, in RTAS gnb, in GVB gvb, in Ray ray, out TriangleIntersection tri_inter) {
+bool TraceRay(in RTNB SceneAS, in RTNB gnb, in GVB gvb, in Ray ray, out TriangleIntersection tri_inter) {
 	uint rtas_node_index;
 	if (scene_rtas_trace_ray(SceneAS, ray, rtas_node_index))
 		if (mesh_rtas_trace_ray(gnb, rtas_node_index, gvb, ray, tri_inter))

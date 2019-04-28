@@ -8,7 +8,7 @@ TW3D::TW3DLBVH::TW3DLBVH(TW3DResourceManager* ResourceManager, TWT::UInt Element
 	morton_codes_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(TWT::UInt));
 	morton_indices_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(TWT::UInt));
 	bounding_box_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(TWT::Bounds));
-	node_buffer = resource_manager->CreateUnorderedAccessView(GetNodeCount(), sizeof(TWT::LBVHNode));
+	node_buffer = resource_manager->CreateUnorderedAccessView(GetNodeCount(), sizeof(LBVHNode));
 }
 
 TW3D::TW3DLBVH::~TW3DLBVH() {
@@ -140,7 +140,7 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<TWT:
 		morton_codes_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(TWT::UInt));
 		morton_indices_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(TWT::UInt));
 		bounding_box_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(TWT::Bounds));
-		node_buffer = resource_manager->CreateUnorderedAccessView(GetNodeCount(), sizeof(TWT::LBVHNode));
+		node_buffer = resource_manager->CreateUnorderedAccessView(GetNodeCount(), sizeof(LBVHNode));
 	}
 
 	TW3DResourceUAV* gnboffset_buffer = resource_manager->CreateUnorderedAccessView(gnboffset_count, sizeof(TWT::UInt));

@@ -8,24 +8,24 @@ namespace TW3D {
 		TW3DScene(TW3DResourceManager* ResourceManager);
 		~TW3DScene();
 
-		TW3DResourceUAV* GetLBVHNodeBuffer();
-		TW3DResourceUAV* GetGlobalLBVHNodeBuffer();
+		void Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRPI, TWT::UInt SceneRTNBRPI, TWT::UInt GNBRPI, TWT::UInt GMBRPI);
 		void AddObject(TW3DObject* Object);
 		void RecordBeforeExecution();
 
 		TW3DPerspectiveCamera* Camera;
 		TWT::Vector<TW3DObject*> Objects;
 
-		TW3DResourceUAV* gvb;
-		TWT::Vector<std::pair<TW3DVertexMesh*, std::pair<TWT::UInt, TWT::UInt>>>   vertex_meshes;
-
 	private:
 		TW3DResourceManager* resource_manager;
 
 		TWT::Vector<std::pair<TW3DVertexBuffer*, TWT::UInt>> vertex_buffers;
-		
-		TWT::UInt gvb_vertex_count;
+		TWT::Vector<std::pair<TW3DVertexMesh*, std::pair<TWT::UInt, TWT::UInt>>>   vertex_meshes;
+
+		TW3DResourceUAV* gvb;
 		TW3DResourceUAV* gnb;
+		TW3DResourceUAV* gmb;
+
+		TWT::UInt gvb_vertex_count;
 		TWT::UInt gnb_node_count;
 
 		TW3DLBVH* LBVH;

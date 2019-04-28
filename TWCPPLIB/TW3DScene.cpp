@@ -8,7 +8,8 @@ TW3D::TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 	Camera = new TW3DPerspectiveCamera(ResourceManager);
 
 	gvb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(TWT::DefaultVertex));
-	gnb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(TWT::LBVHNode));
+	gnb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(LBVHNode));
+	gmb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(TWT::Matrix4f));
 
 	LBVH = new TW3DLBVH(ResourceManager, 1);
 }
@@ -17,15 +18,15 @@ TW3D::TW3DScene::~TW3DScene() {
 	delete Camera;
 	delete gvb;
 	delete gnb;
+	delete gmb;
 	delete LBVH;
 }
 
-TW3D::TW3DResourceUAV* TW3D::TW3DScene::GetLBVHNodeBuffer() {
-	return LBVH->GetNodeBuffer();
-}
-
-TW3D::TW3DResourceUAV* TW3D::TW3DScene::GetGlobalLBVHNodeBuffer() {
-	return gnb;
+void TW3D::TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRPI, TWT::UInt SceneRTNBRPI, TWT::UInt GNBRPI, TWT::UInt GMBRPI) {
+	CommandList->BindUAVBufferSRV(GVBRPI, gvb);
+	CommandList->BindUAVBufferSRV(SceneRTNBRPI, LBVH->GetNodeBuffer());
+	CommandList->BindUAVBufferSRV(GNBRPI, gnb);
+	CommandList->BindUAVBufferSRV(GMBRPI, gmb);
 }
 
 void TW3D::TW3DScene::AddObject(TW3DObject* Object) {

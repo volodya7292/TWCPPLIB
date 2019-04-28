@@ -3,6 +3,14 @@
 #include "TW3DModules.h"
 
 namespace TW3D {
+	struct LBVHNode {
+		TWT::Bounds bounds;
+		TWT::UInt primitive_index;
+		TWT::UInt parent;
+		TWT::UInt left_child;
+		TWT::UInt right_child;
+	};
+
 	class TW3DLBVH {
 	public:
 		TW3DLBVH(TW3DResourceManager* ResourceManager, TWT::UInt ElementCount);

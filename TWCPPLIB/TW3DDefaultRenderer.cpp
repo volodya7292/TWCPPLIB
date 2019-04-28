@@ -88,8 +88,9 @@ void TW3D::TW3DDefaultRenderer::CreateRTResources() {
 	rs->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
 	rs->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Scene LBVH buffer SRV
 	rs->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_ALL, 2); // Global Node Buffer SRV
-	rs->SetParameterUAVTexture(3, D3D12_SHADER_VISIBILITY_ALL, 0); // Output texture
-	rs->SetParameterCBV(4, D3D12_SHADER_VISIBILITY_ALL, 0); // Camera CBV
+	rs->SetParameterSRV(3, D3D12_SHADER_VISIBILITY_ALL, 3); // Global Matrix Buffer SRV
+	rs->SetParameterUAVTexture(4, D3D12_SHADER_VISIBILITY_ALL, 0); // Output texture
+	rs->SetParameterCBV(5, D3D12_SHADER_VISIBILITY_ALL, 0); // Camera CBV
 	rs->Create(Device);
 
 	rt_ps = new TW3DComputePipelineState(rs);
@@ -181,21 +182,15 @@ void TW3D::TW3DDefaultRenderer::RecordBeforeExecution() {
 		build = true;
 	}
 
-	//auto mesh = Scene->vertex_meshes[0];
-
-
-
 	// Trace rays
 	// -------------------------------------------------------------------------------------------------------------------------
 	ResourceManager->FlushCommandList(rt_cl);
 	rt_cl->Reset();
 	rt_cl->BindResources(ResourceManager);
 	rt_cl->SetPipelineState(rt_ps);
-	rt_cl->BindUAVBufferSRV(0, Scene->gvb);
-	rt_cl->BindUAVBufferSRV(1, Scene->GetLBVHNodeBuffer());
-	rt_cl->BindUAVBufferSRV(2, Scene->GetGlobalLBVHNodeBuffer());
-	rt_cl->BindUAVTexture(3, rt_output);
-	rt_cl->SetRootCBV(4, Scene->Camera->GetConstantBuffer());
+	Scene->Bind(rt_cl, 0, 1, 2, 3);
+	rt_cl->BindUAVTexture(4, rt_output);
+	rt_cl->SetRootCBV(5, Scene->Camera->GetConstantBuffer());
 	rt_cl->Dispatch(ceil(Width / 8.0f), ceil(Height / 8.0f));
 	rt_cl->ResourceBarrier(TW3DUAVBarrier());
 	rt_cl->Close();
