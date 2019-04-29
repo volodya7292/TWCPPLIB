@@ -8,7 +8,7 @@ TW3D::TW3DScene* scene;
 TW3D::TW3DCube* cube;
 
 void on_update() {
-	cube->VMInstance.Transform.AdjustRotation(TWT::Vector3f(0.01f));
+	cube->VMInstance.Transform.SetPosition(TWT::Vector3f(-0.1, 0, 0));//_.AdjustRotation(TWT::Vector3f(0.01f));
 	scene->Camera->UpdateConstantBuffer();
 }
 

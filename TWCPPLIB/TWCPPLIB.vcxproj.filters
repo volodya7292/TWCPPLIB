@@ -386,6 +386,12 @@
     <FxCompile Include="SetupLBVHNodesFromLBVHs.c.hlsl">
       <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
+    <FxCompile Include="BuildLBVHSplitsFromLBVHs.c.hlsl">
+      <Filter>Resource Files\Shaders\LBVH</Filter>
+    </FxCompile>
+    <FxCompile Include="UpdateLBVHNodeBoundsForLBVHs.c.hlsl">
+      <Filter>Resource Files\Shaders\LBVH</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSLHelper.hlsli">

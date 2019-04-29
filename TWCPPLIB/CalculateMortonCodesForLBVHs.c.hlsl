@@ -5,7 +5,7 @@ struct InputData {
 };
 
 StructuredBuffer<LBVHNode> gnb : register(t0);
-StructuredBuffer<uint> gnb_offsets : register(t1);
+StructuredBuffer<SceneLBVHInstance> gnb_offsets : register(t1);
 StructuredBuffer<Bounds> bounding_box : register(t2);
 RWStructuredBuffer<uint> morton_codes : register(u0);
 RWStructuredBuffer<uint> morton_code_indices : register(u1);
@@ -48,7 +48,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	if (input.gnb_offset_count >= DTid.x)
 		return;
 
-	uint node_index = gnb_offsets[DTid.x];
+	uint node_index = gnb_offsets[DTid.x].offset;
 
 	float3 Cmin = bounding_box[0].pMin;
 	float3 Cmax = bounding_box[0].pMax;

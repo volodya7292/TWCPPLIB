@@ -8,7 +8,7 @@ namespace TW3D {
 		TW3DScene(TW3DResourceManager* ResourceManager);
 		~TW3DScene();
 
-		void Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRPI, TWT::UInt SceneRTNBRPI, TWT::UInt GNBRPI, TWT::UInt GMBRPI);
+		void Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRPI, TWT::UInt SceneRTNBRPI, TWT::UInt GNBRPI);
 		void AddObject(TW3DObject* Object);
 		void RecordBeforeExecution();
 
@@ -23,7 +23,6 @@ namespace TW3D {
 
 		TW3DResourceUAV* gvb;
 		TW3DResourceUAV* gnb;
-		TW3DResourceUAV* gmb;
 
 		TWT::UInt gvb_vertex_count;
 		TWT::UInt gnb_node_count;

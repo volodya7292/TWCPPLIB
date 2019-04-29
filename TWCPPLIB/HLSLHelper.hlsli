@@ -75,6 +75,21 @@ struct LBVHNode {
 	uint right_child;
 };
 
+struct SceneLBVHNode {
+	float4x4 transform;
+	Bounds bounds;
+	uint element_index;
+	uint parent;
+	uint left_child;
+	uint right_child;
+};
+
+struct SceneLBVHInstance {
+	uint offset;
+	float4x4 transform;
+};
+
+typedef StructuredBuffer<SceneLBVHNode> RTScene;
 typedef StructuredBuffer<LBVHNode> RTNB; // Ray Tracing Node Buffer
 typedef StructuredBuffer<Vertex>   GVB;  // Global Vertex Buffer
 typedef StructuredBuffer<float4x4> GMB;  // Global Matrix Buffer
@@ -207,7 +222,7 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint node_offset, in GVB gvb, in Ray r
 	return minInter.IntersectionDistance != 1000;
 }
 
-bool scene_rtas_trace_ray(in RTNB rtas, in Ray ray, out uint rtas_node_index) {
+bool scene_rtas_trace_ray(in RTScene rtas, in Ray ray, out uint rtas_node_index, out float4x4 transform) {
 	float minDistance = 1000;
 	float distance;
 
@@ -238,6 +253,7 @@ bool scene_rtas_trace_ray(in RTNB rtas, in Ray ray, out uint rtas_node_index) {
 					if (distance < minDistance) {
 						minDistance = distance;
 						rtas_node_index = rtas[childL].element_index;
+						transform = rtas[childL].transform;
 					}
 				} else {
 					traverseL = true;
@@ -255,6 +271,7 @@ bool scene_rtas_trace_ray(in RTNB rtas, in Ray ray, out uint rtas_node_index) {
 					if (distance < minDistance) {
 						minDistance = distance;
 						rtas_node_index = rtas[childR].element_index;
+						transform = rtas[childR].transform;
 					}
 				} else {
 					traverseR = true;
@@ -276,10 +293,16 @@ bool scene_rtas_trace_ray(in RTNB rtas, in Ray ray, out uint rtas_node_index) {
 	return minDistance != 1000;
 }
 
-bool TraceRay(in RTNB SceneAS, in RTNB gnb, in GVB gvb, in Ray ray, out TriangleIntersection tri_inter) {
+bool TraceRay(in RTScene SceneAS, in RTNB gnb, in GVB gvb, in Ray ray, out TriangleIntersection tri_inter) {
 	uint rtas_node_index;
-	if (scene_rtas_trace_ray(SceneAS, ray, rtas_node_index))
-		if (mesh_rtas_trace_ray(gnb, rtas_node_index, gvb, ray, tri_inter))
+	float4x4 transform;
+	if (scene_rtas_trace_ray(SceneAS, ray, rtas_node_index, transform)) {
+		Ray nr;
+		nr.origin = mul(transform, float4(ray.origin, 1)).xyz;
+		nr.dir = normalize(mul(transform, float4(ray.dir, 1)).xyz);
+		//nr.dir = ray.dir;
+		if (mesh_rtas_trace_ray(gnb, rtas_node_index, gvb, nr, tri_inter))
 			return true;
+	}
 	return false;
 }

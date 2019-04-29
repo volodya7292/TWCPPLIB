@@ -9,6 +9,7 @@
 #include "CalculateLBVHsBoundingBox.c.h"
 #include "CalculateMortonCodesForLBVHs.c.h"
 #include "SetupLBVHNodesFromLBVHs.c.h"
+#include "BuildLBVHSplitsFromLBVHs.c.h"
 
 #include "BuildGlobalVertexBuffer.v.h"
 
@@ -79,10 +80,10 @@ void TW3DShaders::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 	rs4->SetParameterConstants(1, D3D12_SHADER_VISIBILITY_ALL, 0, 1); // Input data constants
 	rs4->Create(device);
 
-	TW3D::TW3DComputePipelineState* update_lbvh_node_boundaries = new TW3D::TW3DComputePipelineState(rs4);
-	update_lbvh_node_boundaries->SetShader(TW3DCompiledShader(UpdateLBVHNodeBoundaries_ByteCode));
-	update_lbvh_node_boundaries->Create(device);
-	compute_shaders[UpdateLBVHNodeBounds] = update_lbvh_node_boundaries;
+	TW3D::TW3DComputePipelineState* update_lbvh_node_bounds = new TW3D::TW3DComputePipelineState(rs4);
+	update_lbvh_node_bounds->SetShader(TW3DCompiledShader(UpdateLBVHNodeBoundaries_ByteCode));
+	update_lbvh_node_bounds->Create(device);
+	compute_shaders[UpdateLBVHNodeBounds] = update_lbvh_node_bounds;
 
 
 	TW3D::TW3DRootSignature* rs5 = new TW3D::TW3DRootSignature(false, false, false, false);
@@ -137,6 +138,30 @@ void TW3DShaders::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 	lbvhs_setup_lbvh_nodes_ps->SetShader(TW3DCompiledShader(SetupLBVHNodesFromLBVHs_ByteCode));
 	lbvhs_setup_lbvh_nodes_ps->Create(device);
 	compute_shaders[SetupLBVHNodesFromLBVHs] = lbvhs_setup_lbvh_nodes_ps;
+
+
+	TW3D::TW3DRootSignature* rs9 = new TW3D::TW3DRootSignature(false, false, false, false);
+	rs9->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Morton codes buffer SRV
+	rs9->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Morton code indices buffer SRV
+	rs9->SetParameterUAVBuffer(2, D3D12_SHADER_VISIBILITY_ALL, 0); // LBVH nodes buffer UAV
+	rs9->SetParameterConstants(3, D3D12_SHADER_VISIBILITY_ALL, 0, 1); // Input data constants
+	rs9->Create(device);
+
+	TW3D::TW3DComputePipelineState* lbvhs_build_lbvh_splits_ps = new TW3D::TW3DComputePipelineState(rs9);
+	lbvhs_build_lbvh_splits_ps->SetShader(TW3DCompiledShader(BuildLBVHSplitsFromLBVHs_ByteCode));
+	lbvhs_build_lbvh_splits_ps->Create(device);
+	compute_shaders[BuildLBVHSplitsFromLBVHs] = lbvhs_build_lbvh_splits_ps;
+
+
+	TW3D::TW3DRootSignature* rs10 = new TW3D::TW3DRootSignature(false, false, false, false);
+	rs10->SetParameterUAVBuffer(0, D3D12_SHADER_VISIBILITY_ALL, 0); // LBVH nodes buffer UAV
+	rs10->SetParameterConstants(1, D3D12_SHADER_VISIBILITY_ALL, 0, 1); // Input data constants
+	rs10->Create(device);
+
+	TW3D::TW3DComputePipelineState* lbvhs_update_lbvh_node_bounds = new TW3D::TW3DComputePipelineState(rs10);
+	lbvhs_update_lbvh_node_bounds->SetShader(TW3DCompiledShader(UpdateLBVHNodeBoundaries_ByteCode));
+	lbvhs_update_lbvh_node_bounds->Create(device);
+	compute_shaders[UpdateLBVHNodeBoundsForLBVHs] = lbvhs_update_lbvh_node_bounds;
 
 
 	// -----------------------------------------------------------------------------------------------------------------------------------

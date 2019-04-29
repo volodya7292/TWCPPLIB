@@ -9,7 +9,7 @@ struct InputData {
 };
 
 StructuredBuffer<LBVHNode> gnb : register(t0);
-StructuredBuffer<uint> gnb_offsets : register(t1);
+StructuredBuffer<SceneLBVHInstance> gnb_offsets : register(t1);
 RWStructuredBuffer<Bounds> bounding_box : register(u0);
 ConstantBuffer<InputData> input : register(b0);
 
@@ -28,8 +28,18 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 			if (index >= input.gnb_offset_count)
 				break;
 
-			uint node_index = gnb_offsets[index];
+			uint node_index = gnb_offsets[index].offset;
+			float4x4 node_transform = gnb_offsets[index].transform;
 			Bounds bb = gnb[node_index].bounds;
+
+			float3 tpMin = mul(node_transform, float4(bb.pMin, 1)).xyz;
+			float3 tpMax = mul(node_transform, float4(bb.pMax, 1)).xyz;
+
+			float3 npMin = min(tpMin, tpMax);
+			float3 npMax = max(tpMin, tpMax);
+
+			/*bb.pMin = npMin;
+			bb.pMax = npMax;
 
 			if (i == 0) {
 				pMin = bb.pMin;
@@ -37,7 +47,9 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 			} else {
 				pMin = min(pMin, bb.pMin);
 				pMax = max(pMax, bb.pMax);
-			}
+			}*/
+			pMin = float3(-100, -100, -100);
+			pMax = float3(100, 100, 100);
 		}
 	} else {
 		for (uint i = 0; i < ELEMENTS_PER_THREAD; i++) {

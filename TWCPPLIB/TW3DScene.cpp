@@ -9,24 +9,21 @@ TW3D::TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 
 	gvb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(TWT::DefaultVertex));
 	gnb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(LBVHNode));
-	gmb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(TWT::Matrix4f));
 
-	LBVH = new TW3DLBVH(ResourceManager, 1);
+	LBVH = new TW3DLBVH(ResourceManager, 1, true);
 }
 
 TW3D::TW3DScene::~TW3DScene() {
 	delete Camera;
 	delete gvb;
 	delete gnb;
-	delete gmb;
 	delete LBVH;
 }
 
-void TW3D::TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRPI, TWT::UInt SceneRTNBRPI, TWT::UInt GNBRPI, TWT::UInt GMBRPI) {
+void TW3D::TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRPI, TWT::UInt SceneRTNBRPI, TWT::UInt GNBRPI) {
 	CommandList->BindUAVBufferSRV(GVBRPI, gvb);
 	CommandList->BindUAVBufferSRV(SceneRTNBRPI, LBVH->GetNodeBuffer());
 	CommandList->BindUAVBufferSRV(GNBRPI, gnb);
-	CommandList->BindUAVBufferSRV(GMBRPI, gmb);
 }
 
 void TW3D::TW3DScene::AddObject(TW3DObject* Object) {
@@ -42,14 +39,15 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	vertex_meshes.clear();
 	TWT::Vector<TW3DVertexBuffer*> buffers;
 	TWT::Vector<TW3DVertexMesh*> meshes;
-	TWT::Vector<TWT::UInt> gnb_node_offsets;
+	TWT::Vector<SceneLBVHInstance> gnb_node_offsets;
 	for (TW3DObject* object : Objects) {
 		TW3DVertexMesh* mesh = object->VMInstance.VertexMesh;
+
+		gnb_node_offsets.emplace_back(SceneLBVHInstance { NodeOffset, object->VMInstance.Transform.GetModelMatrix() });
 
 		if (std::find(meshes.begin(), meshes.end(), mesh) == meshes.end()) {
 			meshes.push_back(mesh);
 			vertex_meshes.push_back(std::pair(mesh, std::pair(VertexOffset, NodeOffset)));
-			gnb_node_offsets.push_back(NodeOffset);
 			NodeOffset += mesh->LBVH->GetNodeCount();
 		}
 
@@ -66,7 +64,7 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 
 	auto gcl = resource_manager->GetTemporaryDirectCommandList();
 
-	// Build Global Vertex Buffer
+	// Build Global Vertex Buffer                 -------- change to copying by commands
 	// -------------------------------------------------------------------------------------------------------------------------
 	gcl->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	gcl->SetPipelineState(TW3DShaders::GetGraphicsShader(TW3DShaders::BuildGVB));
@@ -101,6 +99,13 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 		cl->Dispatch(entry.first->LBVH->GetNodeCount());
 	}
 	cl->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+
+	// Write transform matrices into the Global Matrix Buffer
+	// -------------------------------------------------------------------------------------------------------------------------
+	for (auto object : Objects) {
+		
+	}
 
 	cl->Close();
 
