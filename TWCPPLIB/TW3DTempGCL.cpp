@@ -11,6 +11,10 @@ TW3D::TW3DTempGCL::~TW3DTempGCL() {
 	delete CommandQueue;
 }
 
+TW3D::TW3DGraphicsCommandList* TW3D::TW3DTempGCL::Get() {
+	return CommandList;
+}
+
 void TW3D::TW3DTempGCL::UpdateSubresources(ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate, D3D12_SUBRESOURCE_DATA* SrcData,
 	TWT::UInt SubresourcesCount, TWT::UInt64 IntermediateOffset, TWT::UInt FirstSubresource) {
 	CommandList->UpdateSubresources(DestinationResource, Intermediate, SrcData, SubresourcesCount, IntermediateOffset, FirstSubresource);

@@ -97,20 +97,18 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 		cl->BindUAVBufferSRV(1, entry.first->LBVH->GetNodeBuffer());
 		cl->SetRoot32BitConstant(2, entry.second.second, 0);
 		cl->Dispatch(entry.first->LBVH->GetNodeCount());
+		cl->ResourceBarrier(TW3DUAVBarrier());
 	}
 	cl->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
-
-	// Write transform matrices into the Global Matrix Buffer
-	// -------------------------------------------------------------------------------------------------------------------------
-	for (auto object : Objects) {
-		
-	}
 
 	cl->Close();
 
 	resource_manager->ExecuteCommandList(cl);
 	resource_manager->FlushCommandList(cl);
+
+	TWT::Bounds bb;
+	gnb->Read(&bb, 0, sizeof(TWT::Bounds));
 
 	LBVH->BuildFromLBVHs(gnb, gnb_node_offsets);
 }

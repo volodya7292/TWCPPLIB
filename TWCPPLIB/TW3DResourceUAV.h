@@ -16,6 +16,7 @@ namespace TW3D {
 
 		//void Release();
 		void UpdateData(const void* Data, TWT::UInt ElementCount);
+		void Read(void* Out, TWT::UInt ByteOffset, TWT::UInt ByteCount);
 
 		void CreateBuffer(TWT::UInt ElementCount);
 		void CreateTexture2D(TWT::UInt Width, TWT::UInt Height);

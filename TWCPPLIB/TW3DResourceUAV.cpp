@@ -75,6 +75,33 @@ void TW3D::TW3DResourceUAV::UpdateData(const void* Data, TWT::UInt ElementCount)
 	TWU::DXSafeRelease(upload_heap);
 }
 
+void TW3D::TW3DResourceUAV::Read(void* Out, TWT::UInt ByteOffset, TWT::UInt ByteCount) {
+	ID3D12Resource* read_heap;
+	Device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(ByteCount),
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		&read_heap);
+	Resource->SetName(L"TW3DResource UAV Read Buffer Heap");
+
+	temp_gcl->Reset();
+	temp_gcl->Get()->Get()->CopyBufferRegion(read_heap, 0, Resource, 0, ByteCount);
+	//temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+	//temp_gcl->UpdateSubresources(Resource, upload_heap, &upload_data);
+	//temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	temp_gcl->Execute();
+
+	void* data;
+	read_heap->Map(0, nullptr, &data);
+
+	memcpy(Out, data, ByteCount);
+
+	read_heap->Unmap(0, nullptr);
+
+	TWU::DXSafeRelease(read_heap);
+}
+
 void TW3D::TW3DResourceUAV::CreateBuffer(TWT::UInt ElementCount) {
 	desc.Width = ElementCount * element_size;
 

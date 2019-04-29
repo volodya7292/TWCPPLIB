@@ -38,7 +38,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 			float3 npMin = min(tpMin, tpMax);
 			float3 npMax = max(tpMin, tpMax);
 
-			/*bb.pMin = npMin;
+			bb.pMin = npMin;
 			bb.pMax = npMax;
 
 			if (i == 0) {
@@ -47,9 +47,9 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 			} else {
 				pMin = min(pMin, bb.pMin);
 				pMax = max(pMax, bb.pMax);
-			}*/
-			pMin = float3(-100, -100, -100);
-			pMax = float3(100, 100, 100);
+			}
+			//pMin = float3(-100, -100, -100);
+			//pMax = float3(100, 100, 100);
 		}
 	} else {
 		for (uint i = 0; i < ELEMENTS_PER_THREAD; i++) {
