@@ -133,8 +133,6 @@ void TW3D::TW3DLBVH::BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffs
 	resource_manager->FlushCommandList(cl);
 }
 
-#include "d3dx12.h"
-
 void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<SceneLBVHInstance>& SceneLBVHInstances) {
 	TWT::UInt gnboffset_count = SceneLBVHInstances.size();
 
