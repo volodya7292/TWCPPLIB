@@ -23,6 +23,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	if (i >= input.leaves_offset) {
 		uint node_index = gnb_offsets[i].offset;
 		node.transform = gnb_offsets[i].transform;
+		node.transform_inverse = gnb_offsets[i].transform_inverse;
 		node.element_index = morton_code_indices[i - input.leaves_offset];
 		node.bounds.pMin = gnb[node_index].bounds.pMin;
 		node.bounds.pMax = gnb[node_index].bounds.pMax;
@@ -36,6 +37,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	} else {
 		node.element_index = -1;
 		node.transform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		node.transform_inverse = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		node.bounds.pMin = float3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 		node.bounds.pMax = float3(FLT_MAX, FLT_MAX, FLT_MAX);
 	}

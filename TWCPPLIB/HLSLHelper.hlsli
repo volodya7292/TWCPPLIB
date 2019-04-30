@@ -89,6 +89,7 @@ struct LBVHNode {
 
 struct SceneLBVHNode {
 	float4x4 transform;
+	float4x4 transform_inverse;
 	Bounds bounds;
 	uint element_index;
 	uint parent;
@@ -99,6 +100,7 @@ struct SceneLBVHNode {
 struct SceneLBVHInstance {
 	uint offset;
 	float4x4 transform;
+	float4x4 transform_inverse;
 };
 
 typedef StructuredBuffer<SceneLBVHNode> RTScene;
@@ -265,7 +267,7 @@ bool scene_rtas_trace_ray(in RTScene rtas, in Ray ray, out uint rtas_node_index,
 					if (distance < minDistance) {
 						minDistance = distance;
 						rtas_node_index = rtas[childL].element_index;
-						transform = rtas[childL].transform;
+						transform = rtas[childL].transform_inverse;
 					}
 				} else {
 					traverseL = true;
@@ -283,7 +285,7 @@ bool scene_rtas_trace_ray(in RTScene rtas, in Ray ray, out uint rtas_node_index,
 					if (distance < minDistance) {
 						minDistance = distance;
 						rtas_node_index = rtas[childR].element_index;
-						transform = rtas[childR].transform;
+						transform = rtas[childR].transform_inverse;
 					}
 				} else {
 					traverseR = true;
@@ -311,7 +313,7 @@ bool TraceRay(in RTScene SceneAS, in RTNB gnb, in GVB gvb, in Ray ray, out Trian
 	if (scene_rtas_trace_ray(SceneAS, ray, rtas_node_index, transform)) {
 		Ray nr;
 		nr.origin = mul(transform, float4(ray.origin, 1)).xyz;
-		nr.dir = normalize(mul(transform, float4(ray.dir, 1)).xyz);
+		nr.dir = normalize(mul(transform, float4(ray.dir, 0)).xyz);
 		//nr.dir = ray.dir;
 		if (mesh_rtas_trace_ray(gnb, rtas_node_index, gvb, nr, tri_inter))
 			return true;

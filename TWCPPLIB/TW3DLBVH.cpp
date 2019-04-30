@@ -183,15 +183,12 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 		});
 
 		cl->CopyBufferRegion(node_buffer, offsetof(SceneLBVHNode, transform), gnboffset_buffer, offsetof(SceneLBVHInstance, Transform), sizeof(TWT::Matrix4f));
-		cl->ResourceBarriers({
-			TW3D::TW3DUAVBarrier(),
-			TW3DTransitionBarrier(gnboffset_buffer, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
-		});
+		cl->CopyBufferRegion(node_buffer, offsetof(SceneLBVHNode, transform_inverse), gnboffset_buffer, offsetof(SceneLBVHInstance, TransformInverse), sizeof(TWT::Matrix4f));
 		cl->CopyBufferRegion(node_buffer, offsetof(SceneLBVHNode, bounds), bounding_box_buffer, 0, sizeof(TWT::Bounds));
 
 		cl->ResourceBarriers({
 			TW3D::TW3DUAVBarrier(),
-			
+			TW3DTransitionBarrier(gnboffset_buffer, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 			TW3DTransitionBarrier(bounding_box_buffer, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 			TW3DTransitionBarrier(node_buffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
 		});

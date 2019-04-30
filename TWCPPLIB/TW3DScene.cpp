@@ -43,7 +43,7 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	for (TW3DObject* object : Objects) {
 		TW3DVertexMesh* mesh = object->VMInstance.VertexMesh;
 
-		gnb_node_offsets.emplace_back(SceneLBVHInstance { NodeOffset, object->VMInstance.Transform.GetModelMatrix() });
+		gnb_node_offsets.emplace_back(SceneLBVHInstance { NodeOffset, object->VMInstance.Transform.GetModelMatrix(), inverse(object->VMInstance.Transform.GetModelMatrix()) });
 
 		if (std::find(meshes.begin(), meshes.end(), mesh) == meshes.end()) {
 			meshes.push_back(mesh);

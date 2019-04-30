@@ -126,8 +126,8 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	CreateRTResources();
 
 	texture = ResourceManager->CreateTextureArray2D(720, 720, 10, DXGI_FORMAT_R8G8B8A8_UNORM);
-	texture->Upload2D(L"D:/тест.png", 0);
-	texture->Upload2D(L"D:/тест2.png", 1);
+	//texture->Upload2D(L"D:/тест.png", 0);
+	//texture->Upload2D(L"D:/тест2.png", 1);
 	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");
 }
 
@@ -176,10 +176,10 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 
 bool build = false;
 void TW3D::TW3DDefaultRenderer::RecordBeforeExecution() {
-	//if (!build) {
+	if (!build) {
 		Scene->RecordBeforeExecution();
 		build = true;
-	//}
+	}
 
 	// Trace rays
 	// -------------------------------------------------------------------------------------------------------------------------

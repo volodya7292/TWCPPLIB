@@ -32,14 +32,31 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 			float4x4 node_transform = gnb_offsets[index].transform;
 			Bounds bb = gnb[node_index].bounds;
 
-			float3 tpMin = mul(node_transform, float4(bb.pMin, 1)).xyz;
-			float3 tpMax = mul(node_transform, float4(bb.pMax, 1)).xyz;
+			float3 vertices[8] = {
+				float3(bb.pMin.x, bb.pMin.y, bb.pMin.z),
+				float3(bb.pMin.x, bb.pMin.y, bb.pMax.z),
+				float3(bb.pMin.x, bb.pMax.y, bb.pMin.z),
+				float3(bb.pMin.x, bb.pMax.y, bb.pMax.z),
+				float3(bb.pMax.x, bb.pMin.y, bb.pMin.z),
+				float3(bb.pMax.x, bb.pMin.y, bb.pMax.z),
+				float3(bb.pMax.x, bb.pMax.y, bb.pMin.z),
+				float3(bb.pMax.x, bb.pMax.y, bb.pMax.z),
+			};
 
-			float3 npMin = min(tpMin, tpMax);
-			float3 npMax = max(tpMin, tpMax);
+			float3 npMin, npMax;
+			for (uint d = 0; d < 8; d++) {
+				vertices[d] = mul(node_transform, float4(vertices[d], 1)).xyz;
+				if (d == 0) {
+					npMin = npMax = vertices[d];
+				} else {
+					npMin = min(npMin, vertices[d]);
+					npMax = max(npMax, vertices[d]);
+				}
+			}
 
 			bb.pMin = npMin;
 			bb.pMax = npMax;
+
 
 			if (i == 0) {
 				pMin = bb.pMin;
