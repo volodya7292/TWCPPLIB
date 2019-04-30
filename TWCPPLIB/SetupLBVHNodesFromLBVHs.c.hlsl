@@ -28,10 +28,30 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		node.bounds.pMin = gnb[node_index].bounds.pMin;
 		node.bounds.pMax = gnb[node_index].bounds.pMax;
 
-		float3 tpMin = mul(node.transform, float4(node.bounds.pMin, 1)).xyz;
-		float3 tpMax = mul(node.transform, float4(node.bounds.pMax, 1)).xyz;
-		float3 npMin = min(tpMin, min(tpMax, node.bounds.pMin));
-		float3 npMax = max(tpMin, max(tpMax, node.bounds.pMax));
+		Bounds bb = node.bounds;
+
+		float3 vertices[8] = {
+			float3(bb.pMin.x, bb.pMin.y, bb.pMin.z),
+			float3(bb.pMin.x, bb.pMin.y, bb.pMax.z),
+			float3(bb.pMin.x, bb.pMax.y, bb.pMin.z),
+			float3(bb.pMin.x, bb.pMax.y, bb.pMax.z),
+			float3(bb.pMax.x, bb.pMin.y, bb.pMin.z),
+			float3(bb.pMax.x, bb.pMin.y, bb.pMax.z),
+			float3(bb.pMax.x, bb.pMax.y, bb.pMin.z),
+			float3(bb.pMax.x, bb.pMax.y, bb.pMax.z),
+		};
+
+		float3 npMin, npMax;
+		for (uint d = 0; d < 8; d++) {
+			vertices[d] = mul(node.transform, float4(vertices[d], 1)).xyz;
+			if (d == 0) {
+				npMin = npMax = vertices[d];
+			} else {
+				npMin = min(npMin, vertices[d]);
+				npMax = max(npMax, vertices[d]);
+			}
+		}
+
 		node.bounds.pMin = npMin;
 		node.bounds.pMax = npMax;
 	} else {
