@@ -133,6 +133,7 @@ void init_dx12() {
 	logger->LogInfo("DirectX initialization stage 1");
 	std::vector<TW3D::TW3DAdapter*> adapters = TW3D::TW3DAdapter::ListAvailable(factory, D3D_FEATURE_LEVEL_11_0);
 	adapter = adapters[0];
+	logger->LogInfo("Using "s + adapter->GetDescription().Multibyte());
 	logger->LogInfo("DirectX initialization stage 2");
 	device = new TW3D::TW3DDevice(adapter);
 	logger->LogInfo("DirectX initialization stage 3");

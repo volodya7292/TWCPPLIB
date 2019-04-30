@@ -59,6 +59,7 @@ void TW3D::TW3DLBVH::BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffs
 		cl->CopyBufferRegion(node_buffer, 0, bounding_box_buffer, 0, sizeof(TWT::Bounds));
 
 		cl->ResourceBarriers({
+			TW3DUAVBarrier(),
 			TW3DTransitionBarrier(bounding_box_buffer, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 			TW3DTransitionBarrier(node_buffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
 		});
@@ -114,7 +115,11 @@ void TW3D::TW3DLBVH::BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffs
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::UpdateLBVHNodeBounds));
 		cl->BindUAVBuffer(0, node_buffer);
 		cl->SetRoot32BitConstant(1, element_count - 1, 0);
-		cl->Dispatch(element_count);
+		for (size_t i = 0; i < element_count / 4; i++) {
+			cl->SetRoot32BitConstant(1, i, 1);
+			cl->Dispatch(element_count);
+			cl->ResourceBarrier(uav_barrier);
+		}
 
 		cl->ResourceBarriers({
 			TW3DUAVBarrier(),
@@ -243,7 +248,11 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::UpdateLBVHNodeBoundsForLBVHs));
 		cl->BindUAVBuffer(0, node_buffer);
 		cl->SetRoot32BitConstant(1, element_count - 1, 0);
-		cl->Dispatch(element_count);
+		for (size_t i = 0; i < element_count / 4; i++) {
+			cl->SetRoot32BitConstant(1, i, 1);
+			cl->Dispatch(element_count);
+			cl->ResourceBarrier(uav_barrier);
+		}
 
 		cl->ResourceBarriers({
 			TW3D::TW3DUAVBarrier(),

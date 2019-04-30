@@ -19,9 +19,13 @@ D3D_FEATURE_LEVEL TW3D::TW3DAdapter::GetFeatureLevel() {
 	return featureLevel;
 }
 
+TWT::WString TW3D::TW3DAdapter::GetDescription() {
+	return description;
+}
+
 void TW3D::TW3DAdapter::CreateDevice(ID3D12Device5** device) {
-	UUID experimentalFeatures[] = { D3D12ExperimentalShaderModels };
-	TWU::SuccessAssert(D3D12EnableExperimentalFeatures(1, experimentalFeatures, nullptr, nullptr));
+	//UUID experimentalFeatures[] = { D3D12ExperimentalShaderModels };
+	//TWU::SuccessAssert(D3D12EnableExperimentalFeatures(1, experimentalFeatures, nullptr, nullptr));
 	TWU::SuccessAssert(D3D12CreateDevice(native_adapter, featureLevel, IID_PPV_ARGS(device)));
 }
 

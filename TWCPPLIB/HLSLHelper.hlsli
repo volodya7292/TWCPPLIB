@@ -5,6 +5,18 @@
 #define FLT_MAX        3.402823466e+38f
 #define MachineEpsilon 5.96e-08
 
+bool equals(in float3 v0, in float v) {
+	return v0.x == v && v0.y == v && v0.z == v;
+}
+
+bool not_equals(in float3 v0, in float v) {
+	return v0.x != v && v0.y != v && v0.z != v;
+}
+
+bool less(in float3 v0, in float v) {
+	return v0.x < v && v0.y < v && v0.z < v;
+}
+
 bool less(in float3 v0, in float3 v1) {
 	return v0.x < v1.x && v0.y < v1.y && v0.z < v1.z;
 }

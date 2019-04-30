@@ -34,7 +34,7 @@ void TW3D::TW3DFactory::CreateSwapChainForHwnd(ID3D12CommandQueue* commandQueue,
 }
 
 void TW3D::TW3DFactory::CheckFeatureSupport(DXGI_FEATURE feature, void *featureSupportData, TWT::UInt featureSupportDataSize) {
-	factory->CheckFeatureSupport(feature, featureSupportData, featureSupportDataSize);
+	TWU::SuccessAssert(factory->CheckFeatureSupport(feature, featureSupportData, featureSupportDataSize));
 }
 
 TWT::Bool TW3D::TW3DFactory::CheckTearingSupport() {

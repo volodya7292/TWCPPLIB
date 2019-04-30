@@ -10,6 +10,7 @@ namespace TW3D {
 		~TW3DAdapter();
 
 		D3D_FEATURE_LEVEL GetFeatureLevel();
+		TWT::WString GetDescription();
 
 		void CreateDevice(ID3D12Device5** device);
 

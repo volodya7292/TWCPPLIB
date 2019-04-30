@@ -107,8 +107,5 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	resource_manager->ExecuteCommandList(cl);
 	resource_manager->FlushCommandList(cl);
 
-	TWT::Bounds bb;
-	gnb->Read(&bb, 0, sizeof(TWT::Bounds));
-
 	LBVH->BuildFromLBVHs(gnb, gnb_node_offsets);
 }

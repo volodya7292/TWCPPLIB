@@ -92,8 +92,9 @@ void TW3D::TW3DResourceUAV::Read(void* Out, TWT::UInt ByteOffset, TWT::UInt Byte
 	//temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	temp_gcl->Execute();
 
+	D3D12_RANGE range = CD3DX12_RANGE(ByteOffset, ByteOffset + ByteCount);
 	void* data;
-	read_heap->Map(0, nullptr, &data);
+	read_heap->Map(0, &range, &data);
 
 	memcpy(Out, data, ByteCount);
 

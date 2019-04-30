@@ -2,66 +2,43 @@
 
 struct InputData {
 	uint leaves_offset;
+	uint iteration;
 };
 
 RWStructuredBuffer<LBVHNode> nodes : register(u0);
 ConstantBuffer<InputData> input : register(b0);
 
 [numthreads(1, 1, 1)]
-void main(uint3 DTid : SV_DispatchThreadID)
-{
+void main(uint3 DTid : SV_DispatchThreadID) {
 	uint i = DTid.x;
-	//int* lock = new int[nObjects];
-	//memset(lock, 0, nObjects * sizeof(int));
 
-	////Update BB limits
-	//for (int i = 0; i < nObjects; i++) {
-	uint inode = input.leaves_offset + i;
-		uint node = nodes[inode].parent;
+	uint leaf = input.leaves_offset + i;
+	uint leaf_parent = nodes[leaf].parent;
+	uint tleaf, tleaf_parent;
+	uint leftChild, rightChild;
+	Bounds lbb, rbb;
+	float3 pMin, pMax;
 
-		//int oldLock = lock[node];
-		//AllMemoryBarrierWithGroupSync();
-		//lock[node] += 1;
-		//AllMemoryBarrierWithGroupSync();
+	while (true) {
+		if (leaf == nodes[leaf_parent].left_child) {
+			leftChild = nodes[leaf_parent].left_child;
+			rightChild = nodes[leaf_parent].right_child;
+			lbb = nodes[leftChild].bounds;
+			rbb = nodes[rightChild].bounds;
+			pMin = min(lbb.pMin, rbb.pMin);
+			pMax = max(lbb.pMax, rbb.pMax);
 
-		//[loop]
-		//AllMemoryBarrierWithGroupSync();
-
-		uint leftChild = nodes[node].left_child;
-		uint rightChild = nodes[node].right_child;
-
-		if (leftChild == inode || rightChild == uint(-1)) {
-
-			while (true) {
-				//if (oldLock == 0)
-				//	break;
-
-				leftChild = nodes[node].left_child;
-				rightChild = nodes[node].right_child;
-
-
-
-				float3 pMin = min(nodes[leftChild].bounds.pMin, nodes[rightChild].bounds.pMin);
-				float3 pMax = max(nodes[leftChild].bounds.pMax, nodes[rightChild].bounds.pMax);
-
-				//AllMemoryBarrierWithGroupSync();
-				nodes[node].bounds.pMin = pMin;
-				nodes[node].bounds.pMax = pMax;
-
-				//if root
-				if (nodes[node].parent == uint(-1))
-					break;
-
-				node = nodes[node].parent;
-
-
-			//oldLock = lock[node];
-			//AllMemoryBarrierWithGroupSync();
-			//lock[node] += 1;
+			if (not_equals(pMin, -FLT_MAX) && not_equals(pMax, FLT_MAX)) {
+				nodes[leaf_parent].bounds.pMin = pMin;
+				nodes[leaf_parent].bounds.pMax = pMax;
+			} else {
+				break;
 			}
-		}
-		//AllMemoryBarrierWithGroupSync();
-	//}
 
-	//nodes[i].bounds.pMin = float3(0, 0, 0);
+			leaf = leaf_parent;
+			leaf_parent = nodes[leaf_parent].parent;
+		} else {
+			break;
+		}
+	}
 }
