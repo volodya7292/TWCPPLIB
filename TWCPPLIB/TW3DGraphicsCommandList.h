@@ -20,13 +20,14 @@ namespace TW3D {
 		~TW3DGraphicsCommandList();
 
 		ID3D12GraphicsCommandList* Get();
+		D3D12_COMMAND_LIST_TYPE GetType();
 
 		void UpdateSubresources(TW3DResource* DestinationResource, TW3DResource* Intermediate, D3D12_SUBRESOURCE_DATA* SrcData,
 			TWT::UInt SubresourcesCount = 1, TWT::UInt64 IntermediateOffset = 0, TWT::UInt FirstSubresource = 0);
 		void UpdateSubresources(ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate, D3D12_SUBRESOURCE_DATA* SrcData,
 			TWT::UInt SubresourcesCount = 1, TWT::UInt64 IntermediateOffset = 0, TWT::UInt FirstSubresource = 0);
 
-		void ResourceBarrier(const D3D12_RESOURCE_BARRIER barrier);
+		void ResourceBarrier(const D3D12_RESOURCE_BARRIER& barrier);
 		void ResourceBarriers(const TWT::Vector<D3D12_RESOURCE_BARRIER>& barriers);
 		void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 		void ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
@@ -48,7 +49,7 @@ namespace TW3D {
 		void SetScissor(const D3D12_RECT* scissor);
 		void SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY PrimitiveTopology);
 		void SetVertexBuffer(TWT::UInt StartSlot, TW3DResourceVB* view);
-		void SetVertexBuffers(TWT::UInt StartSlot, TWT::Vector<D3D12_VERTEX_BUFFER_VIEW> views);
+		void SetVertexBuffers(TWT::UInt StartSlot, const TWT::Vector<D3D12_VERTEX_BUFFER_VIEW>& views);
 		void SetIndexBuffer(const D3D12_INDEX_BUFFER_VIEW* view);
 		void Draw(TWT::UInt VertexCountPerInstance, TWT::UInt StartVertexLocation = 0, TWT::UInt InstanceCount = 1, TWT::UInt StartInstanceLocation = 0);
 		void DrawIndexed(TWT::UInt IndexCountPerInstance, TWT::UInt StartIndexLocation = 0, TWT::UInt InstanceCount = 1, TWT::UInt StartInstanceLocation = 0, TWT::Int BaseVertexLocation = 0);
@@ -75,8 +76,6 @@ namespace TW3D {
 		static TW3DGraphicsCommandList* CreateBundle(TW3DDevice* device);
 		static TW3DGraphicsCommandList* CreateCompute(TW3DDevice* device);
 
-		const D3D12_COMMAND_LIST_TYPE Type;
-
 		TWT::UInt64 SignalValue = 0;
 
 	private:
@@ -84,5 +83,7 @@ namespace TW3D {
 		ID3D12CommandAllocator* command_allocator;
 
 		TWT::Bool empty = true;
+
+		const D3D12_COMMAND_LIST_TYPE type;
 	};
 }

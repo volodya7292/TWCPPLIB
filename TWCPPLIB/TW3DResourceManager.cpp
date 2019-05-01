@@ -63,7 +63,7 @@ TW3D::TW3DResourceCB* TW3D::TW3DResourceManager::CreateConstantBuffer(TWT::UInt 
 	return new TW3DResourceCB(device, ElementCount, ElementSizeInBytes);
 }
 
-TW3D::TW3DResourceSR* TW3D::TW3DResourceManager::CreateTexture2D(TWT::WString Filename) {
+TW3D::TW3DResourceSR* TW3D::TW3DResourceManager::CreateTexture2D(const TWT::WString& Filename) {
 	return TW3DResourceSR::Create2D(device, srv_descriptor_heap, Filename, temp_gcl);
 }
 
@@ -104,14 +104,14 @@ void TW3D::TW3DResourceManager::ResourceBarrier(TW3DResource* Resource, D3D12_RE
 }
 
 TWT::Bool TW3D::TW3DResourceManager::IsCommandListRunning(TW3DGraphicsCommandList* CommandList) {
-	if (CommandList->Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+	if (CommandList->GetType() == D3D12_COMMAND_LIST_TYPE_DIRECT)
 		return direct_command_queue->IsCommandListRunning(CommandList);
 	else
 		return compute_command_queue->IsCommandListRunning(CommandList);
 }
 
 void TW3D::TW3DResourceManager::FlushCommandList(TW3DGraphicsCommandList* CommandList) {
-	if (CommandList->Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+	if (CommandList->GetType() == D3D12_COMMAND_LIST_TYPE_DIRECT)
 		direct_command_queue->FlushCommandList(CommandList);
 	else
 		compute_command_queue->FlushCommandList(CommandList);
@@ -123,14 +123,14 @@ void TW3D::TW3DResourceManager::FlushCommandLists() {
 }
 
 void TW3D::TW3DResourceManager::ExecuteCommandList(TW3DGraphicsCommandList* CommandList) {
-	if (CommandList->Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+	if (CommandList->GetType() == D3D12_COMMAND_LIST_TYPE_DIRECT)
 		direct_command_queue->ExecuteCommandList(CommandList);
 	else
 		compute_command_queue->ExecuteCommandList(CommandList);
 }
 
 void TW3D::TW3DResourceManager::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists) {
-	if (CommandLists[0]->Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+	if (CommandLists[0]->GetType() == D3D12_COMMAND_LIST_TYPE_DIRECT)
 		direct_command_queue->ExecuteCommandLists(CommandLists);
 	else
 		compute_command_queue->ExecuteCommandLists(CommandLists);

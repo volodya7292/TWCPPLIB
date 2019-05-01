@@ -1,6 +1,11 @@
 #include "pch.h"
 #include "TWUtils.h"
 
+TWT::WString TWU::HResultToWString(HRESULT Result) {
+	_com_error err(Result);
+	return TWT::WString(err.ErrorMessage());
+}
+
 void TWU::FileExistsAssert(TWT::String filename) {
 	std::ifstream file(filename.data);
 

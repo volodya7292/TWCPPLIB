@@ -12,6 +12,8 @@ namespace TWU {
 		std::cout << data << std::endl;
 	}
 
+	TWT::WString HResultToWString(HRESULT Result);
+
 	void FileExistsAssert(TWT::String filename);
 	void FileExistsAssert(TWT::WString filename);
 

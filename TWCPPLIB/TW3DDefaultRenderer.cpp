@@ -121,11 +121,17 @@ void TW3D::TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DReso
 
 void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height) {
 	TW3DRenderer::Initialize(ResourceManager, SwapChain, Width, Height);
+	TWU::TW3DLogInfo("TW3DRenderer initialized."s);
 	CreateBlitResources();
+	TWU::TW3DLogInfo("[TW3DDefaultRenderer] BlitResources initialized."s);
 	CreateGBufferResources();
+	TWU::TW3DLogInfo("[TW3DDefaultRenderer] GBufferResources initialized."s);
 	CreateRTResources();
+	TWU::TW3DLogInfo("[TW3DDefaultRenderer] RTResources initialized."s);
 
 	texture = ResourceManager->CreateTextureArray2D(720, 720, 10, DXGI_FORMAT_R8G8B8A8_UNORM);
+	TWU::TW3DLogInfo("[TW3DDefaultRenderer] 'texture' initialized."s);
+
 	//texture->Upload2D(L"D:/тест.png", 0);
 	//texture->Upload2D(L"D:/тест2.png", 1);
 	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");

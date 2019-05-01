@@ -20,21 +20,21 @@ namespace TW3D {
 
 		void BlitOutput(TW3DGraphicsCommandList* cl, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* Depth);
 
-		TW3DResourceUAV* rt_output;
+		TW3DResourceUAV* rt_output = nullptr;
 
-		TW3DGraphicsCommandList* rt_cl;   // Ray tracing CL
+		TW3DGraphicsCommandList* rt_cl = nullptr;   // Ray tracing CL
 
 		// GBuffer render
 		// --------------------------------------------------------------------- 
-		TW3DGraphicsPipelineState *gbuffer_ps;
+		TW3DGraphicsPipelineState *gbuffer_ps = nullptr;
 
 		// Ray tracing compute
 		// --------------------------------------------------------------------- 
-		TW3DComputePipelineState *rt_ps;
+		TW3DComputePipelineState *rt_ps = nullptr;
 
 		// Blit output
 		// --------------------------------------------------------------------- 
-		TW3DGraphicsPipelineState *blit_ps;
+		TW3DGraphicsPipelineState *blit_ps = nullptr;
 
 		D3D12_VIEWPORT viewport = D3D12_VIEWPORT();
 		D3D12_RECT scissor = D3D12_RECT();

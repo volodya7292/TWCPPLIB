@@ -19,7 +19,7 @@ namespace TW3D {
 		TW3D::TW3DResourceUAV* CreateUnorderedAccessView(TWT::UInt ElementCount, TWT::UInt ElementSizeInBytes);
 		TW3DVertexBuffer* CreateVertexBuffer(TWT::UInt VertexCount, TWT::UInt SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex));
 		TW3DResourceCB* CreateConstantBuffer(TWT::UInt ElementCount, TWT::UInt ElementSizeInBytes);
-		TW3DResourceSR* CreateTexture2D(TWT::WString Filename);
+		TW3DResourceSR* CreateTexture2D(const TWT::WString& Filename);
 		TW3DResourceSR* CreateTextureArray2D(TWT::UInt Width, TWT::UInt Height, TWT::UInt Depth, DXGI_FORMAT Format);
 		TW3DGraphicsCommandList* CreateDirectCommandList();
 		TW3DGraphicsCommandList* CreateBundleCommandList();

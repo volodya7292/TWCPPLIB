@@ -8,12 +8,12 @@ TW3D::TW3DCommandQueue::TW3DCommandQueue(TW3DDevice* Device, D3D12_COMMAND_LIST_
 
 	Device->CreateCommandQueue(&desc, &command_queue);
 	Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, &fence);
-	fence->SetName(L"ID3D12Fence from TW3DCommandQueue");
+	TWU::SuccessAssert(fence->SetName(L"ID3D12Fence from TW3DCommandQueue"));
 
 	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
-		command_queue->SetName(L"TW3DCommandQueue Compute");
+		TWU::SuccessAssert(command_queue->SetName(L"TW3DCommandQueue Compute"));
 	else if (Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
-		command_queue->SetName(L"TW3DCommandQueue Direct");
+		TWU::SuccessAssert(command_queue->SetName(L"TW3DCommandQueue Direct"));
 
 }
 
@@ -32,18 +32,20 @@ TWT::Bool TW3D::TW3DCommandQueue::IsCommandListRunning(TW3DGraphicsCommandList* 
 
 void TW3D::TW3DCommandQueue::FlushCommandList(TW3DGraphicsCommandList* CommandList) {
 	if (fence->GetCompletedValue() < CommandList->SignalValue) {
-		HANDLE fenceEvent = NULL;
-		TWU::SuccessAssert(fence->SetEventOnCompletion(CommandList->SignalValue, fenceEvent));
-		WaitForSingleObject(fenceEvent, INFINITE);
+		HANDLE fence_event = NULL;
+		TWU::SuccessAssert(fence->SetEventOnCompletion(CommandList->SignalValue, fence_event));
+		if (fence_event != NULL)
+			WaitForSingleObject(fence_event, INFINITE);
 	}
 }
 
 void TW3D::TW3DCommandQueue::FlushCommands() {
 	TWU::SuccessAssert(command_queue->Signal(fence, ++fence_flush_value));
 	if (fence->GetCompletedValue() < fence_flush_value) {
-		HANDLE fenceEvent = NULL;
-		TWU::SuccessAssert(fence->SetEventOnCompletion(fence_flush_value, fenceEvent));
-		WaitForSingleObject(fenceEvent, INFINITE);
+		HANDLE fence_event = NULL;
+		TWU::SuccessAssert(fence->SetEventOnCompletion(fence_flush_value, fence_event));
+		if (fence_event != NULL)
+			WaitForSingleObject(fence_event, INFINITE);
 	}
 }
 

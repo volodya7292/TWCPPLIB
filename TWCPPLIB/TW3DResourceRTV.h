@@ -19,7 +19,7 @@ namespace TW3D {
 
 	private:
 		TW3DDescriptorHeap*	RTVDescriptorHeap;
-		TW3DDescriptorHeap* SRVDescriptorHeap;
+		TW3DDescriptorHeap* SRVDescriptorHeap = nullptr;
 		D3D12_RESOURCE_DESC ImageDesc = {};
 		TWT::Vector4f       ClearValue;
 		TWT::Int RTVIndex = -1, SRVIndex = -1;

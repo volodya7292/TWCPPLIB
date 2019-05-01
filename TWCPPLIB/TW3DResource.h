@@ -21,8 +21,6 @@ namespace TW3D {
 		static TW3DResource* Create(TW3DDevice* Device, TWT::UInt64 Size, TWT::Bool Staging);
 		static TW3DResource* CreateCBStaging(TW3DDevice* Device);
 
-		D3D12_RESOURCE_STATES CurrentState;
-
 	protected:
 		TW3DDevice*     Device = nullptr;
 		ID3D12Resource* Resource = nullptr;

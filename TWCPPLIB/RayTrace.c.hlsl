@@ -33,9 +33,9 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	const int WIDTH2 = WIDTH / 2;
 	const int HEIGHT2 = HEIGHT / 2;
 	const float FOV = 45;
-	const double WH_RATIO = (double)WIDTH / HEIGHT;
-	const float W_RATIO = tan(radians(FOV) / 2.0) * WH_RATIO;
-	const float H_RATIO = tan(radians(FOV) / 2.0);
+	const float WH_RATIO = (float)WIDTH / HEIGHT;
+	const float W_RATIO = tan(radians(FOV) / 2.0f) * WH_RATIO;
+	const float H_RATIO = tan(radians(FOV) / 2.0f);
 
 	float2 xy = DTid.xy + 0.5f;
 	float2 screenPos = xy / float2(WIDTH, HEIGHT) * 2.0f - 1.0f;
@@ -50,7 +50,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	vec3 dir = vec3(vec4(normalize(vec3(Px, Py, -1)), 1.0) * CAM_MATRIX);*/
 
 	Ray r;
-	r.origin = camera.pos;
+	r.origin = camera.pos.xyz;
 	r.dir = dir;
 
 	//trace_screen_ray({ CAM_POS, dir }, index);

@@ -91,7 +91,7 @@ void TW3D::TW3DBitonicSorter::RecordSort(TW3DGraphicsCommandList* CommandList, T
 	CommandList->ResourceBarrier(m_pDispatchArgs, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
 	CommandList->BindUAVBuffer(OutputUAV, SortKeyBuffer);
 
-	auto uavBarrier = CD3DX12_RESOURCE_BARRIER::UAV(nullptr);
+	auto uavBarrier = TW3DUAVBarrier();
 	//if (!IsPartiallyPreSorted) {
 		CommandList->SetPipelineState(m_pBitonicPreSortCS);
 		

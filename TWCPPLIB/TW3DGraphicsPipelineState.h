@@ -19,9 +19,9 @@ namespace TW3D {
 		ID3D12PipelineState* Get();
 
 		void SetVertexShader(const std::string& Filename);
-		void SetVertexShader(D3D12_SHADER_BYTECODE ByteCode);
+		void SetVertexShader(const D3D12_SHADER_BYTECODE& ByteCode);
 		void SetPixelShader(const std::string& Filename);
-		void SetPixelShader(D3D12_SHADER_BYTECODE ByteCode);
+		void SetPixelShader(const D3D12_SHADER_BYTECODE& ByteCode);
 		void SetRTVFormat(TWT::UInt Index, DXGI_FORMAT Format);
 		void SetDSVFormat(DXGI_FORMAT Format);
 		void SetInputLayout(const TWT::Vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout);
@@ -31,10 +31,10 @@ namespace TW3D {
 		TW3DRootSignature* RootSignature;
 
 	private:
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
-		ID3D12PipelineState* pipeline_state;
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC           desc = {};
+		ID3D12PipelineState*               pipeline_state = nullptr;
 	};
 
 
-	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> CreateInputLayout(TWT::Vector<InputLayoutElement> Elements);
+	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> CreateInputLayout(const TWT::Vector<InputLayoutElement>& Elements);
 }

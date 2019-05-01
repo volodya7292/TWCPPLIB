@@ -24,11 +24,10 @@ TW3D::TW3DResourceUAV::TW3DResourceUAV(TW3DDevice* Device, TW3DDescriptorHeap* S
 }
 
 TW3D::TW3DResourceUAV::TW3DResourceUAV(TW3DDevice* Device, TW3DDescriptorHeap* SRVDescriptorHeap, DXGI_FORMAT Format) :
-	TW3DResource(Device), SRVDescriptorHeap(SRVDescriptorHeap)
-{
+	TW3DResource(Device), SRVDescriptorHeap(SRVDescriptorHeap) {
 	SRVIndex = SRVDescriptorHeap->Allocate(); // For SRV
 	UAVIndex = SRVDescriptorHeap->Allocate(); // For UAV
-	
+
 	desc = CD3DX12_RESOURCE_DESC::Tex2D(Format, 0, 0, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 }
 
@@ -138,5 +137,8 @@ void TW3D::TW3DResourceUAV::CreateTexture2D(TWT::UInt Width, TWT::UInt Height) {
 }
 
 D3D12_RESOURCE_BARRIER TW3D::TW3DUAVBarrier(TW3DResource* Resource) {
-	return CD3DX12_RESOURCE_BARRIER::UAV(Resource ? Resource->Get() : nullptr);
+	D3D12_RESOURCE_BARRIER barrier = {};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	barrier.UAV.pResource = Resource ? Resource->Get() : nullptr;
+	return barrier;
 }

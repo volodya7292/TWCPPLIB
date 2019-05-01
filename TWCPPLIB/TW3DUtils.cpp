@@ -1,6 +1,12 @@
 #include "pch.h"
 #include "TW3DUtils.h"
 
+static TW::TWLogger* logger;
+
+void TWU::TW3DSetLogger(TW::TWLogger* Logger) {
+	logger = Logger;
+}
+
 IDXGIFactory7* TWU::DXGICreateFactory(TWT::UInt flags) {
 	IDXGIFactory7* dxgiFactory;
 	CreateDXGIFactory2(flags, IID_PPV_ARGS(&dxgiFactory));
@@ -138,7 +144,7 @@ void TWU::UpdateSubresourcesImp(ID3D12GraphicsCommandList* commandList, ID3D12Re
 	UpdateSubresources(commandList, DestinationResource, Intermediate, IntermediateOffset, FirstSubresource, SubresourcesCount, SrcData);
 }
 
-TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, TWT::WString filename, TWT::Int& bytesPerRow) {
+TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, const TWT::WString& filename, TWT::Int& bytesPerRow) {
 	HRESULT hr;
 	TWU::FileExistsAssert(filename);
 
@@ -264,7 +270,15 @@ void TWU::SuccessAssert(HRESULT hr) {
 	if (FAILED(hr)) {
 		TWT::Char s_str[64] = {};
 		sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<TWT::UInt>(hr));
-
-		throw std::runtime_error(s_str);
+		TWT::WString error = TWU::HResultToWString(hr);
+		logger->LogError("SuccessAssert failed: "s + error.Multibyte());
 	}
+}
+
+void TWU::TW3DLogInfo(const TWT::String& Info) {
+	logger->LogInfo(Info);
+}
+
+void TWU::TW3DLogError(const TWT::String& Error) {
+	logger->LogError(Error);
 }

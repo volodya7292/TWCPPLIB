@@ -24,8 +24,8 @@ namespace TW3D {
 		TW3DResourceUAV* gvb;
 		TW3DResourceUAV* gnb;
 
-		TWT::UInt gvb_vertex_count;
-		TWT::UInt gnb_node_count;
+		TWT::UInt gvb_vertex_count = 0;
+		TWT::UInt gnb_node_count = 0;
 
 		TW3DLBVH* LBVH;
 	};

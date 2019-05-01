@@ -27,10 +27,10 @@ namespace TW3D {
 		TWT::UInt Width = 0;
 		TWT::UInt Height = 0;
 
-		TW3D::TW3DScene* Scene;
+		TW3D::TW3DScene* Scene = nullptr;
 
 		TWT::Vector<TW3D::TW3DGraphicsCommandList*> command_lists;
-		TW3DGraphicsCommandList *record_cl, *execute_cl;
+		TW3DGraphicsCommandList *record_cl = nullptr, *execute_cl = nullptr;
 		TWT::UInt current_record_index = 0;
 	};
 }

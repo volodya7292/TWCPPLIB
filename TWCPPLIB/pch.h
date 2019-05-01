@@ -19,6 +19,7 @@
 #include <array>
 
 #include <stdint.h>
+#include <comdef.h>
 #include <dxgi1_6.h>
 #include <wincodec.h>
 

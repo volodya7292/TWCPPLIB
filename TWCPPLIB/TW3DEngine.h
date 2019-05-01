@@ -28,7 +28,7 @@ namespace TW3D {
 	void SetFullScreen(TWT::Bool Fullscreen);
 	TWT::Bool GetVSync();
 	void SetVSync(TWT::Bool VSync);
-	void SetWindowTitle(TWT::String	WindowTitle);
+	void SetWindowTitle(const TWT::String&	WindowTitle);
 	TWT::Bool IsKeyDown(TWT::UInt KeyCode);
 	TWT::Vector2u GetCursorPosition();
 	// Get window global center position without window adjusted bounds

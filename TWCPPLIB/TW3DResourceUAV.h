@@ -25,12 +25,12 @@ namespace TW3D {
 		TWT::Int SRVIndex = -1, UAVIndex = -1;
 
 	private:
-		TW3DTempGCL* temp_gcl;
-		
+		TW3DTempGCL* temp_gcl  = nullptr;
+
 		D3D12_RESOURCE_DESC desc;
-		D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
-		D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
-		TWT::UInt element_size;
+		D3D12_SHADER_RESOURCE_VIEW_DESC      srv_desc = {};
+		D3D12_UNORDERED_ACCESS_VIEW_DESC     uav_desc = {};
+		TWT::UInt                        element_size = 0;
 	};
 
 	D3D12_RESOURCE_BARRIER TW3DUAVBarrier(TW3DResource* Resource = nullptr);

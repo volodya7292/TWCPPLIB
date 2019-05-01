@@ -55,12 +55,6 @@
     <Filter Include="Source Files\TW3DEngine\TW3DSystem">
       <UniqueIdentifier>{376f94a8-21d7-4220-8b01-21568baa5926}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\TW3DEngine\TW3DRayTracing">
-      <UniqueIdentifier>{f9b8a12e-b7eb-4b4f-8f64-b001b1382cca}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\TW3DEngine\TW3DRayTracing">
-      <UniqueIdentifier>{2fa718e8-ccac-4ad7-97dd-11239a29f2ab}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{b39a3dd0-0123-4934-8ded-05fc311c31ed}</UniqueIdentifier>
     </Filter>
@@ -180,9 +174,6 @@
     <ClInclude Include="TW3DResourceUAV.h">
       <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DVertexMesh.h">
-      <Filter>Header Files\TW3DEngine\TW3DRayTracing</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DVertexBuffer.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
@@ -199,6 +190,9 @@
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
     <ClInclude Include="TW3DShaders.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DVertexMesh.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
   </ItemGroup>
@@ -306,9 +300,6 @@
     <ClCompile Include="TW3DResourceUAV.cpp">
       <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DVertexMesh.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DRayTracing</Filter>
-    </ClCompile>
     <ClCompile Include="TW3DVertexBuffer.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
@@ -325,6 +316,9 @@
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
     <ClCompile Include="TW3DShaders.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DVertexMesh.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
   </ItemGroup>

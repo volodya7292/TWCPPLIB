@@ -10,13 +10,13 @@ namespace TW3D {
 		ID3D12PipelineState* Get();
 
 		void SetShader(const std::string& Filename);
-		void SetShader(D3D12_SHADER_BYTECODE ByteCode);
+		void SetShader(const D3D12_SHADER_BYTECODE& ByteCode);
 		void Create(TW3DDevice* Device);
 
 		TW3DRootSignature* RootSignature;
 
 	private:
 		D3D12_COMPUTE_PIPELINE_STATE_DESC desc = {};
-		ID3D12PipelineState* pipeline_state;
+		ID3D12PipelineState* pipeline_state    = nullptr;
 	};
 }

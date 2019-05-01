@@ -124,37 +124,37 @@ void init_dx12() {
 			dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, true);
 			dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
 		}
+
+		logger->LogInfo("DirectX debug layer initialized.");
 	}
 #endif
 
-	logger->LogInfo("DirectX debug layer initialized.");
-
 	factory = new TW3D::TW3DFactory(dxgi_factory_flags);
-	logger->LogInfo("DirectX initialization stage 1");
+	logger->LogInfo("DirectX Stage 1 initialized");
 	std::vector<TW3D::TW3DAdapter*> adapters = TW3D::TW3DAdapter::ListAvailable(factory, D3D_FEATURE_LEVEL_11_0);
 	adapter = adapters[0];
 	logger->LogInfo("Using "s + adapter->GetDescription().Multibyte());
-	logger->LogInfo("DirectX initialization stage 2");
+	logger->LogInfo("DirectX Stage 2 initialized");
 	device = new TW3D::TW3DDevice(adapter);
-	logger->LogInfo("DirectX initialization stage 3");
+	logger->LogInfo("DirectX Stage 3 initialized");
 	resource_manager = new TW3D::TW3DResourceManager(device);
-	logger->LogInfo("DirectX initialization stage 4");
+	logger->LogInfo("DirectX Stage 4 initialized");
 	swapChain = new TW3D::TW3DSwapChain(factory, resource_manager->GetDirectCommandQueue(), hwnd, width, height, true);
-	logger->LogInfo("DirectX initialization stage 5");
+	logger->LogInfo("DirectX Stage 5 initialized");
 
 	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++)
 		renderTargets[i] = resource_manager->CreateRenderTargetView(swapChain->GetBuffer(i));
-	logger->LogInfo("DirectX initialization stage 6");
+	logger->LogInfo("DirectX Stage 6 initialized");
 
 	depthStencil = resource_manager->CreateDepthStencilView(width, height);
-	logger->LogInfo("DirectX initialization stage 7");
+	logger->LogInfo("DirectX Stage 7 initialized");
 
 	current_frame_index = swapChain->GetCurrentBufferIndex();
-	logger->LogInfo("DirectX initialization stage 8");
+	logger->LogInfo("DirectX Stage 8 initialized");
 	TW3DPrimitives::Initialize(resource_manager);
 	TW3DShaders::Initialize(resource_manager);
 	TW3DModules::Initialize(resource_manager);
-	logger->LogInfo("DirectX initialization stage 9");
+	logger->LogInfo("DirectX Stage 9 initialized");
 
 	logger->LogInfo("DirectX initialized.");
 }
@@ -190,6 +190,8 @@ TWT::UInt thread_tick(TWT::UInt thread_id, TWT::UInt thread_count) {
 void on_resize() {
 	resource_manager->FlushCommandLists();
 
+	logger->LogInfo("[on_resize] Resizing started."s);
+
 	synchronized(resize_mutex) {
 		RECT clientRect = {};
 		GetClientRect(hwnd, &clientRect);
@@ -207,9 +209,15 @@ void on_resize() {
 			renderTargets[n]->Create(swapChain->GetBuffer(n));
 		depthStencil->Create(width, height);
 
-		if (renderer)
+		logger->LogInfo("[on_resize] Render target resized to "s + width + "x"s + height);
+
+		if (renderer) {
 			renderer->Resize(width, height);
+			logger->LogInfo("[on_resize] Renderer resized to "s + width + "x"s + height);
+		}
 	}
+
+	logger->LogInfo("[on_resize] Resizing finished."s);
 }
 
 void main_loop() {
@@ -228,6 +236,7 @@ void main_loop() {
 			});
 		threads.push_back(std::move(thread));
 	}
+	logger->LogInfo("Threads initialized."s);
 
 	while (running) {
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -248,8 +257,10 @@ void main_loop() {
 
 	for (size_t i = 0; i < total_thread_count; i++)
 		threads[i].join();
+	logger->LogInfo("Threads joined."s);
 
 	resource_manager->FlushCommandLists();
+	logger->LogInfo("Main loop finished."s);
 }
 
 void cleanup() {
@@ -272,7 +283,6 @@ void cleanup() {
 		on_cleanup();
 
 	delete resource_manager;
-	delete logger;
 
 #ifdef _DEBUG
 	ComPtr<IDXGIDebug1> dxgiDebug;
@@ -280,6 +290,10 @@ void cleanup() {
 		dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
 	}
 #endif // _DEBUG
+
+	logger->LogInfo("Engine cleaned up."s);
+
+	delete logger;
 }
 
 void TW3D::Initialize(const InitializeInfo& info) {
@@ -294,9 +308,13 @@ void TW3D::Initialize(const InitializeInfo& info) {
 	logger = new TW::TWLogger(info.LogFilename, "TW3D");
 #endif // _DEBUG
 
+	TWU::TW3DSetLogger(logger);
+
 	init_window();
 	init_input();
 	init_dx12();
+
+	logger->LogInfo("Engine initialized."s);
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -361,6 +379,7 @@ void TW3D::Start() {
 void TW3D::Shutdown() {
 	running = false;
 	DestroyWindow(hwnd);
+	logger->LogInfo("Engine shutdown."s);
 }
 
 TWT::Bool TW3D::GetFullScreen() {
@@ -371,6 +390,7 @@ void TW3D::SetFullScreen(TWT::Bool FullScreen) {
 	if (fullscreen != FullScreen) {
 		fullscreen = FullScreen;
 		swapChain->SetFullscreen(fullscreen);
+		logger->LogInfo("Fullscreen: "s + (fullscreen ? "On"s : "Off"s));
 		on_resize();
 	}
 }
@@ -417,7 +437,7 @@ void TW3D::SetVSync(TWT::Bool VSync) {
 	swapChain->VSync = VSync;
 }
 
-void TW3D::SetWindowTitle(TWT::String WindowTitle) {
+void TW3D::SetWindowTitle(const TWT::String& WindowTitle) {
 	title = WindowTitle;
 	TWT::WString wstrtitle = title.Wide();
 	const TWT::WChar* wtitle = wstrtitle.data.c_str();
@@ -427,7 +447,9 @@ void TW3D::SetWindowTitle(TWT::String WindowTitle) {
 void TW3D::SetRenderer(TW3DRenderer* Renderer) {
 	renderer = Renderer;
 	renderer->Initialize(resource_manager, swapChain, width, height);
+	logger->LogInfo("[SetRenderer] Renderer initialized. Resizing renderer to "s + width + "x"s + height);
 	renderer->Resize(width, height);
+	logger->LogInfo("[SetRenderer] Renderer resized."s);
 }
 
 void TW3D::SetOnUpdateEvent(DefaultHandler OnUpdate) {

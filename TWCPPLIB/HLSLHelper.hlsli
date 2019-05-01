@@ -50,6 +50,7 @@ struct Bounds {
 
 	bool intersect(in Ray ray, out float distan) {
 		float t0 = 0, t1 = 1000.0;
+		distan = FLT_MAX;
 		for (int i = 0; i < 3; ++i) {
 			// Update interval for _i_th bounding box slab
 			float invRayDir = 1 / ray.dir[i];
@@ -141,7 +142,6 @@ bool triangle_intersection(in Ray ray, in float3 v0, in float3 v1, in float3 v2,
 				//float3 n = dot(normal, normalize(ray.origin - interPoint)) >= 0 ? normal : normal * float3(-1);
 
 				if (t > EPSILON) {
-					//tri_inter.TriangleID = -1;
 					tri_inter.IntersectionPoint = ray.origin + ray.dir * t;
 					tri_inter.IntersectionDistance = length(ray.dir * t);
 					return true;
@@ -150,6 +150,8 @@ bool triangle_intersection(in Ray ray, in float3 v0, in float3 v1, in float3 v2,
 		}
 	}
 
+	tri_inter.IntersectionPoint = float3(0, 0, 0);
+	tri_inter.IntersectionDistance = 65535;
 	return false;
 }
 
@@ -163,8 +165,13 @@ bool triangle_intersection(in Ray ray, in GVB gvb, in uint prim_index, out Trian
 
 bool mesh_rtas_trace_ray(in RTNB rtas, in uint node_offset, in GVB gvb, in Ray ray, out TriangleIntersection tri_inter) {
 	TriangleIntersection minInter, curr, tempInter;
+	minInter.TriangleID = -1;
+	minInter.IntersectionPoint = float3(0, 0, 0);
 	minInter.IntersectionDistance = 1000;
-	float distance;
+	tempInter.TriangleID = -1;
+	tempInter.IntersectionPoint = float3(0, 0, 0);
+	tempInter.IntersectionDistance = 1000;
+	float distance = 0;
 
 	uint stackNodes[64];
 	unsigned int stackIndex = 0;
@@ -174,6 +181,10 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint node_offset, in GVB gvb, in Ray r
 
 	float d2 = 0;
 	bool found = rtas[node].bounds.intersect(ray, d2);
+
+	tri_inter.TriangleID = -1;
+	tri_inter.IntersectionPoint = float3(0, 0, 0);
+	tri_inter.IntersectionDistance = 1000;
 
 	if (!found) {
 		return false;
@@ -249,6 +260,9 @@ bool scene_rtas_trace_ray(in RTScene rtas, in Ray ray, out uint rtas_node_index,
 	float d2 = 0;
 	bool found = rtas[node].bounds.intersect(ray, d2);
 
+	rtas_node_index = -1;
+	transform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
 	if (!found)
 		return false;
 
@@ -310,6 +324,9 @@ bool scene_rtas_trace_ray(in RTScene rtas, in Ray ray, out uint rtas_node_index,
 bool TraceRay(in RTScene SceneAS, in RTNB gnb, in GVB gvb, in Ray ray, out TriangleIntersection tri_inter) {
 	uint rtas_node_index;
 	float4x4 transform;
+	tri_inter.TriangleID = -1;
+	tri_inter.IntersectionPoint = float3(0, 0, 0);
+	tri_inter.IntersectionDistance = 65535;
 	if (scene_rtas_trace_ray(SceneAS, ray, rtas_node_index, transform)) {
 		Ray nr;
 		nr.origin = mul(transform, float4(ray.origin, 1)).xyz;

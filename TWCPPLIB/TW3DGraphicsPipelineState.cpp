@@ -45,7 +45,7 @@ void TW3D::TW3DGraphicsPipelineState::SetVertexShader(const std::string& Filenam
 	desc.VS = bytecode;
 }
 
-void TW3D::TW3DGraphicsPipelineState::SetVertexShader(D3D12_SHADER_BYTECODE ByteCode) {
+void TW3D::TW3DGraphicsPipelineState::SetVertexShader(const D3D12_SHADER_BYTECODE& ByteCode) {
 	desc.VS = ByteCode;
 }
 
@@ -60,7 +60,7 @@ void TW3D::TW3DGraphicsPipelineState::SetPixelShader(const std::string& Filename
 	desc.PS = bytecode;
 }
 
-void TW3D::TW3DGraphicsPipelineState::SetPixelShader(D3D12_SHADER_BYTECODE ByteCode) {
+void TW3D::TW3DGraphicsPipelineState::SetPixelShader(const D3D12_SHADER_BYTECODE& ByteCode) {
 	desc.PS = ByteCode;
 }
 
@@ -82,9 +82,9 @@ void TW3D::TW3DGraphicsPipelineState::Create(TW3DDevice* Device) {
 	pipeline_state->SetName(L"TW3DGraphicsPipelineState");
 }
 
-TWT::Vector<D3D12_INPUT_ELEMENT_DESC> TW3D::CreateInputLayout(TWT::Vector<InputLayoutElement> Elements) {
+TWT::Vector<D3D12_INPUT_ELEMENT_DESC> TW3D::CreateInputLayout(const TWT::Vector<InputLayoutElement>& Elements) {
 	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> descs;
-	for (InputLayoutElement element : Elements) {
+	for (const InputLayoutElement& element : Elements) {
 		switch (element) {
 		case TW3D::POSITION_ILE:
 			descs.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 });

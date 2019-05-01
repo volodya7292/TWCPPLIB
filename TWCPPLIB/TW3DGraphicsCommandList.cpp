@@ -8,7 +8,7 @@
 #include "TW3DPerspectiveCamera.h"
 
 TW3D::TW3DGraphicsCommandList::TW3DGraphicsCommandList(TW3D::TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type) :
-	Type(Type)
+	type(Type)
 {
 	Device->CreateCommandAllocator(Type, &command_allocator);
 	Device->CreateGraphicsCommandList(Type, command_allocator, &command_list);
@@ -26,6 +26,10 @@ ID3D12GraphicsCommandList* TW3D::TW3DGraphicsCommandList::Get() {
 	return command_list;
 }
 
+D3D12_COMMAND_LIST_TYPE TW3D::TW3DGraphicsCommandList::GetType() {
+	return type;
+}
+
 void TW3D::TW3DGraphicsCommandList::UpdateSubresources(TW3DResource* DestinationResource, TW3DResource* Intermediate,
 	D3D12_SUBRESOURCE_DATA* SrcData, TWT::UInt SubresourcesCount, TWT::UInt64 IntermediateOffset, TWT::UInt FirstSubresource) {
 	TWU::UpdateSubresourcesImp(command_list, DestinationResource->Get(), Intermediate->Get(), SrcData, SubresourcesCount, IntermediateOffset, FirstSubresource);
@@ -36,7 +40,7 @@ void TW3D::TW3DGraphicsCommandList::UpdateSubresources(ID3D12Resource* Destinati
 	TWU::UpdateSubresourcesImp(command_list, DestinationResource, Intermediate, SrcData, SubresourcesCount, IntermediateOffset, FirstSubresource);
 }
 
-void TW3D::TW3DGraphicsCommandList::ResourceBarrier(const D3D12_RESOURCE_BARRIER barrier) {
+void TW3D::TW3DGraphicsCommandList::ResourceBarrier(const D3D12_RESOURCE_BARRIER& barrier) {
 	command_list->ResourceBarrier(1, &barrier);
 }
 
@@ -88,7 +92,7 @@ void TW3D::TW3DGraphicsCommandList::ClearDSVDepth(TW3DResourceDSV* DSV, TWT::Flo
 }
 
 void TW3D::TW3DGraphicsCommandList::SetRootSignature(TW3DRootSignature* RootSignature) {
-	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 		command_list->SetComputeRootSignature(RootSignature->Get());
 	else
 		command_list->SetGraphicsRootSignature(RootSignature->Get());
@@ -109,28 +113,28 @@ void TW3D::TW3DGraphicsCommandList::SetDescriptorHeaps(TWT::Vector<TW3DDescripto
 }
 
 void TW3D::TW3DGraphicsCommandList::SetRootDescriptorTable(TWT::UInt RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor) {
-	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 		command_list->SetComputeRootDescriptorTable(RootParameterIndex, BaseDescriptor);
 	else
 		command_list->SetGraphicsRootDescriptorTable(RootParameterIndex, BaseDescriptor);
 }
 
 void TW3D::TW3DGraphicsCommandList::SetRootCBV(TWT::UInt RootParameterIndex, TW3DResourceCB* CB, TWT::UInt ElementIndex) {
-	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 		command_list->SetComputeRootConstantBufferView(RootParameterIndex, CB->GetAddress(ElementIndex));
 	else
 		command_list->SetGraphicsRootConstantBufferView(RootParameterIndex, CB->GetAddress(ElementIndex));
 }
 
 void TW3D::TW3DGraphicsCommandList::SetRoot32BitConstant(TWT::UInt RootParameterIndex, TWT::UInt Data, TWT::UInt DestOffsetIn32BitValues) {
-	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 		command_list->SetComputeRoot32BitConstant(RootParameterIndex, Data, DestOffsetIn32BitValues);
 	else
 		command_list->SetGraphicsRoot32BitConstant(RootParameterIndex, Data, DestOffsetIn32BitValues);
 }
 
 void TW3D::TW3DGraphicsCommandList::SetRoot32BitConstants(TWT::UInt RootParameterIndex, TWT::UInt Num32BitValuesToSet, const void* Data, TWT::UInt DestOffsetIn32BitValues) {
-	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 		command_list->SetComputeRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, Data, DestOffsetIn32BitValues);
 	else
 		command_list->SetGraphicsRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, Data, DestOffsetIn32BitValues);
@@ -152,7 +156,7 @@ void TW3D::TW3DGraphicsCommandList::SetVertexBuffer(TWT::UInt StartSlot, TW3DRes
 	command_list->IASetVertexBuffers(StartSlot, 1, &view->GetView());
 }
 
-void TW3D::TW3DGraphicsCommandList::SetVertexBuffers(TWT::UInt StartSlot, TWT::Vector<D3D12_VERTEX_BUFFER_VIEW> views) {
+void TW3D::TW3DGraphicsCommandList::SetVertexBuffers(TWT::UInt StartSlot, const TWT::Vector<D3D12_VERTEX_BUFFER_VIEW>& views) {
 	command_list->IASetVertexBuffers(StartSlot, static_cast<UINT>(views.size()), views.data());
 }
 
@@ -191,7 +195,7 @@ void TW3D::TW3DGraphicsCommandList::BindRTVTexture(TWT::UInt RootParameterIndex,
 }
 
 void TW3D::TW3DGraphicsCommandList::BindUAVBuffer(TWT::UInt RootParameterIndex, TW3DResource* UAV) {
-	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 		command_list->SetComputeRootUnorderedAccessView(RootParameterIndex, UAV->GetGPUVirtualAddress());
 	else
 		command_list->SetGraphicsRootUnorderedAccessView(RootParameterIndex, UAV->GetGPUVirtualAddress());

@@ -5,7 +5,7 @@ TW3D::TW3DAdapter::TW3DAdapter(IDXGIAdapter4* native_adapter, D3D_FEATURE_LEVEL 
 	native_adapter(native_adapter), featureLevel(featureLevel)
 {
 	DXGI_ADAPTER_DESC3 desc;
-	native_adapter->GetDesc3(&desc);
+	TWU::SuccessAssert(native_adapter->GetDesc3(&desc));
 	
 	description = TWT::WString(desc.Description);
 	dedicatedVideoMemory = desc.DedicatedVideoMemory;
