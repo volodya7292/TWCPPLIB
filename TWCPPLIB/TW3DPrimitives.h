@@ -7,4 +7,5 @@ namespace TW3DPrimitives {
 	void Release();
 
 	TW3D::TW3DVertexMesh* GetCubeVertexMesh();
+	TW3D::TW3DVertexMesh* GetPyramid4VertexMesh();
 }

@@ -34,6 +34,8 @@ namespace TWU {
 	// Load and decode image from file
 	TWT::Int LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, const TWT::WString& filename, TWT::Int& bytesPerRow);
 
+	void TW3DCalculateTriangleNormals(void* VertexBuffer, TWT::UInt VertexCount, TWT::UInt VertexFloatSize, TWT::UInt VertexPositionFloatOffset, TWT::UInt VertexNormalFloatOffset);
+
 	// Safely release DirectX resources
 	template<typename T>
 	void DXSafeRelease(T* t){

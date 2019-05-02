@@ -5,23 +5,23 @@
 #define FLT_MAX        3.402823466e+38f
 #define MachineEpsilon 5.96e-08
 
-bool equals(in float3 v0, in float v) {
+inline bool equals(in float3 v0, in float v) {
 	return v0.x == v && v0.y == v && v0.z == v;
 }
 
-bool not_equals(in float3 v0, in float v) {
+inline bool not_equals(in float3 v0, in float v) {
 	return v0.x != v && v0.y != v && v0.z != v;
 }
 
-bool less(in float3 v0, in float v) {
+inline bool less(in float3 v0, in float v) {
 	return v0.x < v && v0.y < v && v0.z < v;
 }
 
-bool less(in float3 v0, in float3 v1) {
+inline bool less(in float3 v0, in float3 v1) {
 	return v0.x < v1.x && v0.y < v1.y && v0.z < v1.z;
 }
 
-bool greater(in float3 v0, in float3 v1) {
+inline bool greater(in float3 v0, in float3 v1) {
 	return v0.x > v1.x && v0.y > v1.y && v0.z > v1.z;
 }
 
@@ -49,7 +49,7 @@ struct Bounds {
 	}
 
 	bool intersect(in Ray ray, out float distan) {
-		float t0 = 0, t1 = 1000.0;
+		float t0 = 0, t1 = FLT_MAX;
 		distan = FLT_MAX;
 		for (int i = 0; i < 3; ++i) {
 			// Update interval for _i_th bounding box slab
@@ -91,6 +91,7 @@ struct LBVHNode {
 struct SceneLBVHNode {
 	float4x4 transform;
 	float4x4 transform_inverse;
+	uint vertex_offset;
 	Bounds bounds;
 	uint element_index;
 	uint parent;
@@ -99,7 +100,8 @@ struct SceneLBVHNode {
 };
 
 struct SceneLBVHInstance {
-	uint offset;
+	uint vertex_offset;
+	uint node_offset;
 	float4x4 transform;
 	float4x4 transform_inverse;
 };
@@ -163,14 +165,14 @@ bool triangle_intersection(in Ray ray, in GVB gvb, in uint prim_index, out Trian
 	return triangle_intersection(ray, v0, v1, v2, tri_inter);
 }
 
-bool mesh_rtas_trace_ray(in RTNB rtas, in uint node_offset, in GVB gvb, in Ray ray, out TriangleIntersection tri_inter) {
+bool mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offset, in GVB gvb, in Ray ray, out TriangleIntersection tri_inter) {
 	TriangleIntersection minInter, curr, tempInter;
 	minInter.TriangleID = -1;
 	minInter.IntersectionPoint = float3(0, 0, 0);
-	minInter.IntersectionDistance = 1000;
+	minInter.IntersectionDistance = FLT_MAX;
 	tempInter.TriangleID = -1;
 	tempInter.IntersectionPoint = float3(0, 0, 0);
-	tempInter.IntersectionDistance = 1000;
+	tempInter.IntersectionDistance = FLT_MAX;
 	float distance = 0;
 
 	uint stackNodes[64];
@@ -178,18 +180,22 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint node_offset, in GVB gvb, in Ray r
 	stackNodes[stackIndex++] = -1;
 
 	uint childL, childR, node = node_offset;
+	uint vo = vertex_offset / 3;
+	if (vo > 0)
+		vo = 12;
+
 
 	float d2 = 0;
 	bool found = rtas[node].bounds.intersect(ray, d2);
 
 	tri_inter.TriangleID = -1;
 	tri_inter.IntersectionPoint = float3(0, 0, 0);
-	tri_inter.IntersectionDistance = 1000;
+	tri_inter.IntersectionDistance = FLT_MAX;
 
 	if (!found) {
 		return false;
 	} else if (rtas[node].element_index != -1) {
-		if (triangle_intersection(ray, gvb, rtas[node].element_index, tempInter))
+		if (triangle_intersection(ray, gvb, vo + rtas[node].element_index, tempInter))
 			minInter = tempInter;
 	}
 
@@ -205,7 +211,7 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint node_offset, in GVB gvb, in Ray r
 			if (lIntersection) {
 				// Leaf node
 				if (rtas[childL].element_index != -1) {
-					if (triangle_intersection(ray, gvb, rtas[childL].element_index, tempInter)) {
+					if (triangle_intersection(ray, gvb, vo + rtas[childL].element_index, tempInter)) {
 						if (tempInter.IntersectionDistance < minInter.IntersectionDistance)
 							minInter = tempInter;
 					}
@@ -222,7 +228,7 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint node_offset, in GVB gvb, in Ray r
 			if (rIntersection) {
 				// Leaf node
 				if (rtas[childR].element_index != -1) {
-					if (triangle_intersection(ray, gvb, rtas[childR].element_index, tempInter)) {
+					if (triangle_intersection(ray, gvb, vo + rtas[childR].element_index, tempInter)) {
 						if (tempInter.IntersectionDistance < minInter.IntersectionDistance)
 							minInter = tempInter;
 					}
@@ -244,12 +250,33 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint node_offset, in GVB gvb, in Ray r
 	}
 
 	tri_inter = minInter;
-	return minInter.IntersectionDistance != 1000;
+	return minInter.IntersectionDistance != FLT_MAX;
 }
 
-bool scene_rtas_trace_ray(in RTScene rtas, in Ray ray, out uint rtas_node_index, out float4x4 transform) {
-	float minDistance = 1000;
-	float distance;
+inline void mesh_transform_ray(in Ray ray, in float4x4 inverse_transform, out Ray new_ray) {
+	new_ray.origin = mul(inverse_transform, float4(ray.origin, 1)).xyz;
+	new_ray.dir = normalize(mul(inverse_transform, float4(ray.dir, 0)).xyz);
+}
+
+inline void check_scene_rtas_intersection(in RTNB gnb, in GVB gvb, in Ray ray, in uint rtas_vertex_index, in uint rtas_node_index, in float4x4 inverse_transform, inout TriangleIntersection tri_inter) {
+	Ray nr;
+	mesh_transform_ray(ray, inverse_transform, nr);
+	mesh_rtas_trace_ray(gnb, rtas_vertex_index, rtas_node_index, gvb, nr, tri_inter);
+}
+
+bool TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray Ray, out TriangleIntersection TriInter) {
+	float bounds_distance = FLT_MAX;
+	TriangleIntersection minInter, curr, tempInter;
+	minInter.TriangleID = -1;
+	minInter.IntersectionPoint = float3(0, 0, 0);
+	minInter.IntersectionDistance = FLT_MAX;
+	tempInter.TriangleID = -1;
+	tempInter.IntersectionPoint = float3(0, 0, 0);
+	tempInter.IntersectionDistance = FLT_MAX;
+	TriInter.TriangleID = -1;
+	TriInter.IntersectionPoint = float3(0, 0, 0);
+	TriInter.IntersectionDistance = FLT_MAX;
+
 
 	uint stackNodes[64];
 	unsigned int stackIndex = 0;
@@ -258,10 +285,7 @@ bool scene_rtas_trace_ray(in RTScene rtas, in Ray ray, out uint rtas_node_index,
 	uint childL, childR, node = 0;
 
 	float d2 = 0;
-	bool found = rtas[node].bounds.intersect(ray, d2);
-
-	rtas_node_index = -1;
-	transform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	bool found = SceneAS[node].bounds.intersect(Ray, d2);
 
 	if (!found)
 		return false;
@@ -271,36 +295,32 @@ bool scene_rtas_trace_ray(in RTScene rtas, in Ray ray, out uint rtas_node_index,
 	while (node != -1) {
 		lIntersection = rIntersection = traverseL = traverseR = false;
 
-		childL = rtas[node].left_child;
+		childL = SceneAS[node].left_child;
 		if (childL != -1) {
-			lIntersection = rtas[childL].bounds.intersect(ray, distance);
+			lIntersection = SceneAS[childL].bounds.intersect(Ray, bounds_distance);
 
 			if (lIntersection) {
 				// Leaf node
-				if (rtas[childL].element_index != -1) {
-					if (distance < minDistance) {
-						minDistance = distance;
-						rtas_node_index = rtas[childL].element_index;
-						transform = rtas[childL].transform_inverse;
-					}
+				if (SceneAS[childL].element_index != -1) {
+					check_scene_rtas_intersection(GNB, GVB, Ray, SceneAS[childL].vertex_offset, SceneAS[childL].element_index, SceneAS[childL].transform_inverse, tempInter);
+					if (tempInter.IntersectionDistance < minInter.IntersectionDistance)
+						minInter = tempInter;
 				} else {
 					traverseL = true;
 				}
 			}
 		}
 
-		childR = rtas[node].right_child;
+		childR = SceneAS[node].right_child;
 		if (childR != -1) {
-			rIntersection = rtas[childR].bounds.intersect(ray, distance);
+			rIntersection = SceneAS[childR].bounds.intersect(Ray, bounds_distance);
 
 			if (rIntersection) {
 				// Leaf node
-				if (rtas[childR].element_index != -1) {
-					if (distance < minDistance) {
-						minDistance = distance;
-						rtas_node_index = rtas[childR].element_index;
-						transform = rtas[childR].transform_inverse;
-					}
+				if (SceneAS[childR].element_index != -1) {
+					check_scene_rtas_intersection(GNB, GVB, Ray, SceneAS[childR].vertex_offset, SceneAS[childR].element_index, SceneAS[childR].transform_inverse, tempInter);
+					if (tempInter.IntersectionDistance < minInter.IntersectionDistance)
+						minInter = tempInter;
 				} else {
 					traverseR = true;
 				}
@@ -318,22 +338,8 @@ bool scene_rtas_trace_ray(in RTScene rtas, in Ray ray, out uint rtas_node_index,
 		}
 	}
 
-	return minDistance != 1000;
-}
+	TriInter = minInter;
 
-bool TraceRay(in RTScene SceneAS, in RTNB gnb, in GVB gvb, in Ray ray, out TriangleIntersection tri_inter) {
-	uint rtas_node_index;
-	float4x4 transform;
-	tri_inter.TriangleID = -1;
-	tri_inter.IntersectionPoint = float3(0, 0, 0);
-	tri_inter.IntersectionDistance = 65535;
-	if (scene_rtas_trace_ray(SceneAS, ray, rtas_node_index, transform)) {
-		Ray nr;
-		nr.origin = mul(transform, float4(ray.origin, 1)).xyz;
-		nr.dir = normalize(mul(transform, float4(ray.dir, 0)).xyz);
-		//nr.dir = ray.dir;
-		if (mesh_rtas_trace_ray(gnb, rtas_node_index, gvb, nr, tri_inter))
-			return true;
-	}
-	return false;
+	return bounds_distance != FLT_MAX;
+	//return minInter.IntersectionDistance != FLT_MAX;
 }

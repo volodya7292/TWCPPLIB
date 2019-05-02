@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TW3DUtils.h"
+#include "TW3DTypes.h"
 
 static TW::TWLogger* logger;
 
@@ -264,6 +265,30 @@ TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& 
 
 	// return the size of the image. remember to delete the image once your done with it (in this tutorial once its uploaded to the gpu)
 	return imageSize;
+}
+
+void TWU::TW3DCalculateTriangleNormals(void* VertexBuffer, TWT::UInt VertexCount, TWT::UInt VertexFloatSize, TWT::UInt VertexPositionFloatOffset, TWT::UInt VertexNormalFloatOffset) {
+	TWT::Float* FVB = static_cast<TWT::Float*>(VertexBuffer);
+
+	for (size_t i = 0; i < VertexCount / 3; i++) {
+		TWT::UInt index = i * 3 * VertexFloatSize;
+		TWT::UInt pos_index = index + VertexPositionFloatOffset;
+		TWT::UInt norm_index = index + VertexNormalFloatOffset;
+
+		TWT::Vector3f v0 = TWT::Vector3f(FVB[pos_index], FVB[pos_index + 1], FVB[pos_index + 2]);
+		TWT::Vector3f v1 = TWT::Vector3f(FVB[pos_index + VertexFloatSize], FVB[pos_index + VertexFloatSize + 1], FVB[pos_index + VertexFloatSize + 2]);
+		TWT::Vector3f v2 = TWT::Vector3f(FVB[pos_index + VertexFloatSize * 2], FVB[pos_index + VertexFloatSize * 2 + 1], FVB[pos_index + VertexFloatSize * 2 + 2]);
+
+		TWT::Vector3f side0 = v1 - v0;
+		TWT::Vector3f side1 = v2 - v0;
+		TWT::Vector3f normal = normalize(cross(side0, side1));
+
+		for (size_t j = 0; j < 3; j++) {
+			FVB[norm_index + j * VertexFloatSize] = normal.x;
+			FVB[norm_index + j * VertexFloatSize + 1] = normal.y;
+			FVB[norm_index + j * VertexFloatSize + 2] = normal.z;
+		}
+	}
 }
 
 void TWU::SuccessAssert(HRESULT hr) {

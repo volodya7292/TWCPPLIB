@@ -31,17 +31,11 @@ namespace TWT {
 		TWT::Matrix4f proj_view;
 	};
 
-	struct DefaultVertexMeshCB {
-		TWT::Vector4u vertex_info;
-		// .x = vertex_offset
-		// .y = vertex_count
-	};
-
 	struct DefaultVertexBufferCB {
 		TWT::Vector4u vertex_offset;
 	};
 
-	struct DefaultVertexMeshInstanceCB {
+	struct DefaultModelCB {
 		TWT::Matrix4f model;
 	};
 

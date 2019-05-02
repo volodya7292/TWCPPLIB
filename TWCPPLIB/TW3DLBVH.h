@@ -14,6 +14,7 @@ namespace TW3D {
 	struct SceneLBVHNode {
 		TWT::Matrix4f transform;
 		TWT::Matrix4f transform_inverse;
+		TWT::UInt gvb_vertex_offset;
 		TWT::Bounds bounds;
 		TWT::UInt primitive_index;
 		TWT::UInt parent;
@@ -22,6 +23,7 @@ namespace TW3D {
 	};
 
 	struct SceneLBVHInstance {
+		TWT::UInt GVBOffset;
 		TWT::UInt GNBOffset;
 		TWT::Matrix4f Transform;
 		TWT::Matrix4f TransformInverse;

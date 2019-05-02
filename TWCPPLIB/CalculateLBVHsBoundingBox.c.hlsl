@@ -28,7 +28,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 			if (index >= input.gnb_offset_count)
 				break;
 
-			uint node_index = gnb_offsets[index].offset;
+			uint node_index = gnb_offsets[index].node_offset;
 			float4x4 node_transform = gnb_offsets[index].transform;
 			Bounds bb = gnb[node_index].bounds;
 

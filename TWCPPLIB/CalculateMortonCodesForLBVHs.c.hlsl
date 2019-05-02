@@ -45,10 +45,10 @@ inline float3 computeCenter(float3 cmin, float3 cmax, float3 min, float3 max) {
 
 [numthreads(1, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
-	if (input.gnb_offset_count >= DTid.x)
+	if (DTid.x >= input.gnb_offset_count)
 		return;
 
-	uint node_index = gnb_offsets[DTid.x].offset;
+	uint node_index = gnb_offsets[DTid.x].node_offset;
 
 	float3 Cmin = bounding_box[0].pMin;
 	float3 Cmax = bounding_box[0].pMax;
@@ -60,5 +60,5 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	uint code = morton3D(center);
 
 	morton_codes[DTid.x] = code;
-	morton_code_indices[DTid.x] = node_index;
+	morton_code_indices[DTid.x] = DTid.x;
 }

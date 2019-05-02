@@ -70,3 +70,6 @@ private:
 #define synchronized(M)  for(Lock M##_lock = M; M##_lock; M##_lock.set_unlock())
 // ----------------------------------------------------- Synchronized macro -----------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------
+
+#define fsizeof(v) (sizeof(v) / sizeof(TWT::Float))
+#define foffsetof(s,m) (offsetof(s,m) / sizeof(TWT::Float))

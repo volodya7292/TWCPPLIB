@@ -21,10 +21,12 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	node.right_child = -1;
 
 	if (i >= input.leaves_offset) {
-		uint node_index = gnb_offsets[i].offset;
-		node.transform = gnb_offsets[i].transform;
-		node.transform_inverse = gnb_offsets[i].transform_inverse;
-		node.element_index = morton_code_indices[i - input.leaves_offset];
+		uint leaf_index = morton_code_indices[i - input.leaves_offset];
+		uint node_index = gnb_offsets[leaf_index].node_offset;
+		node.transform = gnb_offsets[leaf_index].transform;
+		node.transform_inverse = gnb_offsets[leaf_index].transform_inverse;
+		node.vertex_offset = gnb_offsets[leaf_index].vertex_offset;
+		node.element_index = gnb_offsets[leaf_index].node_offset;
 		node.bounds.pMin = gnb[node_index].bounds.pMin;
 		node.bounds.pMax = gnb[node_index].bounds.pMax;
 
@@ -58,6 +60,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		node.element_index = -1;
 		node.transform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		node.transform_inverse = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		node.vertex_offset = -1;
 		node.bounds.pMin = float3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 		node.bounds.pMax = float3(FLT_MAX, FLT_MAX, FLT_MAX);
 	}

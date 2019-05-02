@@ -35,21 +35,30 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	// -------------------------------------------------------------------------------------------------------------------------
 	TWT::UInt VertexOffset = 0;
 	TWT::UInt NodeOffset = 0;
+	TWT::UInt LatestVertexOffset = 0;
+	TWT::UInt LatestNodeOffset = 0;
 	vertex_buffers.clear();
 	vertex_meshes.clear();
 	TWT::Vector<TW3DVertexBuffer*> buffers;
 	TWT::Vector<TW3DVertexMesh*> meshes;
 	TWT::Vector<SceneLBVHInstance> gnb_node_offsets;
-	for (TW3DObject* object : Objects) {
+	for (TW3DObject* object : Objects) {                                                            // FIX THIS SHIT
 		TW3DVertexMesh* mesh = object->VMInstance.VertexMesh;
-
-		gnb_node_offsets.emplace_back(SceneLBVHInstance { NodeOffset, object->VMInstance.Transform.GetModelMatrix(), inverse(object->VMInstance.Transform.GetModelMatrix()) });
 
 		if (std::find(meshes.begin(), meshes.end(), mesh) == meshes.end()) {
 			meshes.push_back(mesh);
 			vertex_meshes.push_back(std::pair(mesh, std::pair(VertexOffset, NodeOffset)));
+			LatestNodeOffset = NodeOffset;
 			NodeOffset += mesh->LBVH->GetNodeCount();
 		}
+
+		SceneLBVHInstance instance;
+		TWT::Matrix4f transform = object->VMInstance.Transform.GetModelMatrix();
+		instance.GVBOffset = LatestVertexOffset;
+		instance.GNBOffset = LatestNodeOffset;
+		instance.Transform = transform;
+		instance.TransformInverse = inverse(transform);
+		gnb_node_offsets.push_back(instance);
 
 		for (TW3DVertexBuffer* vb : object->VMInstance.VertexMesh->VertexBuffers)
 			if (std::find(buffers.begin(), buffers.end(), vb) == buffers.end()) {
@@ -57,6 +66,8 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 				vertex_buffers.push_back(std::pair(vb, VertexOffset));
 				VertexOffset += vb->GetVertexCount();
 			}
+
+		LatestVertexOffset = VertexOffset;
 	}
 	gvb_vertex_count = VertexOffset + 1;
 	gnb_node_count = NodeOffset + 1;
@@ -75,6 +86,7 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 		gcl->SetRoot32BitConstant(1, entry.second, 0);
 		gcl->Draw(entry.first->GetVertexCount());
 	}
+	gcl->ResourceBarrier(TW3DUAVBarrier());
 	gcl->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	gcl->Close();
 	resource_manager->ExecuteCommandList(gcl);

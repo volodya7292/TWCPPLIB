@@ -13,7 +13,7 @@ void TW3D::TW3DObject::Update() {
 	if (VMInstance.Transform.Changed) {
 		VMInstance.Transform.Changed = false;
 
-		TWT::DefaultVertexMeshInstanceCB cb;
+		TWT::DefaultModelCB cb;
 		cb.model = VMInstance.Transform.GetModelMatrix();
 
 		ConstantBuffer->Update(&cb, 0);

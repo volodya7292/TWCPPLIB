@@ -115,7 +115,7 @@ void TW3D::TW3DLBVH::BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffs
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::UpdateLBVHNodeBounds));
 		cl->BindUAVBuffer(0, node_buffer);
 		cl->SetRoot32BitConstant(1, element_count - 1, 0);
-		for (size_t i = 0; i < element_count / 4; i++) {
+		for (size_t i = 0; i < ceil(element_count); i++) {
 			cl->SetRoot32BitConstant(1, i, 1);
 			cl->Dispatch(element_count);
 			cl->ResourceBarrier(uav_barrier);
@@ -128,7 +128,7 @@ void TW3D::TW3DLBVH::BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffs
 	}
 
 	cl->Close();
-
+	
 	resource_manager->ExecuteCommandList(cl);
 	resource_manager->FlushCommandList(cl);
 }
@@ -243,8 +243,7 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::UpdateLBVHNodeBoundsForLBVHs));
 		cl->BindUAVBuffer(0, node_buffer);
 		cl->SetRoot32BitConstant(1, element_count - 1, 0);
-		for (size_t i = 0; i < element_count / 4; i++) {
-			cl->SetRoot32BitConstant(1, i, 1);
+		for (size_t i = 0; i < ceil(element_count); i++) {
 			cl->Dispatch(element_count);
 			cl->ResourceBarrier(uav_barrier);
 		}
@@ -259,6 +258,9 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 
 	resource_manager->ExecuteCommandList(cl);
 	resource_manager->FlushCommandList(cl);
+	
+	//TWT::Bounds bb;
+	//bounding_box_buffer->Read(&bb, 0, sizeof(TWT::Bounds));
 
 	delete gnboffset_buffer;
 }

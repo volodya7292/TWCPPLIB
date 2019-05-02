@@ -85,13 +85,13 @@ void TW3D::TW3DResourceUAV::Read(void* Out, TWT::UInt ByteOffset, TWT::UInt Byte
 	Resource->SetName(L"TW3DResource UAV Read Buffer Heap");
 
 	temp_gcl->Reset();
-	temp_gcl->Get()->Get()->CopyBufferRegion(read_heap, 0, Resource, 0, ByteCount);
+	temp_gcl->Get()->Get()->CopyBufferRegion(read_heap, 0, Resource, ByteOffset, ByteCount);
 	//temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 	//temp_gcl->UpdateSubresources(Resource, upload_heap, &upload_data);
 	//temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	temp_gcl->Execute();
 
-	D3D12_RANGE range = CD3DX12_RANGE(ByteOffset, ByteOffset + ByteCount);
+	D3D12_RANGE range = CD3DX12_RANGE(0, ByteCount);
 	void* data;
 	read_heap->Map(0, &range, &data);
 

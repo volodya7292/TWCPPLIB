@@ -113,7 +113,7 @@ void TW3DShaders::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 
 
 	TW3D::TW3DRootSignature* rs7 = new TW3D::TW3DRootSignature(false, false, false, false);
-	rs7->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
+	rs7->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Node Buffer SRV
 	rs7->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Global Node Buffer offsets SRV
 	rs7->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_ALL, 2); // Bounding box Buffer SRV
 	rs7->SetParameterUAVBuffer(3, D3D12_SHADER_VISIBILITY_ALL, 0); // Morton codes buffer UAV
