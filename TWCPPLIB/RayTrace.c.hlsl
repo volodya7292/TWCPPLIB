@@ -60,7 +60,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
 	float4 color = float4(1, 0.3, 0.5, 1);
 	if (intersected)
-		color = float4(gvb[tri_inter.TriangleID].normal * 0.75f, 1);
+		color = float4(abs(gvb[tri_inter.TriangleID * 3].normal * 0.5f), 1);
 	//float4 color = float4(1, 0, 1, 1);
 
 	//tet g = { float4(DTid.x / 1280.0, 0, 0, 1), float4(0, DTid.x / 1280.0, 0, 1) };

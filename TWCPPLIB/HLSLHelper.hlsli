@@ -181,8 +181,6 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 
 	uint childL, childR, node = node_offset;
 	uint vo = vertex_offset / 3;
-	//if (vo > 0)
-	//	vo = 12;
 
 
 	float d2 = 0;
@@ -204,7 +202,7 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 	while (node != -1) {
 		lIntersection = rIntersection = traverseL = traverseR = false;
 
-		childL = rtas[node].left_child;
+		childL = node_offset + rtas[node].left_child;
 		if (childL != -1) {
 			lIntersection = rtas[childL].bounds.intersect(ray, distance);
 
@@ -221,7 +219,7 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 			}
 		}
 
-		childR = rtas[node].right_child;
+		childR = node_offset + rtas[node].right_child;
 		if (childR != -1) {
 			rIntersection = rtas[childR].bounds.intersect(ray, distance);
 
