@@ -42,7 +42,13 @@ TWT::Float TW3D::TW3DPerspectiveCamera::GetRatioY() {
 }
 
 void TW3D::TW3DPerspectiveCamera::SetRotation(TWT::Vector3f Rotation) {
-	rotation = glm::mod(Rotation, 360.0f);
+	rotation = TWT::Vector3f(fmod(Rotation.x, 360.0f), fmod(Rotation.y, 360.0f), fmod(Rotation.z, 360.0f));
+}
+
+void TW3D::TW3DPerspectiveCamera::Move(TWT::Float to_back, TWT::Float left_right) {
+	TWT::Vector3f d = TWT::Vector3f(sin(glm::radians(-rotation.y)), 0, cos(glm::radians(-rotation.y)));
+	Position -= d * to_back;
+	Position -= normalize(cross(d, TWT::Vector3f(0, 1, 0))) * left_right;
 }
 
 void TW3D::TW3DPerspectiveCamera::UpdateConstantBuffer(TW3DResourceCB* ConstantBuffer) {

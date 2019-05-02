@@ -16,9 +16,14 @@ namespace TW3D {
 		TWT::String LogFilename = "";
 	};
 
+	enum TW3DKeyActionType {
+		TW3D_KEY_ACTION_DOWN,
+		TW3D_KEY_ACTION_UP,
+	};
+
 	using DefaultHandler       = void(*)();
 	using ThreadTickHandler    = TWT::UInt(*)(TWT::UInt ThreadID, TWT::UInt ThreadCount);
-	using KeyHandler           = void(*)(TWT::UInt KeyCode);
+	using KeyHandler           = void(*)(TWT::UInt KeyCode, TW3DKeyActionType Type);
 	using CharHandler          = void(*)(TWT::WChar Symbol);
 
 	void Initialize(const InitializeInfo& info);
@@ -46,8 +51,7 @@ namespace TW3D {
 	void SetOnUpdateEvent(DefaultHandler OnUpdate);
 	void SetOnCleanupEvent(DefaultHandler OnCleanup);
 	void SetOnThreadTickEvent(ThreadTickHandler OnThreadTick);
-	void SetOnKeyDownEvent(KeyHandler OnKeyDown);
-	void SetOnKeyUpEvent(KeyHandler OnKeyUp);
+	void SetOnKeyEvent(KeyHandler OnKey);
 	void SetOnCharEvent(CharHandler OnChar);
 
 	TW3DResourceManager* GetResourceManager();

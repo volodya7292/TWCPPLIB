@@ -13,7 +13,7 @@ static TWT::Float delta_time;
 
 static TW3D::DefaultHandler       on_update, on_cleanup;
 static TW3D::ThreadTickHandler    on_thread_tick;
-static TW3D::KeyHandler           on_key_down, on_key_up;
+static TW3D::KeyHandler           on_key;
 static TW3D::CharHandler          on_char;
 
 static TWT::Vector<TWT::Bool> KeysDown(1024);
@@ -322,16 +322,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	case WM_KEYDOWN:
 		if (!KeysDown[wParam]) {
 			KeysDown[wParam] = true;
-			if (on_key_down)
-				on_key_down(wParam);
+			if (on_key)
+				on_key(wParam, TW3D::TW3D_KEY_ACTION_DOWN);
 		}
 		return 0;
 
 	case WM_KEYUP:
 		if (KeysDown[wParam]) {
 			KeysDown[wParam] = false;
-			if (on_key_up)
-				on_key_up(wParam);
+			if (on_key)
+				on_key(wParam, TW3D::TW3D_KEY_ACTION_UP);
 		}
 		return 0;
 
@@ -464,12 +464,8 @@ void TW3D::SetOnThreadTickEvent(ThreadTickHandler OnThreadTick) {
 	on_thread_tick = OnThreadTick;
 }
 
-void TW3D::SetOnKeyDownEvent(KeyHandler OnKeyDown) {
-	on_key_down = OnKeyDown;
-}
-
-void TW3D::SetOnKeyUpEvent(KeyHandler OnKeyUp) {
-	on_key_up = OnKeyUp;
+void TW3D::SetOnKeyEvent(KeyHandler OnKey) {
+	on_key = OnKey;
 }
 
 void TW3D::SetOnCharEvent(CharHandler OnChar) {

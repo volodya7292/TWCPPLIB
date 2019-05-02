@@ -184,6 +184,8 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 
 		cl->CopyBufferRegion(node_buffer, offsetof(SceneLBVHNode, transform), gnboffset_buffer, offsetof(SceneLBVHInstance, Transform), sizeof(TWT::Matrix4f));
 		cl->CopyBufferRegion(node_buffer, offsetof(SceneLBVHNode, transform_inverse), gnboffset_buffer, offsetof(SceneLBVHInstance, TransformInverse), sizeof(TWT::Matrix4f));
+		cl->CopyBufferRegion(node_buffer, offsetof(SceneLBVHNode, gvb_vertex_offset), gnboffset_buffer, offsetof(SceneLBVHInstance, GVBOffset), sizeof(TWT::UInt));
+		cl->CopyBufferRegion(node_buffer, offsetof(SceneLBVHNode, primitive_index), gnboffset_buffer, offsetof(SceneLBVHInstance, GNBOffset), sizeof(TWT::UInt));
 		cl->CopyBufferRegion(node_buffer, offsetof(SceneLBVHNode, bounds), bounding_box_buffer, 0, sizeof(TWT::Bounds));
 
 		cl->ResourceBarriers({
@@ -258,9 +260,6 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 
 	resource_manager->ExecuteCommandList(cl);
 	resource_manager->FlushCommandList(cl);
-	
-	//TWT::Bounds bb;
-	//bounding_box_buffer->Read(&bb, 0, sizeof(TWT::Bounds));
 
 	delete gnboffset_buffer;
 }

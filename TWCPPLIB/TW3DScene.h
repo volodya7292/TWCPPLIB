@@ -18,8 +18,8 @@ namespace TW3D {
 	private:
 		TW3DResourceManager* resource_manager;
 
-		TWT::Vector<std::pair<TW3DVertexBuffer*, TWT::UInt>> vertex_buffers;
-		TWT::Vector<std::pair<TW3DVertexMesh*, std::pair<TWT::UInt, TWT::UInt>>>   vertex_meshes;
+		std::unordered_map<TW3DVertexBuffer*, TWT::UInt> vertex_buffers;
+		std::unordered_map<TW3DVertexMesh*, std::pair<TWT::UInt, TWT::UInt>> vertex_meshes;
 
 		TW3DResourceUAV* gvb;
 		TW3DResourceUAV* gnb;

@@ -181,8 +181,8 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 
 	uint childL, childR, node = node_offset;
 	uint vo = vertex_offset / 3;
-	if (vo > 0)
-		vo = 12;
+	//if (vo > 0)
+	//	vo = 12;
 
 
 	float d2 = 0;
@@ -340,6 +340,6 @@ bool TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray Ray, out Trian
 
 	TriInter = minInter;
 
-	return bounds_distance != FLT_MAX;
-	//return minInter.IntersectionDistance != FLT_MAX;
+	//return bounds_distance != FLT_MAX;
+	return minInter.IntersectionDistance != FLT_MAX;
 }

@@ -18,6 +18,7 @@ namespace TW3D {
 		TWT::Float GetRatioY();
 
 		void SetRotation(TWT::Vector3f Rotation);
+		void Move(TWT::Float to_back, TWT::Float left_right);
 		void UpdateConstantBuffer(TW3DResourceCB* ConstantBuffer = nullptr);
 		TW3DResourceCB* GetConstantBuffer();
 

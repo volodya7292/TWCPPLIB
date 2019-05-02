@@ -3,11 +3,70 @@
 #include "TW3DCube.h"
 #include "TW3DDefaultRenderer.h"
 
+static const TWT::Float movement_speed = 2.0f;
+static const TWT::Float mouseSensitivity = 0.05f;
+
 TW3D::TW3DDefaultRenderer* defaultRenderer;
 TW3D::TW3DScene* scene;
 TW3D::TW3DCube* cube, *cube2;
 
 void on_update() {
+
+
+	int to_back_movement = 0;
+	int right_left_movement = 0;
+	int up_down_movement = 0;
+
+	if (TW3D::IsKeyDown('W'))
+		to_back_movement++;
+	if (TW3D::IsKeyDown('S'))
+		to_back_movement--;
+
+	if (TW3D::IsKeyDown('A'))
+		right_left_movement--;
+	if (TW3D::IsKeyDown('D'))
+		right_left_movement++;
+
+	if (TW3D::IsKeyDown(VK_SPACE))
+		up_down_movement++;
+	if (TW3D::IsKeyDown(VK_SHIFT))
+		up_down_movement--;
+
+	float ms = movement_speed * TW3D::GetDeltaTime();
+
+	// Move camera in space
+	scene->Camera->Position.y += up_down_movement * ms;
+	
+	scene->Camera->Move(to_back_movement * ms, right_left_movement * ms);
+
+	// Mouse movement
+	TWT::Vector2i centerMousePos = TW3D::GetWindowCenterPosition();
+
+	TWT::Vector2i mousePos = TW3D::GetCursorPosition();
+
+	float xOffset = (mousePos.x - centerMousePos.x) * mouseSensitivity;
+	float yOffset = (centerMousePos.y - mousePos.y) * mouseSensitivity;
+
+	TWT::Vector3f rotation = scene->Camera->GetRotation();
+	float xRotation = rotation.x;
+	float newXRotation = xRotation - yOffset;
+
+
+	if (newXRotation <= 90.0f && newXRotation >= -90.0f)
+		rotation.x = newXRotation;
+	else if (newXRotation > 0)
+		rotation.x = 90.0f;
+	else if (newXRotation < 0)
+		rotation.x = -90.0f;
+
+	rotation.y += xOffset;
+	scene->Camera->SetRotation(rotation);
+
+
+	SetCursorPos(centerMousePos.x, centerMousePos.y);
+
+
+
 	cube->VMInstance.Transform.SetPosition(TWT::Vector3f(-0.8f, 0, 0));
 	cube->VMInstance.Transform.AdjustRotation(TWT::Vector3f(0.01f));
 	cube2->VMInstance.Transform.SetPosition(TWT::Vector3f(0.8f, 0, 0));
@@ -29,19 +88,23 @@ void on_cleanup() {
 	delete defaultRenderer;
 }
 
-void on_key_down(TWT::UInt KeyCode) {
+void on_key(TWT::UInt KeyCode, TW3D::TW3DKeyActionType Type) {
+	float delta_time = TW3D::GetDeltaTime();
+
 	switch (KeyCode) {
 	case VK_ESCAPE:
-		TW3D::Shutdown();
+		if (Type == TW3D::TW3D_KEY_ACTION_DOWN)
+			TW3D::Shutdown();
 		break;
 	case VK_F11:
-		TW3D::SetFullScreen(!TW3D::GetFullScreen());
+		if (Type == TW3D::TW3D_KEY_ACTION_DOWN)
+			TW3D::SetFullScreen(!TW3D::GetFullScreen());
 		break;
 	}
 }
 
 void on_char(TWT::WChar Symbol) {
-	TWU::CPrintln(Symbol);
+	//TWU::CPrintln(Symbol);
 }
 
 #include "TW3DPrimitives.h"
@@ -74,7 +137,7 @@ int main() {
 	TW3D::SetOnUpdateEvent(on_update);
 	TW3D::SetOnThreadTickEvent(on_thread_tick);
 	TW3D::SetOnCleanupEvent(on_cleanup);
-	TW3D::SetOnKeyDownEvent(on_key_down);
+	TW3D::SetOnKeyEvent(on_key);
 	TW3D::SetOnCharEvent(on_char);
 
 	TW3D::Start();
