@@ -25,6 +25,8 @@ namespace TWU {
 	// Get the number of bits per pixel for a DXGI format
 	TWT::Int GetDXGIFormatBitsPerPixel(DXGI_FORMAT dxgiFormat);
 
+	TWT::String DXCommandListSupportFlagsStr(D3D12_COMMAND_LIST_SUPPORT_FLAGS Flags);
+
 	D3D12_DESCRIPTOR_RANGE DXDescriptorRange(TWT::UInt Register, D3D12_DESCRIPTOR_RANGE_TYPE Type);
 
 	// Implementation of UpdateSubresources from d3dx12.h. Used in TW3DGraphicsCommandList.

@@ -37,6 +37,10 @@ namespace TWU {
 	inline T AlignPowerOfTwo(T value) {
 		return value == 0 ? 0 : 1 << Log2(value);
 	}
+
+	inline TWT::String BoolStr(TWT::Bool Value) {
+		return Value ? "True"s : "False"s;
+	}
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------

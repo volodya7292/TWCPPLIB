@@ -12,7 +12,7 @@ namespace TW3D {
 		D3D_FEATURE_LEVEL GetFeatureLevel();
 		TWT::WString GetDescription();
 
-		void CreateDevice(ID3D12Device5** device);
+		void CreateDevice(ID3D12Device2** device);
 
 		static std::vector<TW3D::TW3DAdapter*> ListAvailable(TW3DFactory* factory, D3D_FEATURE_LEVEL featureLevel);
 

@@ -3,12 +3,11 @@
 #include "TW3DTempGCL.h"
 
 TW3D::TW3DResourceUAV::TW3DResourceUAV(TW3DDevice* Device, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::UInt ElementSizeInBytes, TW3DTempGCL* TempGCL) :
-	TW3DResource(Device), SRVDescriptorHeap(SRVDescriptorHeap), element_size(ElementSizeInBytes), temp_gcl(TempGCL) {
+	TW3DResource(Device), SRVDescriptorHeap(SRVDescriptorHeap), element_size(ElementSizeInBytes), Format(DXGI_FORMAT_UNKNOWN), temp_gcl(TempGCL) {
 	SRVIndex = SRVDescriptorHeap->Allocate(); // For SRV
 	UAVIndex = SRVDescriptorHeap->Allocate(); // For UAV
 
-	desc = CD3DX12_RESOURCE_DESC::Buffer(0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-
+	srv_desc = {};
 	srv_desc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srv_desc.Format = DXGI_FORMAT_UNKNOWN;
@@ -16,6 +15,7 @@ TW3D::TW3DResourceUAV::TW3DResourceUAV(TW3DDevice* Device, TW3DDescriptorHeap* S
 	srv_desc.Buffer.StructureByteStride = ElementSizeInBytes;
 	srv_desc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
+	uav_desc = {};
 	uav_desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
 	uav_desc.Format = DXGI_FORMAT_UNKNOWN;
 	uav_desc.Buffer.FirstElement = 0;
@@ -24,11 +24,9 @@ TW3D::TW3DResourceUAV::TW3DResourceUAV(TW3DDevice* Device, TW3DDescriptorHeap* S
 }
 
 TW3D::TW3DResourceUAV::TW3DResourceUAV(TW3DDevice* Device, TW3DDescriptorHeap* SRVDescriptorHeap, DXGI_FORMAT Format) :
-	TW3DResource(Device), SRVDescriptorHeap(SRVDescriptorHeap) {
+	TW3DResource(Device), SRVDescriptorHeap(SRVDescriptorHeap), Format(Format) {
 	SRVIndex = SRVDescriptorHeap->Allocate(); // For SRV
 	UAVIndex = SRVDescriptorHeap->Allocate(); // For UAV
-
-	desc = CD3DX12_RESOURCE_DESC::Tex2D(Format, 0, 0, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 }
 
 TW3D::TW3DResourceUAV::~TW3DResourceUAV() {
@@ -86,9 +84,6 @@ void TW3D::TW3DResourceUAV::Read(void* Out, TWT::UInt ByteOffset, TWT::UInt Byte
 
 	temp_gcl->Reset();
 	temp_gcl->Get()->Get()->CopyBufferRegion(read_heap, 0, Resource, ByteOffset, ByteCount);
-	//temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-	//temp_gcl->UpdateSubresources(Resource, upload_heap, &upload_data);
-	//temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	temp_gcl->Execute();
 
 	D3D12_RANGE range = CD3DX12_RANGE(0, ByteCount);
@@ -103,15 +98,13 @@ void TW3D::TW3DResourceUAV::Read(void* Out, TWT::UInt ByteOffset, TWT::UInt Byte
 }
 
 void TW3D::TW3DResourceUAV::CreateBuffer(TWT::UInt ElementCount) {
-	desc.Width = ElementCount * element_size;
-
 	srv_desc.Buffer.NumElements = ElementCount;
 	uav_desc.Buffer.NumElements = ElementCount;
 
 	Device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
-		&desc,
+		&CD3DX12_RESOURCE_DESC::Buffer(ElementCount * element_size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
 		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
 		&Resource);
 	Resource->SetName(L"TW3DResourceUAV Buffer");
@@ -121,13 +114,10 @@ void TW3D::TW3DResourceUAV::CreateBuffer(TWT::UInt ElementCount) {
 }
 
 void TW3D::TW3DResourceUAV::CreateTexture2D(TWT::UInt Width, TWT::UInt Height) {
-	desc.Width = Width;
-	desc.Height = Height;
-
 	Device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
-		&desc,
+		&CD3DX12_RESOURCE_DESC::Tex2D(Format, Width, Height, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
 		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
 		&Resource);
 	Resource->SetName(L"TW3DResourceUAV 2D");

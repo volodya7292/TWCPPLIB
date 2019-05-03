@@ -49,7 +49,7 @@ namespace TW3D {
 		TW3DDescriptorHeap* dsv_descriptor_heap;
 		TW3DDescriptorHeap* srv_descriptor_heap;
 		TW3DCommandQueue* direct_command_queue;
-		TW3DCommandQueue* bundle_command_queue;
+		TW3DCommandQueue* bundle_command_queue = nullptr;
 		TW3DCommandQueue* compute_command_queue;
 	};
 }

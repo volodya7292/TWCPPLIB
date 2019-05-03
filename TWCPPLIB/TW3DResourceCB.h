@@ -12,7 +12,7 @@ namespace TW3D {
 		void Update(void* Data, TWT::UInt ElementIndex);
 
 	private:
-		TWT::UInt8* GPUAddress;
+		TWT::UInt8* GPUAddress = nullptr;
 		TWT::UInt AlignedElementSize;
 	};
 }

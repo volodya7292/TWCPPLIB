@@ -27,7 +27,7 @@ namespace TW3D {
 	private:
 		TW3DTempGCL* temp_gcl  = nullptr;
 
-		D3D12_RESOURCE_DESC desc;
+		DXGI_FORMAT Format = {};
 		D3D12_SHADER_RESOURCE_VIEW_DESC      srv_desc = {};
 		D3D12_UNORDERED_ACCESS_VIEW_DESC     uav_desc = {};
 		TWT::UInt                        element_size = 0;

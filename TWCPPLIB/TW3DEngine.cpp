@@ -18,7 +18,7 @@ static TW3D::CharHandler          on_char;
 
 static TWT::Vector<TWT::Bool> KeysDown(1024);
 
-static const TWT::UInt engine_thread_count = 1;
+static const TWT::UInt engine_thread_count = 2;
 
 static TWT::Vector<std::thread>    threads;
 static std::mutex                  resize_mutex;
@@ -31,7 +31,7 @@ static TWT::String    title;
 static TWT::Bool      fullscreen = false;
 static TWT::UInt      additional_thread_count;
 
-static TWT::Bool      running, minimized = false;
+static TWT::Bool      initialized = false, running, minimized = false;
 static HWND           hwnd;
 
 static TWT::UInt      current_frame_index;
@@ -131,9 +131,12 @@ void init_dx12() {
 
 	factory = new TW3D::TW3DFactory(dxgi_factory_flags);
 	logger->LogInfo("DirectX Stage 1 initialized");
-	std::vector<TW3D::TW3DAdapter*> adapters = TW3D::TW3DAdapter::ListAvailable(factory, D3D_FEATURE_LEVEL_11_0);
+	std::vector<TW3D::TW3DAdapter*> adapters = TW3D::TW3DAdapter::ListAvailable(factory, D3D_FEATURE_LEVEL_12_0);
+	if (adapters.size() == 0) {
+		logger->LogError("[DirectX Stage 2]: No suitable device found.");
+		return;
+	}
 	adapter = adapters[0];
-	logger->LogInfo("Using "s + adapter->GetDescription().Multibyte());
 	logger->LogInfo("DirectX Stage 2 initialized");
 	device = new TW3D::TW3DDevice(adapter);
 	logger->LogInfo("DirectX Stage 3 initialized");
@@ -156,7 +159,61 @@ void init_dx12() {
 	TW3DModules::Initialize(resource_manager);
 	logger->LogInfo("DirectX Stage 9 initialized");
 
+	D3D12_FEATURE_DATA_D3D12_OPTIONS opt0 = {};
+	device->GetFeatureData(D3D12_FEATURE_D3D12_OPTIONS, &opt0, sizeof(opt0));
+	D3D12_FEATURE_DATA_D3D12_OPTIONS1 opt1 = {};
+	device->GetFeatureData(D3D12_FEATURE_D3D12_OPTIONS1, &opt1, sizeof(opt1));
+	D3D12_FEATURE_DATA_D3D12_OPTIONS2 opt2 = {};
+	device->GetFeatureData(D3D12_FEATURE_D3D12_OPTIONS2, &opt2, sizeof(opt2));
+	D3D12_FEATURE_DATA_D3D12_OPTIONS3 opt3 = {};
+	device->GetFeatureData(D3D12_FEATURE_D3D12_OPTIONS3, &opt3, sizeof(opt3));
+	D3D12_FEATURE_DATA_D3D12_OPTIONS4 opt4 = {};
+	device->GetFeatureData(D3D12_FEATURE_D3D12_OPTIONS4, &opt4, sizeof(opt4));
+	D3D12_FEATURE_DATA_D3D12_OPTIONS5 opt5 = {};
+	device->GetFeatureData(D3D12_FEATURE_D3D12_OPTIONS5, &opt5, sizeof(opt5));
+
 	logger->LogInfo("DirectX initialized.");
+	logger->LogInfo("----------------------------------------------------------------------------------");
+	logger->LogInfo("Using DirectX 12 on "s + adapter->GetDescription().Multibyte() + "."s);
+	logger->LogInfo("----------------------------------------------------------------------------------");
+	logger->LogInfo("DoublePrecisionFloatShaderOps        : "s + TWU::BoolStr(opt0.DoublePrecisionFloatShaderOps));
+	logger->LogInfo("OutputMergerLogicOp                  : "s + TWU::BoolStr(opt0.OutputMergerLogicOp));
+	logger->LogInfo("PSSpecifiedStencilRefSupported       : "s + TWU::BoolStr(opt0.PSSpecifiedStencilRefSupported));
+	logger->LogInfo("TypedUAVLoadAdditionalFormats        : "s + TWU::BoolStr(opt0.TypedUAVLoadAdditionalFormats));
+	logger->LogInfo("ROVsSupported                        : "s + TWU::BoolStr(opt0.ROVsSupported));
+	logger->LogInfo("StandardSwizzle64KBSupported         : "s + TWU::BoolStr(opt0.StandardSwizzle64KBSupported));
+	logger->LogInfo("CrossAdapterRowMajorTextureSupported : "s + TWU::BoolStr(opt0.CrossAdapterRowMajorTextureSupported));
+	logger->LogInfo("VPAndRTArrayIndex...Supported...     : "s + TWU::BoolStr(opt0.VPAndRTArrayIndexFromAnyShaderFeedingRasterizerSupportedWithoutGSEmulation));
+	logger->LogInfo("WaveOps                              : "s + TWU::BoolStr(opt1.WaveOps));
+	logger->LogInfo("ExpandedComputeResourceStates        : "s + TWU::BoolStr(opt1.ExpandedComputeResourceStates));
+	logger->LogInfo("Int64ShaderOps                       : "s + TWU::BoolStr(opt1.Int64ShaderOps));
+	logger->LogInfo("CopyQueueTimestampQueriesSupported   : "s + TWU::BoolStr(opt3.CopyQueueTimestampQueriesSupported));
+	logger->LogInfo("CastingFullyTypedFormatSupported     : "s + TWU::BoolStr(opt3.CastingFullyTypedFormatSupported));
+	logger->LogInfo("BarycentricsSupported                : "s + TWU::BoolStr(opt3.BarycentricsSupported));
+	logger->LogInfo("MSAA64KBAlignedTextureSupported      : "s + TWU::BoolStr(opt4.MSAA64KBAlignedTextureSupported));
+	logger->LogInfo("Native16BitShaderOpsSupported        : "s + TWU::BoolStr(opt4.Native16BitShaderOpsSupported));
+	logger->LogInfo("SRVOnlyTiledResourceTier3            : "s + TWU::BoolStr(opt5.SRVOnlyTiledResourceTier3));
+	logger->LogInfo("MaxGPUVirtualAddressBitsPerResource  : "s + opt0.MaxGPUVirtualAddressBitsPerResource);
+	logger->LogInfo("WaveLaneCountMin                     : "s + opt1.WaveLaneCountMin);
+	logger->LogInfo("WaveLaneCountMax                     : "s + opt1.WaveLaneCountMax);
+	logger->LogInfo("TotalLaneCount                       : "s + opt1.TotalLaneCount);
+	logger->LogInfo("DepthBoundsTestSupported             : "s + opt2.DepthBoundsTestSupported);
+	logger->LogInfo("MinPrecisionSupport                  : "s + static_cast<TWT::UInt>(opt0.MinPrecisionSupport));
+	logger->LogInfo("TiledResourcesTier                   : "s + static_cast<TWT::UInt>(opt0.TiledResourcesTier));
+	logger->LogInfo("ResourceBindingTier                  : "s + static_cast<TWT::UInt>(opt0.ResourceBindingTier));
+	logger->LogInfo("ConservativeRasterizationTier        : "s + static_cast<TWT::UInt>(opt0.ConservativeRasterizationTier));
+	logger->LogInfo("CrossNodeSharingTier                 : "s + static_cast<TWT::UInt>(opt0.CrossNodeSharingTier));
+	logger->LogInfo("ResourceHeapTier                     : "s + static_cast<TWT::UInt>(opt0.ResourceHeapTier));
+	logger->LogInfo("ProgrammableSamplePositionsTier      : "s + static_cast<TWT::UInt>(opt2.ProgrammableSamplePositionsTier));
+	logger->LogInfo("ViewInstancingTier                   : "s + static_cast<TWT::UInt>(opt3.ViewInstancingTier));
+	logger->LogInfo("SharedResourceCompatibilityTier      : "s + static_cast<TWT::UInt>(opt4.SharedResourceCompatibilityTier));
+	logger->LogInfo("RenderPassesTier                     : "s + static_cast<TWT::UInt>(opt5.RenderPassesTier));
+	logger->LogInfo("RaytracingTier                       : "s + static_cast<TWT::UInt>(opt5.RaytracingTier));
+	logger->LogInfo("WriteBufferImmediateSupportFlags     : "s + TWU::DXCommandListSupportFlagsStr(opt3.WriteBufferImmediateSupportFlags));
+
+	logger->LogInfo("----------------------------------------------------------------------------------");
+
+	initialized = true;
 }
 
 void update() {
@@ -179,6 +236,13 @@ TWT::UInt thread_tick(TWT::UInt thread_id, TWT::UInt thread_count) {
 			renderer->AdjustRecordIndex();
 		}
 		return 30;
+	} else if (thread_id == 1) {
+		HRESULT remove_reason = device->GetRemoveReason();
+		if (FAILED(remove_reason)) {
+			logger->LogError(TWU::HResultToWString(remove_reason).Multibyte());
+			running = false;
+		}
+		return static_cast<TWT::UInt>(delta_time * 1000.0f);
 	} else {
 		if (on_thread_tick)
 			return on_thread_tick(thread_id - engine_thread_count, thread_count - engine_thread_count);
@@ -372,8 +436,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 }
 
 void TW3D::Start() {
-	main_loop();
-	cleanup();
+	if (initialized) {
+		main_loop();
+		cleanup();
+	}
 }
 
 void TW3D::Shutdown() {

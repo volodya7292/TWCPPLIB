@@ -14,6 +14,6 @@ namespace TW3D {
 		TWT::Bool CheckTearingSupport();
 
 	private:
-		IDXGIFactory7* factory;
+		IDXGIFactory2* factory;
 	};
 }

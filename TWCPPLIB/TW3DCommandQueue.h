@@ -21,7 +21,7 @@ namespace TW3D {
 
 	private:
 		ID3D12CommandQueue* command_queue;
-		ID3D12Fence1* fence;
+		ID3D12Fence* fence;
 		TWT::UInt64 fence_flush_value = 0;
 	};
 }

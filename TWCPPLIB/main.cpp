@@ -120,7 +120,7 @@ int main() {
 	info.LogFilename = "Log.log"s;
 	TW3D::Initialize(info);
 
-	TW3D::SetVSync(false);
+	TW3D::SetVSync(true);
 
 	TW3D::TW3DResourceManager* RM = TW3D::GetResourceManager();
 
@@ -145,6 +145,9 @@ int main() {
 	TW3D::SetOnCleanupEvent(on_cleanup);
 	TW3D::SetOnKeyEvent(on_key);
 	TW3D::SetOnCharEvent(on_char);
+
+	TW3D::TW3DResourceUAV* g = RM->CreateUnorderedAccessView(2, 2);
+	g->CreateBuffer(3);
 
 	TW3D::Start();
 }

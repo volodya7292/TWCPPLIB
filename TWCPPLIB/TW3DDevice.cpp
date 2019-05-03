@@ -5,7 +5,6 @@ TW3D::TW3DDevice::TW3DDevice(TW3D::TW3DAdapter* adapter) :
 	adapter(adapter)
 {
 	adapter->CreateDevice(&device);
-	TWU::SuccessAssert(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &SupportedFeatures, sizeof(SupportedFeatures)));
 	device->SetName(L"TW3DDevice");
 }
 
@@ -13,8 +12,16 @@ TW3D::TW3DDevice::~TW3DDevice() {
 	TWU::DXSafeRelease(device);
 }
 
-D3D12_FEATURE_DATA_D3D12_OPTIONS TW3D::TW3DDevice::GetSupportedFeatures() {
-	return SupportedFeatures;
+ID3D12Device2* TW3D::TW3DDevice::Get() {
+	return device;
+}
+
+HRESULT TW3D::TW3DDevice::GetRemoveReason() {
+	return device->GetDeviceRemovedReason();
+}
+
+void TW3D::TW3DDevice::GetFeatureData(D3D12_FEATURE Feature, void* FeatureSupportData, TWT::UInt FeatureSupportDataSize) {
+	TWU::SuccessAssert(device->CheckFeatureSupport(Feature, FeatureSupportData, FeatureSupportDataSize));
 }
 
 void TW3D::TW3DDevice::CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC* desc, ID3D12CommandQueue** commandQueue) {
@@ -33,7 +40,7 @@ void TW3D::TW3DDevice::CreateGraphicsCommandList(D3D12_COMMAND_LIST_TYPE type, I
 	TWU::SuccessAssert(device->CreateCommandList(0, type, commandAllocator, nullptr, IID_PPV_ARGS(commandList)));
 }
 
-void TW3D::TW3DDevice::CreateFence(TWT::UInt64 initialValue, D3D12_FENCE_FLAGS flags, ID3D12Fence1** fence) {
+void TW3D::TW3DDevice::CreateFence(TWT::UInt64 initialValue, D3D12_FENCE_FLAGS flags, ID3D12Fence** fence) {
 	TWU::SuccessAssert(device->CreateFence(initialValue, flags, IID_PPV_ARGS(fence)));
 }
 
@@ -79,10 +86,6 @@ TWT::UInt64 TW3D::TW3DDevice::GetCopyableFootprints(const D3D12_RESOURCE_DESC* r
 	TWT::UInt64 totalBytes;
 	device->GetCopyableFootprints(resourceDesc, 0, subResCount, 0, nullptr, nullptr, nullptr, &totalBytes);
 	return totalBytes;
-}
-
-ID3D12Device5* TW3D::TW3DDevice::Get() {
-	return device;
 }
 
 TWT::UInt TW3D::TW3DDevice::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE heapType) {

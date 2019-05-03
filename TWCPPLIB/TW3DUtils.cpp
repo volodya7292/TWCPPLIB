@@ -129,6 +129,25 @@ TWT::Int TWU::GetDXGIFormatBitsPerPixel(DXGI_FORMAT dxgiFormat) {
 	return 0;
 }
 
+TWT::String TWU::DXCommandListSupportFlagsStr(D3D12_COMMAND_LIST_SUPPORT_FLAGS Flags) {
+	TWT::String str;
+
+	if (Flags & D3D12_COMMAND_LIST_SUPPORT_FLAG_DIRECT)
+		str += "Direct";
+	if (Flags & D3D12_COMMAND_LIST_SUPPORT_FLAG_BUNDLE)
+		str += "Bundle";
+	if (Flags & D3D12_COMMAND_LIST_SUPPORT_FLAG_COMPUTE)
+		str += "Compute";
+	if (Flags & D3D12_COMMAND_LIST_SUPPORT_FLAG_COPY)
+		str += "Copy";
+	if (Flags & D3D12_COMMAND_LIST_SUPPORT_FLAG_VIDEO_DECODE)
+		str += "VideoDecode";
+	if (Flags & D3D12_COMMAND_LIST_SUPPORT_FLAG_VIDEO_PROCESS)
+		str += "VideoProcess";
+
+	return str;
+}
+
 D3D12_DESCRIPTOR_RANGE TWU::DXDescriptorRange(TWT::UInt Register, D3D12_DESCRIPTOR_RANGE_TYPE Type) {
 	D3D12_DESCRIPTOR_RANGE range = {};
 	range.BaseShaderRegister = Register;

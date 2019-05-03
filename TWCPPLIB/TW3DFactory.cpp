@@ -18,6 +18,7 @@ std::vector<ComPtr<IDXGIAdapter4>> TW3D::TW3DFactory::ListAdapters(D3D_FEATURE_L
 		DXGI_ADAPTER_DESC1 desc;
 		TWU::SuccessAssert(adapter1->GetDesc1(&desc));
 
+		//if (SUCCEEDED(D3D12CreateDevice(adapter1.Get(), featureLevel, _uuidof(ID3D12Device), nullptr))) {
 		if (!(desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) && SUCCEEDED(D3D12CreateDevice(adapter1.Get(), featureLevel, _uuidof(ID3D12Device), nullptr))) {
 			TWU::SuccessAssert(adapter1.As(&adapter4));
 			adapters.push_back(adapter4);
@@ -34,11 +35,11 @@ void TW3D::TW3DFactory::CreateSwapChainForHwnd(ID3D12CommandQueue* commandQueue,
 }
 
 void TW3D::TW3DFactory::CheckFeatureSupport(DXGI_FEATURE feature, void *featureSupportData, TWT::UInt featureSupportDataSize) {
-	TWU::SuccessAssert(factory->CheckFeatureSupport(feature, featureSupportData, featureSupportDataSize));
+	//TWU::SuccessAssert(factory->CheckFeatureSupport(feature, featureSupportData, featureSupportDataSize));
 }
 
 TWT::Bool TW3D::TW3DFactory::CheckTearingSupport() {
 	BOOL allowTearing = false;
-	TWU::SuccessAssert(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing)));
+	//TWU::SuccessAssert(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing)));
 	return allowTearing;
 }

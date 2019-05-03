@@ -115,5 +115,7 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	resource_manager->ExecuteCommandList(cl);
 	resource_manager->FlushCommandList(cl);
 
+	delete LBVH;
+	LBVH = new TW3DLBVH(resource_manager, gnb_node_offsets.size(), true);
 	LBVH->BuildFromLBVHs(gnb, gnb_node_offsets);
 }
