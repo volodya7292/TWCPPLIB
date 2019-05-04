@@ -5,7 +5,6 @@
 #include "SetupLBVHNodes.c.h"
 #include "BuildLBVHSplits.c.h"
 #include "UpdateLBVHNodeBounds.c.h"
-#include "BuildGlobalLBVHNodeBuffer.c.h"
 #include "CalculateLBVHsBoundingBox.c.h"
 #include "CalculateMortonCodesForLBVHs.c.h"
 #include "SetupLBVHNodesFromLBVHs.c.h"
@@ -83,18 +82,6 @@ void TW3DShaders::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 	update_lbvh_node_bounds->SetShader(TW3DCompiledShader(UpdateLBVHNodeBounds_ByteCode));
 	update_lbvh_node_bounds->Create(device);
 	compute_shaders[UpdateLBVHNodeBounds] = update_lbvh_node_bounds;
-
-
-	TW3D::TW3DRootSignature* rs5 = new TW3D::TW3DRootSignature(false, false, false, false);
-	rs5->SetParameterUAVBuffer(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global LBVH node buffer SRV
-	rs5->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 0); // LBVH node buffer SRV
-	rs5->SetParameterConstants(2, D3D12_SHADER_VISIBILITY_ALL, 0, 1); // Input data constants
-	rs5->Create(device);
-
-	TW3D::TW3DComputePipelineState* glbvh_nodes_ps = new TW3D::TW3DComputePipelineState(rs5);
-	glbvh_nodes_ps->SetShader(TW3DCompiledShader(BuildGlobalLBVHNodeBuffer_ByteCode));
-	glbvh_nodes_ps->Create(device);
-	compute_shaders[BuildGLBVHNB] = glbvh_nodes_ps;
 
 
 	TW3D::TW3DRootSignature* rs6 = new TW3D::TW3DRootSignature(false, false, false, false);

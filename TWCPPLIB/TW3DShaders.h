@@ -8,7 +8,6 @@ namespace TW3DShaders {
 		SetupLBVHNodes,
 		BuildLBVHSplits,
 		UpdateLBVHNodeBounds,
-		BuildGLBVHNB,
 		CalculateLBVHsBoundingBox,
 		CalculateMortonCodesForLBVHs,
 		SetupLBVHNodesFromLBVHs,
