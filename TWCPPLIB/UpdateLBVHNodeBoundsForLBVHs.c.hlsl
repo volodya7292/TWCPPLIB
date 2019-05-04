@@ -41,33 +41,35 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		}
 	}*/
 
-	while (true) {
-		if (leaf == nodes[leaf_parent].left_child) {
-			leftChild = nodes[leaf_parent].left_child;
-			rightChild = nodes[leaf_parent].right_child;
-			lbb = nodes[leftChild].bounds;
-			rbb = nodes[rightChild].bounds;
-			pMin = min(lbb.pMin, rbb.pMin);
-			pMax = max(lbb.pMax, rbb.pMax);
+	[loop]
+	while (leaf == nodes[leaf_parent].left_child) {
+		Bounds bbl = nodes[leftChild].bounds;
+		Bounds bbr = nodes[rightChild].bounds;
 
-			if (equals(nodes[leaf_parent].bounds.pMin, -FLT_MAX) && equals(nodes[leaf_parent].bounds.pMax, FLT_MAX)) {
-				if (not_equals(pMin, -FLT_MAX) && not_equals(pMax, FLT_MAX)) {
-					nodes[leaf_parent].bounds.pMin = pMin;
-					nodes[leaf_parent].bounds.pMax = pMax;
-					break;
-				} else {
-					GroupMemoryBarrierWithGroupSync();
-					nodes[leaf_parent].bounds.pMin = pMin;
-					nodes[leaf_parent].bounds.pMax = pMax;
-					break;
-				}
-			}
+		if (leftChild != -1 && rightChild != -1) {
+			pMin = min(bbl.pMin, bbr.pMin);
+			pMax = max(bbl.pMax, bbr.pMax);
+		} else if (leftChild != -1) {
+			pMin = bbl.pMin;
+			pMax = bbl.pMax;
+		} else if (rightChild != -1) {
+			pMin = bbr.pMin;
+			pMax = bbr.pMax;
+		}
+
+		if (pMin.x != -FLT_MAX && pMax.x != FLT_MAX) {
+			nodes[leaf_parent].bounds.pMin = pMin;
+			nodes[leaf_parent].bounds.pMax = pMax;
 
 			leaf = leaf_parent;
 			leaf_parent = nodes[leaf_parent].parent;
-		} else {
-			break;
 		}
+
+		if (leaf_parent == -1)
+			break;
+
+		leftChild = nodes[leaf_parent].left_child;
+		rightChild = nodes[leaf_parent].right_child;
 	}
 
 }
