@@ -11,6 +11,7 @@ namespace TW3D {
 		D3D12_VERTEX_BUFFER_VIEW GetView();
 		void UpdateData(const void* Data, TWT::UInt Size);
 		TWT::UInt GetVertexCount();
+		TWT::UInt GetVertexByteSize();
 		TWT::UInt GetSizeInBytes();
 
 	private:

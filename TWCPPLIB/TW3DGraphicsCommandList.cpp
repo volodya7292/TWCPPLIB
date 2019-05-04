@@ -252,3 +252,7 @@ TW3D::TW3DGraphicsCommandList* TW3D::TW3DGraphicsCommandList::CreateBundle(TW3DD
 TW3D::TW3DGraphicsCommandList* TW3D::TW3DGraphicsCommandList::CreateCompute(TW3DDevice* device) {
 	return new TW3DGraphicsCommandList(device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
 }
+
+TW3D::TW3DGraphicsCommandList* TW3D::TW3DGraphicsCommandList::CreateCopy(TW3DDevice* device) {
+	return new TW3DGraphicsCommandList(device, D3D12_COMMAND_LIST_TYPE_COPY);
+}

@@ -12,6 +12,7 @@ namespace TW3D {
 
 		void Update(const void* Data, TWT::UInt VertexCount);
 		TWT::UInt GetVertexCount();
+		TWT::UInt GetVertexByteSize();
 		TWT::UInt GetSizeInBytes();
 
 	private:

@@ -75,6 +75,7 @@ namespace TW3D {
 		static TW3DGraphicsCommandList* CreateDirect(TW3DDevice* device);
 		static TW3DGraphicsCommandList* CreateBundle(TW3DDevice* device);
 		static TW3DGraphicsCommandList* CreateCompute(TW3DDevice* device);
+		static TW3DGraphicsCommandList* CreateCopy(TW3DDevice* device);
 
 		TWT::UInt64 SignalValue = 0;
 

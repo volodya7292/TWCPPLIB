@@ -18,6 +18,7 @@ namespace TW3D {
 
 		static TW3DCommandQueue* CreateDirect(TW3DDevice* Device);
 		static TW3DCommandQueue* CreateCompute(TW3DDevice* Device);
+		static TW3DCommandQueue* CreateCopy(TW3DDevice* Device);
 
 	private:
 		ID3D12CommandQueue* command_queue;

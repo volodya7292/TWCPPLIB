@@ -10,19 +10,23 @@ TW3D::TW3DResourceManager::TW3DResourceManager(TW3DDevice* Device) :
 	srv_descriptor_heap = TW3DDescriptorHeap::CreateForSR(device, 1024);
 	direct_command_queue = TW3DCommandQueue::CreateDirect(device);
 	compute_command_queue = TW3DCommandQueue::CreateCompute(device);
+	copy_command_queue = TW3DCommandQueue::CreateCopy(device);
 	temp_direct_cl = CreateDirectCommandList();
 	temp_compute_cl = CreateComputeCommandList();
+	temp_copy_cl = CreateCopyCommandList();
 }
 
 TW3D::TW3DResourceManager::~TW3DResourceManager() {
 	delete temp_gcl;
 	delete temp_direct_cl;
 	delete temp_compute_cl;
+	delete temp_copy_cl;
 	delete rtv_descriptor_heap;
 	delete dsv_descriptor_heap;
 	delete srv_descriptor_heap;
 	delete direct_command_queue;
 	delete compute_command_queue;
+	delete copy_command_queue;
 }
 
 TW3D::TW3DResourceRTV* TW3D::TW3DResourceManager::CreateRenderTargetView(ID3D12Resource* Buffer) {
@@ -85,6 +89,10 @@ TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::CreateComputeCommandLi
 	return TW3DGraphicsCommandList::CreateCompute(device);
 }
 
+TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::CreateCopyCommandList() {
+	return TW3DGraphicsCommandList::CreateCopy(device);
+}
+
 TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::GetTemporaryDirectCommandList() {
 	temp_direct_cl->Reset();
 	temp_direct_cl->BindResources(this);
@@ -97,6 +105,22 @@ TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::GetTemporaryComputeCom
 	return temp_compute_cl;
 }
 
+TW3D::TW3DGraphicsCommandList* TW3D::TW3DResourceManager::GetTemporaryCopyCommandList() {
+	temp_copy_cl->Reset();
+	return temp_copy_cl;
+}
+
+TW3D::TW3DCommandQueue* TW3D::TW3DResourceManager::GetCommandListCommandQueue(TW3DGraphicsCommandList* CommandList) {
+	switch (CommandList->GetType()) {
+	case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+		return compute_command_queue;
+	case D3D12_COMMAND_LIST_TYPE_COPY:
+		return copy_command_queue;
+	default:
+		return direct_command_queue;
+	}
+}
+
 void TW3D::TW3DResourceManager::ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {
 	temp_gcl->Reset();
 	temp_gcl->ResourceBarrier(Resource->Get(), StateBefore, StateAfter);
@@ -104,36 +128,25 @@ void TW3D::TW3DResourceManager::ResourceBarrier(TW3DResource* Resource, D3D12_RE
 }
 
 TWT::Bool TW3D::TW3DResourceManager::IsCommandListRunning(TW3DGraphicsCommandList* CommandList) {
-	if (CommandList->GetType() == D3D12_COMMAND_LIST_TYPE_DIRECT)
-		return direct_command_queue->IsCommandListRunning(CommandList);
-	else
-		return compute_command_queue->IsCommandListRunning(CommandList);
+	return GetCommandListCommandQueue(CommandList)->IsCommandListRunning(CommandList);
 }
 
 void TW3D::TW3DResourceManager::FlushCommandList(TW3DGraphicsCommandList* CommandList) {
-	if (CommandList->GetType() == D3D12_COMMAND_LIST_TYPE_DIRECT)
-		direct_command_queue->FlushCommandList(CommandList);
-	else
-		compute_command_queue->FlushCommandList(CommandList);
+	GetCommandListCommandQueue(CommandList)->FlushCommandList(CommandList);
 }
 
 void TW3D::TW3DResourceManager::FlushCommandLists() {
+	copy_command_queue->FlushCommands();
 	compute_command_queue->FlushCommands();
 	direct_command_queue->FlushCommands();
 }
 
 void TW3D::TW3DResourceManager::ExecuteCommandList(TW3DGraphicsCommandList* CommandList) {
-	if (CommandList->GetType() == D3D12_COMMAND_LIST_TYPE_DIRECT)
-		direct_command_queue->ExecuteCommandList(CommandList);
-	else
-		compute_command_queue->ExecuteCommandList(CommandList);
+	GetCommandListCommandQueue(CommandList)->ExecuteCommandList(CommandList);
 }
 
 void TW3D::TW3DResourceManager::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists) {
-	if (CommandLists[0]->GetType() == D3D12_COMMAND_LIST_TYPE_DIRECT)
-		direct_command_queue->ExecuteCommandLists(CommandLists);
-	else
-		compute_command_queue->ExecuteCommandLists(CommandLists);
+	GetCommandListCommandQueue(CommandLists[0])->ExecuteCommandLists(CommandLists);
 }
 
 TW3D::TW3DDevice* TW3D::TW3DResourceManager::GetDevice() {

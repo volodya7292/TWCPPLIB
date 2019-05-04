@@ -8,6 +8,8 @@ TW3D::TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 	Camera = new TW3DPerspectiveCamera(ResourceManager);
 
 	gvb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(TWT::DefaultVertex));
+	ResourceManager->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+
 	gnb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(LBVHNode));
 
 	LBVH = new TW3DLBVH(ResourceManager, 1, true);
@@ -69,24 +71,18 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	gnb_node_count = NodeOffset + 1;
 
 
-	auto gcl = resource_manager->GetTemporaryDirectCommandList();
+	auto ccl = resource_manager->GetTemporaryCopyCommandList();
 
-	// Build Global Vertex Buffer                 -------- change to copying by commands
+
+	// Build Global Vertex Buffer
 	// -------------------------------------------------------------------------------------------------------------------------
-	gcl->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	gcl->SetPipelineState(TW3DShaders::GetGraphicsShader(TW3DShaders::BuildGVB));
-	gcl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	gcl->BindUAVBuffer(0, gvb);
-	for (auto entry : vertex_buffers) {
-		gcl->SetVertexBuffer(0, entry.first->GetResource());
-		gcl->SetRoot32BitConstant(1, entry.second, 0);
-		gcl->Draw(entry.first->GetVertexCount());
-	}
-	gcl->ResourceBarrier(TW3DUAVBarrier());
-	gcl->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-	gcl->Close();
-	resource_manager->ExecuteCommandList(gcl);
-	resource_manager->FlushCommandList(gcl);
+	for (auto entry : vertex_buffers)
+		ccl->CopyBufferRegion(gvb, entry.second * sizeof(TWT::DefaultVertex), entry.first->GetResource(), 0, entry.first->GetSizeInBytes());
+
+	ccl->Close();
+	resource_manager->ExecuteCommandList(ccl);
+	resource_manager->FlushCommandList(ccl);
+
 
 	// Build LBVHs
 	// -------------------------------------------------------------------------------------------------------------------------
@@ -95,6 +91,7 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 
 
 	auto cl = resource_manager->GetTemporaryComputeCommandList();
+
 
 	// Build Global Node Buffer
 	// -------------------------------------------------------------------------------------------------------------------------

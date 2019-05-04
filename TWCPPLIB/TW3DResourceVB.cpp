@@ -56,6 +56,10 @@ TWT::UInt TW3D::TW3DResourceVB::GetVertexCount() {
 	return vertex_count;
 }
 
+TWT::UInt TW3D::TW3DResourceVB::GetVertexByteSize() {
+	return single_vertex_size;
+}
+
 TWT::UInt TW3D::TW3DResourceVB::GetSizeInBytes() {
 	return vertex_count * single_vertex_size;
 }

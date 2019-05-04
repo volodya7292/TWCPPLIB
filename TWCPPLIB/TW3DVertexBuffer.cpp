@@ -21,6 +21,10 @@ TWT::UInt TW3D::TW3DVertexBuffer::GetVertexCount() {
 	return vertex_buffer->GetVertexCount();
 }
 
+TWT::UInt TW3D::TW3DVertexBuffer::GetVertexByteSize() {
+	return vertex_buffer->GetVertexByteSize();
+}
+
 TWT::UInt TW3D::TW3DVertexBuffer::GetSizeInBytes() {
 	return vertex_buffer->GetSizeInBytes();
 }

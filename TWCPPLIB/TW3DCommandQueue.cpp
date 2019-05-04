@@ -10,10 +10,12 @@ TW3D::TW3DCommandQueue::TW3DCommandQueue(TW3DDevice* Device, D3D12_COMMAND_LIST_
 	Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, &fence);
 	TWU::SuccessAssert(fence->SetName(L"ID3D12Fence from TW3DCommandQueue"), "TW3DCommandQueue::TW3DCommandQueue, fence->SetName");
 
-	if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
-		TWU::SuccessAssert(command_queue->SetName(L"TW3DCommandQueue Compute"), "TW3DCommandQueue::TW3DCommandQueue, (Compute)command_queue->SetName");
-	else if (Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+	if (Type == D3D12_COMMAND_LIST_TYPE_DIRECT)
 		TWU::SuccessAssert(command_queue->SetName(L"TW3DCommandQueue Direct"), "TW3DCommandQueue::TW3DCommandQueue, (Direct)command_queue->SetName 1");
+	else if (Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+		TWU::SuccessAssert(command_queue->SetName(L"TW3DCommandQueue Compute"), "TW3DCommandQueue::TW3DCommandQueue, (Compute)command_queue->SetName");
+	else if (Type == D3D12_COMMAND_LIST_TYPE_COPY)
+		TWU::SuccessAssert(command_queue->SetName(L"TW3DCommandQueue Copy"), "TW3DCommandQueue::TW3DCommandQueue, (Copy)command_queue->SetName 1");
 
 }
 
@@ -73,10 +75,14 @@ void TW3D::TW3DCommandQueue::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsC
 	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value), "TW3DCommandQueue::ExecuteCommandLists, command_queue->Signal "s + fence_flush_value);
 }
 
-TW3D::TW3DCommandQueue* TW3D::TW3DCommandQueue::CreateDirect(TW3DDevice* Âevice) {
-	return new TW3DCommandQueue(Âevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
+TW3D::TW3DCommandQueue* TW3D::TW3DCommandQueue::CreateDirect(TW3DDevice* Device) {
+	return new TW3DCommandQueue(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 }
 
-TW3D::TW3DCommandQueue* TW3D::TW3DCommandQueue::CreateCompute(TW3DDevice* Âevice) {
-	return new TW3DCommandQueue(Âevice, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+TW3D::TW3DCommandQueue* TW3D::TW3DCommandQueue::CreateCompute(TW3DDevice* Device) {
+	return new TW3DCommandQueue(Device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+}
+
+TW3D::TW3DCommandQueue* TW3D::TW3DCommandQueue::CreateCopy(TW3DDevice* Device) {
+	return new TW3DCommandQueue(Device, D3D12_COMMAND_LIST_TYPE_COPY);
 }
