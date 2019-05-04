@@ -222,12 +222,12 @@ void TW3D::TW3DGraphicsCommandList::DrawObject(TW3DObject* object, TWT::UInt Mod
 }
 
 void TW3D::TW3DGraphicsCommandList::Reset() {
-	TWU::SuccessAssert(command_allocator->Reset());
-	TWU::SuccessAssert(command_list->Reset(command_allocator, nullptr));
+	TWU::SuccessAssert(command_allocator->Reset(), "TW3DGraphicsCommandList::Reset, command_allocator->Reset"s);
+	TWU::SuccessAssert(command_list->Reset(command_allocator, nullptr), "TW3DGraphicsCommandList::Reset, command_list->Reset"s);
 }
 
 void TW3D::TW3DGraphicsCommandList::Close() {
-	TWU::SuccessAssert(command_list->Close());
+	TWU::SuccessAssert(command_list->Close(), "TW3DGraphicsCommandList::Close"s);
 	empty = false;
 }
 

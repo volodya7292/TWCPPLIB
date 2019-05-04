@@ -35,12 +35,12 @@ DXGI_SWAP_CHAIN_DESC1 TW3D::TW3DSwapChain::GetDescription() {
 
 TWT::Bool TW3D::TW3DSwapChain::GetFullscreen() {
 	BOOL fullscreen;
-	TWU::SuccessAssert(swapChain->GetFullscreenState(&fullscreen, nullptr));
+	TWU::SuccessAssert(swapChain->GetFullscreenState(&fullscreen, nullptr), "TW3DSwapChain::GetFullscreen"s);
 	return fullscreen;
 }
 
 void TW3D::TW3DSwapChain::SetFullscreen(TWT::Bool fullscreen) {
-	TWU::SuccessAssert(swapChain->SetFullscreenState(fullscreen, nullptr));
+	TWU::SuccessAssert(swapChain->SetFullscreenState(fullscreen, nullptr), "TW3DSwapChain::SetFullscreen "s + TWU::BoolStr(fullscreen));
 }
 
 TWT::UInt TW3D::TW3DSwapChain::GetCurrentBufferIndex() {

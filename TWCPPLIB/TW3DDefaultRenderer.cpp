@@ -3,7 +3,7 @@
 #include "TW3DSwapChain.h"
 #include "TW3DGraphicsPipelineState.h"
 #include "TW3DBitonicSorter.h"
-TW3D::TW3DResourceSR* texture;
+//TW3D::TW3DResourceSR* texture;
 
 TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete gbuffer_ps;
@@ -13,7 +13,7 @@ TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete rt_cl;
 
 	delete rt_output;
-	delete texture;
+	//delete texture;
 }
 
 void TW3D::TW3DDefaultRenderer::CreateBlitResources() {
@@ -129,7 +129,7 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	CreateRTResources();
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] RTResources initialized."s);
 
-	texture = ResourceManager->CreateTextureArray2D(720, 720, 10, DXGI_FORMAT_R8G8B8A8_UNORM);
+	//texture = ResourceManager->CreateTextureArray2D(720, 720, 10, DXGI_FORMAT_R8G8B8A8_UNORM);
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] 'texture' initialized."s);
 
 	//texture->Upload2D(L"D:/тест.png", 0);

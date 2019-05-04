@@ -187,6 +187,7 @@ void init_dx12() {
 	logger->LogInfo("WaveOps                              : "s + TWU::BoolStr(opt1.WaveOps));
 	logger->LogInfo("ExpandedComputeResourceStates        : "s + TWU::BoolStr(opt1.ExpandedComputeResourceStates));
 	logger->LogInfo("Int64ShaderOps                       : "s + TWU::BoolStr(opt1.Int64ShaderOps));
+	logger->LogInfo("DepthBoundsTestSupported             : "s + TWU::BoolStr(opt2.DepthBoundsTestSupported));
 	logger->LogInfo("CopyQueueTimestampQueriesSupported   : "s + TWU::BoolStr(opt3.CopyQueueTimestampQueriesSupported));
 	logger->LogInfo("CastingFullyTypedFormatSupported     : "s + TWU::BoolStr(opt3.CastingFullyTypedFormatSupported));
 	logger->LogInfo("BarycentricsSupported                : "s + TWU::BoolStr(opt3.BarycentricsSupported));
@@ -197,7 +198,6 @@ void init_dx12() {
 	logger->LogInfo("WaveLaneCountMin                     : "s + opt1.WaveLaneCountMin);
 	logger->LogInfo("WaveLaneCountMax                     : "s + opt1.WaveLaneCountMax);
 	logger->LogInfo("TotalLaneCount                       : "s + opt1.TotalLaneCount);
-	logger->LogInfo("DepthBoundsTestSupported             : "s + opt2.DepthBoundsTestSupported);
 	logger->LogInfo("MinPrecisionSupport                  : "s + static_cast<TWT::UInt>(opt0.MinPrecisionSupport));
 	logger->LogInfo("TiledResourcesTier                   : "s + static_cast<TWT::UInt>(opt0.TiledResourcesTier));
 	logger->LogInfo("ResourceBindingTier                  : "s + static_cast<TWT::UInt>(opt0.ResourceBindingTier));
@@ -239,7 +239,7 @@ TWT::UInt thread_tick(TWT::UInt thread_id, TWT::UInt thread_count) {
 	} else if (thread_id == 1) {
 		HRESULT remove_reason = device->GetRemoveReason();
 		if (FAILED(remove_reason)) {
-			logger->LogError(TWU::HResultToWString(remove_reason).Multibyte());
+			logger->LogError("Device removed: "s + TWU::HResultToWString(remove_reason).Multibyte());
 			running = false;
 		}
 		return static_cast<TWT::UInt>(delta_time * 1000.0f);
@@ -443,9 +443,13 @@ void TW3D::Start() {
 }
 
 void TW3D::Shutdown() {
-	running = false;
-	DestroyWindow(hwnd);
 	logger->LogInfo("Engine shutdown."s);
+
+	if (!running && initialized)
+		cleanup();
+	running = false;
+
+	DestroyWindow(hwnd);
 }
 
 TWT::Bool TW3D::GetFullScreen() {

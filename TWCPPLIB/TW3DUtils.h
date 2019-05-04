@@ -7,15 +7,6 @@
 namespace TWU {
 	void TW3DSetLogger(TW::TWLogger* Logger);
 
-	// Create a DXGI factory
-	IDXGIFactory7* DXGICreateFactory(TWT::UInt flags);
-
-	// Get available DirectX hardware adapter
-	IDXGIAdapter4* DXGIGetHardwareAdapter(IDXGIFactory7* factory);
-
-	// Create a DX12 device
-	ID3D12Device5* DXCreateDevice(IDXGIAdapter4* adapter);
-
 	// Get the DXGI format equivilent of a WIC format
 	DXGI_FORMAT WICFormatToDXGIFormat(WICPixelFormatGUID& wicFormatGUID);
 
@@ -45,7 +36,7 @@ namespace TWU {
 	}
 
 	// Check for successful result
-	void SuccessAssert(HRESULT hr);
+	void SuccessAssert(HRESULT hr, const TWT::String& AdditionalErrorInfo);
 
 	// Log info to logger
 	void TW3DLogInfo(const TWT::String& Info);

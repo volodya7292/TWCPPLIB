@@ -2,7 +2,7 @@
 #include "TW3DFactory.h"
 
 TW3D::TW3DFactory::TW3DFactory(TWT::UInt flags) {
-	TWU::SuccessAssert(CreateDXGIFactory2(flags, IID_PPV_ARGS(&factory)));
+	TWU::SuccessAssert(CreateDXGIFactory2(flags, IID_PPV_ARGS(&factory)), "TW3DFactory::TW3DFactory"s);
 }
 
 TW3D::TW3DFactory::~TW3DFactory() {
@@ -16,11 +16,11 @@ std::vector<ComPtr<IDXGIAdapter4>> TW3D::TW3DFactory::ListAdapters(D3D_FEATURE_L
 
 	for (TWT::UInt adapterIndex = 0; factory->EnumAdapters1(adapterIndex, &adapter1) != DXGI_ERROR_NOT_FOUND; adapterIndex++) {
 		DXGI_ADAPTER_DESC1 desc;
-		TWU::SuccessAssert(adapter1->GetDesc1(&desc));
+		TWU::SuccessAssert(adapter1->GetDesc1(&desc), "TW3DFactory::ListAdapters, adapter1->GetDesc1 "s + adapterIndex);
 
 		//if (SUCCEEDED(D3D12CreateDevice(adapter1.Get(), featureLevel, _uuidof(ID3D12Device), nullptr))) {
 		if (!(desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) && SUCCEEDED(D3D12CreateDevice(adapter1.Get(), featureLevel, _uuidof(ID3D12Device), nullptr))) {
-			TWU::SuccessAssert(adapter1.As(&adapter4));
+			TWU::SuccessAssert(adapter1.As(&adapter4), "TW3DFactory::ListAdapters, adapter1.As "s + adapterIndex);
 			adapters.push_back(adapter4);
 			break;
 		}
@@ -30,8 +30,8 @@ std::vector<ComPtr<IDXGIAdapter4>> TW3D::TW3DFactory::ListAdapters(D3D_FEATURE_L
 }
 
 void TW3D::TW3DFactory::CreateSwapChainForHwnd(ID3D12CommandQueue* commandQueue, HWND hwnd, const DXGI_SWAP_CHAIN_DESC1* desc, IDXGISwapChain1** swapChain) {
-	TWU::SuccessAssert(factory->CreateSwapChainForHwnd(commandQueue, hwnd, desc, nullptr, nullptr, swapChain));
-	TWU::SuccessAssert(factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER));
+	TWU::SuccessAssert(factory->CreateSwapChainForHwnd(commandQueue, hwnd, desc, nullptr, nullptr, swapChain), "TW3DFactory::CreateSwapChainForHwnd, factory->CreateSwapChainForHwnd"s);
+	TWU::SuccessAssert(factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER), "TW3DFactory::CreateSwapChainForHwnd, factory->MakeWindowAssociation"s);
 }
 
 void TW3D::TW3DFactory::CheckFeatureSupport(DXGI_FEATURE feature, void *featureSupportData, TWT::UInt featureSupportDataSize) {

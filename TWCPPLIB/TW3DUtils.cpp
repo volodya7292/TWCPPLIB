@@ -8,38 +8,6 @@ void TWU::TW3DSetLogger(TW::TWLogger* Logger) {
 	logger = Logger;
 }
 
-IDXGIFactory7* TWU::DXGICreateFactory(TWT::UInt flags) {
-	IDXGIFactory7* dxgiFactory;
-	CreateDXGIFactory2(flags, IID_PPV_ARGS(&dxgiFactory));
-	return dxgiFactory;
-}
-
-IDXGIAdapter4* TWU::DXGIGetHardwareAdapter(IDXGIFactory7* factory) {
-	IDXGIAdapter1* adapter;
-
-	for (UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != factory->EnumAdapters1(adapterIndex, &adapter); ++adapterIndex) {
-		DXGI_ADAPTER_DESC1 desc;
-		SuccessAssert(adapter->GetDesc1(&desc));
-
-		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
-			// Don't select the Basic Render Driver(software) adapter.
-			continue;
-		}
-
-		// Check to see if the adapter supports Direct3D 12, but don't create the actual device yet.
-		if (SUCCEEDED(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
-			break;
-	}
-
-	return static_cast<IDXGIAdapter4*>(adapter);
-}
-
-ID3D12Device5* TWU::DXCreateDevice(IDXGIAdapter4* adapter) {
-	ID3D12Device5* device;
-	TWU::SuccessAssert(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
-	return device;
-}
-
 DXGI_FORMAT TWU::WICFormatToDXGIFormat(WICPixelFormatGUID& wicFormatGUID) {
 	if (wicFormatGUID == GUID_WICPixelFormat128bppRGBAFloat) return DXGI_FORMAT_R32G32B32A32_FLOAT;
 	else if (wicFormatGUID == GUID_WICPixelFormat64bppRGBAHalf) return DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -180,7 +148,7 @@ TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& 
 
 	if (wicFactory == NULL) {
 		// Initialize the COM library
-		SuccessAssert(CoInitialize(NULL));
+		SuccessAssert(CoInitialize(NULL), "TWU::LoadImageDataFromFile");
 
 		// create the WIC factory
 		hr = CoCreateInstance(
@@ -310,12 +278,12 @@ void TWU::TW3DCalculateTriangleNormals(void* VertexBuffer, TWT::UInt VertexCount
 	}
 }
 
-void TWU::SuccessAssert(HRESULT hr) {
+void TWU::SuccessAssert(HRESULT hr, const TWT::String& AdditionalErrorInfo) {
 	if (FAILED(hr)) {
 		TWT::Char s_str[64] = {};
 		sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<TWT::UInt>(hr));
 		TWT::WString error = TWU::HResultToWString(hr);
-		logger->LogError("SuccessAssert failed: "s + error.Multibyte());
+		logger->LogError("SuccessAssert failed: ["s + AdditionalErrorInfo + "]"s + error.Multibyte());
 	}
 }
 

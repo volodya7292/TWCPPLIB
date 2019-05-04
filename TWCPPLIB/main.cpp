@@ -146,8 +146,5 @@ int main() {
 	TW3D::SetOnKeyEvent(on_key);
 	TW3D::SetOnCharEvent(on_char);
 
-	TW3D::TW3DResourceUAV* g = RM->CreateUnorderedAccessView(2, 2);
-	g->CreateBuffer(3);
-
 	TW3D::Start();
 }

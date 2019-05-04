@@ -14,7 +14,7 @@ TW3D::TW3DResourceCB::TW3DResourceCB(TW3DDevice* Device, TWT::UInt ElementCount,
 		&Resource);
 	Resource->SetName(L"TW3DResourceCB");
 
-	TWU::SuccessAssert(Resource->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&GPUAddress)));
+	TWU::SuccessAssert(Resource->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&GPUAddress)), "TW3DResourceCB::TW3DResourceCB"s);
 }
 
 TW3D::TW3DResourceCB::~TW3DResourceCB() {

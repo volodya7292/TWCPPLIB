@@ -36,7 +36,7 @@ void TW3D::TW3DResource::Release() {
 }
 
 void TW3D::TW3DResource::Map(TWT::UInt SubResourceIndex, D3D12_RANGE* ReadRange, void** Data) {
-	TWU::SuccessAssert(Resource->Map(SubResourceIndex, ReadRange, Data));
+	TWU::SuccessAssert(Resource->Map(SubResourceIndex, ReadRange, Data), "TW3DResource::Map"s);
 }
 
 TW3D::TW3DResource* TW3D::TW3DResource::Create(TW3DDevice* Device, TWT::UInt64 Size, TWT::Bool Staging) {
