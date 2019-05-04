@@ -33,7 +33,7 @@ void TW3D::TW3DLBVH::BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffs
 	// Calculate bounding box
 	cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::CalculateMeshBoundingBox));
 	cl->ResourceBarrier(bounding_box_buffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	cl->BindUAVBufferSRV(0, GVB);
+	cl->BindUAVSRV(0, GVB);
 	cl->BindUAVBuffer(1, bounding_box_buffer);
 	cl->SetRoot32BitConstant(2, GVBOffset, 0);
 	cl->SetRoot32BitConstant(2, element_count * 3, 1);
@@ -73,8 +73,8 @@ void TW3D::TW3DLBVH::BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffs
 
 		// Calculate morton codes
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::CalculateMortonCodes));
-		cl->BindUAVBufferSRV(0, GVB);
-		cl->BindUAVBufferSRV(1, bounding_box_buffer);
+		cl->BindUAVSRV(0, GVB);
+		cl->BindUAVSRV(1, bounding_box_buffer);
 		cl->BindUAVBuffer(2, morton_codes_buffer);
 		cl->BindUAVBuffer(3, morton_indices_buffer);
 		cl->SetRoot32BitConstant(4, GVBOffset, 0);
@@ -92,9 +92,9 @@ void TW3D::TW3DLBVH::BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffs
 
 		// Setup LBVH nodes
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::SetupLBVHNodes));
-		cl->BindUAVBufferSRV(0, GVB);
-		//cl->BindUAVBufferSRV(1, morton_codes_buffer);
-		cl->BindUAVBufferSRV(1, morton_indices_buffer);
+		cl->BindUAVSRV(0, GVB);
+		//cl->BindUAVSRV(1, morton_codes_buffer);
+		cl->BindUAVSRV(1, morton_indices_buffer);
 		cl->BindUAVBuffer(2, node_buffer);
 		//cl->BindUAVBuffer(4, VertexMesh->GetLBVHNodeLockBufferResource());
 		cl->SetRoot32BitConstant(3, GVBOffset, 0);
@@ -104,8 +104,8 @@ void TW3D::TW3DLBVH::BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffs
 
 		// Build LBVH splits
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::BuildLBVHSplits));
-		cl->BindUAVBufferSRV(0, morton_codes_buffer);
-		cl->BindUAVBufferSRV(1, morton_indices_buffer);
+		cl->BindUAVSRV(0, morton_codes_buffer);
+		cl->BindUAVSRV(1, morton_indices_buffer);
 		cl->BindUAVBuffer(2, node_buffer);
 		cl->SetRoot32BitConstant(3, element_count, 0);
 		cl->Dispatch(element_count - 1);
@@ -163,8 +163,8 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 	// Calculate bounding box
 	cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::CalculateLBVHsBoundingBox));
 	cl->ResourceBarrier(bounding_box_buffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	cl->BindUAVBufferSRV(0, GNB);
-	cl->BindUAVBufferSRV(1, gnboffset_buffer);
+	cl->BindUAVSRV(0, GNB);
+	cl->BindUAVSRV(1, gnboffset_buffer);
 	cl->BindUAVBuffer(2, bounding_box_buffer);
 	cl->SetRoot32BitConstant(3, gnboffset_count, 0);
 	int element_count2 = element_count;
@@ -211,9 +211,9 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 
 		// Calculate morton codes
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::CalculateMortonCodesForLBVHs));
-		cl->BindUAVBufferSRV(0, GNB);
-		cl->BindUAVBufferSRV(1, gnboffset_buffer);
-		cl->BindUAVBufferSRV(2, bounding_box_buffer);
+		cl->BindUAVSRV(0, GNB);
+		cl->BindUAVSRV(1, gnboffset_buffer);
+		cl->BindUAVSRV(2, bounding_box_buffer);
 		cl->BindUAVBuffer(3, morton_codes_buffer);
 		cl->BindUAVBuffer(4, morton_indices_buffer);
 		cl->SetRoot32BitConstant(5, gnboffset_count, 0);
@@ -235,9 +235,9 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 
 		// Setup LBVH nodes
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::SetupLBVHNodesFromLBVHs));
-		cl->BindUAVBufferSRV(0, GNB);
-		cl->BindUAVBufferSRV(1, gnboffset_buffer);
-		cl->BindUAVBufferSRV(2, morton_indices_buffer);
+		cl->BindUAVSRV(0, GNB);
+		cl->BindUAVSRV(1, gnboffset_buffer);
+		cl->BindUAVSRV(2, morton_indices_buffer);
 		cl->BindUAVBuffer(3, node_buffer);
 		cl->SetRoot32BitConstant(4, gnboffset_count, 0);
 		cl->SetRoot32BitConstant(4, element_count - 1, 1);
@@ -246,8 +246,8 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 
 		// Build LBVH splits
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::BuildLBVHSplitsFromLBVHs));
-		cl->BindUAVBufferSRV(0, morton_codes_buffer);
-		cl->BindUAVBufferSRV(1, morton_indices_buffer);
+		cl->BindUAVSRV(0, morton_codes_buffer);
+		cl->BindUAVSRV(1, morton_indices_buffer);
 		cl->BindUAVBuffer(2, node_buffer);
 		cl->SetRoot32BitConstant(3, element_count, 0);
 		cl->Dispatch(element_count - 1);

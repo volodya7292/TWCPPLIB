@@ -35,7 +35,7 @@ ID3D12PipelineState* TW3D::TW3DGraphicsPipelineState::Get() {
 }
 
 void TW3D::TW3DGraphicsPipelineState::SetVertexShader(const std::string& Filename) {
-	TWT::Int size;
+	TWT::UInt size;
 	TWT::Byte* data = TWU::ReadFileBytes(Filename, size);
 
 	D3D12_SHADER_BYTECODE bytecode = {};
@@ -50,7 +50,7 @@ void TW3D::TW3DGraphicsPipelineState::SetVertexShader(const D3D12_SHADER_BYTECOD
 }
 
 void TW3D::TW3DGraphicsPipelineState::SetPixelShader(const std::string& Filename) {
-	TWT::Int size;
+	TWT::UInt size;
 	TWT::Byte* data = TWU::ReadFileBytes(Filename, size);
 
 	D3D12_SHADER_BYTECODE bytecode = {};

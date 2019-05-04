@@ -106,7 +106,7 @@ void TW3D::TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DReso
 
 	cl->SetPipelineState(blit_ps);
 	cl->SetRenderTarget(ColorOutput, Depth);
-	cl->BindUAVTextureSRV(0, rt_output);
+	cl->BindUAVSRV(0, rt_output);
 	cl->ClearRTV(ColorOutput);
 	cl->ClearDSVDepth(Depth);
 	cl->SetViewport(&viewport);

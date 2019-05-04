@@ -18,7 +18,7 @@ namespace TWU {
 	void FileExistsAssert(TWT::WString filename);
 
 	// Read entire file into byte array
-	TWT::Byte* ReadFileBytes(TWT::String filename, TWT::Int& size);
+	TWT::Byte* ReadFileBytes(TWT::String filename, TWT::UInt& size);
 
 	TWT::Time GetTime();
 	TWT::Float64 GetTimeSeconds();

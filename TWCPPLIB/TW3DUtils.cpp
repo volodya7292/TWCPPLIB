@@ -228,7 +228,7 @@ TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& 
 	// copy (decoded) raw image data into the newly allocated memory (imageData)
 	if (imageConverted) {
 		// if image format needed to be converted, the wic converter will contain the converted image
-		hr = wicConverter->CopyPixels(0, bytesPerRow, imageSize, *imageData);
+		hr = wicConverter->CopyPixels(0, bytesPerRow, imageSize, *imageData); //-V522
 		if (FAILED(hr)) return 0;
 	} else {
 		// no need to convert, just copy data from the wic frame

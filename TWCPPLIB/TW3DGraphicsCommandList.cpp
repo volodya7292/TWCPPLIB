@@ -201,15 +201,11 @@ void TW3D::TW3DGraphicsCommandList::BindUAVBuffer(TWT::UInt RootParameterIndex, 
 		command_list->SetGraphicsRootUnorderedAccessView(RootParameterIndex, UAV->GetGPUVirtualAddress());
 }
 
-void TW3D::TW3DGraphicsCommandList::BindUAVBufferSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
-	SetRootDescriptorTable(RootParameterIndex, UAV->GetGPUSRVHandle());
-}
-
 void TW3D::TW3DGraphicsCommandList::BindUAVTexture(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
 	SetRootDescriptorTable(RootParameterIndex, UAV->GetGPUUAVHandle());
 }
 
-void TW3D::TW3DGraphicsCommandList::BindUAVTextureSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
+void TW3D::TW3DGraphicsCommandList::BindUAVSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV) {
 	SetRootDescriptorTable(RootParameterIndex, UAV->GetGPUSRVHandle());
 }
 

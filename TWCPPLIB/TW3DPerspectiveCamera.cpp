@@ -10,8 +10,7 @@ TW3D::TW3DPerspectiveCamera::TW3DPerspectiveCamera(TW3DResourceManager* Resource
 }
 
 TW3D::TW3DPerspectiveCamera::~TW3DPerspectiveCamera() {
-	if (constant_buffer)
-		delete constant_buffer;
+	delete constant_buffer;
 }
 
 TWT::Matrix4f TW3D::TW3DPerspectiveCamera::GetProjectionMatrix() {

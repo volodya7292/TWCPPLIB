@@ -3,7 +3,7 @@
 #include "TW3DCommandQueue.h"
 
 namespace TW3D {
-	class TW3DSwapChain {
+	class TW3DSwapChain { //-V802
 	public:
 		TW3DSwapChain(TW3DFactory* factory, TW3DCommandQueue* commandQueue, HWND hwnd, TWT::UInt width, TWT::UInt height, TWT::Bool vsync);
 		~TW3DSwapChain();

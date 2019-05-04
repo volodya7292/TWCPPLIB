@@ -20,7 +20,7 @@ void TWU::FileExistsAssert(TWT::WString filename) {
 		throw std::runtime_error("File "s + filename.Multibyte() + " not good(not exists)!"s);
 }
 
-TWT::Byte* TWU::ReadFileBytes(TWT::String filename, TWT::Int& size) {
+TWT::Byte* TWU::ReadFileBytes(TWT::String filename, TWT::UInt& size) {
 	TWU::FileExistsAssert(filename.Wide());
 
 	std::ifstream VertexFile(filename.data, std::ios::ate | std::ios::binary);

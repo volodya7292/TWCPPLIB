@@ -23,9 +23,9 @@ TW3D::TW3DScene::~TW3DScene() {
 }
 
 void TW3D::TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRPI, TWT::UInt SceneRTNBRPI, TWT::UInt GNBRPI) {
-	CommandList->BindUAVBufferSRV(GVBRPI, gvb);
-	CommandList->BindUAVBufferSRV(SceneRTNBRPI, LBVH->GetNodeBuffer());
-	CommandList->BindUAVBufferSRV(GNBRPI, gnb);
+	CommandList->BindUAVSRV(GVBRPI, gvb);
+	CommandList->BindUAVSRV(SceneRTNBRPI, LBVH->GetNodeBuffer());
+	CommandList->BindUAVSRV(GNBRPI, gnb);
 }
 
 void TW3D::TW3DScene::AddObject(TW3DObject* Object) {
@@ -99,7 +99,7 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::BuildGLBVHNB));
 	cl->BindUAVBuffer(0, gnb);
 	for (auto entry : vertex_meshes) {
-		cl->BindUAVBufferSRV(1, entry.first->LBVH->GetNodeBuffer());
+		cl->BindUAVSRV(1, entry.first->LBVH->GetNodeBuffer());
 		cl->SetRoot32BitConstant(2, entry.second.second, 0);
 		cl->Dispatch(entry.first->LBVH->GetNodeCount());
 		cl->ResourceBarrier(TW3DUAVBarrier());

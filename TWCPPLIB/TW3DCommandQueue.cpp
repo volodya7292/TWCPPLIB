@@ -36,8 +36,7 @@ void TW3D::TW3DCommandQueue::FlushCommandList(TW3DGraphicsCommandList* CommandLi
 	if (fence->GetCompletedValue() < CommandList->SignalValue) {
 		HANDLE fence_event = NULL;
 		TWU::SuccessAssert(fence->SetEventOnCompletion(CommandList->SignalValue, fence_event), "TW3DCommandQueue::FlushCommandList "s + CommandList->SignalValue);
-		if (fence_event != NULL)
-			WaitForSingleObject(fence_event, INFINITE);
+		WaitForSingleObject(fence_event, INFINITE);
 	}
 }
 
@@ -47,8 +46,7 @@ void TW3D::TW3DCommandQueue::FlushCommands() {
 	if (fence->GetCompletedValue() < fence_flush_value) {
 		HANDLE fence_event = NULL;
 		TWU::SuccessAssert(fence->SetEventOnCompletion(fence_flush_value, fence_event), "TW3DCommandQueue::FlushCommands, fence->SetEventOnCompletion "s + fence_flush_value);
-		if (fence_event != NULL)
-			WaitForSingleObject(fence_event, INFINITE);
+		WaitForSingleObject(fence_event, INFINITE);
 	}
 }
 

@@ -61,9 +61,8 @@ namespace TW3D {
 		void BindTexture(TWT::UInt RootParameterIndex, TW3DResourceSR* SR);
 		void BindRTVTexture(TWT::UInt RootParameterIndex, TW3DResourceRTV* RTV);
 		void BindUAVBuffer(TWT::UInt RootParameterIndex, TW3DResource* UAV);
-		void BindUAVBufferSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV);
 		void BindUAVTexture(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV);
-		void BindUAVTextureSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV);
+		void BindUAVSRV(TWT::UInt RootParameterIndex, TW3DResourceUAV* UAV);
 		void BindCameraCBV(TWT::UInt RootParameterIndex, TW3DPerspectiveCamera* Camera);
 		void DrawObject(TW3DObject* object, TWT::UInt ModelCBRootParameterIndex);
 

@@ -18,7 +18,7 @@ ID3D12PipelineState* TW3D::TW3DComputePipelineState::Get() {
 }
 
 void TW3D::TW3DComputePipelineState::SetShader(const std::string& Filename) {
-	TWT::Int size;
+	TWT::UInt size;
 	TWT::Byte* data = TWU::ReadFileBytes(Filename, size);
 
 	D3D12_SHADER_BYTECODE bytecode = {};
