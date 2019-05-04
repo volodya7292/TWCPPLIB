@@ -329,9 +329,6 @@
     <FxCompile Include="GBuffer.p.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="BuildGlobalVertexBuffer.v.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="OffscreenBlit.p.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>

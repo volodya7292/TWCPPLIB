@@ -12,8 +12,6 @@
 #include "BuildLBVHSplitsFromLBVHs.c.h"
 #include "UpdateLBVHNodeBoundsForLBVHs.c.h"
 
-#include "BuildGlobalVertexBuffer.v.h"
-
 TWT::Vector<TW3D::TW3DComputePipelineState*> compute_shaders;
 TWT::Vector<TW3D::TW3DGraphicsPipelineState*> graphics_shaders;
 
@@ -169,18 +167,7 @@ void TW3DShaders::Initialize(TW3D::TW3DResourceManager* ResourceManager) {
 	// -----------------------------------------------------------------------------------------------------------------------------------
 
 
-	TW3D::TW3DRootSignature* grs0 = new TW3D::TW3DRootSignature(false, true, false);
-	grs0->SetParameterUAVBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX, 0); // Global Vertex Buffer UAV
-	grs0->SetParameterConstants(1, D3D12_SHADER_VISIBILITY_VERTEX, 0, 1); // Input data constants
-	grs0->Create(device);
-
-	auto layout = TW3D::CreateInputLayout({ TW3D::POSITION_ILE, TW3D::TEXCOORD_ILE, TW3D::NORMAL_ILE });
-
-	TW3D::TW3DGraphicsPipelineState* gvb_ps = new TW3D::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, grs0);
-	gvb_ps->SetVertexShader(TW3DCompiledShader(BuildGlobalVertexBuffer_VertexByteCode));
-	gvb_ps->SetInputLayout(layout);
-	gvb_ps->Create(device);
-	graphics_shaders[BuildGVB] = gvb_ps;
+	
 }
 
 void TW3DShaders::Release() {

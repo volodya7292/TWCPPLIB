@@ -18,7 +18,6 @@ namespace TW3DShaders {
 	};
 
 	enum GraphicsShader {
-		BuildGVB,
 		GraphicsShaderCount
 	};
 

@@ -756,31 +756,6 @@
       <AllResourcesBound Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">true</AllResourcesBound>
       <AllResourcesBound Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</AllResourcesBound>
     </FxCompile>
-    <FxCompile Include="BuildGlobalVertexBuffer.v.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BuildGlobalVertexBuffer_VertexByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BuildGlobalVertexBuffer.v.h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </ObjectFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">BuildGlobalVertexBuffer_VertexByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">BuildGlobalVertexBuffer.v.h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">
-      </ObjectFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BuildGlobalVertexBuffer_VertexByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BuildGlobalVertexBuffer.v.h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </ObjectFileOutput>
-      <AllResourcesBound Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</AllResourcesBound>
-      <AllResourcesBound Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">true</AllResourcesBound>
-      <AllResourcesBound Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</AllResourcesBound>
-    </FxCompile>
     <FxCompile Include="BuildLBVHSplits.c.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>

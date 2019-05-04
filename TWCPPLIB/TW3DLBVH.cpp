@@ -111,11 +111,11 @@ void TW3D::TW3DLBVH::BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffs
 		cl->Dispatch(element_count - 1);
 		cl->ResourceBarrier(uav_barrier);
 
-		// Update LVBH node boundaries
+		// Update LVBH node bounds
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::UpdateLBVHNodeBounds));
 		cl->BindUAVBuffer(0, node_buffer);
 		cl->SetRoot32BitConstant(1, element_count - 1, 0);
-		for (size_t i = 0; i < ceil(element_count); i++) {
+		for (size_t i = 0; i < ceil(element_count / 4.0f); i++) {
 			cl->SetRoot32BitConstant(1, i, 1);
 			cl->Dispatch(element_count);
 			cl->ResourceBarrier(uav_barrier);
@@ -129,8 +129,11 @@ void TW3D::TW3DLBVH::BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffs
 
 	cl->Close();
 
+	TWT::Float64 t0 = TWU::GetTimeSeconds();
 	resource_manager->ExecuteCommandList(cl);
 	resource_manager->FlushCommandList(cl);
+	TWT::Float64 t1 = TWU::GetTimeSeconds();
+	TWU::TW3DLogInfo("LBVH object build: "s + (t1 - t0) + " | element_count = "s + element_count);
 }
 
 void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<SceneLBVHInstance>& SceneLBVHInstances) {
@@ -254,7 +257,7 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::UpdateLBVHNodeBoundsForLBVHs));
 		cl->BindUAVBuffer(0, node_buffer);
 		cl->SetRoot32BitConstant(1, element_count - 1, 0);
-		for (size_t i = 0; i < ceil(element_count); i++) {
+		for (size_t i = 0; i < ceil(element_count / 4.0f); i++) {
 			cl->Dispatch(element_count);
 			cl->ResourceBarrier(uav_barrier);
 		}
