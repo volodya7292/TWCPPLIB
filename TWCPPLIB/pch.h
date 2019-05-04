@@ -17,6 +17,7 @@
 #include <string>
 #include <mutex>
 #include <array>
+#include <map>
 
 #include <stdint.h>
 #include <comdef.h>

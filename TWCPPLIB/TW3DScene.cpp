@@ -30,6 +30,19 @@ void TW3D::TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRP
 
 void TW3D::TW3DScene::AddObject(TW3DObject* Object) {
 	Objects.push_back(Object);
+
+	objects_changed = true;
+
+	if (vertex_meshes.find(Object->VMInstance.VertexMesh) == vertex_meshes.end()) {
+		vertex_meshes[Object->VMInstance.VertexMesh] = std::pair(-1, -1);
+		mesh_buffers_changed = true;
+	}
+
+	for (TW3DVertexBuffer* vb : Object->VMInstance.VertexMesh->VertexBuffers)
+		if (vertex_buffers.find(vb) == vertex_buffers.end()) {
+			vertex_buffers[vb] = -1;
+			vertex_buffers_changed = true;
+		}
 }
 
 void TW3D::TW3DScene::RecordBeforeExecution() {
@@ -37,82 +50,86 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	// -------------------------------------------------------------------------------------------------------------------------
 	TWT::UInt VertexOffset = 0;
 	TWT::UInt NodeOffset = 0;
-	vertex_buffers.clear();
-	vertex_meshes.clear();
-	TWT::Vector<TW3DVertexBuffer*> buffers;
-	TWT::Vector<TW3DVertexMesh*> meshes;
-	TWT::Vector<SceneLBVHInstance> gnb_node_offsets;
-	for (TW3DObject* object : Objects) {
-		TW3DVertexMesh* mesh = object->VMInstance.VertexMesh;
+	mesh_instances.clear();
 
-		if (std::find(meshes.begin(), meshes.end(), mesh) == meshes.end()) {
-			meshes.push_back(mesh);
-			vertex_meshes[mesh] = std::pair(VertexOffset, NodeOffset);
-			NodeOffset += mesh->LBVH->GetNodeCount();
+	if (vertex_buffers_changed) {
+		for (auto& [vb, voffset] : vertex_buffers) {
+			voffset = VertexOffset;
+			VertexOffset += vb->GetVertexCount();
+		}
+		gvb_vertex_count = VertexOffset + 1;
+	}
+
+	if (mesh_buffers_changed) {
+		for (auto& [mesh, moffsets] : vertex_meshes) {
+			moffsets.first = vertex_buffers[mesh->VertexBuffers[0]];
+			moffsets.second = NodeOffset;
+			NodeOffset += mesh->GetLBVH()->GetNodeCount();
+		}
+		gnb_node_count = NodeOffset + 1;
+	}
+
+	if (objects_changed)
+		for (TW3DObject* object : Objects) {
+			std::pair<TWT::UInt, TWT::UInt> obj_mesh = vertex_meshes[object->VMInstance.VertexMesh];
+			object->VMInstance.LBVHInstance.GVBOffset = obj_mesh.first;
+			object->VMInstance.LBVHInstance.GNBOffset = obj_mesh.second;
+			TWT::Matrix4f transform = object->VMInstance.Transform.GetModelMatrix();
+			object->VMInstance.LBVHInstance.Transform = transform;
+			object->VMInstance.LBVHInstance.TransformInverse = inverse(transform);
+
+			mesh_instances.push_back(object->VMInstance.LBVHInstance);
 		}
 
-		for (TW3DVertexBuffer* vb : object->VMInstance.VertexMesh->VertexBuffers)
-			if (std::find(buffers.begin(), buffers.end(), vb) == buffers.end()) {
-				buffers.push_back(vb);
-				vertex_buffers[vb] = VertexOffset;
-				VertexOffset += vb->GetVertexCount();
-			}
+
+	if (vertex_buffers_changed) {
+		auto ccl = resource_manager->GetTemporaryCopyCommandList();
 
 
-		SceneLBVHInstance instance;
-		TWT::Matrix4f transform = object->VMInstance.Transform.GetModelMatrix();
-		instance.GVBOffset = vertex_meshes[mesh].first;
-		instance.GNBOffset = vertex_meshes[mesh].second;
-		instance.Transform = transform;
-		instance.TransformInverse = inverse(transform);
-		gnb_node_offsets.push_back(instance);
+		// Build Global Vertex Buffer
+		// -------------------------------------------------------------------------------------------------------------------------
+		for (auto entry : vertex_buffers)
+			ccl->CopyBufferRegion(gvb, entry.second * sizeof(TWT::DefaultVertex), entry.first->GetResource(), 0, entry.first->GetSizeInBytes());
+
+		ccl->Close();
+		resource_manager->ExecuteCommandList(ccl);
+		resource_manager->FlushCommandList(ccl);
+
+
+		// Build LBVHs
+		// -------------------------------------------------------------------------------------------------------------------------
+		for (auto entry : vertex_meshes)
+			entry.first->UpdateLBVH(gvb, entry.second.first);
+
+
+		auto cl = resource_manager->GetTemporaryComputeCommandList();
+
+
+		// Build Global Node Buffer
+		// -------------------------------------------------------------------------------------------------------------------------
+		cl->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::BuildGLBVHNB));
+		cl->BindUAVBuffer(0, gnb);
+		for (auto entry : vertex_meshes) {
+			cl->BindUAVSRV(1, entry.first->GetLBVH()->GetNodeBuffer());
+			cl->SetRoot32BitConstant(2, entry.second.second, 0);
+			cl->Dispatch(entry.first->GetLBVH()->GetNodeCount());
+			cl->ResourceBarrier(TW3DUAVBarrier());
+		}
+		cl->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+
+		cl->Close();
+
+		resource_manager->ExecuteCommandList(cl);
+		resource_manager->FlushCommandList(cl);
 	}
-	gvb_vertex_count = VertexOffset + 1;
-	gnb_node_count = NodeOffset + 1;
 
-
-	auto ccl = resource_manager->GetTemporaryCopyCommandList();
-
-
-	// Build Global Vertex Buffer
-	// -------------------------------------------------------------------------------------------------------------------------
-	for (auto entry : vertex_buffers)
-		ccl->CopyBufferRegion(gvb, entry.second * sizeof(TWT::DefaultVertex), entry.first->GetResource(), 0, entry.first->GetSizeInBytes());
-
-	ccl->Close();
-	resource_manager->ExecuteCommandList(ccl);
-	resource_manager->FlushCommandList(ccl);
-
-
-	// Build LBVHs
-	// -------------------------------------------------------------------------------------------------------------------------
-	for (auto entry : vertex_meshes)
-		entry.first->LBVH->BuildFromPrimitives(gvb, entry.second.first);
-
-
-	auto cl = resource_manager->GetTemporaryComputeCommandList();
-
-
-	// Build Global Node Buffer
-	// -------------------------------------------------------------------------------------------------------------------------
-	cl->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::BuildGLBVHNB));
-	cl->BindUAVBuffer(0, gnb);
-	for (auto entry : vertex_meshes) {
-		cl->BindUAVSRV(1, entry.first->LBVH->GetNodeBuffer());
-		cl->SetRoot32BitConstant(2, entry.second.second, 0);
-		cl->Dispatch(entry.first->LBVH->GetNodeCount());
-		cl->ResourceBarrier(TW3DUAVBarrier());
+	if (objects_changed) {
+		delete LBVH;
+		LBVH = new TW3DLBVH(resource_manager, Objects.size(), true);
+		LBVH->BuildFromLBVHs(gnb, mesh_instances);
 	}
-	cl->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
-
-	cl->Close();
-
-	resource_manager->ExecuteCommandList(cl);
-	resource_manager->FlushCommandList(cl);
-
-	delete LBVH;
-	LBVH = new TW3DLBVH(resource_manager, gnb_node_offsets.size(), true);
-	LBVH->BuildFromLBVHs(gnb, gnb_node_offsets);
+	vertex_buffers_changed = mesh_buffers_changed = objects_changed = false;
 }

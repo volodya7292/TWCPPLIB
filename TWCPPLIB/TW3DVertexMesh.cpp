@@ -4,11 +4,12 @@
 TW3D::TW3DVertexMesh::TW3DVertexMesh(TW3DResourceManager* ResourceManager, const TWT::Vector<TW3DVertexBuffer*>& VertexBuffers) :
 	VertexBuffers(move(VertexBuffers))
 {
-	LBVH = new TW3DLBVH(ResourceManager, GetTriangleCount());
+	lbvh = new TW3DLBVH(ResourceManager, GetTriangleCount());
+	changed = true;
 }
 
 TW3D::TW3DVertexMesh::~TW3DVertexMesh() {
-	delete LBVH;
+	delete lbvh;
 }
 
 TWT::UInt TW3D::TW3DVertexMesh::GetVertexCount() {
@@ -20,4 +21,15 @@ TWT::UInt TW3D::TW3DVertexMesh::GetVertexCount() {
 
 TWT::UInt TW3D::TW3DVertexMesh::GetTriangleCount() {
 	return GetVertexCount() / 3;
+}
+
+TW3D::TW3DLBVH* TW3D::TW3DVertexMesh::GetLBVH() {
+	return lbvh;
+}
+
+void TW3D::TW3DVertexMesh::UpdateLBVH(TW3DResourceUAV* GVB, TWT::UInt GVBOffset) {
+	if (changed) {
+		changed = false;
+		lbvh->BuildFromPrimitives(GVB, GVBOffset);
+	}
 }

@@ -120,17 +120,17 @@ int main() {
 	info.LogFilename = "Log.log"s;
 	TW3D::Initialize(info);
 
-	TW3D::SetVSync(true);
+	TW3D::SetVSync(false);
 
 	TW3D::TW3DResourceManager* RM = TW3D::GetResourceManager();
 
 	scene = new TW3D::TW3DScene(RM);
 	cube = new TW3D::TW3DCube(RM);
 	cube2 = new TW3D::TW3DCube(RM);
-	scene->AddObject(cube2);
 	scene->AddObject(cube);
 
 	cube2->VMInstance.VertexMesh = TW3DPrimitives::GetPyramid4VertexMesh();
+	scene->AddObject(cube2);
 	
 	scene->Camera->FOVY = 45;
 	scene->Camera->Position.z = 3;

@@ -129,17 +129,12 @@ void TW3D::TW3DLBVH::BuildFromPrimitives(TW3DResourceUAV* GVB, TWT::UInt GVBOffs
 
 	cl->Close();
 
-	TWT::Float64 t0 = TWU::GetTimeSeconds();
 	resource_manager->ExecuteCommandList(cl);
 	resource_manager->FlushCommandList(cl);
-	TWT::Float64 t1 = TWU::GetTimeSeconds();
-	TWU::TW3DLogInfo("LBVH object build: "s + (t1 - t0) + " | element_count = "s + element_count);
 }
 
-void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<SceneLBVHInstance>& SceneLBVHInstances) {
-	TWT::UInt gnboffset_count = SceneLBVHInstances.size();
-
-	TWU::TW3DLogInfo("0");
+void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<SceneLBVHInstance>& MeshLBVHInstances) {
+	TWT::UInt gnboffset_count = MeshLBVHInstances.size();
 
 	if (gnboffset_count != element_count) {
 		element_count = gnboffset_count;
@@ -154,8 +149,7 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 	}
 
 	TW3DResourceUAV* gnboffset_buffer = resource_manager->CreateUnorderedAccessView(gnboffset_count, sizeof(SceneLBVHInstance));
-	gnboffset_buffer->UpdateData(SceneLBVHInstances.data(), gnboffset_count);
-	TWU::TW3DLogInfo("1");
+	gnboffset_buffer->UpdateData(MeshLBVHInstances.data(), gnboffset_count);
 
 	auto cl = resource_manager->GetTemporaryComputeCommandList();
 	auto uav_barrier = TW3DUAVBarrier();
@@ -180,8 +174,6 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 		iteration++;
 	} while (element_count2 > 1);
 
-	TWU::TW3DLogInfo("2");
-
 	if (element_count == 1) {
 		cl->ResourceBarriers({
 			TW3DTransitionBarrier(gnboffset_buffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE),
@@ -201,7 +193,6 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 			TW3DTransitionBarrier(bounding_box_buffer, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 			TW3DTransitionBarrier(node_buffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
 		});
-		TWU::TW3DLogInfo("3");
 	} else {
 		cl->ResourceBarriers({
 			TW3DTransitionBarrier(bounding_box_buffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
@@ -220,12 +211,8 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 		cl->Dispatch(element_count);
 		cl->ResourceBarrier(uav_barrier);
 
-		TWU::TW3DLogInfo("4");
-
 		// Sort morton codes
 		TW3DModules::BitonicSorter()->RecordSort(cl, morton_codes_buffer, morton_indices_buffer, element_count, true);
-
-		TWU::TW3DLogInfo("5");
 
 		cl->ResourceBarriers({
 			TW3DTransitionBarrier(morton_codes_buffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
@@ -266,21 +253,12 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, const TWT::Vector<Scen
 			TW3D::TW3DUAVBarrier(),
 			TW3D::TW3DTransitionBarrier(node_buffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
 		});
-
-		TWU::TW3DLogInfo("6");
 	}
 
 	cl->Close();
 
-	TWU::TW3DLogInfo("7");
-
 	resource_manager->ExecuteCommandList(cl);
-	TWU::TW3DLogInfo("8");
 	resource_manager->FlushCommandList(cl);
 
-	TWU::TW3DLogInfo("9");
-
 	delete gnboffset_buffer;
-
-	TWU::TW3DLogInfo("10");
 }

@@ -177,12 +177,8 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 	record_cl->Close();
 }
 
-bool build = false;
 void TW3D::TW3DDefaultRenderer::RecordBeforeExecution() {
-	if (!build) {
-		Scene->RecordBeforeExecution();
-		build = true;
-	}
+	Scene->RecordBeforeExecution();
 
 	// Trace rays
 	// -------------------------------------------------------------------------------------------------------------------------
