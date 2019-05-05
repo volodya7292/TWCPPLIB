@@ -37,6 +37,7 @@ namespace TW3D {
 		void SetRenderTarget(TW3DResourceRTV* RTV, TW3DResourceDSV* DSV);
 		void SetRenderTargets(const TWT::Vector<TW3DResourceRTV*>& RTVs, TW3DResourceDSV* DSV);
 		void ClearRTV(TW3DResourceRTV* RTV);
+		void ClearRTV(TW3DResourceRTV* RTV, TWT::Vector4f Color);
 		void ClearDSVDepth(TW3DResourceDSV* DSV, TWT::Float Depth = 1);
 		void SetRootSignature(TW3DRootSignature* RootSignature);
 		void SetDescriptorHeap(TW3DDescriptorHeap* heap);

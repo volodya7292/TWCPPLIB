@@ -54,16 +54,16 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 				}
 			}
 
-			bb.pMin = npMin;
-			bb.pMax = npMax;
+			bb.pMin.xyz = npMin;
+			bb.pMax.xyz = npMax;
 
 
 			if (i == 0) {
-				pMin = bb.pMin;
-				pMax = bb.pMax;
+				pMin = bb.pMin.xyz;
+				pMax = bb.pMax.xyz;
 			} else {
-				pMin = min(pMin, bb.pMin);
-				pMax = max(pMax, bb.pMax);
+				pMin = min(pMin, bb.pMin.xyz);
+				pMax = max(pMax, bb.pMax.xyz);
 			}
 			//pMin = float3(-100, -100, -100);
 			//pMax = float3(100, 100, 100);
@@ -77,18 +77,18 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 			Bounds bounds = bounding_box[index];
 
 			if (i == 0) {
-				pMin = bounds.pMin;
-				pMax = bounds.pMax;
+				pMin = bounds.pMin.xyz;
+				pMax = bounds.pMax.xyz;
 			} else {
-				pMin = min(pMin, bounds.pMin);
-				pMax = max(pMax, bounds.pMax);
+				pMin = min(pMin, bounds.pMin.xyz);
+				pMax = max(pMax, bounds.pMax.xyz);
 			}
 		}
 	}
 
 	Bounds bb;
-	bb.pMin = pMin;
-	bb.pMax = pMax;
+	bb.pMin = float4(pMin, 0);
+	bb.pMax = float4(pMax, 0);
 
 	bounding_box[DTid.x] = bb;
 }

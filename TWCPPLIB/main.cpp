@@ -10,6 +10,8 @@ static TWT::Bool movement_capture = true;
 
 TW3D::TW3DDefaultRenderer* defaultRenderer;
 TW3D::TW3DScene* scene;
+
+
 TW3D::TW3DCube* cube, *cube2;
 
 void on_update() {
@@ -70,9 +72,9 @@ void on_update() {
 
 
 	cube->VMInstance.Transform.SetPosition(TWT::Vector3f(-0.8f, 0, 0));
-	//cube->VMInstance.Transform.AdjustRotation(TWT::Vector3f(0.01f));
+	cube->VMInstance.Transform.AdjustRotation(TWT::Vector3f(0.01f));
 	cube2->VMInstance.Transform.SetPosition(TWT::Vector3f(0.8f, 0, 0));
-	//cube2->VMInstance.Transform.AdjustRotation(TWT::Vector3f(0.02f));
+	cube2->VMInstance.Transform.AdjustRotation(TWT::Vector3f(0.02f));
 	scene->Camera->UpdateConstantBuffer();
 }
 
@@ -120,7 +122,7 @@ int main() {
 	info.LogFilename = "Log.log"s;
 	TW3D::Initialize(info);
 
-	TW3D::SetVSync(true);
+	TW3D::SetVSync(false);
 
 	TW3D::TW3DResourceManager* RM = TW3D::GetResourceManager();
 

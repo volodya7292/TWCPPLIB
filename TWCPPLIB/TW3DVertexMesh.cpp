@@ -27,9 +27,9 @@ TW3D::TW3DLBVH* TW3D::TW3DVertexMesh::GetLBVH() {
 	return lbvh;
 }
 
-void TW3D::TW3DVertexMesh::UpdateLBVH(TW3DResourceUAV* GVB, TWT::UInt GVBOffset) {
+void TW3D::TW3DVertexMesh::UpdateLBVH(TW3DResourceUAV* GVB, TWT::UInt GVBOffset, TW3DGraphicsCommandList* CommandList) {
 	if (changed) {
 		changed = false;
-		lbvh->BuildFromPrimitives(GVB, GVBOffset);
+		lbvh->BuildFromTriangles(GVB, GVBOffset, CommandList);
 	}
 }

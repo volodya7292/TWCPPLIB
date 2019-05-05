@@ -7,8 +7,7 @@ namespace TW3D {
 		TW3DBitonicSorter(TW3DResourceManager* ResourceManager);
 		~TW3DBitonicSorter();
 
-		void RecordSort(TW3DGraphicsCommandList* CommandList, TW3DResourceUAV* SortKeyBuffer, TW3DResourceUAV* IndexBuffer,
-			TWT::UInt ElementCount, bool SortAscending);
+		void RecordSort(TW3DGraphicsCommandList* CommandList, TW3DResourceUAV* SortBuffer, TWT::UInt ElementCount, bool SortAscending, bool IsPartiallyPreSorted);
 
 	private:
 		enum RootSignatureParams {

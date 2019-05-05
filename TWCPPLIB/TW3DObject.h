@@ -12,7 +12,7 @@ namespace TW3D {
 		virtual void Update();
 		virtual void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex);
 		
-		TW3DVertexMeshInstance VMInstance;
+		TW3DVertexMeshInstance VMInstance = {};
 
 	protected:
 		TW3DResourceCB* ConstantBuffer;

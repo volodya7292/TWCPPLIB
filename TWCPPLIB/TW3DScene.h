@@ -28,6 +28,7 @@ namespace TW3D {
 
 		TW3DResourceUAV* gvb;
 		TW3DResourceUAV* gnb;
+		TW3DResourceUAV* instance_buffer = nullptr;
 
 		TWT::UInt gvb_vertex_count = 0;
 		TWT::UInt gnb_node_count = 0;

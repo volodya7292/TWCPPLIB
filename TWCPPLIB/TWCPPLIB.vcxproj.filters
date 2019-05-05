@@ -353,15 +353,6 @@
     <FxCompile Include="BuildLBVHSplits.c.hlsl">
       <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
-    <FxCompile Include="SetupLBVHNodes.c.hlsl">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
-    </FxCompile>
-    <FxCompile Include="CalculateMortonCodes.c.hlsl">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
-    </FxCompile>
-    <FxCompile Include="CalculateMeshBoundingBox.c.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="UpdateLBVHNodeBounds.c.hlsl">
       <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
@@ -378,6 +369,15 @@
       <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
     <FxCompile Include="UpdateLBVHNodeBoundsForLBVHs.c.hlsl">
+      <Filter>Resource Files\Shaders\LBVH</Filter>
+    </FxCompile>
+    <FxCompile Include="CalculateMortonCodesForTriangles.c.hlsl">
+      <Filter>Resource Files\Shaders\LBVH</Filter>
+    </FxCompile>
+    <FxCompile Include="CalculateTriangleMeshBoundingBox.c.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SetupLBVHNodesFromTriangles.c.hlsl">
       <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
   </ItemGroup>

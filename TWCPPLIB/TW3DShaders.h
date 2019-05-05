@@ -3,9 +3,9 @@
 
 namespace TW3DShaders {
 	enum ComputeShader {
-		CalculateMeshBoundingBox,
-		CalculateMortonCodes,
-		SetupLBVHNodes,
+		CalculateTriangleMeshBoundingBox,
+		CalculateMortonCodesForTriangles,
+		SetupLBVHNodesFromTriangles,
 		BuildLBVHSplits,
 		UpdateLBVHNodeBounds,
 		CalculateLBVHsBoundingBox,

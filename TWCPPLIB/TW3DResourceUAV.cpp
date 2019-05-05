@@ -46,7 +46,13 @@ D3D12_GPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceUAV::GetGPUUAVHandle() {
 	return SRVDescriptorHeap->GetGPUHandle(UAVIndex);
 }
 
+TWT::UInt TW3D::TW3DResourceUAV::GetElementCount() {
+	return element_count;
+}
+
 void TW3D::TW3DResourceUAV::UpdateData(const void* Data, TWT::UInt ElementCount) {
+	element_count = ElementCount;
+
 	TWT::UInt64 size = ElementCount * element_size;
 
 	D3D12_SUBRESOURCE_DATA upload_data = {};
@@ -64,9 +70,9 @@ void TW3D::TW3DResourceUAV::UpdateData(const void* Data, TWT::UInt ElementCount)
 	Resource->SetName(L"TW3DResource Upload Buffer Heap");
 
 	temp_gcl->Reset();
-	temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+	//temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 	temp_gcl->UpdateSubresources(Resource, upload_heap, &upload_data);
-	temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	//temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	temp_gcl->Execute();
 
 	TWU::DXSafeRelease(upload_heap);
@@ -98,6 +104,8 @@ void TW3D::TW3DResourceUAV::Read(void* Out, TWT::UInt ByteOffset, TWT::UInt Byte
 }
 
 void TW3D::TW3DResourceUAV::CreateBuffer(TWT::UInt ElementCount) {
+	element_count = ElementCount;
+
 	srv_desc.Buffer.NumElements = ElementCount;
 	uav_desc.Buffer.NumElements = ElementCount;
 

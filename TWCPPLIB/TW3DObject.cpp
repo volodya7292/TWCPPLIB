@@ -11,6 +11,7 @@ TW3D::TW3DObject::~TW3DObject() {
 
 void TW3D::TW3DObject::Update() {
 	if (VMInstance.Transform.Changed) {
+		VMInstance.Changed = true;
 		VMInstance.Transform.Changed = false;
 
 		TWT::DefaultModelCB cb;

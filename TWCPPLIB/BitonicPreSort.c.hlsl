@@ -1,7 +1,7 @@
 #include "BitonicSortCommon.hlsli"
 
 RWByteAddressBuffer g_SortBuffer : register(u0);
-RWByteAddressBuffer g_IndexBuffer : register(u1);
+//RWByteAddressBuffer g_IndexBuffer : register(u1);
 
 groupshared uint gs_SortIndices[2048];
 groupshared uint gs_SortKeys[2048];
@@ -9,8 +9,8 @@ groupshared uint gs_SortKeys[2048];
 void FillSortKey(uint Element, uint ListCount) {
 	// Unused elements must sort to the end
 	if (Element < ListCount) {
-		gs_SortKeys[Element & 2047] = g_SortBuffer.Load(Element * 4);
-		gs_SortIndices[Element & 2047] = g_IndexBuffer.Load(Element * 4);
+		gs_SortKeys[Element & 2047] = g_SortBuffer.Load(Element * 4 * 4);
+		gs_SortIndices[Element & 2047] = g_SortBuffer.Load(Element * 4 * 4 + 4);
 	} else {
 		gs_SortKeys[Element & 2047] = CB1.NullItem;
 	}
@@ -18,8 +18,8 @@ void FillSortKey(uint Element, uint ListCount) {
 
 void StoreKeyIndexPair(uint Element, uint ListCount) {
 	if (Element < ListCount) {
-		g_SortBuffer.Store(Element * 4, gs_SortKeys[Element & 2047]);
-		g_IndexBuffer.Store(Element * 4, gs_SortIndices[Element & 2047]);
+		g_SortBuffer.Store(Element * 4 * 4, gs_SortKeys[Element & 2047]);
+		g_SortBuffer.Store(Element * 4 * 4 + 4, gs_SortIndices[Element & 2047]);
 	}
 }
 

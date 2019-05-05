@@ -7,7 +7,7 @@ struct InputData {
 
 StructuredBuffer<LBVHNode> gnb : register(t0);
 StructuredBuffer<SceneLBVHInstance> gnb_offsets : register(t1);
-StructuredBuffer<uint> morton_code_indices : register(t2);
+StructuredBuffer<uint4> morton_codes : register(t2);
 RWStructuredBuffer<SceneLBVHNode> nodes : register(u0);
 ConstantBuffer<InputData> input : register(b0);
 
@@ -21,12 +21,9 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	node.right_child = -1;
 
 	if (i >= input.leaves_offset) {
-		uint leaf_index = morton_code_indices[i - input.leaves_offset];
+		uint leaf_index = morton_codes[i - input.leaves_offset].y; // morton code index
 		uint node_index = gnb_offsets[leaf_index].node_offset;
-		node.transform = gnb_offsets[leaf_index].transform;
-		node.transform_inverse = gnb_offsets[leaf_index].transform_inverse;
-		node.vertex_offset = gnb_offsets[leaf_index].vertex_offset;
-		node.element_index = gnb_offsets[leaf_index].node_offset;
+		node.instance = gnb_offsets[leaf_index];
 		node.bounds.pMin = gnb[node_index].bounds.pMin;
 		node.bounds.pMax = gnb[node_index].bounds.pMax;
 
@@ -45,7 +42,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 		float3 npMin, npMax;
 		for (uint d = 0; d < 8; d++) {
-			vertices[d] = mul(node.transform, float4(vertices[d], 1)).xyz;
+			vertices[d] = mul(node.instance.transform, float4(vertices[d], 1)).xyz;
 			if (d == 0) {
 				npMin = npMax = vertices[d];
 			} else {
@@ -54,15 +51,15 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 			}
 		}
 
-		node.bounds.pMin = npMin;
-		node.bounds.pMax = npMax;
+		node.bounds.pMin = float4(npMin, 0);
+		node.bounds.pMax = float4(npMax, 0);
 	} else {
-		node.element_index = -1;
-		node.transform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-		node.transform_inverse = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-		node.vertex_offset = -1;
-		node.bounds.pMin = float3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-		node.bounds.pMax = float3(FLT_MAX, FLT_MAX, FLT_MAX);
+		node.instance.transform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		node.instance.transform_inverse = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		node.instance.vertex_offset = -1;
+		node.instance.node_offset = -1;
+		node.bounds.pMin = float4(-FLT_MAX, -FLT_MAX, -FLT_MAX, 0);
+		node.bounds.pMax = float4(FLT_MAX, FLT_MAX, FLT_MAX, 0);
 	}
 
 	nodes[i] = node;

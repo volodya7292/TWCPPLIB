@@ -87,6 +87,11 @@ void TW3D::TW3DGraphicsCommandList::ClearRTV(TW3DResourceRTV* RTV) {
 	command_list->ClearRenderTargetView(RTV->GetRTVCPUHandle(), clearV, 0, nullptr);
 }
 
+void TW3D::TW3DGraphicsCommandList::ClearRTV(TW3DResourceRTV* RTV, TWT::Vector4f Color) {
+	float clearV[] = { Color.x, Color.y, Color.z, Color.w };
+	command_list->ClearRenderTargetView(RTV->GetRTVCPUHandle(), clearV, 0, nullptr);
+}
+
 void TW3D::TW3DGraphicsCommandList::ClearDSVDepth(TW3DResourceDSV* DSV, TWT::Float Depth) {
 	command_list->ClearDepthStencilView(DSV->GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH, Depth, 0, 0, nullptr);
 }

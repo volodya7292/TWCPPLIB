@@ -4,8 +4,7 @@ struct InputData {
 	uint primitive_count;
 };
 
-StructuredBuffer<uint> morton_codes : register(t0);
-StructuredBuffer<uint> morton_code_indices : register(t1);
+StructuredBuffer<uint4> morton_codes : register(t0);
 RWStructuredBuffer<LBVHNode> nodes : register(u0);
 ConstantBuffer<InputData> input : register(b0);
 
@@ -13,10 +12,10 @@ inline int longest_common_prefix(uint i, uint j) {
 	if (j < 0 || j >= input.primitive_count) {
 		return -1;
 	} else {
-		uint mortonCodeA = morton_codes[i];
-		uint mortonCodeB = morton_codes[j];
+		uint mortonCodeA = morton_codes[i].x;
+		uint mortonCodeB = morton_codes[j].x;
 		if (mortonCodeA != mortonCodeB) {
-			return 31 - firstbithigh((unsigned int)(morton_codes[i] ^ morton_codes[j]));
+			return 31 - firstbithigh((unsigned int)(morton_codes[i].x ^ morton_codes[j].x));
 			//return __lzcnt((unsigned int)(mortonCodes[i] ^ mortonCodes[j]));
 		} else {
 			// TODO: Technically this should be primitive ID

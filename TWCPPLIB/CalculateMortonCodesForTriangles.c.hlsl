@@ -6,8 +6,8 @@ struct InputData {
 
 StructuredBuffer<Vertex> gvb : register(t0);
 StructuredBuffer<Bounds> bounding_box : register(t1);
-RWStructuredBuffer<uint> morton_codes : register(u0);
-RWStructuredBuffer<uint> morton_code_indices : register(u1);
+RWStructuredBuffer<uint4> morton_codes : register(u0);
+//RWStructuredBuffer<uint> morton_code_indices : register(u1);
 ConstantBuffer<InputData> input : register(b0);
 
 inline uint expandBits(uint v) {
@@ -46,8 +46,8 @@ inline float3 computeCenter(float3 cmin, float3 cmax, float3 min, float3 max) {
 void main(uint3 DTid : SV_DispatchThreadID) {
 	uint vert_index = input.gvb_vertex_offset + DTid.x * 3;
 
-	float3 Cmin = bounding_box[0].pMin;
-	float3 Cmax = bounding_box[0].pMax;
+	float3 Cmin = bounding_box[0].pMin.xyz;
+	float3 Cmax = bounding_box[0].pMax.xyz;
 
 	float3 pMin = min(gvb[vert_index].pos, min(gvb[vert_index + 1].pos, gvb[vert_index + 2].pos));
 	float3 pMax = max(gvb[vert_index].pos, max(gvb[vert_index + 1].pos, gvb[vert_index + 2].pos));
@@ -55,6 +55,6 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	float3 center = computeCenter(Cmin, Cmax, pMin, pMax);
 	uint code = morton3D(center);
 
-	morton_codes[DTid.x] = code;
-	morton_code_indices[DTid.x] = DTid.x;
+	morton_codes[DTid.x].x = code;
+	morton_codes[DTid.x].y = DTid.x;
 }

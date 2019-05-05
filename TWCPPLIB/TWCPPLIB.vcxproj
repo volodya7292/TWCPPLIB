@@ -527,7 +527,7 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="CalculateMeshBoundingBox.c.hlsl">
+    <FxCompile Include="CalculateTriangleMeshBoundingBox.c.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Compute</ShaderType>
@@ -540,8 +540,8 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMeshBoundingBox_ByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMeshBoundingBox.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateTriangleMeshBoundingBox_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateTriangleMeshBoundingBox.c.h</HeaderFileOutput>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMeshBoundingBox_ByteCode</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMeshBoundingBox.c.h</HeaderFileOutput>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMeshBoundingBox_ByteCode</VariableName>
@@ -585,7 +585,7 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="SetupLBVHNodes.c.hlsl">
+    <FxCompile Include="SetupLBVHNodesFromTriangles.c.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Compute</ShaderType>
@@ -598,8 +598,8 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SetupLBVHNodes_ByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SetupLBVHNodes.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SetupLBVHNodesFromTriangles_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SetupLBVHNodesFromTriangles.c.h</HeaderFileOutput>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">SetupLBVHNodes_ByteCode</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">SetupLBVHNodes.c.h</HeaderFileOutput>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SetupLBVHNodes_ByteCode</VariableName>
@@ -672,7 +672,7 @@
       <AllResourcesBound Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">true</AllResourcesBound>
       <AllResourcesBound Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</AllResourcesBound>
     </FxCompile>
-    <FxCompile Include="CalculateMortonCodes.c.hlsl">
+    <FxCompile Include="CalculateMortonCodesForTriangles.c.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Compute</ShaderType>
@@ -685,8 +685,8 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMortonCodes_ByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMortonCodes.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMortonCodesForTriangles_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateMortonCodesForTriangles.c.h</HeaderFileOutput>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMortonCodes_ByteCode</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">CalculateMortonCodes.c.h</HeaderFileOutput>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateMortonCodes_ByteCode</VariableName>

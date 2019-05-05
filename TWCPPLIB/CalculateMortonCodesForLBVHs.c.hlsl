@@ -7,8 +7,8 @@ struct InputData {
 StructuredBuffer<LBVHNode> gnb : register(t0);
 StructuredBuffer<SceneLBVHInstance> gnb_offsets : register(t1);
 StructuredBuffer<Bounds> bounding_box : register(t2);
-RWStructuredBuffer<uint> morton_codes : register(u0);
-RWStructuredBuffer<uint> morton_code_indices : register(u1);
+RWStructuredBuffer<uint4> morton_codes : register(u0);
+//RWStructuredBuffer<uint> morton_code_indices : register(u1);
 ConstantBuffer<InputData> input : register(b0);
 
 inline uint expandBits(uint v) {
@@ -50,15 +50,15 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	uint node_index = gnb_offsets[DTid.x].node_offset;
 
-	float3 Cmin = bounding_box[0].pMin;
-	float3 Cmax = bounding_box[0].pMax;
+	float3 Cmin = bounding_box[0].pMin.xyz;
+	float3 Cmax = bounding_box[0].pMax.xyz;
 
-	float3 pMin = gnb[node_index].bounds.pMin;
-	float3 pMax = gnb[node_index].bounds.pMax;
+	float3 pMin = gnb[node_index].bounds.pMin.xyz;
+	float3 pMax = gnb[node_index].bounds.pMax.xyz;
 
 	float3 center = computeCenter(Cmin, Cmax, pMin, pMax);
 	uint code = morton3D(center);
 
-	morton_codes[DTid.x] = code;
-	morton_code_indices[DTid.x] = DTid.x;
+	morton_codes[DTid.x].x = code;
+	morton_codes[DTid.x].y = DTid.x;
 }

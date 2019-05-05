@@ -13,7 +13,7 @@ namespace TW3D {
 		TWT::UInt GetTriangleCount();
 		TW3DLBVH* GetLBVH();
 
-		void UpdateLBVH(TW3DResourceUAV* GVB, TWT::UInt GVBOffset);
+		void UpdateLBVH(TW3DResourceUAV* GVB, TWT::UInt GVBOffset, TW3DGraphicsCommandList* CommandList = nullptr);
 
 		TWT::Vector<TW3DVertexBuffer*> VertexBuffers;
 
@@ -25,6 +25,7 @@ namespace TW3D {
 	struct TW3DVertexMeshInstance {
 		TW3DTransform Transform;
 		TW3DVertexMesh* VertexMesh = nullptr;
-		SceneLBVHInstance LBVHInstance;
+		SceneLBVHInstance LBVHInstance = {};
+		TWT::Bool Changed = false;
 	};
 }

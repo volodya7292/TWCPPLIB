@@ -37,14 +37,14 @@ struct Ray {
 };
 
 struct Bounds {
-	float3 pMin;
-	float3 pMax;
+	float4 pMin;
+	float4 pMax;
 
 	inline static float gamma(int n) {
 		return (n * MachineEpsilon) / (1 - n * MachineEpsilon);
 	}
 
-	inline float3 i(int i) {
+	inline float4 i(int i) {
 		return (i == 0) ? pMin : pMax;
 	}
 
@@ -88,22 +88,19 @@ struct LBVHNode {
 	uint right_child;
 };
 
-struct SceneLBVHNode {
-	float4x4 transform;
-	float4x4 transform_inverse;
-	uint vertex_offset;
-	Bounds bounds;
-	uint element_index;
-	uint parent;
-	uint left_child;
-	uint right_child;
-};
-
 struct SceneLBVHInstance {
 	uint vertex_offset;
 	uint node_offset;
 	float4x4 transform;
 	float4x4 transform_inverse;
+};
+
+struct SceneLBVHNode {
+	SceneLBVHInstance instance;
+	Bounds bounds;
+	uint parent;
+	uint left_child;
+	uint right_child;
 };
 
 typedef StructuredBuffer<SceneLBVHNode> RTScene;
@@ -299,8 +296,8 @@ bool TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray Ray, out Trian
 
 			if (lIntersection) {
 				// Leaf node
-				if (SceneAS[childL].element_index != -1) {
-					check_scene_rtas_intersection(GNB, GVB, Ray, SceneAS[childL].vertex_offset, SceneAS[childL].element_index, SceneAS[childL].transform_inverse, tempInter);
+				if (SceneAS[childL].instance.node_offset != -1) {
+					check_scene_rtas_intersection(GNB, GVB, Ray, SceneAS[childL].instance.vertex_offset, SceneAS[childL].instance.node_offset, SceneAS[childL].instance.transform_inverse, tempInter);
 					if (tempInter.IntersectionDistance < minInter.IntersectionDistance)
 						minInter = tempInter;
 				} else {
@@ -315,8 +312,8 @@ bool TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray Ray, out Trian
 
 			if (rIntersection) {
 				// Leaf node
-				if (SceneAS[childR].element_index != -1) {
-					check_scene_rtas_intersection(GNB, GVB, Ray, SceneAS[childR].vertex_offset, SceneAS[childR].element_index, SceneAS[childR].transform_inverse, tempInter);
+				if (SceneAS[childR].instance.node_offset != -1) {
+					check_scene_rtas_intersection(GNB, GVB, Ray, SceneAS[childR].instance.vertex_offset, SceneAS[childR].instance.node_offset, SceneAS[childR].instance.transform_inverse, tempInter);
 					if (tempInter.IntersectionDistance < minInter.IntersectionDistance)
 						minInter = tempInter;
 				} else {

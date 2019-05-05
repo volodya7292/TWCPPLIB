@@ -52,18 +52,18 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 			Bounds bounds = bounding_box[prim_index];
 
 			if (i == 0) {
-				pMin = bounds.pMin;
-				pMax = bounds.pMax;
+				pMin = bounds.pMin.xyz;
+				pMax = bounds.pMax.xyz;
 			} else {
-				pMin = min(pMin, bounds.pMin);
-				pMax = max(pMax, bounds.pMax);
+				pMin = min(pMin, bounds.pMin.xyz);
+				pMax = max(pMax, bounds.pMax.xyz);
 			}
 		}
 	}
 
 	Bounds bb;
-	bb.pMin = pMin;
-	bb.pMax = pMax;
+	bb.pMin = float4(pMin, 0);
+	bb.pMax = float4(pMax, 0);
 
 	bounding_box[DTid.x] = bb;
 }
