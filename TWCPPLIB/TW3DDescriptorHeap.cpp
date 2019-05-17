@@ -29,7 +29,6 @@ TWT::Int TW3D::TW3DDescriptorHeap::Allocate() {
 			free_descriptors[i] = false;
 			return i;
 		}
-
 	throw std::runtime_error("NO FREE DESCRIPTORS");
 }
 

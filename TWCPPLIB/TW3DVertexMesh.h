@@ -27,5 +27,6 @@ namespace TW3D {
 		TW3DVertexMesh* VertexMesh = nullptr;
 		SceneLBVHInstance LBVHInstance = {};
 		TWT::Bool Changed = false;
+		rp3d::RigidBody* RigidBody = nullptr;
 	};
 }

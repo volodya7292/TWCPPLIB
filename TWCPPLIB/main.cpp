@@ -71,10 +71,10 @@ void on_update() {
 
 
 
-	cube->VMInstance.Transform.SetPosition(TWT::Vector3f(-0.8f, 0, 0));
-	cube->VMInstance.Transform.AdjustRotation(TWT::Vector3f(0.01f));
-	cube2->VMInstance.Transform.SetPosition(TWT::Vector3f(0.8f, 0, 0));
-	cube2->VMInstance.Transform.AdjustRotation(TWT::Vector3f(0.02f));
+	//cube->VMInstances[0].Transform.SetPosition(TWT::Vector3f(-0.8f, 0, 0));
+	//cube->VMInstances[0].Transform.AdjustRotation(TWT::Vector3f(0.01f));
+	//cube2->VMInstances[0].Transform.SetPosition(TWT::Vector3f(0.8f, 0, 0));
+	//cube2->VMInstances[0].Transform.AdjustRotation(TWT::Vector3f(0.02f));
 	scene->Camera->UpdateConstantBuffer();
 }
 
@@ -122,18 +122,22 @@ int main() {
 	info.LogFilename = "Log.log"s;
 	TW3D::Initialize(info);
 
-	TW3D::SetVSync(false);
+	TW3D::SetVSync(true);
 
 	TW3D::TW3DResourceManager* RM = TW3D::GetResourceManager();
 
 	scene = new TW3D::TW3DScene(RM);
 	cube = new TW3D::TW3DCube(RM);
 	cube2 = new TW3D::TW3DCube(RM);
+
+	cube->VMInstances[0].Transform.SetPosition(TWT::Vector3f(0.0f, 0, 0));
 	scene->AddObject(cube);
 
-	cube2->VMInstance.VertexMesh = TW3DPrimitives::GetPyramid4VertexMesh();
+	cube2->VMInstances[0].VertexMesh = TW3DPrimitives::GetPyramid4VertexMesh();
+	cube2->VMInstances[0].Transform.SetPosition(TWT::Vector3f(0.0f, 5, 0));
 	scene->AddObject(cube2);
-	
+
+
 	scene->Camera->FOVY = 45;
 	scene->Camera->Position.z = 3;
 

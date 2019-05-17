@@ -13,7 +13,7 @@ StructuredBuffer<SceneLBVHInstance> gnb_offsets : register(t1);
 RWStructuredBuffer<Bounds> bounding_box : register(u0);
 ConstantBuffer<InputData> input : register(b0);
 
-[numthreads(1, 1, 1)]
+[numthreads(THREAD_GROUP_1D_WIDTH, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
 	float3 pMin;
 	float3 pMax;

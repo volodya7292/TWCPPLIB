@@ -5,7 +5,7 @@
 TW3D::TW3DCube::TW3DCube(TW3DResourceManager* ResourceManager) :
 	TW3DGeometry(ResourceManager, sizeof(TWT::DefaultVertexBufferCB))
 {
-	VMInstance.VertexMesh = TW3DPrimitives::GetCubeVertexMesh();
+	VMInstances[0].VertexMesh = TW3DPrimitives::GetCubeVertexMesh();
 }
 
 void TW3D::TW3DCube::Update() {
@@ -15,7 +15,7 @@ void TW3D::TW3DCube::Update() {
 void TW3D::TW3DCube::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex) {
 	TW3DGeometry::RecordDraw(CommandList, ModelCBRootParameterIndex);
 
-	CommandList->SetVertexBuffer(0, VMInstance.VertexMesh->VertexBuffers[0]->GetResource());
+	CommandList->SetVertexBuffer(0, VMInstances[0].VertexMesh->VertexBuffers[0]->GetResource());
 
-	CommandList->Draw(VMInstance.VertexMesh->VertexBuffers[0]->GetVertexCount());
+	CommandList->Draw(VMInstances[0].VertexMesh->VertexBuffers[0]->GetVertexCount());
 }

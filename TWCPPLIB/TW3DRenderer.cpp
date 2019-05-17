@@ -33,14 +33,8 @@ void TW3D::TW3DRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* Colo
 	ResourceManager->FlushCommandList(record_cl);
 }
 
-void TW3D::TW3DRenderer::RecordBeforeExecution() {
-}
-
 void TW3D::TW3DRenderer::AdjustRecordIndex() {
 	current_record_index = (current_record_index + 1) % 2;
-}
-
-void TW3D::TW3DRenderer::Update() {
 }
 
 void TW3D::TW3DRenderer::Execute(TWT::UInt BackBufferIndex) {

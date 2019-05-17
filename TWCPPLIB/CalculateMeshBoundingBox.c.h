@@ -76,7 +76,7 @@ dcl_resource_structured T0[0:0], 32, space=0
 dcl_uav_structured U0[0:0], 32, space=0
 dcl_input vThreadID.x
 dcl_temps 7
-dcl_thread_group 1, 1, 1
+dcl_thread_group 64, 1, 1
 if_z CB0[0][0].z
   imad r0.x, vThreadID.x, l(48), CB0[0][0].x
   iadd r0.y, CB0[0][0].y, CB0[0][0].x
@@ -138,10 +138,10 @@ ret
 
 const BYTE CalculateMeshBoundingBox_ByteCode[] =
 {
-     68,  88,  66,  67, 106,  14, 
-    126, 155, 224,  70, 159,  20, 
-    162, 248, 124, 162,  41,  65, 
-    151, 136,   1,   0,   0,   0, 
+     68,  88,  66,  67, 172, 152, 
+    210,  67,  75, 250,  75, 159, 
+    197, 194,  88,  73, 161, 127, 
+    149, 125,   1,   0,   0,   0, 
     168,  10,   0,   0,   5,   0, 
       0,   0,  52,   0,   0,   0, 
     252,   3,   0,   0,  12,   4, 
@@ -334,7 +334,7 @@ const BYTE CalculateMeshBoundingBox_ByteCode[] =
       0,   2,  18,   0,   2,   0, 
     104,   0,   0,   2,   7,   0, 
       0,   0, 155,   0,   0,   4, 
-      1,   0,   0,   0,   1,   0, 
+     64,   0,   0,   0,   1,   0, 
       0,   0,   1,   0,   0,   0, 
      31,   0,   0,   5,  42, 128, 
      48,   0,   0,   0,   0,   0, 

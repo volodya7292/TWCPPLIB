@@ -196,10 +196,8 @@ void TW3D::TW3DDefaultRenderer::RecordBeforeExecution() {
 	rt_cl->Close();
 }
 
-void TW3D::TW3DDefaultRenderer::Update() {
-	for (TW3DObject* object : Scene->Objects) {
-		object->Update();
-	}
+void TW3D::TW3DDefaultRenderer::Update(TWT::Float DeltaTime) {
+	Scene->Update(DeltaTime);
 }
 
 void TW3D::TW3DDefaultRenderer::Execute(TWT::UInt BackBufferIndex) {

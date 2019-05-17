@@ -46,7 +46,6 @@ namespace TW3D {
 
 		TW3DResourceUAV* bounding_box_buffer;
 		TW3DResourceUAV* morton_codes_buffer;
-		//TW3DResourceUAV* morton_indices_buffer;
 		TW3DResourceUAV* node_buffer;
 
 		TWT::UInt element_count;

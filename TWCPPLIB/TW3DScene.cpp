@@ -13,6 +13,16 @@ TW3D::TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 	ResourceManager->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 
 	LBVH = new TW3DLBVH(ResourceManager, 1, true);
+
+	rp3d::WorldSettings settings = {};
+	settings.isSleepingEnabled = false;
+
+	// Create the world with your settings
+	collision_world = new rp3d::DynamicsWorld(rp3d::Vector3(0, -9.81, 0));
+	// Change the number of iterations of the velocity solver 
+	collision_world->setNbIterationsVelocitySolver(15);
+	// Change the number of iterations of the position solver 
+	collision_world->setNbIterationsPositionSolver(8);
 }
 
 TW3D::TW3DScene::~TW3DScene() {
@@ -21,6 +31,7 @@ TW3D::TW3DScene::~TW3DScene() {
 	delete gnb;
 	delete instance_buffer;
 	delete LBVH;
+	delete collision_world;
 }
 
 void TW3D::TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRPI, TWT::UInt SceneRTNBRPI, TWT::UInt GNBRPI) {
@@ -31,19 +42,42 @@ void TW3D::TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRP
 
 void TW3D::TW3DScene::AddObject(TW3DObject* Object) {
 	Objects.push_back(Object);
-
 	objects_changed = true;
 
-	if (vertex_meshes.find(Object->VMInstance.VertexMesh) == vertex_meshes.end()) {
-		vertex_meshes[Object->VMInstance.VertexMesh] = std::pair(-1, -1);
-		mesh_buffers_changed = true;
-	}
+	for (auto& vminst : Object->VMInstances) {
+		if (vertex_meshes.find(vminst.VertexMesh) == vertex_meshes.end()) {
+			vertex_meshes[vminst.VertexMesh].gnb_offset = -1;
+			vertex_meshes[vminst.VertexMesh].gvb_offset = -1;
 
-	for (TW3DVertexBuffer* vb : Object->VMInstance.VertexMesh->VertexBuffers)
-		if (vertex_buffers.find(vb) == vertex_buffers.end()) {
-			vertex_buffers[vb] = -1;
-			vertex_buffers_changed = true;
+			vminst.RigidBody = collision_world->createRigidBody(PhysicalTransform(vminst.Transform));
+			vminst.RigidBody->setType(rp3d::BodyType::DYNAMIC);
+			vminst.RigidBody->enableGravity(true);
+
+			rp3d::Material& material = vminst.RigidBody->getMaterial();
+
+// Change the bounciness of the body 
+			material.setBounciness(rp3d::decimal(0.4));
+
+			// Change the friction coefficient of the body 
+			material.setFrictionCoefficient(rp3d::decimal(0.2));
+
+			mesh_buffers_changed = true;
 		}
+
+		for (TW3DVertexBuffer* vb : vminst.VertexMesh->VertexBuffers)
+			if (vertex_buffers.find(vb) == vertex_buffers.end()) {
+				vertex_buffers[vb] = -1;
+				vertex_buffers_changed = true;
+			}
+	}
+}
+
+void TW3D::TW3DScene::Update(TWT::Float DeltaTime) {
+	for (TW3DObject* object : Objects) {
+		object->Update();
+	}
+	
+	collision_world->update(DeltaTime);
 }
 
 void TW3D::TW3DScene::RecordBeforeExecution() {
@@ -64,8 +98,8 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 		TWT::UInt NodeOffset = 0;
 
 		for (auto& [mesh, moffsets] : vertex_meshes) {
-			moffsets.first = vertex_buffers[mesh->VertexBuffers[0]];
-			moffsets.second = NodeOffset;
+			moffsets.gvb_offset = vertex_buffers[mesh->VertexBuffers[0]];
+			moffsets.gnb_offset = NodeOffset;
 			NodeOffset += mesh->GetLBVH()->GetNodeCount();
 		}
 
@@ -76,20 +110,23 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	mesh_instances.resize(Objects.size());
 	for (size_t i = 0; i < Objects.size(); i++) {
 		const auto& object = Objects[i];
-		const std::pair<TWT::UInt, TWT::UInt>& obj_mesh = vertex_meshes[object->VMInstance.VertexMesh];
 
-		object->VMInstance.LBVHInstance.GVBOffset = obj_mesh.first;
-		object->VMInstance.LBVHInstance.GNBOffset = obj_mesh.second;
+		for (auto& vminst : object->VMInstances) {
+			const auto& obj_mesh = vertex_meshes[vminst.VertexMesh];
 
-		if (object->VMInstance.Changed) {
-			object->VMInstance.Changed = false;
-			TWT::Matrix4f transform = object->VMInstance.Transform.GetModelMatrix();
-			object->VMInstance.LBVHInstance.Transform = transform;
-			object->VMInstance.LBVHInstance.TransformInverse = inverse(transform);
-			objects_changed = true;
+			vminst.LBVHInstance.GVBOffset = obj_mesh.gvb_offset;
+			vminst.LBVHInstance.GNBOffset = obj_mesh.gnb_offset;
+
+			if (vminst.Changed) {
+				vminst.Changed = false;
+				TWT::Matrix4f transform = vminst.Transform.GetModelMatrix();
+				vminst.LBVHInstance.Transform = transform;
+				vminst.LBVHInstance.TransformInverse = inverse(transform);
+				objects_changed = true;
+			}
+
+			mesh_instances[i] = vminst.LBVHInstance;
 		}
-
-		mesh_instances[i] = object->VMInstance.LBVHInstance;
 	}
 
 	if (instance_buffer == nullptr || instance_buffer->GetElementCount() != Objects.size()) {
@@ -117,7 +154,7 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	// Build LBVHs
 	// -------------------------------------------------------------------------------------------------------------------------
 	for (const auto& [mesh, moffsets] : vertex_meshes) {
-		mesh->UpdateLBVH(gvb, moffsets.first, cl);
+		mesh->UpdateLBVH(gvb, moffsets.gvb_offset, cl);
 		cl_updated = true;
 	}
 
@@ -126,7 +163,7 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	// -------------------------------------------------------------------------------------------------------------------------
 	if (vertex_buffers_changed) {
 		for (const auto& [mesh, moffsets] : vertex_meshes) {
-			cl->CopyBufferRegion(gnb, moffsets.second * sizeof(LBVHNode), mesh->GetLBVH()->GetNodeBuffer(), 0, mesh->GetLBVH()->GetNodeCount() * sizeof(LBVHNode));
+			cl->CopyBufferRegion(gnb, moffsets.gnb_offset * sizeof(LBVHNode), mesh->GetLBVH()->GetNodeBuffer(), 0, mesh->GetLBVH()->GetNodeCount() * sizeof(LBVHNode));
 			cl_updated = true;
 		}
 	}
@@ -141,10 +178,21 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 
 
 	cl->Close();
+
 	if (cl_updated) {
 		resource_manager->ExecuteCommandList(cl);
 		resource_manager->FlushCommandList(cl);
 	}
 
 	vertex_buffers_changed = mesh_buffers_changed = objects_changed = false;
+}
+
+rp3d::Transform TW3D::TW3DScene::PhysicalTransform(TW3D::TW3DTransform Transform) {
+	TWT::Vector3f position = Transform.GetPosition();
+	TWT::Vector3f rotation = Transform.GetRotation();
+
+	rp3d::Vector3 initPosition(position.x, position.y, position.z);
+	rp3d::Quaternion initOrientation = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(rotation.x, rotation.y, rotation.z));
+
+	return rp3d::Transform(initPosition, initOrientation);
 }

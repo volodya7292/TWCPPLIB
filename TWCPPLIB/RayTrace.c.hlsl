@@ -25,6 +25,8 @@ ConstantBuffer<Camera> camera : register(b0);
 //	return float4(0, 0, 0, 0);
 //}
 
+
+
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {

@@ -11,10 +11,10 @@ namespace TW3D {
 		virtual void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height);
 		virtual void Resize(TWT::UInt Width, TWT::UInt Height);
 		virtual void Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStesncilOutput);
-		virtual void RecordBeforeExecution();
+		virtual void RecordBeforeExecution() = 0;
 		void AdjustRecordIndex();
 		// Per frame
-		virtual void Update();
+		virtual void Update(TWT::Float DeltaTime) = 0;
 		virtual void Execute(TWT::UInt BackBufferIndex);
 
 		void SetScene(TW3DScene* Scene);

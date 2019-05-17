@@ -9,7 +9,7 @@
 
 static TW::TWLogger* logger;
 
-static TWT::Float delta_time;
+static TWT::Float delta_time = 1.0f / 60.0f;
 
 static TW3D::DefaultHandler       on_update, on_cleanup;
 static TW3D::ThreadTickHandler    on_thread_tick;
@@ -217,7 +217,7 @@ void init_dx12() {
 }
 
 void update() {
-	renderer->Update();
+	renderer->Update(delta_time);
 	if (on_update)
 		on_update();
 }
@@ -350,9 +350,8 @@ void cleanup() {
 
 #ifdef _DEBUG
 	ComPtr<IDXGIDebug1> dxgiDebug;
-	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug)))) {
+	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug))))
 		dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
-	}
 #endif // _DEBUG
 
 	logger->LogInfo("Engine cleaned up."s);

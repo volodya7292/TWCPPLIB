@@ -43,21 +43,21 @@ inline float3 computeCenter(float3 cmin, float3 cmax, float3 min, float3 max) {
 	return tmpMin + d * axis;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(THREAD_GROUP_1D_WIDTH, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
 	if (DTid.x >= input.gnb_offset_count)
 		return;
 
-	uint node_index = gnb_offsets[DTid.x].node_offset;
+	const uint node_index = gnb_offsets[DTid.x].node_offset;
 
-	float3 Cmin = bounding_box[0].pMin.xyz;
-	float3 Cmax = bounding_box[0].pMax.xyz;
+	const float3 Cmin = bounding_box[0].pMin.xyz;
+	const float3 Cmax = bounding_box[0].pMax.xyz;
 
-	float3 pMin = gnb[node_index].bounds.pMin.xyz;
-	float3 pMax = gnb[node_index].bounds.pMax.xyz;
+	const float3 pMin = gnb[node_index].bounds.pMin.xyz;
+	const float3 pMax = gnb[node_index].bounds.pMax.xyz;
 
-	float3 center = computeCenter(Cmin, Cmax, pMin, pMax);
-	uint code = morton3D(center);
+	const float3 center = computeCenter(Cmin, Cmax, pMin, pMax);
+	const uint code = morton3D(center);
 
 	morton_codes[DTid.x].x = code;
 	morton_codes[DTid.x].y = DTid.x;

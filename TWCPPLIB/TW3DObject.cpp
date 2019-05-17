@@ -10,14 +10,19 @@ TW3D::TW3DObject::~TW3DObject() {
 }
 
 void TW3D::TW3DObject::Update() {
-	if (VMInstance.Transform.Changed) {
-		VMInstance.Changed = true;
-		VMInstance.Transform.Changed = false;
+	for (auto& vminst : VMInstances) {
 
-		TWT::DefaultModelCB cb;
-		cb.model = VMInstance.Transform.GetModelMatrix();
+		vminst.Transform = DefaultTransform(vminst.RigidBody->getTransform());
+		vminst.Transform.Changed = true;
+		if (vminst.Transform.Changed) {
+			vminst.Changed = true;
+			vminst.Transform.Changed = false;
 
-		ConstantBuffer->Update(&cb, 0);
+			TWT::DefaultModelCB cb;
+			cb.model = vminst.Transform.GetModelMatrix();
+
+			ConstantBuffer->Update(&cb, 0);
+		}
 	}
 }
 

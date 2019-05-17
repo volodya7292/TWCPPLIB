@@ -2,6 +2,7 @@
 
 struct InputData {
 	uint gvb_vertex_offset;
+	uint gvb_vertex_count;
 };
 
 StructuredBuffer<Vertex> gvb : register(t0);
@@ -42,18 +43,21 @@ inline float3 computeCenter(float3 cmin, float3 cmax, float3 min, float3 max) {
 	return tmpMin + d * axis;
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(THREAD_GROUP_1D_WIDTH, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
-	uint vert_index = input.gvb_vertex_offset + DTid.x * 3;
+	const uint vert_index = input.gvb_vertex_offset + DTid.x * 3;
 
-	float3 Cmin = bounding_box[0].pMin.xyz;
-	float3 Cmax = bounding_box[0].pMax.xyz;
+	if (vert_index >= input.gvb_vertex_offset + input.gvb_vertex_count)
+		return;
 
-	float3 pMin = min(gvb[vert_index].pos, min(gvb[vert_index + 1].pos, gvb[vert_index + 2].pos));
-	float3 pMax = max(gvb[vert_index].pos, max(gvb[vert_index + 1].pos, gvb[vert_index + 2].pos));
+	const float3 Cmin = bounding_box[0].pMin.xyz;
+	const float3 Cmax = bounding_box[0].pMax.xyz;
 
-	float3 center = computeCenter(Cmin, Cmax, pMin, pMax);
-	uint code = morton3D(center);
+	const float3 pMin = min(gvb[vert_index].pos, min(gvb[vert_index + 1].pos, gvb[vert_index + 2].pos));
+	const float3 pMax = max(gvb[vert_index].pos, max(gvb[vert_index + 1].pos, gvb[vert_index + 2].pos));
+
+	const float3 center = computeCenter(Cmin, Cmax, pMin, pMax);
+	const uint code = morton3D(center);
 
 	morton_codes[DTid.x].x = code;
 	morton_codes[DTid.x].y = DTid.x;

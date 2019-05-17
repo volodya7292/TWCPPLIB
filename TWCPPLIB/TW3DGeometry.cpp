@@ -4,6 +4,7 @@
 TW3D::TW3DGeometry::TW3DGeometry(TW3DResourceManager* ResourceManager, TWT::UInt ConstantBufferSize) :
 	TW3DObject(ResourceManager, ConstantBufferSize)
 {
+	VMInstances.resize(1);
 }
 
 void TW3D::TW3DGeometry::Update() {

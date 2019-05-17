@@ -29,6 +29,7 @@
 #endif
 
 #include <d3dx12.h>
+#include <reactphysics/reactphysics3d.h>
 
 #include <wrl.h>
 using Microsoft::WRL::ComPtr;

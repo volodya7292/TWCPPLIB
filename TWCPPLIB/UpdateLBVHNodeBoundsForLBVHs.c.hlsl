@@ -2,18 +2,23 @@
 
 struct InputData {
 	uint leaves_offset;
+	uint leaf_count;
 };
 
 RWStructuredBuffer<SceneLBVHNode> nodes : register(u0);
 ConstantBuffer<InputData> input : register(b0);
 
-[numthreads(1, 1, 1)]
+[numthreads(THREAD_GROUP_1D_WIDTH, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
-	uint i = DTid.x;
+	const uint i = DTid.x;
+
+	if (input.leaves_offset + i >= input.leaf_count)
+		return;
 
 	uint leaf = input.leaves_offset + i;
 	uint leaf_parent = nodes[leaf].parent;
-	uint leftChild, rightChild;
+	uint leftChild = nodes[leaf_parent].left_child;
+	uint rightChild = nodes[leaf_parent].right_child;
 	Bounds lbb, rbb;
 	float3 pMin, pMax;
 
@@ -33,7 +38,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 			pMax = bbr.pMax.xyz;
 		}
 
-		if (pMin.x != -FLT_MAX && pMax.x != FLT_MAX) {
+		if (not_equals(pMin, -FLT_MAX) && not_equals(pMax, FLT_MAX)) {
 			nodes[leaf_parent].bounds.pMin = float4(pMin, 0);
 			nodes[leaf_parent].bounds.pMax = float4(pMax, 0);
 

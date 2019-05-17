@@ -51,7 +51,7 @@ void TW3D::TW3DLBVH::BuildFromTriangles(TW3DResourceUAV* GVB, TWT::UInt GVBOffse
 		cl->SetRoot32BitConstant(2, element_count2, 3);
 
 		element_count2 = ceil(element_count2 / 16.0f);
-		cl->Dispatch(element_count2);
+		cl->Dispatch(ceil(element_count2 / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
 		iteration++;
@@ -85,7 +85,8 @@ void TW3D::TW3DLBVH::BuildFromTriangles(TW3DResourceUAV* GVB, TWT::UInt GVBOffse
 		cl->BindUAVBuffer(2, morton_codes_buffer);
 		//cl->BindUAVBuffer(3, morton_indices_buffer);
 		cl->SetRoot32BitConstant(3, GVBOffset, 0);
-		cl->Dispatch(element_count);
+		cl->SetRoot32BitConstant(3, element_count * 3, 1);
+		cl->Dispatch(ceil(element_count / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
 		// Sort morton codes
@@ -106,7 +107,8 @@ void TW3D::TW3DLBVH::BuildFromTriangles(TW3DResourceUAV* GVB, TWT::UInt GVBOffse
 		//cl->BindUAVBuffer(4, VertexMesh->GetLBVHNodeLockBufferResource());
 		cl->SetRoot32BitConstant(3, GVBOffset, 0);
 		cl->SetRoot32BitConstant(3, element_count - 1, 1);
-		cl->Dispatch(2 * element_count - 1);
+		cl->SetRoot32BitConstant(3, GetNodeCount(), 2);
+		cl->Dispatch(ceil(GetNodeCount() / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
 		// Build LBVH splits
@@ -114,14 +116,16 @@ void TW3D::TW3DLBVH::BuildFromTriangles(TW3DResourceUAV* GVB, TWT::UInt GVBOffse
 		cl->BindUAVSRV(0, morton_codes_buffer);
 		cl->BindUAVBuffer(1, node_buffer);
 		cl->SetRoot32BitConstant(2, element_count, 0);
-		cl->Dispatch(element_count - 1);
+		cl->SetRoot32BitConstant(2, element_count - 1, 1);
+		cl->Dispatch(ceil((element_count - 1) / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
 		// Update LVBH node bounds
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::UpdateLBVHNodeBounds));
 		cl->BindUAVBuffer(0, node_buffer);
 		cl->SetRoot32BitConstant(1, element_count - 1, 0);
-		cl->Dispatch(element_count);
+		cl->SetRoot32BitConstant(1, GetNodeCount(), 1);
+		cl->Dispatch(ceil(element_count / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
 		//cl->ResourceBarriers({
@@ -180,7 +184,7 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, TW3DResourceUAV* Scene
 		cl->SetRoot32BitConstant(3, element_count2, 2);
 
 		element_count2 = ceil(element_count2 / 16.0f);
-		cl->Dispatch(element_count2);
+		cl->Dispatch(ceil(element_count2 / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
 		iteration++;
@@ -217,7 +221,7 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, TW3DResourceUAV* Scene
 		cl->BindUAVBuffer(3, morton_codes_buffer);
 		//cl->BindUAVBuffer(4, morton_indices_buffer);
 		cl->SetRoot32BitConstant(4, gnboffset_count, 0);
-		cl->Dispatch(element_count);
+		cl->Dispatch(ceil(element_count / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
 		// Sort morton codes
@@ -237,7 +241,8 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, TW3DResourceUAV* Scene
 		cl->BindUAVBuffer(3, node_buffer);
 		cl->SetRoot32BitConstant(4, gnboffset_count, 0);
 		cl->SetRoot32BitConstant(4, element_count - 1, 1);
-		cl->Dispatch(2 * element_count - 1);
+		cl->SetRoot32BitConstant(4, GetNodeCount(), 2);
+		cl->Dispatch(ceil(GetNodeCount() / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
 		// Build LBVH splits
@@ -245,14 +250,16 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, TW3DResourceUAV* Scene
 		cl->BindUAVSRV(0, morton_codes_buffer);
 		cl->BindUAVBuffer(1, node_buffer);
 		cl->SetRoot32BitConstant(2, element_count, 0);
-		cl->Dispatch(element_count - 1);
+		cl->SetRoot32BitConstant(2, element_count - 1, 1);
+		cl->Dispatch(ceil((element_count - 1) / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
 		// Update LVBH node boundaries
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::UpdateLBVHNodeBoundsForLBVHs));
 		cl->BindUAVBuffer(0, node_buffer);
 		cl->SetRoot32BitConstant(1, element_count - 1, 0);
-		cl->Dispatch(element_count);
+		cl->SetRoot32BitConstant(1, GetNodeCount(), 1);
+		cl->Dispatch(ceil(element_count / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
 		/*cl->ResourceBarriers({

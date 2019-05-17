@@ -5,7 +5,7 @@ TW3D::TW3DSwapChain::TW3DSwapChain(TW3D::TW3DFactory* factory, TW3DCommandQueue*
 	VSync(vsync), tearing(factory->CheckTearingSupport())
 {
 	DXGI_SAMPLE_DESC sampleDesc = {};
-	sampleDesc.Count = 1; // multisample count (no multisampling, so we just put 1, since we still need 1 sample)
+	sampleDesc.Count = 1; // multisample count
 
 	desc = {};
 	desc.Width = width;
@@ -13,11 +13,11 @@ TW3D::TW3DSwapChain::TW3DSwapChain(TW3D::TW3DFactory* factory, TW3DCommandQueue*
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.Stereo = false;
 	desc.Scaling = DXGI_SCALING_STRETCH;
-	desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // dxgi will discard the buffer (data) after we call present
+	desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-	desc.BufferCount = BufferCount; // number of buffers we have
-	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // this says the pipeline will render to this swap chain
-	desc.SampleDesc = sampleDesc; // our multi-sampling description
+	desc.BufferCount = BufferCount;
+	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	desc.SampleDesc = sampleDesc;
 	desc.Flags = tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
 	IDXGISwapChain1* tempSwapChain;

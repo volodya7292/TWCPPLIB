@@ -10,7 +10,7 @@ namespace TW3D {
 		void Resize(TWT::UInt Width, TWT::UInt Height);
 		void Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStesncilOutput);
 		void RecordBeforeExecution();
-		void Update();
+		void Update(TWT::Float DeltaTime);
 		void Execute(TWT::UInt BackBufferIndex);
 
 	private:

@@ -11,7 +11,6 @@ namespace TW3D {
 		ID3D12Device2* Get();
 
 		HRESULT GetRemoveReason();
-		TWT::String GetRemoveReasonString();
 		void GetFeatureData(D3D12_FEATURE Feature, void* FeatureSupportData, TWT::UInt FeatureSupportDataSize);
 
 		void CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC* desc, ID3D12CommandQueue** commandQueue);

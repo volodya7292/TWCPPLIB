@@ -388,5 +388,8 @@
     <None Include="BitonicSortCommon.hlsli">
       <Filter>Resource Files\Shaders\BitonicSort</Filter>
     </None>
+    <None Include="RTDefaultLightModel.hlsli">
+      <Filter>Resource Files\Shaders\LBVH</Filter>
+    </None>
   </ItemGroup>
 </Project>

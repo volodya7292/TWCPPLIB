@@ -2,6 +2,7 @@
 
 struct InputData {
 	uint primitive_count;
+	uint leaves_offset;
 };
 
 StructuredBuffer<uint4> morton_codes : register(t0);
@@ -25,75 +26,64 @@ inline int longest_common_prefix(uint i, uint j) {
 	}
 }
 
-[numthreads(1, 1, 1)]
+[numthreads(THREAD_GROUP_1D_WIDTH, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
-	int i = DTid.x;
-	uint nObjects = input.primitive_count;
+	const uint i = DTid.x;
 
-	//build BVH
-//#pragma omp parallel for 
-	//for (int i = 0; i < nObjects - 1; i++) {
-		// Determine direction of the range (+1 or -1)
-		int sign = longest_common_prefix(i, i + 1) -
-			longest_common_prefix(i, i - 1);
+	if (i >= input.leaves_offset)
+		return;
 
-		int d = sign > 0 ? 1 : -1;
+	const int sign = longest_common_prefix(i, i + 1) -
+		longest_common_prefix(i, i - 1);
 
-		// Compute upper bound for the length of the range
-		int sigMin = longest_common_prefix(i, i - d);
-		int lmax = 2;
+	const int d = sign > 0 ? 1 : -1;
 
-		while (longest_common_prefix(i, i + lmax * d) > sigMin) {
-			lmax *= 2;
-		}
+	// Compute upper bound for the length of the range
+	const int sigMin = longest_common_prefix(i, i - d);
+	int lmax = 2;
 
-		// Find the other end using binary search
-		int l = 0;
-		float divider = 2.0f;
-		for (int t = lmax / divider; t >= 1.0f; divider *= 2.0f) {
-			if (longest_common_prefix(i, i + (l + t) * d) > sigMin) {
-				l += t;
-			}
-			t = lmax / divider;
-		}
+	while (longest_common_prefix(i, i + lmax * d) > sigMin)
+		lmax *= 2;
 
-		int j = i + l * d;
+	// Find the other end using binary search
+	int l = 0;
+	float divider = 2.0f;
+	for (int t = lmax / divider; t >= 1.0f; divider *= 2.0f) {
+		if (longest_common_prefix(i, i + (l + t) * d) > sigMin)
+			l += t;
+		t = lmax / divider;
+	}
 
-		// Find the split position using binary search
-		int sigNode = longest_common_prefix(i, j);
-		int s = 0;
+	const uint j = i + l * d;
 
-		divider = 2.0f;
-		for (int t2 = ceil(l / divider); t2 >= 1.0f; divider *= 2.0f) {
-			if (longest_common_prefix(i, i + (s + t2) * d) > sigNode) {
-				s += t2;
-			}
-			t2 = ceil(l / divider);
-		}
+	// Find the split position using binary search
+	const int sigNode = longest_common_prefix(i, j);
+	int s = 0;
 
-		int gamma = i + s * d + min(d, 0);
+	divider = 2.0f;
+	for (int t2 = ceil(l / divider); t2 >= 1.0f; divider *= 2.0f) {
+		if (longest_common_prefix(i, i + (s + t2) * d) > sigNode)
+			s += t2;
+		t2 = ceil(l / divider);
+	}
 
-		// Output child pointers
-		LBVHNode current = nodes[i];
+	const uint gamma = i + s * d + min(d, 0);
 
-		if (min(i, j) == gamma) {
-			current.left_child = nObjects - 1 + gamma;
-		} else {
-			current.left_child = gamma;
-		}
+	// Output child pointers
+	uint leftChild, rightChild;
 
-		if (max(i, j) == gamma + 1) {
-			current.right_child = nObjects - 1 + gamma + 1;
-		} else {
-			current.right_child = gamma + 1;
-		}
+	if (min(i, j) == gamma)
+		leftChild = input.primitive_count - 1 + gamma;
+	else
+		leftChild = gamma;
 
-		nodes[current.left_child].parent = i;
-		nodes[current.right_child].parent = i;
+	if (max(i, j) == gamma + 1)
+		rightChild = input.primitive_count - 1 + gamma + 1;
+	else
+		rightChild = gamma + 1;
 
-		nodes[i].left_child = current.left_child;
-		nodes[i].right_child = current.right_child;
-		//nodes[i].bounds.pMin = float3(0, 5, 3);
-	//}
-
+	nodes[i].left_child = leftChild;
+	nodes[i].right_child = rightChild;
+	nodes[leftChild].parent = i;
+	nodes[rightChild].parent = i;
 }
