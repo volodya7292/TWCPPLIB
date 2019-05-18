@@ -2,7 +2,7 @@
 #include "TW3DGraphicsPipelineState.h"
 
 TW3DGraphicsPipelineState::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, DXGI_SAMPLE_DESC Sampledesc, D3D12_RASTERIZER_DESC RasterizerState,
-	D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, TW3DRootSignature* RootSignature, TWT::UInt RTCount) :
+	D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, TW3DRootSignature* RootSignature, TWT::uint RTCount) :
 	RootSignature(RootSignature)
 {
 	desc.PrimitiveTopologyType = PrimitiveTopologyType;
@@ -35,8 +35,8 @@ ID3D12PipelineState* TW3DGraphicsPipelineState::Get() {
 }
 
 void TW3DGraphicsPipelineState::SetVertexShader(const std::string& Filename) {
-	TWT::UInt size;
-	TWT::Byte* data = TWU::ReadFileBytes(Filename, size);
+	TWT::uint size;
+	TWT::byte* data = TWU::ReadFileBytes(Filename, size);
 
 	D3D12_SHADER_BYTECODE bytecode = {};
 	bytecode.BytecodeLength = size;
@@ -50,8 +50,8 @@ void TW3DGraphicsPipelineState::SetVertexShader(const D3D12_SHADER_BYTECODE& Byt
 }
 
 void TW3DGraphicsPipelineState::SetPixelShader(const std::string& Filename) {
-	TWT::UInt size;
-	TWT::Byte* data = TWU::ReadFileBytes(Filename, size);
+	TWT::uint size;
+	TWT::byte* data = TWU::ReadFileBytes(Filename, size);
 
 	D3D12_SHADER_BYTECODE bytecode = {};
 	bytecode.BytecodeLength = size;
@@ -64,7 +64,7 @@ void TW3DGraphicsPipelineState::SetPixelShader(const D3D12_SHADER_BYTECODE& Byte
 	desc.PS = ByteCode;
 }
 
-void TW3DGraphicsPipelineState::SetRTVFormat(TWT::UInt Index, DXGI_FORMAT Format) {
+void TW3DGraphicsPipelineState::SetRTVFormat(TWT::uint Index, DXGI_FORMAT Format) {
 	desc.RTVFormats[Index] = Format;
 }
 

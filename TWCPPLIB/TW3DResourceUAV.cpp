@@ -2,7 +2,7 @@
 #include "TW3DResourceUAV.h"
 #include "TW3DTempGCL.h"
 
-TW3DResourceUAV::TW3DResourceUAV(TW3DDevice* Device, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::UInt ElementSizeInBytes, TW3DTempGCL* TempGCL) :
+TW3DResourceUAV::TW3DResourceUAV(TW3DDevice* Device, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::uint ElementSizeInBytes, TW3DTempGCL* TempGCL) :
 	TW3DResource(Device), SRVDescriptorHeap(SRVDescriptorHeap), element_size(ElementSizeInBytes), Format(DXGI_FORMAT_UNKNOWN), temp_gcl(TempGCL) {
 	SRVIndex = SRVDescriptorHeap->Allocate(); // For SRV
 	UAVIndex = SRVDescriptorHeap->Allocate(); // For UAV
@@ -46,14 +46,14 @@ D3D12_GPU_DESCRIPTOR_HANDLE TW3DResourceUAV::GetGPUUAVHandle() {
 	return SRVDescriptorHeap->GetGPUHandle(UAVIndex);
 }
 
-TWT::UInt TW3DResourceUAV::GetElementCount() {
+TWT::uint TW3DResourceUAV::GetElementCount() {
 	return element_count;
 }
 
-void TW3DResourceUAV::UpdateData(const void* Data, TWT::UInt ElementCount) {
+void TW3DResourceUAV::UpdateData(const void* Data, TWT::uint ElementCount) {
 	element_count = ElementCount;
 
-	TWT::UInt64 size = ElementCount * element_size;
+	TWT::uint64 size = ElementCount * element_size;
 
 	D3D12_SUBRESOURCE_DATA upload_data = {};
 	upload_data.pData = Data;
@@ -78,7 +78,7 @@ void TW3DResourceUAV::UpdateData(const void* Data, TWT::UInt ElementCount) {
 	TWU::DXSafeRelease(upload_heap);
 }
 
-void TW3DResourceUAV::Read(void* Out, TWT::UInt ByteOffset, TWT::UInt ByteCount) {
+void TW3DResourceUAV::Read(void* Out, TWT::uint ByteOffset, TWT::uint ByteCount) {
 	ID3D12Resource* read_heap;
 	Device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK),
@@ -103,7 +103,7 @@ void TW3DResourceUAV::Read(void* Out, TWT::UInt ByteOffset, TWT::UInt ByteCount)
 	TWU::DXSafeRelease(read_heap);
 }
 
-void TW3DResourceUAV::CreateBuffer(TWT::UInt ElementCount) {
+void TW3DResourceUAV::CreateBuffer(TWT::uint ElementCount) {
 	element_count = ElementCount;
 
 	srv_desc.Buffer.NumElements = ElementCount;
@@ -121,7 +121,7 @@ void TW3DResourceUAV::CreateBuffer(TWT::UInt ElementCount) {
 	Device->CreateUnorderedAccessView(Resource, &uav_desc, SRVDescriptorHeap->GetCPUHandle(UAVIndex));
 }
 
-void TW3DResourceUAV::CreateTexture2D(TWT::UInt Width, TWT::UInt Height) {
+void TW3DResourceUAV::CreateTexture2D(TWT::uint Width, TWT::uint Height) {
 	Device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,

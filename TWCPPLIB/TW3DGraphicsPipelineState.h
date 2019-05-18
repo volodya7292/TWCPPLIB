@@ -12,7 +12,7 @@ enum TW3DInputLayoutElement {
 class TW3DGraphicsPipelineState {
 public:
 	TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, DXGI_SAMPLE_DESC SampleDesc, D3D12_RASTERIZER_DESC RasterizerState,
-		D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, TW3DRootSignature* RootSignature, TWT::UInt RTCount);
+		D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, TW3DRootSignature* RootSignature, TWT::uint RTCount);
 	TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, TW3DRootSignature* RootSignature);
 	~TW3DGraphicsPipelineState();
 
@@ -22,7 +22,7 @@ public:
 	void SetVertexShader(const D3D12_SHADER_BYTECODE& ByteCode);
 	void SetPixelShader(const std::string& Filename);
 	void SetPixelShader(const D3D12_SHADER_BYTECODE& ByteCode);
-	void SetRTVFormat(TWT::UInt Index, DXGI_FORMAT Format);
+	void SetRTVFormat(TWT::uint Index, DXGI_FORMAT Format);
 	void SetDSVFormat(DXGI_FORMAT Format);
 	void SetInputLayout(const TWT::Vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout);
 

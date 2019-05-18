@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TWTypes.h"
 
-TWT::String::String(const Char* data) :
+TWT::String::String(const char* data) :
 	data(data)
 {
 }
@@ -27,11 +27,11 @@ TWT::String& TWT::String::operator+=(const String& t) {
 }
 
 
-TWT::WString::WString(Int data) {
+TWT::WString::WString(int data) {
 	this->data = std::to_wstring(data);
 }
 
-TWT::WString::WString(const WChar* data) :
+TWT::WString::WString(const wchar* data) :
 	data(data)
 {
 }
@@ -56,7 +56,7 @@ TWT::WString& TWT::WString::operator+=(const WString& t) {
 }
 
 
-TWT::Char* TWT::WideToMultibyte(const std::wstring &wstr) {
+char* TWT::WideToMultibyte(const std::wstring &wstr) {
 	if (wstr.empty()) return new char[1];
 	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
 

@@ -34,7 +34,7 @@ TW3DScene::~TW3DScene() {
 	delete collision_world;
 }
 
-void TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRPI, TWT::UInt SceneRTNBRPI, TWT::UInt GNBRPI) {
+void TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::uint GVBRPI, TWT::uint SceneRTNBRPI, TWT::uint GNBRPI) {
 	CommandList->BindUAVSRV(GVBRPI, gvb);
 	CommandList->BindUAVSRV(SceneRTNBRPI, LBVH->GetNodeBuffer());
 	CommandList->BindUAVSRV(GNBRPI, gnb);
@@ -69,7 +69,7 @@ void TW3DScene::AddObject(TW3DObject* Object) {
 	}
 }
 
-void TW3DScene::Update(TWT::Float DeltaTime) {
+void TW3DScene::Update(float DeltaTime) {
 	for (TW3DObject* object : Objects) {
 		object->Update();
 	}
@@ -81,7 +81,7 @@ void TW3DScene::RecordBeforeExecution() {
 	// Update vertex & meshes buffers
 	// -------------------------------------------------------------------------------------------------------------------------
 	if (vertex_buffers_changed) {
-		TWT::UInt VertexOffset = 0;
+		TWT::uint VertexOffset = 0;
 
 		for (auto& [vb, voffset] : vertex_buffers) {
 			voffset = VertexOffset;
@@ -92,7 +92,7 @@ void TW3DScene::RecordBeforeExecution() {
 	}
 
 	if (mesh_buffers_changed) {
-		TWT::UInt NodeOffset = 0;
+		TWT::uint NodeOffset = 0;
 
 		for (auto& [mesh, moffsets] : vertex_meshes) {
 			moffsets.gvb_offset = vertex_buffers[mesh->VertexBuffers[0]];
@@ -116,7 +116,7 @@ void TW3DScene::RecordBeforeExecution() {
 
 			if (vminst.Changed) {
 				vminst.Changed = false;
-				TWT::Matrix4f transform = vminst.Transform.GetModelMatrix();
+				TWT::mat4 transform = vminst.Transform.GetModelMatrix();
 				vminst.LBVHInstance.Transform = transform;
 				vminst.LBVHInstance.TransformInverse = inverse(transform);
 				objects_changed = true;
@@ -185,8 +185,8 @@ void TW3DScene::RecordBeforeExecution() {
 }
 
 rp3d::Transform TW3DScene::PhysicalTransform(TW3DTransform Transform) {
-	TWT::Vector3f position = Transform.GetPosition();
-	TWT::Vector3f rotation = Transform.GetRotation();
+	TWT::vec3 position = Transform.GetPosition();
+	TWT::vec3 rotation = Transform.GetRotation();
 
 	rp3d::Vector3 initPosition(position.x, position.y, position.z);
 	rp3d::Quaternion initOrientation = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(rotation.x, rotation.y, rotation.z));

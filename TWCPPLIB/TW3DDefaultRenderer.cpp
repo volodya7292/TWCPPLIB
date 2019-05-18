@@ -108,7 +108,7 @@ void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DResourceRT
 	cl->SetPipelineState(blit_ps);
 	cl->SetRenderTarget(ColorOutput, Depth);
 	cl->BindUAVSRV(0, rt_output);
-	cl->ClearRTV(ColorOutput, TWT::Vector4f(0, 0, 0, 1));
+	cl->ClearRTV(ColorOutput, TWT::vec4(0, 0, 0, 1));
 	cl->ClearDSVDepth(Depth);
 	cl->SetViewport(&viewport);
 	cl->SetScissor(&scissor);
@@ -121,7 +121,7 @@ void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DResourceRT
 	});
 }
 
-void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height) {
+void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height) {
 	TW3DRenderer::Initialize(ResourceManager, SwapChain, Width, Height);
 	TWU::TW3DLogInfo("TW3DRenderer initialized."s);
 	CreateBlitResources();
@@ -139,14 +139,14 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");
 }
 
-void TW3DDefaultRenderer::Resize(TWT::UInt Width, TWT::UInt Height) {
+void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	TW3DRenderer::Resize(Width, Height);
 
-	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<TWT::Float>(Width), static_cast<TWT::Float>(Height));
+	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(Width), static_cast<float>(Height));
 	scissor = CD3DX12_RECT(0, 0, Width, Height);
 }
 
-void TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStencilOutput) {
+void TW3DDefaultRenderer::Record(TWT::uint BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStencilOutput) {
 	TW3DRenderer::Record(BackBufferIndex, ColorOutput, DepthStencilOutput);
 
 	record_cl->Reset();
@@ -196,11 +196,11 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 	rt_cl->Close();
 }
 
-void TW3DDefaultRenderer::Update(TWT::Float DeltaTime) {
+void TW3DDefaultRenderer::Update(float DeltaTime) {
 	Scene->Update(DeltaTime);
 }
 
-void TW3DDefaultRenderer::Execute(TWT::UInt BackBufferIndex) {
+void TW3DDefaultRenderer::Execute(TWT::uint BackBufferIndex) {
 	TW3DRenderer::Execute(BackBufferIndex);
 
 	ResourceManager->ExecuteCommandList(rt_cl);

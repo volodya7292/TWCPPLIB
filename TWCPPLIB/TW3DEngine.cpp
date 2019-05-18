@@ -9,16 +9,16 @@
 
 static TW::TWLogger* logger;
 
-static TWT::Float delta_time = 1.0f / 60.0f;
+static float delta_time = 1.0f / 60.0f;
 
 static TW3D::DefaultHandler       on_update, on_cleanup;
 static TW3D::ThreadTickHandler    on_thread_tick;
 static TW3D::KeyHandler           on_key;
 static TW3D::CharHandler          on_char;
 
-static TWT::Vector<TWT::Bool> KeysDown(1024);
+static TWT::Vector<bool> KeysDown(1024);
 
-static const TWT::UInt engine_thread_count = 2;
+static const TWT::uint engine_thread_count = 2;
 
 static TWT::Vector<std::thread>    threads;
 static std::mutex                  resize_mutex;
@@ -26,15 +26,15 @@ static std::mutex                  resize_mutex;
 static TW3DRenderer*           renderer;
 static TW3DResourceManager*    resource_manager;
 
-static TWT::UInt      width, height;
+static TWT::uint      width, height;
 static TWT::String    title;
-static TWT::Bool      fullscreen = false;
-static TWT::UInt      additional_thread_count;
+static bool      fullscreen = false;
+static TWT::uint      additional_thread_count;
 
-static TWT::Bool      initialized = false, running, minimized = false;
+static bool      initialized = false, running, minimized = false;
 static HWND           hwnd;
 
-static TWT::UInt      current_frame_index;
+static TWT::uint      current_frame_index;
 
 static TW3DFactory*      factory;
 static TW3DAdapter*      adapter;
@@ -48,7 +48,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 void init_window() {
 	TWT::WString wstrtitle = title.Wide();
-	const TWT::WChar* wtitle = wstrtitle.data.c_str();
+	const TWT::wchar* wtitle = wstrtitle.data.c_str();
 
 	WNDCLASSEX wc;
 	HINSTANCE instance = GetModuleHandle(NULL);
@@ -70,8 +70,8 @@ void init_window() {
 		MessageBox(NULL, L"sd", L"sd", MB_OK | MB_ICONERROR);
 	}
 
-	TWT::UInt x = (GetSystemMetrics(SM_CXSCREEN) - width) / 2;
-	TWT::UInt y = (GetSystemMetrics(SM_CYSCREEN) - height) / 2;
+	TWT::uint x = (GetSystemMetrics(SM_CXSCREEN) - width) / 2;
+	TWT::uint y = (GetSystemMetrics(SM_CYSCREEN) - height) / 2;
 	RECT rect = { (LONG)x, (LONG)y, (LONG)(x + width), (LONG)(y + height) };
 	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
 
@@ -105,7 +105,7 @@ void init_input() {
 }
 
 void init_dx12() {
-	TWT::UInt dxgi_factory_flags = 0;
+	TWT::uint dxgi_factory_flags = 0;
 
 #if defined(_DEBUG)
 	{
@@ -198,17 +198,17 @@ void init_dx12() {
 	logger->LogInfo("WaveLaneCountMin                     : "s + opt1.WaveLaneCountMin);
 	logger->LogInfo("WaveLaneCountMax                     : "s + opt1.WaveLaneCountMax);
 	logger->LogInfo("TotalLaneCount                       : "s + opt1.TotalLaneCount);
-	logger->LogInfo("MinPrecisionSupport                  : "s + static_cast<TWT::UInt>(opt0.MinPrecisionSupport));
-	logger->LogInfo("TiledResourcesTier                   : "s + static_cast<TWT::UInt>(opt0.TiledResourcesTier));
-	logger->LogInfo("ResourceBindingTier                  : "s + static_cast<TWT::UInt>(opt0.ResourceBindingTier));
-	logger->LogInfo("ConservativeRasterizationTier        : "s + static_cast<TWT::UInt>(opt0.ConservativeRasterizationTier));
-	logger->LogInfo("CrossNodeSharingTier                 : "s + static_cast<TWT::UInt>(opt0.CrossNodeSharingTier));
-	logger->LogInfo("ResourceHeapTier                     : "s + static_cast<TWT::UInt>(opt0.ResourceHeapTier));
-	logger->LogInfo("ProgrammableSamplePositionsTier      : "s + static_cast<TWT::UInt>(opt2.ProgrammableSamplePositionsTier));
-	logger->LogInfo("ViewInstancingTier                   : "s + static_cast<TWT::UInt>(opt3.ViewInstancingTier));
-	logger->LogInfo("SharedResourceCompatibilityTier      : "s + static_cast<TWT::UInt>(opt4.SharedResourceCompatibilityTier));
-	logger->LogInfo("RenderPassesTier                     : "s + static_cast<TWT::UInt>(opt5.RenderPassesTier));
-	logger->LogInfo("RaytracingTier                       : "s + static_cast<TWT::UInt>(opt5.RaytracingTier));
+	logger->LogInfo("MinPrecisionSupport                  : "s + static_cast<TWT::uint>(opt0.MinPrecisionSupport));
+	logger->LogInfo("TiledResourcesTier                   : "s + static_cast<TWT::uint>(opt0.TiledResourcesTier));
+	logger->LogInfo("ResourceBindingTier                  : "s + static_cast<TWT::uint>(opt0.ResourceBindingTier));
+	logger->LogInfo("ConservativeRasterizationTier        : "s + static_cast<TWT::uint>(opt0.ConservativeRasterizationTier));
+	logger->LogInfo("CrossNodeSharingTier                 : "s + static_cast<TWT::uint>(opt0.CrossNodeSharingTier));
+	logger->LogInfo("ResourceHeapTier                     : "s + static_cast<TWT::uint>(opt0.ResourceHeapTier));
+	logger->LogInfo("ProgrammableSamplePositionsTier      : "s + static_cast<TWT::uint>(opt2.ProgrammableSamplePositionsTier));
+	logger->LogInfo("ViewInstancingTier                   : "s + static_cast<TWT::uint>(opt3.ViewInstancingTier));
+	logger->LogInfo("SharedResourceCompatibilityTier      : "s + static_cast<TWT::uint>(opt4.SharedResourceCompatibilityTier));
+	logger->LogInfo("RenderPassesTier                     : "s + static_cast<TWT::uint>(opt5.RenderPassesTier));
+	logger->LogInfo("RaytracingTier                       : "s + static_cast<TWT::uint>(opt5.RaytracingTier));
 	logger->LogInfo("WriteBufferImmediateSupportFlags     : "s + TWU::DXCommandListSupportFlagsStr(opt3.WriteBufferImmediateSupportFlags));
 
 	logger->LogInfo("----------------------------------------------------------------------------------");
@@ -228,7 +228,7 @@ void render() {
 	swapChain->Present();
 }
 
-TWT::UInt thread_tick(TWT::UInt thread_id, TWT::UInt thread_count) {
+TWT::uint thread_tick(TWT::uint thread_id, TWT::uint thread_count) {
 	if (thread_id == 0) { // Command list record
 		synchronized(resize_mutex) {
 			for (size_t i = 0; i < TW3DSwapChain::BufferCount; i++)
@@ -242,7 +242,7 @@ TWT::UInt thread_tick(TWT::UInt thread_id, TWT::UInt thread_count) {
 			logger->LogError("Device removed: "s + TWU::HResultToWString(remove_reason).Multibyte());
 			running = false;
 		}
-		return static_cast<TWT::UInt>(delta_time * 1000.0f);
+		return static_cast<TWT::uint>(delta_time * 1000.0f);
 	} else {
 		if (on_thread_tick)
 			return on_thread_tick(thread_id - engine_thread_count, thread_count - engine_thread_count);
@@ -290,11 +290,11 @@ void main_loop() {
 
 	running = true;
 
-	TWT::UInt total_thread_count = engine_thread_count + additional_thread_count;
+	TWT::uint total_thread_count = engine_thread_count + additional_thread_count;
 	for (size_t i = 0; i < total_thread_count; i++) {
 		std::thread thread([i, total_thread_count]() {
 			while (running) {
-				TWT::UInt millis = thread_tick(static_cast<TWT::UInt>(i), total_thread_count);
+				TWT::uint millis = thread_tick(static_cast<TWT::uint>(i), total_thread_count);
 				Sleep(millis);
 			}
 			});
@@ -310,11 +310,11 @@ void main_loop() {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		} else {
-			TWT::Float64 t0 = TWU::GetTimeSeconds();
+			TWT::float64 t0 = TWU::GetTimeSeconds();
 			update();
 			if (!minimized)
 				render();
-			TWT::Float64 t1 = TWU::GetTimeSeconds();
+			TWT::float64 t1 = TWU::GetTimeSeconds();
 			delta_time = t1 - t0;
 		}
 	}
@@ -412,7 +412,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			minimized = false;
 
 		if (swapChain) {
-			TWT::Bool govno = swapChain->GetFullscreen();
+			bool govno = swapChain->GetFullscreen();
 			if (fullscreen != govno) {
 				fullscreen = govno;
 				on_resize();
@@ -451,11 +451,11 @@ void TW3D::Shutdown() {
 	DestroyWindow(hwnd);
 }
 
-TWT::Bool TW3D::GetFullScreen() {
+bool TW3D::GetFullScreen() {
 	return fullscreen;
 }
 
-void TW3D::SetFullScreen(TWT::Bool FullScreen) {
+void TW3D::SetFullScreen(bool FullScreen) {
 	if (fullscreen != FullScreen) {
 		fullscreen = FullScreen;
 		swapChain->SetFullscreen(fullscreen);
@@ -464,52 +464,52 @@ void TW3D::SetFullScreen(TWT::Bool FullScreen) {
 	}
 }
 
-TWT::Bool TW3D::GetVSync() {
+bool TW3D::GetVSync() {
 	return swapChain->VSync;
 }
 
-TWT::Bool TW3D::IsKeyDown(TWT::UInt KeyCode) {
+bool TW3D::IsKeyDown(TWT::uint KeyCode) {
 	return KeysDown[KeyCode];
 }
 
-TWT::Vector2u TW3D::GetCursorPosition() {
+TWT::vec2u TW3D::GetCursorPosition() {
 	POINT pos;
 	GetCursorPos(&pos);
-	return TWT::Vector2u(pos.x, pos.y);
+	return TWT::vec2u(pos.x, pos.y);
 }
 
-TWT::Vector2u TW3D::GetWindowPosition() {
+TWT::vec2u TW3D::GetWindowPosition() {
 	RECT rect;
 	GetWindowRect(hwnd, &rect);
 	RECT rect2 = {};
 	AdjustWindowRect(&rect2, WS_OVERLAPPEDWINDOW, FALSE);
-	return TWT::Vector2u(rect.left - rect2.left, rect.top - rect2.top);
+	return TWT::vec2u(rect.left - rect2.left, rect.top - rect2.top);
 }
 
-TWT::Vector2u TW3D::GetWindowCenterPosition() {
-	return GetWindowPosition() + TWT::Vector2u(width, height) / 2u;
+TWT::vec2u TW3D::GetWindowCenterPosition() {
+	return GetWindowPosition() + TWT::vec2u(width, height) / 2u;
 }
 
-TWT::Vector2u TW3D::GetCurrentWindowSize() {
-	return TWT::Vector2u(width, height);
+TWT::vec2u TW3D::GetCurrentWindowSize() {
+	return TWT::vec2u(width, height);
 }
 
-TWT::Float TW3D::GetFPS() {
+float TW3D::GetFPS() {
 	return 1.0f / delta_time;
 }
 
-TWT::Float TW3D::GetDeltaTime() {
+float TW3D::GetDeltaTime() {
 	return delta_time;
 }
 
-void TW3D::SetVSync(TWT::Bool VSync) {
+void TW3D::SetVSync(bool VSync) {
 	swapChain->VSync = VSync;
 }
 
 void TW3D::SetWindowTitle(const TWT::String& WindowTitle) {
 	title = WindowTitle;
 	TWT::WString wstrtitle = title.Wide();
-	const TWT::WChar* wtitle = wstrtitle.data.c_str();
+	const TWT::wchar* wtitle = wstrtitle.data.c_str();
 	SetWindowText(hwnd, wtitle);
 }
 

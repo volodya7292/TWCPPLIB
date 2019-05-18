@@ -207,6 +207,9 @@
     <ClInclude Include="Universe3D.h">
       <Filter>Header Files\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Universe3DCluster.h">
+      <Filter>Header Files\Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -333,10 +336,13 @@
     <ClCompile Include="TWLogger.cpp">
       <Filter>Source Files\TWUtils</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DSphere.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Universe3D.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DSphere.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Universe3DCluster.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
   </ItemGroup>

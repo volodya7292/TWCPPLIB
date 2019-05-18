@@ -302,6 +302,7 @@
     <ClInclude Include="TWTypes.h" />
     <ClInclude Include="TWUtils.h" />
     <ClInclude Include="Universe3D.h" />
+    <ClInclude Include="Universe3DCluster.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -355,6 +356,7 @@
     <ClCompile Include="TWTypes.cpp" />
     <ClCompile Include="TWUtils.cpp" />
     <ClCompile Include="Universe3D.cpp" />
+    <ClCompile Include="Universe3DCluster.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BitonicInnerSort.c.hlsl">

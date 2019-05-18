@@ -4,15 +4,15 @@
 
 class TW3DVertexBuffer {
 public:
-	TW3DVertexBuffer(TW3DDevice* Device, TWT::UInt VertexCount, TWT::UInt SingleVertexSize, TW3DTempGCL* TempGCL);
+	TW3DVertexBuffer(TW3DDevice* Device, TWT::uint VertexCount, TWT::uint SingleVertexSize, TW3DTempGCL* TempGCL);
 	~TW3DVertexBuffer();
 
 	TW3DResourceVB* GetResource();
 
-	void Update(const void* Data, TWT::UInt VertexCount);
-	TWT::UInt GetVertexCount();
-	TWT::UInt GetVertexByteSize();
-	TWT::UInt GetSizeInBytes();
+	void Update(const void* Data, TWT::uint VertexCount);
+	TWT::uint GetVertexCount();
+	TWT::uint GetVertexByteSize();
+	TWT::uint GetSizeInBytes();
 
 private:
 	TW3DResourceVB* vertex_buffer;

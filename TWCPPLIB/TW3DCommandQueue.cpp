@@ -28,7 +28,7 @@ ID3D12CommandQueue* TW3DCommandQueue::Get() {
 	return command_queue;
 }
 
-TWT::Bool TW3DCommandQueue::IsCommandListRunning(TW3DGraphicsCommandList* CommandList) {
+bool TW3DCommandQueue::IsCommandListRunning(TW3DGraphicsCommandList* CommandList) {
 	return fence->GetCompletedValue() < CommandList->SignalValue;
 }
 
@@ -64,7 +64,7 @@ void TW3DCommandQueue::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommand
 	fence_flush_value++;
 
 	TWT::Vector<ID3D12CommandList*> nativeLists(CommandLists.size());
-	for (TWT::UInt i = 0; i < nativeLists.size(); i++) {
+	for (TWT::uint i = 0; i < nativeLists.size(); i++) {
 		nativeLists[i] = CommandLists[i]->Get();
 		CommandLists[i]->SignalValue = fence_flush_value;
 	}

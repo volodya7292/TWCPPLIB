@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "TW3DPerspectiveCamera.h"
 
-TW3DPerspectiveCamera::TW3DPerspectiveCamera(TW3DResourceManager* ResourceManager, TWT::UInt Width, TWT::UInt Height,
-	TWT::Float FOVY, TWT::Vector3f Position, TWT::Vector3f Rotation, TWT::Float ZNear, TWT::Float ZFar) :
+TW3DPerspectiveCamera::TW3DPerspectiveCamera(TW3DResourceManager* ResourceManager, TWT::uint Width, TWT::uint Height,
+	float FOVY, TWT::vec3 Position, TWT::vec3 Rotation, float ZNear, float ZFar) :
 	Width(Width), Height(Height), FOVY(FOVY), Position(Position), rotation(Rotation), ZNear(ZNear), ZFar(ZFar)
 {
 	if (ResourceManager)
@@ -13,46 +13,46 @@ TW3DPerspectiveCamera::~TW3DPerspectiveCamera() {
 	delete constant_buffer;
 }
 
-TWT::Matrix4f TW3DPerspectiveCamera::GetProjectionMatrix() {
+TWT::mat4 TW3DPerspectiveCamera::GetProjectionMatrix() {
 	return glm::perspective(glm::radians(FOVY), (float)Width / Height, ZNear, ZFar);
 }
 
-TWT::Matrix4f TW3DPerspectiveCamera::GetViewMatrix() {
-	TWT::Matrix4f m = TWT::Rotate(TWT::Matrix4f(1), glm::radians(rotation.x), TWT::Vector3f(1, 0, 0));
-	m *= TWT::Rotate(TWT::Matrix4f(1), glm::radians(rotation.y), TWT::Vector3f(0, 1, 0));
-	m *= TWT::Rotate(TWT::Matrix4f(1), glm::radians(rotation.z), TWT::Vector3f(0, 0, 1));
-	return m * TWT::Translate(TWT::Matrix4f(1), -Position);
+TWT::mat4 TW3DPerspectiveCamera::GetViewMatrix() {
+	TWT::mat4 m = TWT::Rotate(TWT::mat4(1), glm::radians(rotation.x), TWT::vec3(1, 0, 0));
+	m *= TWT::Rotate(TWT::mat4(1), glm::radians(rotation.y), TWT::vec3(0, 1, 0));
+	m *= TWT::Rotate(TWT::mat4(1), glm::radians(rotation.z), TWT::vec3(0, 0, 1));
+	return m * TWT::Translate(TWT::mat4(1), -Position);
 }
 
-TWT::Matrix4f TW3DPerspectiveCamera::GetProjectionViewMatrix() {
+TWT::mat4 TW3DPerspectiveCamera::GetProjectionViewMatrix() {
 	return GetProjectionMatrix() * GetViewMatrix();
 }
 
-TWT::Vector3f TW3DPerspectiveCamera::GetRotation() {
+TWT::vec3 TW3DPerspectiveCamera::GetRotation() {
 	return rotation;
 }
 
-TWT::Float TW3DPerspectiveCamera::GetRatioX() {
+float TW3DPerspectiveCamera::GetRatioX() {
 	return tan(glm::radians(FOVY) / 2.0f) * ((float)Width / Height);
 }
 
-TWT::Float TW3DPerspectiveCamera::GetRatioY() {
+float TW3DPerspectiveCamera::GetRatioY() {
 	return tan(glm::radians(FOVY) / 2.0f);
 }
 
-void TW3DPerspectiveCamera::SetRotation(TWT::Vector3f Rotation) {
-	rotation = TWT::Vector3f(fmod(Rotation.x, 360.0f), fmod(Rotation.y, 360.0f), fmod(Rotation.z, 360.0f));
+void TW3DPerspectiveCamera::SetRotation(TWT::vec3 Rotation) {
+	rotation = TWT::vec3(fmod(Rotation.x, 360.0f), fmod(Rotation.y, 360.0f), fmod(Rotation.z, 360.0f));
 }
 
-void TW3DPerspectiveCamera::Move(TWT::Float to_back, TWT::Float left_right) {
-	TWT::Vector3f d = TWT::Vector3f(sin(glm::radians(-rotation.y)), 0, cos(glm::radians(-rotation.y)));
+void TW3DPerspectiveCamera::Move(float to_back, float left_right) {
+	TWT::vec3 d = TWT::vec3(sin(glm::radians(-rotation.y)), 0, cos(glm::radians(-rotation.y)));
 	Position -= d * to_back;
-	Position -= normalize(cross(d, TWT::Vector3f(0, 1, 0))) * left_right;
+	Position -= normalize(cross(d, TWT::vec3(0, 1, 0))) * left_right;
 }
 
 void TW3DPerspectiveCamera::UpdateConstantBuffer(TW3DResourceCB* ConstantBuffer) {
 	TWT::DefaultCameraCB cb;
-	cb.pos = TWT::Vector4f(Position, 1);
+	cb.pos = TWT::vec4(Position, 1);
 	cb.proj = GetProjectionMatrix();
 	cb.view = GetViewMatrix();
 	cb.proj_view = GetProjectionViewMatrix();

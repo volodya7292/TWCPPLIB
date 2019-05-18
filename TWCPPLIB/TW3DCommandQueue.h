@@ -9,7 +9,7 @@ public:
 
 	ID3D12CommandQueue* Get();
 
-	TWT::Bool IsCommandListRunning(TW3DGraphicsCommandList* CommandList);
+	bool IsCommandListRunning(TW3DGraphicsCommandList* CommandList);
 	void FlushCommandList(TW3DGraphicsCommandList* CommandList);
 	void FlushCommands();
 	void ExecuteCommandList(TW3DGraphicsCommandList* CommandList);
@@ -22,5 +22,5 @@ public:
 private:
 	ID3D12CommandQueue* command_queue;
 	ID3D12Fence* fence;
-	TWT::UInt64 fence_flush_value = 0;
+	TWT::uint64 fence_flush_value = 0;
 };

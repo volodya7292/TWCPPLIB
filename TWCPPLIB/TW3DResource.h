@@ -15,9 +15,9 @@ public:
 
 	virtual void Release();
 
-	void Map(TWT::UInt SubResourceIndex, D3D12_RANGE* ReadRange, void** Data);
+	void Map(TWT::uint SubResourceIndex, D3D12_RANGE* ReadRange, void** Data);
 
-	static TW3DResource* Create(TW3DDevice* Device, TWT::UInt64 Size, TWT::Bool Staging);
+	static TW3DResource* Create(TW3DDevice* Device, TWT::uint64 Size, bool Staging);
 	static TW3DResource* CreateCBStaging(TW3DDevice* Device);
 
 protected:

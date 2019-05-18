@@ -7,5 +7,5 @@ public:
 	~TW3DCube() = default;
 
 	void Update();
-	void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex);
+	void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::uint ModelCBRootParameterIndex);
 };

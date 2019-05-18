@@ -3,41 +3,41 @@
 #include "TW3DModules.h"
 
 struct LBVHMortonCode {
-	TWT::Vector4u data; // .x - code, .y - index
+	TWT::vec4u data; // .x - code, .y - index
 };
 
 struct LBVHNode {
 	TWT::Bounds bounds;
-	TWT::UInt primitive_index;
-	TWT::UInt parent;
-	TWT::UInt left_child;
-	TWT::UInt right_child;
+	TWT::uint primitive_index;
+	TWT::uint parent;
+	TWT::uint left_child;
+	TWT::uint right_child;
 };
 
 struct SceneLBVHInstance {
-	TWT::UInt GVBOffset;
-	TWT::UInt GNBOffset;
-	TWT::Matrix4f Transform;
-	TWT::Matrix4f TransformInverse;
+	TWT::uint GVBOffset;
+	TWT::uint GNBOffset;
+	TWT::mat4 Transform;
+	TWT::mat4 TransformInverse;
 };
 
 struct SceneLBVHNode {
 	SceneLBVHInstance instance;
 	TWT::Bounds bounds;
-	TWT::UInt parent;
-	TWT::UInt left_child;
-	TWT::UInt right_child;
+	TWT::uint parent;
+	TWT::uint left_child;
+	TWT::uint right_child;
 };
 
 class TW3DLBVH {
 public:
-	TW3DLBVH(TW3DResourceManager* ResourceManager, TWT::UInt ElementCount, TWT::Bool SceneLevel = false);
+	TW3DLBVH(TW3DResourceManager* ResourceManager, TWT::uint ElementCount, bool SceneLevel = false);
 	~TW3DLBVH();
 
-	TWT::UInt GetNodeCount();
+	TWT::uint GetNodeCount();
 	TW3DResourceUAV* GetNodeBuffer();
 
-	void BuildFromTriangles(TW3DResourceUAV* GVB, TWT::UInt GVBOffset, TW3DGraphicsCommandList* CommandList = nullptr);
+	void BuildFromTriangles(TW3DResourceUAV* GVB, TWT::uint GVBOffset, TW3DGraphicsCommandList* CommandList = nullptr);
 	void BuildFromLBVHs(TW3DResourceUAV* GNB, TW3DResourceUAV* SceneMeshInstancesBuffer, TW3DGraphicsCommandList* CommandList);
 
 private:
@@ -47,5 +47,5 @@ private:
 	TW3DResourceUAV* morton_codes_buffer;
 	TW3DResourceUAV* node_buffer;
 
-	TWT::UInt element_count;
+	TWT::uint element_count;
 };

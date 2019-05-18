@@ -12,14 +12,14 @@ TW3DVertexMesh::~TW3DVertexMesh() {
 	delete lbvh;
 }
 
-TWT::UInt TW3DVertexMesh::GetVertexCount() {
-	TWT::UInt64 count = 0;
+TWT::uint TW3DVertexMesh::GetVertexCount() {
+	TWT::uint64 count = 0;
 	for (TW3DVertexBuffer* vb : VertexBuffers)
 		count += vb->GetVertexCount();
 	return count;
 }
 
-TWT::UInt TW3DVertexMesh::GetTriangleCount() {
+TWT::uint TW3DVertexMesh::GetTriangleCount() {
 	return GetVertexCount() / 3;
 }
 
@@ -27,7 +27,7 @@ TW3DLBVH* TW3DVertexMesh::GetLBVH() {
 	return lbvh;
 }
 
-void TW3DVertexMesh::UpdateLBVH(TW3DResourceUAV* GVB, TWT::UInt GVBOffset, TW3DGraphicsCommandList* CommandList) {
+void TW3DVertexMesh::UpdateLBVH(TW3DResourceUAV* GVB, TWT::uint GVBOffset, TW3DGraphicsCommandList* CommandList) {
 	if (changed) {
 		changed = false;
 		lbvh->BuildFromTriangles(GVB, GVBOffset, CommandList);

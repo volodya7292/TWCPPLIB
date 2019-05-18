@@ -3,10 +3,10 @@
 #include "TW3DShaders.h"
 #include "TW3DModules.h"
 
-TW3DLBVH::TW3DLBVH(TW3DResourceManager* ResourceManager, TWT::UInt ElementCount, TWT::Bool SceneLevel) :
+TW3DLBVH::TW3DLBVH(TW3DResourceManager* ResourceManager, TWT::uint ElementCount, bool SceneLevel) :
 	resource_manager(ResourceManager), element_count(ElementCount) {
 	morton_codes_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(LBVHMortonCode));
-	//morton_indices_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(TWT::UInt));
+	//morton_indices_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(TWT::uint));
 	bounding_box_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(TWT::Bounds));
 	node_buffer = resource_manager->CreateUnorderedAccessView(GetNodeCount(), SceneLevel ? sizeof(SceneLBVHNode) : sizeof(LBVHNode));
 	resource_manager->ResourceBarrier(node_buffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE);
@@ -20,7 +20,7 @@ TW3DLBVH::~TW3DLBVH() {
 	delete node_buffer;
 }
 
-TWT::UInt TW3DLBVH::GetNodeCount() {
+TWT::uint TW3DLBVH::GetNodeCount() {
 	return 2 * element_count - 1;
 }
 
@@ -28,7 +28,7 @@ TW3DResourceUAV* TW3DLBVH::GetNodeBuffer() {
 	return node_buffer;
 }
 
-void TW3DLBVH::BuildFromTriangles(TW3DResourceUAV* GVB, TWT::UInt GVBOffset, TW3DGraphicsCommandList* CommandList) {
+void TW3DLBVH::BuildFromTriangles(TW3DResourceUAV* GVB, TWT::uint GVBOffset, TW3DGraphicsCommandList* CommandList) {
 	TW3DGraphicsCommandList* cl;
 	if (CommandList)
 		cl = CommandList;
@@ -45,7 +45,7 @@ void TW3DLBVH::BuildFromTriangles(TW3DResourceUAV* GVB, TWT::UInt GVBOffset, TW3
 	cl->SetRoot32BitConstant(2, GVBOffset, 0);
 	cl->SetRoot32BitConstant(2, element_count * 3, 1);
 	int element_count2 = element_count;
-	TWT::UInt iteration = 0;
+	TWT::uint iteration = 0;
 	do {
 		cl->SetRoot32BitConstant(2, iteration, 2);
 		cl->SetRoot32BitConstant(2, element_count2, 3);
@@ -142,8 +142,8 @@ void TW3DLBVH::BuildFromTriangles(TW3DResourceUAV* GVB, TWT::UInt GVBOffset, TW3
 }
 
 void TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, TW3DResourceUAV* SceneMeshInstancesBuffer, TW3DGraphicsCommandList* CommandList) {
-	TWT::UInt gnboffset_count = SceneMeshInstancesBuffer->GetElementCount();
-	TWT::Bool partially_presorted = true;
+	TWT::uint gnboffset_count = SceneMeshInstancesBuffer->GetElementCount();
+	bool partially_presorted = true;
 
 	if (gnboffset_count != element_count) {
 		partially_presorted = false;
@@ -153,7 +153,7 @@ void TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, TW3DResourceUAV* SceneMeshIn
 		delete bounding_box_buffer;
 		delete node_buffer;
 		morton_codes_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(LBVHMortonCode));
-		//morton_indices_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(TWT::UInt));
+		//morton_indices_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(TWT::uint));
 		bounding_box_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(TWT::Bounds));
 		node_buffer = resource_manager->CreateUnorderedAccessView(GetNodeCount(), sizeof(SceneLBVHNode));
 	}
@@ -178,7 +178,7 @@ void TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, TW3DResourceUAV* SceneMeshIn
 	cl->BindUAVBuffer(2, bounding_box_buffer);
 	cl->SetRoot32BitConstant(3, gnboffset_count, 0);
 	int element_count2 = element_count;
-	TWT::UInt iteration = 0;
+	TWT::uint iteration = 0;
 	do {
 		cl->SetRoot32BitConstant(3, iteration, 1);
 		cl->SetRoot32BitConstant(3, element_count2, 2);

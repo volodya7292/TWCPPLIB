@@ -17,9 +17,9 @@ TW::TWLogger::~TWLogger() {
 
 }
 
-void TW::TWLogger::Log(TWT::Char LogType, const TWT::String& Data) {
-	TWT::Time t = TWU::GetTime();
-	TWT::Char time_buffer[256];
+void TW::TWLogger::Log(char LogType, const TWT::String& Data) {
+	tm t = TWU::GetTime();
+	char time_buffer[256];
 	strftime(time_buffer, sizeof(time_buffer), "%H:%M:%S", &t);
 
 	TWT::String nlogname = logname.data.size() > 0 ? "["s + logname + "]"s : ""s;

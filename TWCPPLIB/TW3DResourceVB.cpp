@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "TW3DResourceVB.h"
 
-TW3DResourceVB::TW3DResourceVB(TW3DDevice* Device, TWT::UInt VertexCount, TWT::UInt SingleVertexSize, TW3DTempGCL* TempGCL) :
+TW3DResourceVB::TW3DResourceVB(TW3DDevice* Device, TWT::uint VertexCount, TWT::uint SingleVertexSize, TW3DTempGCL* TempGCL) :
 	TW3DResource(Device), vertex_count(VertexCount), single_vertex_size(SingleVertexSize), temp_gcl(TempGCL) {
 
-	TWT::UInt64 size = vertex_count * single_vertex_size;
+	TWT::uint64 size = vertex_count * single_vertex_size;
 
 	upload_heap = new TW3DResource(Device,
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
@@ -36,9 +36,9 @@ D3D12_VERTEX_BUFFER_VIEW TW3DResourceVB::GetView() {
 	return view;
 }
 
-void TW3DResourceVB::UpdateData(const void* Data, TWT::UInt VertexCount) {
+void TW3DResourceVB::UpdateData(const void* Data, TWT::uint VertexCount) {
 	vertex_count = VertexCount;
-	TWT::UInt64 size = vertex_count * single_vertex_size;
+	TWT::uint64 size = vertex_count * single_vertex_size;
 
 	D3D12_SUBRESOURCE_DATA vertexData = {};
 	vertexData.pData		= Data;
@@ -52,14 +52,14 @@ void TW3DResourceVB::UpdateData(const void* Data, TWT::UInt VertexCount) {
 	temp_gcl->Execute();
 }
 
-TWT::UInt TW3DResourceVB::GetVertexCount() {
+TWT::uint TW3DResourceVB::GetVertexCount() {
 	return vertex_count;
 }
 
-TWT::UInt TW3DResourceVB::GetVertexByteSize() {
+TWT::uint TW3DResourceVB::GetVertexByteSize() {
 	return single_vertex_size;
 }
 
-TWT::UInt TW3DResourceVB::GetSizeInBytes() {
+TWT::uint TW3DResourceVB::GetSizeInBytes() {
 	return vertex_count * single_vertex_size;
 }

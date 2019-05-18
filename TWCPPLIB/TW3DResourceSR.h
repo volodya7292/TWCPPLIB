@@ -7,10 +7,10 @@ public:
 	TW3DResourceSR(TW3DDevice* Device, TW3DDescriptorHeap* SRVDescriptorHeap, TW3DTempGCL* TempGCL);
 	~TW3DResourceSR();
 
-	void Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format);
-	void CreateArray2D(TWT::UInt Width, TWT::UInt Height, TWT::UInt Depth, DXGI_FORMAT Format);
-	void Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow, TWT::UInt Depth = 0);
-	void Upload2D(const TWT::WString& filename, TWT::UInt Depth = 0);
+	void Create2D(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format);
+	void CreateArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Depth, DXGI_FORMAT Format);
+	void Upload2D(TWT::byte* Data, TWT::int64 BytesPerRow, TWT::uint Depth = 0);
+	void Upload2D(const TWT::WString& filename, TWT::uint Depth = 0);
 
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle();
 
@@ -20,6 +20,6 @@ private:
 	TW3DTempGCL* TempGCL;
 	TW3DDescriptorHeap* SRVDescriptorHeap;
 	D3D12_RESOURCE_DESC ImageDesc = {};
-	TWT::UInt8* gpu_address = nullptr;
-	TWT::Int SRVIndex;
+	TWT::uint8* gpu_address = nullptr;
+	int SRVIndex;
 };

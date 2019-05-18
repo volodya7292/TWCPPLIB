@@ -35,11 +35,11 @@ void TW3DResource::Release() {
 	TWU::DXSafeRelease(Resource);
 }
 
-void TW3DResource::Map(TWT::UInt SubResourceIndex, D3D12_RANGE* ReadRange, void** Data) {
+void TW3DResource::Map(TWT::uint SubResourceIndex, D3D12_RANGE* ReadRange, void** Data) {
 	TWU::SuccessAssert(Resource->Map(SubResourceIndex, ReadRange, Data), "TW3DResource::Map"s);
 }
 
-TW3DResource* TW3DResource::Create(TW3DDevice* Device, TWT::UInt64 Size, TWT::Bool Staging) {
+TW3DResource* TW3DResource::Create(TW3DDevice* Device, TWT::uint64 Size, bool Staging) {
 	return new TW3DResource(Device,
 		&CD3DX12_HEAP_PROPERTIES(Staging ? D3D12_HEAP_TYPE_UPLOAD : D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TW3DFactory.h"
 
-TW3DFactory::TW3DFactory(TWT::UInt flags) {
+TW3DFactory::TW3DFactory(TWT::uint flags) {
 	TWU::SuccessAssert(CreateDXGIFactory2(flags, IID_PPV_ARGS(&factory)), "TW3DFactory::TW3DFactory"s);
 }
 
@@ -14,7 +14,7 @@ std::vector<ComPtr<IDXGIAdapter4>> TW3DFactory::ListAdapters(D3D_FEATURE_LEVEL f
 	ComPtr<IDXGIAdapter4> adapter4;
 	std::vector<ComPtr<IDXGIAdapter4>> adapters;
 
-	for (TWT::UInt adapterIndex = 0; factory->EnumAdapters1(adapterIndex, &adapter1) != DXGI_ERROR_NOT_FOUND; adapterIndex++) {
+	for (TWT::uint adapterIndex = 0; factory->EnumAdapters1(adapterIndex, &adapter1) != DXGI_ERROR_NOT_FOUND; adapterIndex++) {
 		DXGI_ADAPTER_DESC1 desc;
 		TWU::SuccessAssert(adapter1->GetDesc1(&desc), "TW3DFactory::ListAdapters, adapter1->GetDesc1 "s + adapterIndex);
 
@@ -34,11 +34,11 @@ void TW3DFactory::CreateSwapChainForHwnd(ID3D12CommandQueue* commandQueue, HWND 
 	TWU::SuccessAssert(factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER), "TW3DFactory::CreateSwapChainForHwnd, factory->MakeWindowAssociation"s);
 }
 
-void TW3DFactory::CheckFeatureSupport(DXGI_FEATURE feature, void *featureSupportData, TWT::UInt featureSupportDataSize) {
+void TW3DFactory::CheckFeatureSupport(DXGI_FEATURE feature, void *featureSupportData, TWT::uint featureSupportDataSize) {
 	//TWU::SuccessAssert(factory->CheckFeatureSupport(feature, featureSupportData, featureSupportDataSize));
 }
 
-TWT::Bool TW3DFactory::CheckTearingSupport() {
+bool TW3DFactory::CheckTearingSupport() {
 	BOOL allowTearing = false;
 	//TWU::SuccessAssert(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing)));
 	return allowTearing;

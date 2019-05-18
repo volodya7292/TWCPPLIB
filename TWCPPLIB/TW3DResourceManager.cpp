@@ -35,35 +35,35 @@ TW3DResourceRTV* TW3DResourceManager::CreateRenderTargetView(ID3D12Resource* Buf
 	return rtv;
 }
 
-TW3DResourceRTV* TW3DResourceManager::CreateRenderTargetView(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format, TWT::Vector4f ClearValue) {
+TW3DResourceRTV* TW3DResourceManager::CreateRenderTargetView(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, TWT::vec4 ClearValue) {
 	TW3DResourceRTV* rtv = new TW3DResourceRTV(device, rtv_descriptor_heap, srv_descriptor_heap, Format, ClearValue);
 	rtv->Create(Width, Height);
 	return rtv;
 }
 
-TW3DResourceDSV* TW3DResourceManager::CreateDepthStencilView(TWT::UInt Width, TWT::UInt Height) {
+TW3DResourceDSV* TW3DResourceManager::CreateDepthStencilView(TWT::uint Width, TWT::uint Height) {
 	TW3DResourceDSV* dsv = new TW3DResourceDSV(device, dsv_descriptor_heap);
 	dsv->Create(Width, Height);
 	return dsv;
 }
 
-TW3DResourceUAV* TW3DResourceManager::CreateUnorderedAccessView(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format) {
+TW3DResourceUAV* TW3DResourceManager::CreateUnorderedAccessView(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format) {
 	TW3DResourceUAV* uav = new TW3DResourceUAV(device, srv_descriptor_heap, Format);
 	uav->CreateTexture2D(Width, Height);
 	return uav;
 }
 
-TW3DResourceUAV* TW3DResourceManager::CreateUnorderedAccessView(TWT::UInt ElementCount, TWT::UInt ElementSizeInBytes) {
+TW3DResourceUAV* TW3DResourceManager::CreateUnorderedAccessView(TWT::uint ElementCount, TWT::uint ElementSizeInBytes) {
 	TW3DResourceUAV* uav = new TW3DResourceUAV(device, srv_descriptor_heap, ElementSizeInBytes, temp_gcl);
 	uav->CreateBuffer(ElementCount);
 	return uav;
 }
 
-TW3DVertexBuffer* TW3DResourceManager::CreateVertexBuffer(TWT::UInt VertexCount, TWT::UInt SingleVertexSizeInBytes) {
+TW3DVertexBuffer* TW3DResourceManager::CreateVertexBuffer(TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes) {
 	return new TW3DVertexBuffer(device, VertexCount, SingleVertexSizeInBytes, temp_gcl);
 }
 
-TW3DResourceCB* TW3DResourceManager::CreateConstantBuffer(TWT::UInt ElementCount, TWT::UInt ElementSizeInBytes) {
+TW3DResourceCB* TW3DResourceManager::CreateConstantBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes) {
 	return new TW3DResourceCB(device, ElementCount, ElementSizeInBytes);
 }
 
@@ -71,7 +71,7 @@ TW3DResourceSR* TW3DResourceManager::CreateTexture2D(const TWT::WString& Filenam
 	return TW3DResourceSR::Create2D(device, srv_descriptor_heap, Filename, temp_gcl);
 }
 
-TW3DResourceSR* TW3DResourceManager::CreateTextureArray2D(TWT::UInt Width, TWT::UInt Height, TWT::UInt Depth, DXGI_FORMAT Format) {
+TW3DResourceSR* TW3DResourceManager::CreateTextureArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Depth, DXGI_FORMAT Format) {
 	TW3DResourceSR* sr = new TW3DResourceSR(device, srv_descriptor_heap, temp_gcl);
 	sr->CreateArray2D(Width, Height, Depth, Format);
 	return sr;
@@ -127,7 +127,7 @@ void TW3DResourceManager::ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE
 	temp_gcl->Execute();
 }
 
-TWT::Bool TW3DResourceManager::IsCommandListRunning(TW3DGraphicsCommandList* CommandList) {
+bool TW3DResourceManager::IsCommandListRunning(TW3DGraphicsCommandList* CommandList) {
 	return GetCommandListCommandQueue(CommandList)->IsCommandListRunning(CommandList);
 }
 

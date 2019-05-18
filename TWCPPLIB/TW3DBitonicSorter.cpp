@@ -60,7 +60,7 @@ TW3DBitonicSorter::~TW3DBitonicSorter() {
 	TWU::DXSafeRelease(m_pCommandSignature);
 }
 
-void TW3DBitonicSorter::RecordSort(TW3DGraphicsCommandList* CommandList, TW3DResourceUAV* SortBuffer, TWT::UInt ElementCount, bool SortAscending, bool IsPartiallyPreSorted) {
+void TW3DBitonicSorter::RecordSort(TW3DGraphicsCommandList* CommandList, TW3DResourceUAV* SortBuffer, TWT::uint ElementCount, bool SortAscending, bool IsPartiallyPreSorted) {
 	if (ElementCount == 0) return;
 
 	const uint32_t AlignedNumElements = TWU::AlignPowerOfTwo(ElementCount);

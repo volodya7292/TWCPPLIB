@@ -18,12 +18,12 @@ namespace TWU {
 	void FileExistsAssert(TWT::WString filename);
 
 	// Read entire file into byte array
-	TWT::Byte* ReadFileBytes(TWT::String filename, TWT::UInt& size);
+	TWT::byte* ReadFileBytes(TWT::String filename, TWT::uint& size);
 
-	TWT::Time GetTime();
-	TWT::Float64 GetTimeSeconds();
+	tm GetTime();
+	TWT::float64 GetTimeSeconds();
 
-	inline TWT::UInt8 Log2(TWT::UInt64 value) {
+	inline TWT::uint8 Log2(TWT::uint64 value) {
 		unsigned long mssb; // most significant set bit
 		unsigned long lssb; // least significant set bit
 
@@ -38,7 +38,7 @@ namespace TWU {
 		return value == 0 ? 0 : 1 << Log2(value);
 	}
 
-	inline TWT::String BoolStr(TWT::Bool Value) {
+	inline TWT::String BoolStr(bool Value) {
 		return Value ? "True"s : "False"s;
 	}
 }
@@ -75,5 +75,5 @@ private:
 // ----------------------------------------------------- Synchronized macro -----------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------
 
-#define fsizeof(v) (sizeof(v) / sizeof(TWT::Float))
-#define foffsetof(s,m) (offsetof(s,m) / sizeof(TWT::Float))
+#define fsizeof(v) (sizeof(v) / sizeof(float))
+#define foffsetof(s,m) (offsetof(s,m) / sizeof(float))

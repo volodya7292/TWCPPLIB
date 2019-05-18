@@ -6,13 +6,13 @@ class TW3D {
 public:
 	struct InitializeInfo {
 		// Window main panel width
-		TWT::UInt WindowWidth = 1280;
+		TWT::uint WindowWidth = 1280;
 		// Window main panel height
-		TWT::UInt WindowHeight = 720;
+		TWT::uint WindowHeight = 720;
 		// Window title
 		TWT::String	WindowTitle = "TW3DEngine";
 		// Additional threads for application, not for engine
-		TWT::UInt AdditionalThreadCount = 0;
+		TWT::uint AdditionalThreadCount = 0;
 		// Log file
 		TWT::String LogFilename = "";
 	};
@@ -23,29 +23,29 @@ public:
 	};
 
 	using DefaultHandler       = void(*)();
-	using ThreadTickHandler    = TWT::UInt(*)(TWT::UInt ThreadID, TWT::UInt ThreadCount);
-	using KeyHandler           = void(*)(TWT::UInt KeyCode, KeyActionType Type);
-	using CharHandler          = void(*)(TWT::WChar Symbol);
+	using ThreadTickHandler    = TWT::uint(*)(TWT::uint ThreadID, TWT::uint ThreadCount);
+	using KeyHandler           = void(*)(TWT::uint KeyCode, KeyActionType Type);
+	using CharHandler          = void(*)(TWT::wchar Symbol);
 
 	static void Initialize(const InitializeInfo& info);
 	static void Start();
 	static void Shutdown();
-	static TWT::Bool GetFullScreen();
-	static void SetFullScreen(TWT::Bool Fullscreen);
-	static TWT::Bool GetVSync();
-	static void SetVSync(TWT::Bool VSync);
+	static bool GetFullScreen();
+	static void SetFullScreen(bool Fullscreen);
+	static bool GetVSync();
+	static void SetVSync(bool VSync);
 	static void SetWindowTitle(const TWT::String&	WindowTitle);
-	static TWT::Bool IsKeyDown(TWT::UInt KeyCode);
-	static TWT::Vector2u GetCursorPosition();
+	static bool IsKeyDown(TWT::uint KeyCode);
+	static TWT::vec2u GetCursorPosition();
 	// Get window global center position without window adjusted bounds
-	static TWT::Vector2u GetWindowCenterPosition();
+	static TWT::vec2u GetWindowCenterPosition();
 	// Get window global top-left position without window adjusted bounds
-	static TWT::Vector2u GetWindowPosition();
+	static TWT::vec2u GetWindowPosition();
 	// Get window main panel size
-	static TWT::Vector2u GetCurrentWindowSize();
+	static TWT::vec2u GetCurrentWindowSize();
 
-	static TWT::Float GetFPS();
-	static TWT::Float GetDeltaTime();
+	static float GetFPS();
+	static float GetDeltaTime();
 
 	static void SetRenderer(TW3DRenderer* Renderer);
 

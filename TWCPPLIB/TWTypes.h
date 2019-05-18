@@ -3,26 +3,19 @@
 using namespace std::string_literals;
 
 namespace TWT {
-	using Bool = bool;
+	using byte  = unsigned char;
+	using wchar = wchar_t;
 
-	using Char  = char;
-	using Byte  = unsigned char;
-	using WChar = wchar_t;
+	using int8  = int8_t;
+	using int16 = int16_t;
+	using int64 = int64_t;
 
-	using Int8  = int8_t;
-	using Int16 = int16_t;
-	using Int   = int32_t;
-	using Int64 = int64_t;
+	using uint8   = uint8_t;
+	using uint16  = uint16_t;
+	using uint    = uint32_t;
+	using uint64 = uint64_t;
 
-	using UInt8  = uint8_t;
-	using UInt16 = uint16_t;
-	using UInt   = uint32_t;
-	using UInt64 = uint64_t;
-
-	using Float   = float;
-	using Float64 = double;
-
-	using Time = tm;
+	using float64 = double;
 
 	template<class T>
 	using Vector = std::vector<T>;
@@ -37,7 +30,7 @@ namespace TWT {
 			this->data = std::to_string(data);
 		};
 
-		String(const Char* data);
+		String(const char* data);
 		String(std::string data);
 		String(const String &str) = default;
 		~String()                 = default;
@@ -53,8 +46,8 @@ namespace TWT {
 
 	struct WString {
 		WString() = default;
-		WString(Int data);
-		WString(const WChar* data);
+		WString(int data);
+		WString(const wchar* data);
 		WString(std::string data);
 		WString(std::wstring data);
 		WString(const WString &str) = default;
@@ -69,7 +62,7 @@ namespace TWT {
 		std::wstring data;
 	};
 
-	TWT::Char*   WideToMultibyte(const std::wstring &wstr);
+	char*   WideToMultibyte(const std::wstring &wstr);
 	std::wstring MultibyteToWide(const std::string &str);
 
 	template<class T>

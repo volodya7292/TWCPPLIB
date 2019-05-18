@@ -76,7 +76,7 @@ WICPixelFormatGUID TWU::WICFormatToDXGICompatible(WICPixelFormatGUID& wicFormatG
 	else return GUID_WICPixelFormatDontCare;
 }
 
-TWT::Int TWU::GetDXGIFormatBitsPerPixel(DXGI_FORMAT dxgiFormat) {
+int TWU::GetDXGIFormatBitsPerPixel(DXGI_FORMAT dxgiFormat) {
 	if (dxgiFormat == DXGI_FORMAT_R32G32B32A32_FLOAT) return 128;
 	else if (dxgiFormat == DXGI_FORMAT_R16G16B16A16_FLOAT) return 64;
 	else if (dxgiFormat == DXGI_FORMAT_R16G16B16A16_UNORM) return 64;
@@ -116,7 +116,7 @@ TWT::String TWU::DXCommandListSupportFlagsStr(D3D12_COMMAND_LIST_SUPPORT_FLAGS F
 	return str;
 }
 
-D3D12_DESCRIPTOR_RANGE TWU::DXDescriptorRange(TWT::UInt Register, D3D12_DESCRIPTOR_RANGE_TYPE Type) {
+D3D12_DESCRIPTOR_RANGE TWU::DXDescriptorRange(TWT::uint Register, D3D12_DESCRIPTOR_RANGE_TYPE Type) {
 	D3D12_DESCRIPTOR_RANGE range = {};
 	range.BaseShaderRegister = Register;
 	range.RegisterSpace = 0;
@@ -128,11 +128,11 @@ D3D12_DESCRIPTOR_RANGE TWU::DXDescriptorRange(TWT::UInt Register, D3D12_DESCRIPT
 }
 
 void TWU::UpdateSubresourcesImp(ID3D12GraphicsCommandList* commandList, ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate,
-	D3D12_SUBRESOURCE_DATA* SrcData, TWT::UInt SubresourcesCount, TWT::UInt64 IntermediateOffset, TWT::UInt FirstSubresource) {
+	D3D12_SUBRESOURCE_DATA* SrcData, TWT::uint SubresourcesCount, TWT::uint64 IntermediateOffset, TWT::uint FirstSubresource) {
 	UpdateSubresources(commandList, DestinationResource, Intermediate, IntermediateOffset, FirstSubresource, SubresourcesCount, SrcData);
 }
 
-TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, const TWT::WString& filename, TWT::Int& bytesPerRow) {
+int TWU::LoadImageDataFromFile(TWT::byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, const TWT::WString& filename, int& bytesPerRow) {
 	HRESULT hr;
 	TWU::FileExistsAssert(filename);
 
@@ -254,21 +254,21 @@ TWT::Int TWU::LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& 
 	return imageSize;
 }
 
-void TWU::TW3DCalculateTriangleNormals(void* VertexBuffer, TWT::UInt VertexCount, TWT::UInt VertexFloatSize, TWT::UInt VertexPositionFloatOffset, TWT::UInt VertexNormalFloatOffset) {
-	TWT::Float* FVB = static_cast<TWT::Float*>(VertexBuffer);
+void TWU::TW3DCalculateTriangleNormals(void* VertexBuffer, TWT::uint VertexCount, TWT::uint VertexFloatSize, TWT::uint VertexPositionFloatOffset, TWT::uint VertexNormalFloatOffset) {
+	float* FVB = static_cast<float*>(VertexBuffer);
 
 	for (size_t i = 0; i < VertexCount / 3; i++) {
-		TWT::UInt index = i * 3 * VertexFloatSize;
-		TWT::UInt pos_index = index + VertexPositionFloatOffset;
-		TWT::UInt norm_index = index + VertexNormalFloatOffset;
+		TWT::uint index = i * 3 * VertexFloatSize;
+		TWT::uint pos_index = index + VertexPositionFloatOffset;
+		TWT::uint norm_index = index + VertexNormalFloatOffset;
 
-		TWT::Vector3f v0 = TWT::Vector3f(FVB[pos_index], FVB[pos_index + 1], FVB[pos_index + 2]);
-		TWT::Vector3f v1 = TWT::Vector3f(FVB[pos_index + VertexFloatSize], FVB[pos_index + VertexFloatSize + 1], FVB[pos_index + VertexFloatSize + 2]);
-		TWT::Vector3f v2 = TWT::Vector3f(FVB[pos_index + VertexFloatSize * 2], FVB[pos_index + VertexFloatSize * 2 + 1], FVB[pos_index + VertexFloatSize * 2 + 2]);
+		TWT::vec3 v0 = TWT::vec3(FVB[pos_index], FVB[pos_index + 1], FVB[pos_index + 2]);
+		TWT::vec3 v1 = TWT::vec3(FVB[pos_index + VertexFloatSize], FVB[pos_index + VertexFloatSize + 1], FVB[pos_index + VertexFloatSize + 2]);
+		TWT::vec3 v2 = TWT::vec3(FVB[pos_index + VertexFloatSize * 2], FVB[pos_index + VertexFloatSize * 2 + 1], FVB[pos_index + VertexFloatSize * 2 + 2]);
 
-		TWT::Vector3f side0 = v1 - v0;
-		TWT::Vector3f side1 = v2 - v0;
-		TWT::Vector3f normal = normalize(cross(side0, side1));
+		TWT::vec3 side0 = v1 - v0;
+		TWT::vec3 side1 = v2 - v0;
+		TWT::vec3 normal = normalize(cross(side0, side1));
 
 		for (size_t j = 0; j < 3; j++) {
 			FVB[norm_index + j * VertexFloatSize] = normal.x;
@@ -280,8 +280,8 @@ void TWU::TW3DCalculateTriangleNormals(void* VertexBuffer, TWT::UInt VertexCount
 
 void TWU::SuccessAssert(HRESULT hr, const TWT::String& AdditionalErrorInfo) {
 	if (FAILED(hr)) {
-		TWT::Char s_str[64] = {};
-		sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<TWT::UInt>(hr));
+		char s_str[64] = {};
+		sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<TWT::uint>(hr));
 		TWT::WString error = TWU::HResultToWString(hr);
 		logger->LogError("SuccessAssert failed: ["s + AdditionalErrorInfo + "] "s + error.Multibyte());
 	}

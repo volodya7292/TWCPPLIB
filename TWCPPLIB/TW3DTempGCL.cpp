@@ -15,9 +15,9 @@ TW3DGraphicsCommandList* TW3DTempGCL::Get() {
 	return CommandList;
 }
 
-void TW3DTempGCL::UpdateSubresources(ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate, D3D12_SUBRESOURCE_DATA* SrcData,
-	TWT::UInt SubresourcesCount, TWT::UInt64 IntermediateOffset, TWT::UInt FirstSubresource) {
-	CommandList->UpdateSubresources(DestinationResource, Intermediate, SrcData, SubresourcesCount, IntermediateOffset, FirstSubresource);
+void TW3DTempGCL::UpdateSubresources(ID3D12Resource* DestinationResource, ID3D12Resource* intermediate, D3D12_SUBRESOURCE_DATA* SrcData,
+	TWT::uint SubresourcesCount, TWT::uint64 intermediateOffset, TWT::uint FirstSubresource) {
+	CommandList->UpdateSubresources(DestinationResource, intermediate, SrcData, SubresourcesCount, intermediateOffset, FirstSubresource);
 }
 
 void TW3DTempGCL::ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {

@@ -8,10 +8,10 @@ public:
 
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle();
 
-	void Create(TWT::UInt Width, TWT::UInt Height);
+	void Create(TWT::uint Width, TWT::uint Height);
 	void Release();
 
 private:
 	TW3DDescriptorHeap* DSVDescriptorHeap;
-	TWT::Int DSVIndex = 0;
+	int DSVIndex = 0;
 };

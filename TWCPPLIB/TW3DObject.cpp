@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TW3DObject.h"
 
-TW3DObject::TW3DObject(TW3DResourceManager* ResourceManager, TWT::UInt ConstantBufferSize) {
+TW3DObject::TW3DObject(TW3DResourceManager* ResourceManager, TWT::uint ConstantBufferSize) {
 	ConstantBuffer = ResourceManager->CreateConstantBuffer(1, ConstantBufferSize);
 }
 
@@ -26,6 +26,6 @@ void TW3DObject::Update() {
 	}
 }
 
-void TW3DObject::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex) {
+void TW3DObject::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::uint ModelCBRootParameterIndex) {
 	CommandList->SetRootCBV(ModelCBRootParameterIndex, ConstantBuffer, 0);
 }

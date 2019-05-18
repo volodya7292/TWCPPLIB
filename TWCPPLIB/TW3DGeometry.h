@@ -3,11 +3,11 @@
 
 class TW3DGeometry : public TW3DObject {
 public:
-	TW3DGeometry(TW3DResourceManager* ResourceManager, TWT::UInt ConstantBufferSize);
+	TW3DGeometry(TW3DResourceManager* ResourceManager, TWT::uint ConstantBufferSize);
 	virtual ~TW3DGeometry() = default;
 
 	virtual void Update();
-	virtual void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex);
+	virtual void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::uint ModelCBRootParameterIndex);
 
 	std::vector<TW3DVertexMeshInstance>& GetVertexMeshInstances() override;
 

@@ -162,10 +162,10 @@ void TW3DShaders::Release() {
 		delete ps;
 }
 
-TW3DComputePipelineState* TW3DShaders::GetComputeShader(TWT::UInt Id) {
+TW3DComputePipelineState* TW3DShaders::GetComputeShader(TWT::uint Id) {
 	return compute_shaders[Id];
 }
 
-TW3DGraphicsPipelineState* TW3DShaders::GetGraphicsShader(TWT::UInt Id) {
+TW3DGraphicsPipelineState* TW3DShaders::GetGraphicsShader(TWT::uint Id) {
 	return graphics_shaders[Id];
 }

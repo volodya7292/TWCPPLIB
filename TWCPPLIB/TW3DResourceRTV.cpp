@@ -7,7 +7,7 @@ TW3DResourceRTV::TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDesc
 	RTVIndex = RTVDescriptorHeap->Allocate();
 }
 
-TW3DResourceRTV::TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TW3DDescriptorHeap* SRVDescriptorHeap, DXGI_FORMAT Format, TWT::Vector4f ClearValue) :
+TW3DResourceRTV::TW3DResourceRTV(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TW3DDescriptorHeap* SRVDescriptorHeap, DXGI_FORMAT Format, TWT::vec4 ClearValue) :
 	TW3DResource(Device), RTVDescriptorHeap(RTVDescriptorHeap), SRVDescriptorHeap(SRVDescriptorHeap), ClearValue(ClearValue)
 {
 	RTVIndex = RTVDescriptorHeap->Allocate();
@@ -28,7 +28,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE TW3DResourceRTV::GetSRVGPUHandle() {
 	return SRVDescriptorHeap->GetGPUHandle(SRVIndex);
 }
 
-TWT::Vector4f TW3DResourceRTV::GetClearColor() {
+TWT::vec4 TW3DResourceRTV::GetClearColor() {
 	return ClearValue;
 }
 
@@ -37,7 +37,7 @@ void TW3DResourceRTV::Create(ID3D12Resource* Buffer) {
 	Device->CreateRenderTargetView(Resource, GetRTVCPUHandle());
 }
 
-void TW3DResourceRTV::Create(TWT::UInt Width, TWT::UInt Height) {
+void TW3DResourceRTV::Create(TWT::uint Width, TWT::uint Height) {
 	D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
 	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	desc.Format = ImageDesc.Format;

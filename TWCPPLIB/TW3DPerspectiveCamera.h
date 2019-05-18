@@ -5,27 +5,27 @@
 
 class TW3DPerspectiveCamera {
 public:
-	TW3DPerspectiveCamera(TW3DResourceManager* ResourceManager = nullptr, TWT::UInt Width = 1280, TWT::UInt Height = 720, TWT::Float FOVY = 70.0f, TWT::Vector3f Position = TWT::Vector3f(0),
-		TWT::Vector3f Rotation = TWT::Vector3f(0), TWT::Float ZNear = 0.1f, TWT::Float ZFar = 1000.0f);
+	TW3DPerspectiveCamera(TW3DResourceManager* ResourceManager = nullptr, TWT::uint Width = 1280, TWT::uint Height = 720, float FOVY = 70.0f, TWT::vec3 Position = TWT::vec3(0),
+		TWT::vec3 Rotation = TWT::vec3(0), float ZNear = 0.1f, float ZFar = 1000.0f);
 	~TW3DPerspectiveCamera();
 
-	TWT::Matrix4f GetProjectionMatrix();
-	TWT::Matrix4f GetViewMatrix();
-	TWT::Matrix4f GetProjectionViewMatrix();
-	TWT::Vector3f GetRotation();
-	TWT::Float GetRatioX();
-	TWT::Float GetRatioY();
+	TWT::mat4 GetProjectionMatrix();
+	TWT::mat4 GetViewMatrix();
+	TWT::mat4 GetProjectionViewMatrix();
+	TWT::vec3 GetRotation();
+	float GetRatioX();
+	float GetRatioY();
 
-	void SetRotation(TWT::Vector3f Rotation);
-	void Move(TWT::Float to_back, TWT::Float left_right);
+	void SetRotation(TWT::vec3 Rotation);
+	void Move(float to_back, float left_right);
 	void UpdateConstantBuffer(TW3DResourceCB* ConstantBuffer = nullptr);
 	TW3DResourceCB* GetConstantBuffer();
 
-	TWT::UInt Width, Height;
-	TWT::Float FOVY, ZNear, ZFar;
-	TWT::Vector3f Position;
+	TWT::uint Width, Height;
+	float FOVY, ZNear, ZFar;
+	TWT::vec3 Position;
 
 private:
-	TWT::Vector3f rotation;
+	TWT::vec3 rotation;
 	TW3DResourceCB* constant_buffer = nullptr;
 };

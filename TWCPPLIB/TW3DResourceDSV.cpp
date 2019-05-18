@@ -15,7 +15,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE TW3DResourceDSV::GetCPUHandle() {
 	return DSVDescriptorHeap->GetCPUHandle(DSVIndex);
 }
 
-void TW3DResourceDSV::Create(TWT::UInt Width, TWT::UInt Height) {
+void TW3DResourceDSV::Create(TWT::uint Width, TWT::uint Height) {
 	D3D12_DEPTH_STENCIL_VIEW_DESC desc = {};
 	desc.Format = DXGI_FORMAT_D32_FLOAT;
 	desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;

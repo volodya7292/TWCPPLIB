@@ -3,10 +3,10 @@
 #include "TW3DCube.h"
 #include "TW3DDefaultRenderer.h"
 
-static const TWT::Float movement_speed = 2.0f;
-static const TWT::Float mouseSensitivity = 0.05f;
+static const float movement_speed = 2.0f;
+static const float mouseSensitivity = 0.05f;
 
-static TWT::Bool movement_capture = true;
+static bool movement_capture = true;
 
 TW3DDefaultRenderer* defaultRenderer;
 TW3DScene* scene;
@@ -44,14 +44,14 @@ void on_update() {
 		scene->Camera->Move(to_back_movement * ms, right_left_movement * ms);
 
 		// Mouse movement
-		TWT::Vector2i centerMousePos = TW3D::GetWindowCenterPosition();
+		TWT::vec2i centerMousePos = TW3D::GetWindowCenterPosition();
 
-		TWT::Vector2i mousePos = TW3D::GetCursorPosition();
+		TWT::vec2i mousePos = TW3D::GetCursorPosition();
 
 		float xOffset = (mousePos.x - centerMousePos.x) * mouseSensitivity;
 		float yOffset = (centerMousePos.y - mousePos.y) * mouseSensitivity;
 
-		TWT::Vector3f rotation = scene->Camera->GetRotation();
+		TWT::vec3 rotation = scene->Camera->GetRotation();
 		float xRotation = rotation.x;
 		float newXRotation = xRotation - yOffset;
 
@@ -71,14 +71,14 @@ void on_update() {
 
 
 
-	//cube->VMInstances[0].Transform.SetPosition(TWT::Vector3f(-0.8f, 0, 0));
-	//cube->VMInstances[0].Transform.AdjustRotation(TWT::Vector3f(0.01f));
-	//cube2->VMInstances[0].Transform.SetPosition(TWT::Vector3f(0.8f, 0, 0));
-	//cube2->VMInstances[0].Transform.AdjustRotation(TWT::Vector3f(0.02f));
+	//cube->VMInstances[0].Transform.SetPosition(TWT::vec3(-0.8f, 0, 0));
+	//cube->VMInstances[0].Transform.AdjustRotation(TWT::vec3(0.01f));
+	//cube2->VMInstances[0].Transform.SetPosition(TWT::vec3(0.8f, 0, 0));
+	//cube2->VMInstances[0].Transform.AdjustRotation(TWT::vec3(0.02f));
 	scene->Camera->UpdateConstantBuffer();
 }
 
-TWT::UInt on_thread_tick(TWT::UInt ThreadID, TWT::UInt ThreadCount) {
+TWT::uint on_thread_tick(TWT::uint ThreadID, TWT::uint ThreadCount) {
 	TWT::String str = "govno FPS: "s + TW3D::GetFPS();
 	TW3D::SetWindowTitle(str);
 
@@ -92,7 +92,7 @@ void on_cleanup() {
 	delete defaultRenderer;
 }
 
-void on_key(TWT::UInt KeyCode, TW3D::KeyActionType Type) {
+void on_key(TWT::uint KeyCode, TW3D::KeyActionType Type) {
 	float delta_time = TW3D::GetDeltaTime();
 
 	switch (KeyCode) {
@@ -111,7 +111,7 @@ void on_key(TWT::UInt KeyCode, TW3D::KeyActionType Type) {
 	}
 }
 
-void on_char(TWT::WChar Symbol) {
+void on_char(TWT::wchar Symbol) {
 	//TWU::CPrintln(Symbol);
 }
 
@@ -132,14 +132,14 @@ int main() {
 
 	rp3d::BoxShape shape = rp3d::BoxShape(rp3d::Vector3(0.5, 0.5, 0.5));
 
-	cube->VMInstance.Transform.SetPosition(TWT::Vector3f(0.0f, 0, 0));
+	cube->VMInstance.Transform.SetPosition(TWT::vec3(0.0f, 0, 0));
 	scene->AddObject(cube);
 	cube->VMInstance.RigidBody->setType(rp3d::BodyType::STATIC);
 	cube->VMInstance.RigidBody->enableGravity(false);
 	cube->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);
 
 	cube2->VMInstance.VertexMesh = TW3DPrimitives::GetPyramid4VertexMesh();
-	cube2->VMInstance.Transform.SetPosition(TWT::Vector3f(0.0f, 5, 0));
+	cube2->VMInstance.Transform.SetPosition(TWT::vec3(0.0f, 5, 0));
 	scene->AddObject(cube2);
 	cube2->VMInstance.RigidBody->setType(rp3d::BodyType::DYNAMIC);
 	cube2->VMInstance.RigidBody->enableGravity(true);

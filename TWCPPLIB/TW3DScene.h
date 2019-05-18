@@ -3,8 +3,8 @@
 #include "TW3DPerspectiveCamera.h"
 
 struct TW3DSceneVertexMesh {
-	TWT::UInt gvb_offset = -1;
-	TWT::UInt gnb_offset = -1;
+	TWT::uint gvb_offset = -1;
+	TWT::uint gnb_offset = -1;
 };
 
 class TW3DScene {
@@ -12,9 +12,9 @@ public:
 	TW3DScene(TW3DResourceManager* ResourceManager);
 	~TW3DScene();
 
-	void Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRPI, TWT::UInt SceneRTNBRPI, TWT::UInt GNBRPI);
+	void Bind(TW3DGraphicsCommandList* CommandList, TWT::uint GVBRPI, TWT::uint SceneRTNBRPI, TWT::uint GNBRPI);
 	void AddObject(TW3DObject* Object);
-	void Update(TWT::Float DeltaTime);
+	void Update(float DeltaTime);
 	void RecordBeforeExecution();
 
 	TW3DPerspectiveCamera* Camera;
@@ -25,11 +25,11 @@ private:
 
 	TW3DResourceManager* resource_manager;
 
-	TWT::Bool vertex_buffers_changed = false;
-	TWT::Bool mesh_buffers_changed = false;
-	TWT::Bool objects_changed = false;
+	bool vertex_buffers_changed = false;
+	bool mesh_buffers_changed = false;
+	bool objects_changed = false;
 
-	std::map<TW3DVertexBuffer*, TWT::UInt> vertex_buffers;
+	std::map<TW3DVertexBuffer*, TWT::uint> vertex_buffers;
 	std::map<TW3DVertexMesh*, TW3DSceneVertexMesh> vertex_meshes;
 	TWT::Vector<SceneLBVHInstance> mesh_instances;
 
@@ -37,8 +37,8 @@ private:
 	TW3DResourceUAV* gnb;
 	TW3DResourceUAV* instance_buffer = nullptr;
 
-	TWT::UInt gvb_vertex_count = 0;
-	TWT::UInt gnb_node_count = 0;
+	TWT::uint gvb_vertex_count = 0;
+	TWT::uint gnb_node_count = 0;
 
 	TW3DLBVH* LBVH;
 

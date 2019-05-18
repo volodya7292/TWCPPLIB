@@ -5,12 +5,12 @@ class TW3DDefaultRenderer : public TW3DRenderer {
 public:
 	TW3DDefaultRenderer() = default;
 	virtual ~TW3DDefaultRenderer();
-	void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height);
-	void Resize(TWT::UInt Width, TWT::UInt Height);
-	void Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStesncilOutput);
+	void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height);
+	void Resize(TWT::uint Width, TWT::uint Height);
+	void Record(TWT::uint BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStesncilOutput);
 	void RecordBeforeExecution();
-	void Update(TWT::Float DeltaTime);
-	void Execute(TWT::UInt BackBufferIndex);
+	void Update(float DeltaTime);
+	void Execute(TWT::uint BackBufferIndex);
 
 private:
 	void CreateBlitResources();

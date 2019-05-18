@@ -20,7 +20,7 @@ HRESULT TW3DDevice::GetRemoveReason() {
 	return device->GetDeviceRemovedReason();
 }
 
-void TW3DDevice::GetFeatureData(D3D12_FEATURE Feature, void* FeatureSupportData, TWT::UInt FeatureSupportDataSize) {
+void TW3DDevice::GetFeatureData(D3D12_FEATURE Feature, void* FeatureSupportData, TWT::uint FeatureSupportDataSize) {
 	TWU::SuccessAssert(device->CheckFeatureSupport(Feature, FeatureSupportData, FeatureSupportDataSize), "TW3DDevice::GetFeatureData"s);
 }
 
@@ -40,7 +40,7 @@ void TW3DDevice::CreateGraphicsCommandList(D3D12_COMMAND_LIST_TYPE type, ID3D12C
 	TWU::SuccessAssert(device->CreateCommandList(0, type, commandAllocator, nullptr, IID_PPV_ARGS(commandList)), "TW3DDevice::CreateGraphicsCommandList"s);
 }
 
-void TW3DDevice::CreateFence(TWT::UInt64 initialValue, D3D12_FENCE_FLAGS flags, ID3D12Fence** fence) {
+void TW3DDevice::CreateFence(TWT::uint64 initialValue, D3D12_FENCE_FLAGS flags, ID3D12Fence** fence) {
 	TWU::SuccessAssert(device->CreateFence(initialValue, flags, IID_PPV_ARGS(fence)), "TW3DDevice::CreateFence"s);
 }
 
@@ -82,12 +82,12 @@ void TW3DDevice::CreateUnorderedAccessView(ID3D12Resource* resource, const D3D12
 	device->CreateUnorderedAccessView(resource, nullptr, desc, dest_descriptor);
 }
 
-TWT::UInt64 TW3DDevice::GetCopyableFootprints(const D3D12_RESOURCE_DESC* resourceDesc, TWT::UInt subResCount) {
-	TWT::UInt64 totalBytes;
+TWT::uint64 TW3DDevice::GetCopyableFootprints(const D3D12_RESOURCE_DESC* resourceDesc, TWT::uint subResCount) {
+	TWT::uint64 totalBytes;
 	device->GetCopyableFootprints(resourceDesc, 0, subResCount, 0, nullptr, nullptr, nullptr, &totalBytes);
 	return totalBytes;
 }
 
-TWT::UInt TW3DDevice::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE heapType) {
+TWT::uint TW3DDevice::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE heapType) {
 	return device->GetDescriptorHandleIncrementSize(heapType);
 }

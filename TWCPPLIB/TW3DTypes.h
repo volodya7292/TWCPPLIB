@@ -2,13 +2,15 @@
 #include "TWTypes.h"
 
 namespace TWT {
-	using Vector2f = glm::vec2;
-	using Vector2i = glm::ivec2;
-	using Vector2u = glm::uvec2;
-	using Vector3f = glm::vec3;
-	using Vector4f = glm::vec4;
-	using Vector4u = glm::uvec4;
-	using Matrix4f = glm::mat4;
+	using vec2 = glm::vec2;
+	using vec2i = glm::ivec2;
+	using vec2u = glm::uvec2;
+	using vec3 = glm::vec3;
+	using vec3d = glm::vec<3, double>;
+	using vec3u = glm::uvec3;
+	using vec4 = glm::vec4;
+	using vec4u = glm::uvec4;
+	using mat4 = glm::mat4;
 
 	
 	const static DXGI_FORMAT RGBA8Unorm = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -17,39 +19,39 @@ namespace TWT {
 	const static DXGI_FORMAT D24UnormS8 = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	struct DefaultVertex {
-		DefaultVertex(TWT::Float x, TWT::Float y, TWT::Float z, TWT::Float u, TWT::Float v, TWT::Float nx, TWT::Float ny, TWT::Float nz) :
+		DefaultVertex(float x, float y, float z, float u, float v, float nx, float ny, float nz) :
 			Pos(x, y, z), TexCoord(u, v), Normal(nx, ny, nz) {}
 
-		TWT::Vector3f Pos;
-		TWT::Vector2f TexCoord;
-		TWT::Vector3f Normal;
+		TWT::vec3 Pos;
+		TWT::vec2 TexCoord;
+		TWT::vec3 Normal;
 	};
 
 	struct DefaultCameraCB {
-		TWT::Vector4f pos;
-		TWT::Matrix4f proj;
-		TWT::Matrix4f view;
-		TWT::Matrix4f proj_view;
+		TWT::vec4 pos;
+		TWT::mat4 proj;
+		TWT::mat4 view;
+		TWT::mat4 proj_view;
 	};
 
 	struct DefaultVertexBufferCB {
-		TWT::Vector4u vertex_offset;
+		TWT::vec4u vertex_offset;
 	};
 
 	struct DefaultModelCB {
-		TWT::Matrix4f model;
+		TWT::mat4 model;
 	};
 
 	struct Bounds {
-		TWT::Vector4f pMin;
-		TWT::Vector4f pMax;
+		TWT::vec4 pMin;
+		TWT::vec4 pMax;
 	};
 
-	inline Matrix4f Translate(Matrix4f Matrix, TWT::Vector3f Position) {
+	inline mat4 Translate(mat4 Matrix, TWT::vec3 Position) {
 		return glm::translate(Matrix, Position);
 	}
 
-	inline Matrix4f Rotate(Matrix4f Matrix, TWT::Float Angle, TWT::Vector3f Axis) {
+	inline mat4 Rotate(mat4 Matrix, float Angle, TWT::vec3 Axis) {
 		return glm::rotate(Matrix, Angle, Axis);
 	}
 }

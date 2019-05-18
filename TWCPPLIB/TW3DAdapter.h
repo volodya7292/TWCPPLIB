@@ -20,5 +20,5 @@ private:
 	D3D_FEATURE_LEVEL featureLevel;
 
 	TWT::WString description;
-	TWT::UInt64 dedicatedVideoMemory;
+	TWT::uint64 dedicatedVideoMemory;
 };

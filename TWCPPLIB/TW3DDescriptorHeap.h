@@ -3,25 +3,25 @@
 
 class TW3DDescriptorHeap {
 public:
-	TW3DDescriptorHeap(TW3DDevice* Device, D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS Flags, TWT::UInt DescriptorCount);
+	TW3DDescriptorHeap(TW3DDevice* Device, D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS Flags, TWT::uint DescriptorCount);
 	~TW3DDescriptorHeap();
 
 	ID3D12DescriptorHeap* Get();
-	TWT::Int Allocate();
-	void Free(TWT::Int DescriptorIndex);
+	int Allocate();
+	void Free(int DescriptorIndex);
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleForHeapStart();
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleForHeapStart();
-	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(TWT::Int Index);
-	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle(TWT::Int Index);
+	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(int Index);
+	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle(int Index);
 
-	static TW3DDescriptorHeap* CreateForRTV(TW3DDevice* Device, TWT::UInt Count);
-	static TW3DDescriptorHeap* CreateForDSV(TW3DDevice* Device, TWT::UInt Count);
-	static TW3DDescriptorHeap* CreateForSR(TW3DDevice* Device, TWT::UInt Count);
+	static TW3DDescriptorHeap* CreateForRTV(TW3DDevice* Device, TWT::uint Count);
+	static TW3DDescriptorHeap* CreateForDSV(TW3DDevice* Device, TWT::uint Count);
+	static TW3DDescriptorHeap* CreateForSR(TW3DDevice* Device, TWT::uint Count);
 
 private:
-	static const TWT::UInt MAX_DESCRIPTOR_COUNT = 1024;
+	static const TWT::uint MAX_DESCRIPTOR_COUNT = 1024;
 
 	ID3D12DescriptorHeap* descriptor_heap;
-	TWT::Bool free_descriptors[MAX_DESCRIPTOR_COUNT];
-	const TWT::UInt IncrementSize;
+	bool free_descriptors[MAX_DESCRIPTOR_COUNT];
+	const TWT::uint IncrementSize;
 };

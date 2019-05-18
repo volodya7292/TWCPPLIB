@@ -14,20 +14,20 @@ namespace TWU {
 	WICPixelFormatGUID WICFormatToDXGICompatible(WICPixelFormatGUID& wicFormatGUID);
 
 	// Get the number of bits per pixel for a DXGI format
-	TWT::Int GetDXGIFormatBitsPerPixel(DXGI_FORMAT dxgiFormat);
+	int GetDXGIFormatBitsPerPixel(DXGI_FORMAT dxgiFormat);
 
 	TWT::String DXCommandListSupportFlagsStr(D3D12_COMMAND_LIST_SUPPORT_FLAGS Flags);
 
-	D3D12_DESCRIPTOR_RANGE DXDescriptorRange(TWT::UInt Register, D3D12_DESCRIPTOR_RANGE_TYPE Type);
+	D3D12_DESCRIPTOR_RANGE DXDescriptorRange(TWT::uint Register, D3D12_DESCRIPTOR_RANGE_TYPE Type);
 
 	// Implementation of UpdateSubresources from d3dx12.h. Used in TW3DGraphicsCommandList.
 	void UpdateSubresourcesImp(ID3D12GraphicsCommandList* commandList, ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate,
-		D3D12_SUBRESOURCE_DATA* SrcData, TWT::UInt SubresourcesCount, TWT::UInt64 IntermediateOffset, TWT::UInt FirstSubresource);
+		D3D12_SUBRESOURCE_DATA* SrcData, TWT::uint SubresourcesCount, TWT::uint64 IntermediateOffset, TWT::uint FirstSubresource);
 
 	// Load and decode image from file
-	TWT::Int LoadImageDataFromFile(TWT::Byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, const TWT::WString& filename, TWT::Int& bytesPerRow);
+	int LoadImageDataFromFile(TWT::byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, const TWT::WString& filename, int& bytesPerRow);
 
-	void TW3DCalculateTriangleNormals(void* VertexBuffer, TWT::UInt VertexCount, TWT::UInt VertexFloatSize, TWT::UInt VertexPositionFloatOffset, TWT::UInt VertexNormalFloatOffset);
+	void TW3DCalculateTriangleNormals(void* VertexBuffer, TWT::uint VertexCount, TWT::uint VertexFloatSize, TWT::uint VertexPositionFloatOffset, TWT::uint VertexNormalFloatOffset);
 
 	// Safely release DirectX resources
 	template<typename T>

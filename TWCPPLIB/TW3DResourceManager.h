@@ -13,14 +13,14 @@ public:
 	~TW3DResourceManager();
 
 	TW3DResourceRTV* CreateRenderTargetView(ID3D12Resource* Buffer);
-	TW3DResourceRTV* CreateRenderTargetView(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format, TWT::Vector4f ClearValue);
-	TW3DResourceDSV* CreateDepthStencilView(TWT::UInt Width, TWT::UInt Height);
-	TW3DResourceUAV* CreateUnorderedAccessView(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format);
-	TW3DResourceUAV* CreateUnorderedAccessView(TWT::UInt ElementCount, TWT::UInt ElementSizeInBytes);
-	TW3DVertexBuffer* CreateVertexBuffer(TWT::UInt VertexCount, TWT::UInt SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex));
-	TW3DResourceCB* CreateConstantBuffer(TWT::UInt ElementCount, TWT::UInt ElementSizeInBytes);
+	TW3DResourceRTV* CreateRenderTargetView(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, TWT::vec4 ClearValue);
+	TW3DResourceDSV* CreateDepthStencilView(TWT::uint Width, TWT::uint Height);
+	TW3DResourceUAV* CreateUnorderedAccessView(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format);
+	TW3DResourceUAV* CreateUnorderedAccessView(TWT::uint ElementCount, TWT::uint ElementSizeInBytes);
+	TW3DVertexBuffer* CreateVertexBuffer(TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex));
+	TW3DResourceCB* CreateConstantBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes);
 	TW3DResourceSR* CreateTexture2D(const TWT::WString& Filename);
-	TW3DResourceSR* CreateTextureArray2D(TWT::UInt Width, TWT::UInt Height, TWT::UInt Depth, DXGI_FORMAT Format);
+	TW3DResourceSR* CreateTextureArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Depth, DXGI_FORMAT Format);
 	TW3DGraphicsCommandList* CreateDirectCommandList();
 	TW3DGraphicsCommandList* CreateBundleCommandList();
 	TW3DGraphicsCommandList* CreateComputeCommandList();
@@ -32,7 +32,7 @@ public:
 
 	void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 
-	TWT::Bool IsCommandListRunning(TW3DGraphicsCommandList* CommandList);
+	bool IsCommandListRunning(TW3DGraphicsCommandList* CommandList);
 	void FlushCommandList(TW3DGraphicsCommandList* CommandList);
 	void FlushCommandLists();
 	void ExecuteCommandList(TW3DGraphicsCommandList* CommandList);

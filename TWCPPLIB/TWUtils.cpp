@@ -20,15 +20,15 @@ void TWU::FileExistsAssert(TWT::WString filename) {
 		throw std::runtime_error("File "s + filename.Multibyte() + " not good(not exists)!"s);
 }
 
-TWT::Byte* TWU::ReadFileBytes(TWT::String filename, TWT::UInt& size) {
+TWT::byte* TWU::ReadFileBytes(TWT::String filename, TWT::uint& size) {
 	TWU::FileExistsAssert(filename.Wide());
 
 	std::ifstream VertexFile(filename.data, std::ios::ate | std::ios::binary);
 
 	if (VertexFile.is_open()) {
-		size = (TWT::Int)VertexFile.tellg();
+		size = (int)VertexFile.tellg();
 
-		TWT::Byte* data = new TWT::Byte[size];
+		TWT::byte* data = new TWT::byte[size];
 
 		VertexFile.seekg(0);
 		VertexFile.read(reinterpret_cast<char*>(data), size);
@@ -40,13 +40,13 @@ TWT::Byte* TWU::ReadFileBytes(TWT::String filename, TWT::UInt& size) {
 	return nullptr;
 }
 
-TWT::Time TWU::GetTime() {
+tm TWU::GetTime() {
 	time_t theTime = time(NULL);
 	tm *aTime = localtime(&theTime);
 	return *aTime;
 }
 
-TWT::Float64 TWU::GetTimeSeconds() {
-	TWT::Float64 time = static_cast<TWT::Float64>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+TWT::float64 TWU::GetTimeSeconds() {
+	TWT::float64 time = static_cast<TWT::float64>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 	return time / 1.0e9;
 }

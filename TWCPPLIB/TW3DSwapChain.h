@@ -4,26 +4,26 @@
 
 class TW3DSwapChain { //-V802
 public:
-	TW3DSwapChain(TW3DFactory* factory, TW3DCommandQueue* commandQueue, HWND hwnd, TWT::UInt width, TWT::UInt height, TWT::Bool vsync);
+	TW3DSwapChain(TW3DFactory* factory, TW3DCommandQueue* commandQueue, HWND hwnd, TWT::uint width, TWT::uint height, bool vsync);
 	~TW3DSwapChain();
 
 	DXGI_SWAP_CHAIN_DESC1 GetDescription();
-	TWT::Bool GetFullscreen();
-	void SetFullscreen(TWT::Bool fullscreen);
+	bool GetFullscreen();
+	void SetFullscreen(bool fullscreen);
 
-	TWT::UInt GetCurrentBufferIndex();
-	ID3D12Resource* GetBuffer(TWT::UInt index);
+	TWT::uint GetCurrentBufferIndex();
+	ID3D12Resource* GetBuffer(TWT::uint index);
 
-	void Resize(TWT::UInt width, TWT::UInt height);
+	void Resize(TWT::uint width, TWT::uint height);
 	void Present();
 
-	TWT::Bool VSync;
+	bool VSync;
 
-	static const TWT::UInt BufferCount = 3;
+	static const TWT::uint BufferCount = 3;
 
 private:
 	IDXGISwapChain4* swapChain;
 	DXGI_SWAP_CHAIN_DESC1 desc;
 
-	const TWT::Bool tearing;
+	const bool tearing;
 };

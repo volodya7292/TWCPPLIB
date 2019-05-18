@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TW3DSwapChain.h"
 
-TW3DSwapChain::TW3DSwapChain(TW3DFactory* factory, TW3DCommandQueue* commandQueue, HWND hwnd, TWT::UInt width, TWT::UInt height, TWT::Bool vsync) :
+TW3DSwapChain::TW3DSwapChain(TW3DFactory* factory, TW3DCommandQueue* commandQueue, HWND hwnd, TWT::uint width, TWT::uint height, bool vsync) :
 	VSync(vsync), tearing(factory->CheckTearingSupport())
 {
 	DXGI_SAMPLE_DESC sampleDesc = {};
@@ -33,27 +33,27 @@ DXGI_SWAP_CHAIN_DESC1 TW3DSwapChain::GetDescription() {
 	return desc;
 }
 
-TWT::Bool TW3DSwapChain::GetFullscreen() {
+bool TW3DSwapChain::GetFullscreen() {
 	BOOL fullscreen;
 	TWU::SuccessAssert(swapChain->GetFullscreenState(&fullscreen, nullptr), "TW3DSwapChain::GetFullscreen"s);
 	return fullscreen;
 }
 
-void TW3DSwapChain::SetFullscreen(TWT::Bool fullscreen) {
+void TW3DSwapChain::SetFullscreen(bool fullscreen) {
 	TWU::SuccessAssert(swapChain->SetFullscreenState(fullscreen, nullptr), "TW3DSwapChain::SetFullscreen "s + TWU::BoolStr(fullscreen));
 }
 
-TWT::UInt TW3DSwapChain::GetCurrentBufferIndex() {
+TWT::uint TW3DSwapChain::GetCurrentBufferIndex() {
 	return swapChain->GetCurrentBackBufferIndex();
 }
 
-ID3D12Resource* TW3DSwapChain::GetBuffer(TWT::UInt index) {
+ID3D12Resource* TW3DSwapChain::GetBuffer(TWT::uint index) {
 	ID3D12Resource* resource;
 	swapChain->GetBuffer(index, IID_PPV_ARGS(&resource));
 	return resource;
 }
 
-void TW3DSwapChain::Resize(TWT::UInt width, TWT::UInt height) {
+void TW3DSwapChain::Resize(TWT::uint width, TWT::uint height) {
 	swapChain->ResizeBuffers(BufferCount, width, height, desc.Format, desc.Flags);
 }
 

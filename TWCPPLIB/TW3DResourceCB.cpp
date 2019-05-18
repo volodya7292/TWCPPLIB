@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TW3DResourceCB.h"
 
-TW3DResourceCB::TW3DResourceCB(TW3DDevice* Device, TWT::UInt ElementCount, TWT::UInt ElementSize) :
+TW3DResourceCB::TW3DResourceCB(TW3DDevice* Device, TWT::uint ElementCount, TWT::uint ElementSize) :
 	TW3DResource(Device)
 {
 	AlignedElementSize = (ElementSize + 255) & ~255;
@@ -20,10 +20,10 @@ TW3DResourceCB::TW3DResourceCB(TW3DDevice* Device, TWT::UInt ElementCount, TWT::
 TW3DResourceCB::~TW3DResourceCB() {
 }
 
-D3D12_GPU_VIRTUAL_ADDRESS TW3DResourceCB::GetAddress(TWT::UInt ElementIndex) {
+D3D12_GPU_VIRTUAL_ADDRESS TW3DResourceCB::GetAddress(TWT::uint ElementIndex) {
 	return GetGPUVirtualAddress() + ElementIndex * AlignedElementSize;
 }
 
-void TW3DResourceCB::Update(void* Data, TWT::UInt ElementIndex) {
+void TW3DResourceCB::Update(void* Data, TWT::uint ElementIndex) {
 	memcpy(GPUAddress + ElementIndex * AlignedElementSize, Data, AlignedElementSize);
 }
