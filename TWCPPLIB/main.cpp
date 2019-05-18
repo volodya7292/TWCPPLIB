@@ -8,11 +8,11 @@ static const TWT::Float mouseSensitivity = 0.05f;
 
 static TWT::Bool movement_capture = true;
 
-TW3D::TW3DDefaultRenderer* defaultRenderer;
-TW3D::TW3DScene* scene;
+TW3DDefaultRenderer* defaultRenderer;
+TW3DScene* scene;
 
 
-TW3D::TW3DCube* cube, *cube2;
+TW3DCube* cube, *cube2;
 
 void on_update() {
 
@@ -92,20 +92,20 @@ void on_cleanup() {
 	delete defaultRenderer;
 }
 
-void on_key(TWT::UInt KeyCode, TW3D::TW3DKeyActionType Type) {
+void on_key(TWT::UInt KeyCode, TW3D::KeyActionType Type) {
 	float delta_time = TW3D::GetDeltaTime();
 
 	switch (KeyCode) {
 	case VK_ESCAPE:
-		if (Type == TW3D::TW3D_KEY_ACTION_DOWN)
+		if (Type == TW3D::KEY_ACTION_DOWN)
 			TW3D::Shutdown();
 		break;
 	case VK_F11:
-		if (Type == TW3D::TW3D_KEY_ACTION_DOWN)
+		if (Type == TW3D::KEY_ACTION_DOWN)
 			TW3D::SetFullScreen(!TW3D::GetFullScreen());
 		break;
 	case 'T':
-		if (Type == TW3D::TW3D_KEY_ACTION_DOWN)
+		if (Type == TW3D::KEY_ACTION_DOWN)
 			movement_capture = !movement_capture;
 		break;
 	}
@@ -124,24 +124,33 @@ int main() {
 
 	TW3D::SetVSync(true);
 
-	TW3D::TW3DResourceManager* RM = TW3D::GetResourceManager();
+	TW3DResourceManager* RM = TW3D::GetResourceManager();
 
-	scene = new TW3D::TW3DScene(RM);
-	cube = new TW3D::TW3DCube(RM);
-	cube2 = new TW3D::TW3DCube(RM);
+	scene = new TW3DScene(RM);
+	cube = new TW3DCube(RM);
+	cube2 = new TW3DCube(RM);
 
-	cube->VMInstances[0].Transform.SetPosition(TWT::Vector3f(0.0f, 0, 0));
+	rp3d::BoxShape shape = rp3d::BoxShape(rp3d::Vector3(0.5, 0.5, 0.5));
+
+	cube->VMInstance.Transform.SetPosition(TWT::Vector3f(0.0f, 0, 0));
 	scene->AddObject(cube);
+	cube->VMInstance.RigidBody->setType(rp3d::BodyType::STATIC);
+	cube->VMInstance.RigidBody->enableGravity(false);
+	cube->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);
 
-	cube2->VMInstances[0].VertexMesh = TW3DPrimitives::GetPyramid4VertexMesh();
-	cube2->VMInstances[0].Transform.SetPosition(TWT::Vector3f(0.0f, 5, 0));
+	cube2->VMInstance.VertexMesh = TW3DPrimitives::GetPyramid4VertexMesh();
+	cube2->VMInstance.Transform.SetPosition(TWT::Vector3f(0.0f, 5, 0));
 	scene->AddObject(cube2);
+	cube2->VMInstance.RigidBody->setType(rp3d::BodyType::DYNAMIC);
+	cube2->VMInstance.RigidBody->enableGravity(true);
+	cube2->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);
+
 
 
 	scene->Camera->FOVY = 45;
 	scene->Camera->Position.z = 3;
 
-	defaultRenderer = new TW3D::TW3DDefaultRenderer();
+	defaultRenderer = new TW3DDefaultRenderer();
 	defaultRenderer->SetScene(scene);
 
 	TW3D::SetRenderer(defaultRenderer);

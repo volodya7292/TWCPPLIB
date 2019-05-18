@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TW3DRootSignature.h"
 
-TW3D::TW3DRootSignature::TW3DRootSignature(TWT::Bool AllowGeometryShader, TWT::Bool AllowVertexShader, TWT::Bool AllowPixelShader, TWT::Bool AllowInputAssembler) {
+TW3DRootSignature::TW3DRootSignature(TWT::Bool AllowGeometryShader, TWT::Bool AllowVertexShader, TWT::Bool AllowPixelShader, TWT::Bool AllowInputAssembler) {
 	desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS | D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS;
 
 	if (!AllowGeometryShader)
@@ -16,15 +16,15 @@ TW3D::TW3DRootSignature::TW3DRootSignature(TWT::Bool AllowGeometryShader, TWT::B
 	root_parameters.resize(64);
 }
 
-TW3D::TW3DRootSignature::~TW3DRootSignature() {
+TW3DRootSignature::~TW3DRootSignature() {
 	TWU::DXSafeRelease(root_signature);
 }
 
-ID3D12RootSignature* TW3D::TW3DRootSignature::Get() {
+ID3D12RootSignature* TW3DRootSignature::Get() {
 	return root_signature;
 }
 
-void TW3D::TW3DRootSignature::SetParameter(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, D3D12_ROOT_PARAMETER_TYPE Type) {
+void TW3DRootSignature::SetParameter(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, D3D12_ROOT_PARAMETER_TYPE Type) {
 	D3D12_ROOT_DESCRIPTOR descriptor = {};
 	descriptor.RegisterSpace = 0;
 	descriptor.ShaderRegister = Register;
@@ -37,7 +37,7 @@ void TW3D::TW3DRootSignature::SetParameter(TWT::UInt Index, D3D12_SHADER_VISIBIL
 	parameter_count++;
 }
 
-void TW3D::TW3DRootSignature::SetParameterTable(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, D3D12_DESCRIPTOR_RANGE_TYPE DescriptorType, TWT::UInt DescriptorCount) {
+void TW3DRootSignature::SetParameterTable(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, D3D12_DESCRIPTOR_RANGE_TYPE DescriptorType, TWT::UInt DescriptorCount) {
 	D3D12_DESCRIPTOR_RANGE* range = new CD3DX12_DESCRIPTOR_RANGE(DescriptorType, DescriptorCount, Register);
 
 	root_parameters[Index] = {};
@@ -48,23 +48,23 @@ void TW3D::TW3DRootSignature::SetParameterTable(TWT::UInt Index, D3D12_SHADER_VI
 	parameter_count++;
 }
 
-void TW3D::TW3DRootSignature::SetParameterSRV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, TWT::UInt DescriptorCount) {
+void TW3DRootSignature::SetParameterSRV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, TWT::UInt DescriptorCount) {
 	SetParameterTable(Index, ShaderVisibility, Register, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, DescriptorCount);
 }
 
-void TW3D::TW3DRootSignature::SetParameterUAVBuffer(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register) {
+void TW3DRootSignature::SetParameterUAVBuffer(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register) {
 	SetParameter(Index, ShaderVisibility, Register, D3D12_ROOT_PARAMETER_TYPE_UAV);
 }
 
-void TW3D::TW3DRootSignature::SetParameterUAVTexture(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register) {
+void TW3DRootSignature::SetParameterUAVTexture(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register) {
 	SetParameterTable(Index, ShaderVisibility, Register, D3D12_DESCRIPTOR_RANGE_TYPE_UAV);
 }
 
-void TW3D::TW3DRootSignature::SetParameterCBV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register) {
+void TW3DRootSignature::SetParameterCBV(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register) {
 	SetParameter(Index, ShaderVisibility, Register, D3D12_ROOT_PARAMETER_TYPE_CBV);
 }
 
-void TW3D::TW3DRootSignature::SetParameterConstants(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, TWT::UInt Num32BitValues) {
+void TW3DRootSignature::SetParameterConstants(TWT::UInt Index, D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::UInt Register, TWT::UInt Num32BitValues) {
 	root_parameters[Index] = {};
 	root_parameters[Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 	root_parameters[Index].Constants = CD3DX12_ROOT_CONSTANTS(Num32BitValues, Register);
@@ -73,7 +73,7 @@ void TW3D::TW3DRootSignature::SetParameterConstants(TWT::UInt Index, D3D12_SHADE
 	parameter_count++;
 }
 
-void TW3D::TW3DRootSignature::AddSampler(TWT::UInt Register, D3D12_SHADER_VISIBILITY ShaderVisibility, D3D12_FILTER Filter, D3D12_TEXTURE_ADDRESS_MODE AddressMode, TWT::UInt MaxAnisotropy) {
+void TW3DRootSignature::AddSampler(TWT::UInt Register, D3D12_SHADER_VISIBILITY ShaderVisibility, D3D12_FILTER Filter, D3D12_TEXTURE_ADDRESS_MODE AddressMode, TWT::UInt MaxAnisotropy) {
 	D3D12_STATIC_SAMPLER_DESC sampler = {};
 	sampler.Filter = Filter;
 	sampler.AddressU = AddressMode;
@@ -92,7 +92,7 @@ void TW3D::TW3DRootSignature::AddSampler(TWT::UInt Register, D3D12_SHADER_VISIBI
 	samplers.push_back(sampler);
 }
 
-void TW3D::TW3DRootSignature::Create(TW3D::TW3DDevice* device) {
+void TW3DRootSignature::Create(TW3DDevice* device) {
 	desc.NumParameters = parameter_count;
 	desc.pParameters = root_parameters.data();
 	desc.NumStaticSamplers = static_cast<UINT>(samplers.size());

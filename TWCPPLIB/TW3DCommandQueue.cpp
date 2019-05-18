@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TW3DCommandQueue.h"
 
-TW3D::TW3DCommandQueue::TW3DCommandQueue(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type) {
+TW3DCommandQueue::TW3DCommandQueue(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type) {
 	D3D12_COMMAND_QUEUE_DESC desc = {};
 	desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	desc.Type = Type;
@@ -19,20 +19,20 @@ TW3D::TW3DCommandQueue::TW3DCommandQueue(TW3DDevice* Device, D3D12_COMMAND_LIST_
 
 }
 
-TW3D::TW3DCommandQueue::~TW3DCommandQueue() {
+TW3DCommandQueue::~TW3DCommandQueue() {
 	TWU::DXSafeRelease(command_queue);
 	TWU::DXSafeRelease(fence);
 }
 
-ID3D12CommandQueue* TW3D::TW3DCommandQueue::Get() {
+ID3D12CommandQueue* TW3DCommandQueue::Get() {
 	return command_queue;
 }
 
-TWT::Bool TW3D::TW3DCommandQueue::IsCommandListRunning(TW3DGraphicsCommandList* CommandList) {
+TWT::Bool TW3DCommandQueue::IsCommandListRunning(TW3DGraphicsCommandList* CommandList) {
 	return fence->GetCompletedValue() < CommandList->SignalValue;
 }
 
-void TW3D::TW3DCommandQueue::FlushCommandList(TW3DGraphicsCommandList* CommandList) {
+void TW3DCommandQueue::FlushCommandList(TW3DGraphicsCommandList* CommandList) {
 	if (fence->GetCompletedValue() < CommandList->SignalValue) {
 		HANDLE fence_event = NULL;
 		TWU::SuccessAssert(fence->SetEventOnCompletion(CommandList->SignalValue, fence_event), "TW3DCommandQueue::FlushCommandList "s + CommandList->SignalValue);
@@ -40,7 +40,7 @@ void TW3D::TW3DCommandQueue::FlushCommandList(TW3DGraphicsCommandList* CommandLi
 	}
 }
 
-void TW3D::TW3DCommandQueue::FlushCommands() {
+void TW3DCommandQueue::FlushCommands() {
 	fence_flush_value++;
 	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value), "TW3DCommandQueue::FlushCommands, command_queue->Signal "s + fence_flush_value);
 	if (fence->GetCompletedValue() < fence_flush_value) {
@@ -50,7 +50,7 @@ void TW3D::TW3DCommandQueue::FlushCommands() {
 	}
 }
 
-void TW3D::TW3DCommandQueue::ExecuteCommandList(TW3DGraphicsCommandList* CommandList) {
+void TW3DCommandQueue::ExecuteCommandList(TW3DGraphicsCommandList* CommandList) {
 	FlushCommands();
 	CommandList->SignalValue = ++fence_flush_value;
 
@@ -59,7 +59,7 @@ void TW3D::TW3DCommandQueue::ExecuteCommandList(TW3DGraphicsCommandList* Command
 	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value), "TW3DCommandQueue::ExecuteCommandList"s);
 }
 
-void TW3D::TW3DCommandQueue::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists) {
+void TW3DCommandQueue::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists) {
 	FlushCommands();
 	fence_flush_value++;
 
@@ -73,14 +73,14 @@ void TW3D::TW3DCommandQueue::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsC
 	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value), "TW3DCommandQueue::ExecuteCommandLists, command_queue->Signal "s + fence_flush_value);
 }
 
-TW3D::TW3DCommandQueue* TW3D::TW3DCommandQueue::CreateDirect(TW3DDevice* Device) {
+TW3DCommandQueue* TW3DCommandQueue::CreateDirect(TW3DDevice* Device) {
 	return new TW3DCommandQueue(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 }
 
-TW3D::TW3DCommandQueue* TW3D::TW3DCommandQueue::CreateCompute(TW3DDevice* Device) {
+TW3DCommandQueue* TW3DCommandQueue::CreateCompute(TW3DDevice* Device) {
 	return new TW3DCommandQueue(Device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
 }
 
-TW3D::TW3DCommandQueue* TW3D::TW3DCommandQueue::CreateCopy(TW3DDevice* Device) {
+TW3DCommandQueue* TW3DCommandQueue::CreateCopy(TW3DDevice* Device) {
 	return new TW3DCommandQueue(Device, D3D12_COMMAND_LIST_TYPE_COPY);
 }

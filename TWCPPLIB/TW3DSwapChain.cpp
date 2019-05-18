@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TW3DSwapChain.h"
 
-TW3D::TW3DSwapChain::TW3DSwapChain(TW3D::TW3DFactory* factory, TW3DCommandQueue* commandQueue, HWND hwnd, TWT::UInt width, TWT::UInt height, TWT::Bool vsync) :
+TW3DSwapChain::TW3DSwapChain(TW3DFactory* factory, TW3DCommandQueue* commandQueue, HWND hwnd, TWT::UInt width, TWT::UInt height, TWT::Bool vsync) :
 	VSync(vsync), tearing(factory->CheckTearingSupport())
 {
 	DXGI_SAMPLE_DESC sampleDesc = {};
@@ -25,38 +25,38 @@ TW3D::TW3DSwapChain::TW3DSwapChain(TW3D::TW3DFactory* factory, TW3DCommandQueue*
 	swapChain = static_cast<IDXGISwapChain4*>(tempSwapChain);
 }
 
-TW3D::TW3DSwapChain::~TW3DSwapChain() {
+TW3DSwapChain::~TW3DSwapChain() {
 	TWU::DXSafeRelease(swapChain);
 }
 
-DXGI_SWAP_CHAIN_DESC1 TW3D::TW3DSwapChain::GetDescription() {
+DXGI_SWAP_CHAIN_DESC1 TW3DSwapChain::GetDescription() {
 	return desc;
 }
 
-TWT::Bool TW3D::TW3DSwapChain::GetFullscreen() {
+TWT::Bool TW3DSwapChain::GetFullscreen() {
 	BOOL fullscreen;
 	TWU::SuccessAssert(swapChain->GetFullscreenState(&fullscreen, nullptr), "TW3DSwapChain::GetFullscreen"s);
 	return fullscreen;
 }
 
-void TW3D::TW3DSwapChain::SetFullscreen(TWT::Bool fullscreen) {
+void TW3DSwapChain::SetFullscreen(TWT::Bool fullscreen) {
 	TWU::SuccessAssert(swapChain->SetFullscreenState(fullscreen, nullptr), "TW3DSwapChain::SetFullscreen "s + TWU::BoolStr(fullscreen));
 }
 
-TWT::UInt TW3D::TW3DSwapChain::GetCurrentBufferIndex() {
+TWT::UInt TW3DSwapChain::GetCurrentBufferIndex() {
 	return swapChain->GetCurrentBackBufferIndex();
 }
 
-ID3D12Resource* TW3D::TW3DSwapChain::GetBuffer(TWT::UInt index) {
+ID3D12Resource* TW3DSwapChain::GetBuffer(TWT::UInt index) {
 	ID3D12Resource* resource;
 	swapChain->GetBuffer(index, IID_PPV_ARGS(&resource));
 	return resource;
 }
 
-void TW3D::TW3DSwapChain::Resize(TWT::UInt width, TWT::UInt height) {
+void TW3DSwapChain::Resize(TWT::UInt width, TWT::UInt height) {
 	swapChain->ResizeBuffers(BufferCount, width, height, desc.Format, desc.Flags);
 }
 
-void TW3D::TW3DSwapChain::Present() {
+void TW3DSwapChain::Present() {
 	swapChain->Present(VSync ? 1 : 0, tearing && !VSync && !GetFullscreen() ? DXGI_PRESENT_ALLOW_TEARING : 0);
 }

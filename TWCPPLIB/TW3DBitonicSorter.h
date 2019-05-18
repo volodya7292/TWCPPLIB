@@ -1,31 +1,29 @@
 #pragma once
 #include "TW3DResourceManager.h"
 
-namespace TW3D {
-	class TW3DBitonicSorter {
-	public:
-		TW3DBitonicSorter(TW3DResourceManager* ResourceManager);
-		~TW3DBitonicSorter();
+class TW3DBitonicSorter {
+public:
+	TW3DBitonicSorter(TW3DResourceManager* ResourceManager);
+	~TW3DBitonicSorter();
 
-		void RecordSort(TW3DGraphicsCommandList* CommandList, TW3DResourceUAV* SortBuffer, TWT::UInt ElementCount, bool SortAscending, bool IsPartiallyPreSorted);
+	void RecordSort(TW3DGraphicsCommandList* CommandList, TW3DResourceUAV* SortBuffer, TWT::UInt ElementCount, bool SortAscending, bool IsPartiallyPreSorted);
 
-	private:
-		enum RootSignatureParams {
-			GenericConstants,
-			ShaderSpecificConstants,
-			OutputUAV,
-			IndexBufferUAV,
-			NumParameters
-		};
-
-		TW3DRootSignature* m_pRootSignature;
-		TW3DResource* m_pDispatchArgs;
-		ID3D12CommandSignature* m_pCommandSignature;
-		const UINT cIndirectArgStride = 12;
-
-		TW3DComputePipelineState* m_pBitonicIndirectArgsCS;
-		TW3DComputePipelineState* m_pBitonicPreSortCS;
-		TW3DComputePipelineState* m_pBitonicInnerSortCS;
-		TW3DComputePipelineState* m_pBitonicOuterSortCS;
+private:
+	enum RootSignatureParams {
+		GenericConstants,
+		ShaderSpecificConstants,
+		OutputUAV,
+		IndexBufferUAV,
+		NumParameters
 	};
-}
+
+	TW3DRootSignature* m_pRootSignature;
+	TW3DResource* m_pDispatchArgs;
+	ID3D12CommandSignature* m_pCommandSignature;
+	const UINT cIndirectArgStride = 12;
+
+	TW3DComputePipelineState* m_pBitonicIndirectArgsCS;
+	TW3DComputePipelineState* m_pBitonicPreSortCS;
+	TW3DComputePipelineState* m_pBitonicInnerSortCS;
+	TW3DComputePipelineState* m_pBitonicOuterSortCS;
+};

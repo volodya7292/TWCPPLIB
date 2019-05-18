@@ -1,21 +1,21 @@
 #include "pch.h"
 #include "TW3DResourceDSV.h"
 
-TW3D::TW3DResourceDSV::TW3DResourceDSV(TW3DDevice* Device, TW3DDescriptorHeap* DSVDescriptorHeap) :
+TW3DResourceDSV::TW3DResourceDSV(TW3DDevice* Device, TW3DDescriptorHeap* DSVDescriptorHeap) :
 	TW3DResource(Device), DSVDescriptorHeap(DSVDescriptorHeap)
 {
 	DSVIndex = DSVDescriptorHeap->Allocate();
 }
 
-TW3D::TW3DResourceDSV::~TW3DResourceDSV() {
+TW3DResourceDSV::~TW3DResourceDSV() {
 	DSVDescriptorHeap->Free(DSVIndex);
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceDSV::GetCPUHandle() {
+D3D12_CPU_DESCRIPTOR_HANDLE TW3DResourceDSV::GetCPUHandle() {
 	return DSVDescriptorHeap->GetCPUHandle(DSVIndex);
 }
 
-void TW3D::TW3DResourceDSV::Create(TWT::UInt Width, TWT::UInt Height) {
+void TW3DResourceDSV::Create(TWT::UInt Width, TWT::UInt Height) {
 	D3D12_DEPTH_STENCIL_VIEW_DESC desc = {};
 	desc.Format = DXGI_FORMAT_D32_FLOAT;
 	desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -38,6 +38,6 @@ void TW3D::TW3DResourceDSV::Create(TWT::UInt Width, TWT::UInt Height) {
 	Device->CreateDepthStencilView(Resource, GetCPUHandle(), &desc);
 }
 
-void TW3D::TW3DResourceDSV::Release() {
+void TW3DResourceDSV::Release() {
 	TW3DResource::Release();
 }

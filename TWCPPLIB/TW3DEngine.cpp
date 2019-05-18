@@ -23,8 +23,8 @@ static const TWT::UInt engine_thread_count = 2;
 static TWT::Vector<std::thread>    threads;
 static std::mutex                  resize_mutex;
 
-static TW3D::TW3DRenderer*           renderer;
-static TW3D::TW3DResourceManager*    resource_manager;
+static TW3DRenderer*           renderer;
+static TW3DResourceManager*    resource_manager;
 
 static TWT::UInt      width, height;
 static TWT::String    title;
@@ -36,15 +36,15 @@ static HWND           hwnd;
 
 static TWT::UInt      current_frame_index;
 
-static TW3D::TW3DFactory*      factory;
-static TW3D::TW3DAdapter*      adapter;
-static TW3D::TW3DDevice*       device;
-static TW3D::TW3DSwapChain*    swapChain;
+static TW3DFactory*      factory;
+static TW3DAdapter*      adapter;
+static TW3DDevice*       device;
+static TW3DSwapChain*    swapChain;
 
-static TWT::Vector<TW3D::TW3DResourceRTV*>    renderTargets(TW3D::TW3DSwapChain::BufferCount);
-static TW3D::TW3DResourceDSV*                 depthStencil;
+static TWT::Vector<TW3DResourceRTV*>    renderTargets(TW3DSwapChain::BufferCount);
+static TW3DResourceDSV*                 depthStencil;
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void init_window() {
 	TWT::WString wstrtitle = title.Wide();
@@ -129,23 +129,23 @@ void init_dx12() {
 	}
 #endif
 
-	factory = new TW3D::TW3DFactory(dxgi_factory_flags);
+	factory = new TW3DFactory(dxgi_factory_flags);
 	logger->LogInfo("DirectX Stage 1 initialized");
-	std::vector<TW3D::TW3DAdapter*> adapters = TW3D::TW3DAdapter::ListAvailable(factory, D3D_FEATURE_LEVEL_12_0);
+	std::vector<TW3DAdapter*> adapters = TW3DAdapter::ListAvailable(factory, D3D_FEATURE_LEVEL_12_0);
 	if (adapters.size() == 0) {
 		logger->LogError("[DirectX Stage 2]: No suitable device found.");
 		return;
 	}
 	adapter = adapters[0];
 	logger->LogInfo("DirectX Stage 2 initialized");
-	device = new TW3D::TW3DDevice(adapter);
+	device = new TW3DDevice(adapter);
 	logger->LogInfo("DirectX Stage 3 initialized");
-	resource_manager = new TW3D::TW3DResourceManager(device);
+	resource_manager = new TW3DResourceManager(device);
 	logger->LogInfo("DirectX Stage 4 initialized");
-	swapChain = new TW3D::TW3DSwapChain(factory, resource_manager->GetDirectCommandQueue(), hwnd, width, height, true);
+	swapChain = new TW3DSwapChain(factory, resource_manager->GetDirectCommandQueue(), hwnd, width, height, true);
 	logger->LogInfo("DirectX Stage 5 initialized");
 
-	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++)
+	for (int i = 0; i < TW3DSwapChain::BufferCount; i++)
 		renderTargets[i] = resource_manager->CreateRenderTargetView(swapChain->GetBuffer(i));
 	logger->LogInfo("DirectX Stage 6 initialized");
 
@@ -231,7 +231,7 @@ void render() {
 TWT::UInt thread_tick(TWT::UInt thread_id, TWT::UInt thread_count) {
 	if (thread_id == 0) { // Command list record
 		synchronized(resize_mutex) {
-			for (size_t i = 0; i < TW3D::TW3DSwapChain::BufferCount; i++)
+			for (size_t i = 0; i < TW3DSwapChain::BufferCount; i++)
 				renderer->Record(i, renderTargets[i], depthStencil);
 			renderer->AdjustRecordIndex();
 		}
@@ -262,14 +262,14 @@ void on_resize() {
 		width = std::max(clientRect.right - clientRect.left, 1L);
 		height = std::max(clientRect.bottom - clientRect.top, 1L);
 
-		for (UINT n = 0; n < TW3D::TW3DSwapChain::BufferCount; n++)
+		for (UINT n = 0; n < TW3DSwapChain::BufferCount; n++)
 			renderTargets[n]->Release();
 		depthStencil->Release();
 
 		swapChain->Resize(width, height);
 		current_frame_index = swapChain->GetCurrentBufferIndex();
 
-		for (UINT n = 0; n < TW3D::TW3DSwapChain::BufferCount; n++)
+		for (UINT n = 0; n < TW3DSwapChain::BufferCount; n++)
 			renderTargets[n]->Create(swapChain->GetBuffer(n));
 		depthStencil->Create(width, height);
 
@@ -336,7 +336,7 @@ void cleanup() {
 	delete device;
 	delete swapChain;
 	delete depthStencil;
-	for (int i = 0; i < TW3D::TW3DSwapChain::BufferCount; ++i)
+	for (int i = 0; i < TW3DSwapChain::BufferCount; ++i)
 		delete renderTargets[i];
 
 	TW3DPrimitives::Release();
@@ -359,7 +359,7 @@ void cleanup() {
 	delete logger;
 }
 
-void TW3D::Initialize(const InitializeInfo& info) {
+void TW3D::Initialize(const TW3D::InitializeInfo& info) {
 	width = info.WindowWidth;
 	height = info.WindowHeight;
 	title = info.WindowTitle;
@@ -386,7 +386,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		if (!KeysDown[wParam]) {
 			KeysDown[wParam] = true;
 			if (on_key)
-				on_key(wParam, TW3D::TW3D_KEY_ACTION_DOWN);
+				on_key(wParam, TW3D::KEY_ACTION_DOWN);
 		}
 		return 0;
 
@@ -394,7 +394,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		if (KeysDown[wParam]) {
 			KeysDown[wParam] = false;
 			if (on_key)
-				on_key(wParam, TW3D::TW3D_KEY_ACTION_UP);
+				on_key(wParam, TW3D::KEY_ACTION_UP);
 		}
 		return 0;
 
@@ -541,6 +541,6 @@ void TW3D::SetOnCharEvent(CharHandler OnChar) {
 	on_char = OnChar;
 }
 
-TW3D::TW3DResourceManager* TW3D::GetResourceManager() {
+TW3DResourceManager* TW3D::GetResourceManager() {
 	return resource_manager;
 }

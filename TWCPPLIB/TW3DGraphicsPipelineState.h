@@ -2,39 +2,38 @@
 #include "TW3DRootSignature.h"
 #include "TW3DTypes.h"
 
-namespace TW3D {
-	enum InputLayoutElement {
-		POSITION_ILE,
-		TEXCOORD_ILE,
-		NORMAL_ILE
-	};
 
-	class TW3DGraphicsPipelineState {
-	public:
-		TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, DXGI_SAMPLE_DESC SampleDesc, D3D12_RASTERIZER_DESC RasterizerState,
-			D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, TW3DRootSignature* RootSignature, TWT::UInt RTCount);
-		TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, TW3DRootSignature* RootSignature);
-		~TW3DGraphicsPipelineState();
+enum TW3DInputLayoutElement {
+	TW3D_ILE_POSITION,
+	TW3D_ILE_TEXCOORD,
+	TW3D_ILE_NORMAL
+};
 
-		ID3D12PipelineState* Get();
+class TW3DGraphicsPipelineState {
+public:
+	TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, DXGI_SAMPLE_DESC SampleDesc, D3D12_RASTERIZER_DESC RasterizerState,
+		D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, TW3DRootSignature* RootSignature, TWT::UInt RTCount);
+	TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, TW3DRootSignature* RootSignature);
+	~TW3DGraphicsPipelineState();
 
-		void SetVertexShader(const std::string& Filename);
-		void SetVertexShader(const D3D12_SHADER_BYTECODE& ByteCode);
-		void SetPixelShader(const std::string& Filename);
-		void SetPixelShader(const D3D12_SHADER_BYTECODE& ByteCode);
-		void SetRTVFormat(TWT::UInt Index, DXGI_FORMAT Format);
-		void SetDSVFormat(DXGI_FORMAT Format);
-		void SetInputLayout(const TWT::Vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout);
+	ID3D12PipelineState* Get();
 
-		void Create(TW3DDevice* Device);
+	void SetVertexShader(const std::string& Filename);
+	void SetVertexShader(const D3D12_SHADER_BYTECODE& ByteCode);
+	void SetPixelShader(const std::string& Filename);
+	void SetPixelShader(const D3D12_SHADER_BYTECODE& ByteCode);
+	void SetRTVFormat(TWT::UInt Index, DXGI_FORMAT Format);
+	void SetDSVFormat(DXGI_FORMAT Format);
+	void SetInputLayout(const TWT::Vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout);
 
-		TW3DRootSignature* RootSignature;
+	void Create(TW3DDevice* Device);
 
-	private:
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC           desc = {};
-		ID3D12PipelineState*               pipeline_state = nullptr;
-	};
+	TW3DRootSignature* RootSignature;
+
+private:
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC           desc = {};
+	ID3D12PipelineState*               pipeline_state = nullptr;
+};
 
 
-	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> CreateInputLayout(const TWT::Vector<InputLayoutElement>& Elements);
-}
+TWT::Vector<D3D12_INPUT_ELEMENT_DESC> CreateInputLayout(const TWT::Vector<TW3DInputLayoutElement>& Elements);

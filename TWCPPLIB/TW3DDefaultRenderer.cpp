@@ -3,9 +3,9 @@
 #include "TW3DSwapChain.h"
 #include "TW3DGraphicsPipelineState.h"
 #include "TW3DBitonicSorter.h"
-//TW3D::TW3DResourceSR* texture;
+//TW3DResourceSR* texture;
 
-TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
+TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete gbuffer_ps;
 	delete rt_ps;
 	delete blit_ps;
@@ -16,7 +16,7 @@ TW3D::TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	//delete texture;
 }
 
-void TW3D::TW3DDefaultRenderer::CreateBlitResources() {
+void TW3DDefaultRenderer::CreateBlitResources() {
 	TW3DRootSignature* root_signature = new TW3DRootSignature(false, false, true, false);
 	root_signature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);  // Texture to blit
 	root_signature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
@@ -32,7 +32,7 @@ void TW3D::TW3DDefaultRenderer::CreateBlitResources() {
 
 	D3D12_BLEND_DESC blendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 
-	blit_ps = new TW3D::TW3DGraphicsPipelineState(
+	blit_ps = new TW3DGraphicsPipelineState(
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
 		SwapChain->GetDescription().SampleDesc,
 		rastDesc,
@@ -47,7 +47,7 @@ void TW3D::TW3DDefaultRenderer::CreateBlitResources() {
 	blit_ps->Create(Device);
 }
 
-void TW3D::TW3DDefaultRenderer::CreateGBufferResources() {
+void TW3DDefaultRenderer::CreateGBufferResources() {
 	TW3DRootSignature* root_signature = new TW3DRootSignature();
 	root_signature->SetParameterCBV(0, D3D12_SHADER_VISIBILITY_VERTEX, 0); // Camera CB
 	root_signature->SetParameterCBV(1, D3D12_SHADER_VISIBILITY_VERTEX, 1); // Vertex mesh CB
@@ -57,7 +57,7 @@ void TW3D::TW3DDefaultRenderer::CreateGBufferResources() {
 	root_signature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
 	root_signature->Create(Device);
 
-	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({POSITION_ILE, TEXCOORD_ILE, NORMAL_ILE});
+	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({TW3D_ILE_POSITION, TW3D_ILE_TEXCOORD, TW3D_ILE_NORMAL});
 
 	D3D12_RASTERIZER_DESC rastDesc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
@@ -65,7 +65,7 @@ void TW3D::TW3DDefaultRenderer::CreateGBufferResources() {
 	D3D12_DEPTH_STENCIL_DESC depthDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	D3D12_BLEND_DESC blendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 
-	gbuffer_ps = new TW3D::TW3DGraphicsPipelineState(
+	gbuffer_ps = new TW3DGraphicsPipelineState(
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
 		SwapChain->GetDescription().SampleDesc,
 		rastDesc,
@@ -80,7 +80,7 @@ void TW3D::TW3DDefaultRenderer::CreateGBufferResources() {
 	gbuffer_ps->Create(Device);
 }
 
-void TW3D::TW3DDefaultRenderer::CreateRTResources() {
+void TW3DDefaultRenderer::CreateRTResources() {
 	rt_output = ResourceManager->CreateUnorderedAccessView(Width, Height, TWT::RGBA8Unorm);
 	ResourceManager->ResourceBarrier(rt_output, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
@@ -99,7 +99,7 @@ void TW3D::TW3DDefaultRenderer::CreateRTResources() {
 	rt_cl = ResourceManager->CreateComputeCommandList();
 }
 
-void TW3D::TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* Depth) {
+void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* Depth) {
 	cl->ResourceBarriers({
 		TW3DTransitionBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET),
 		TW3DTransitionBarrier(rt_output, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
@@ -121,7 +121,7 @@ void TW3D::TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DReso
 	});
 }
 
-void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height) {
+void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::UInt Width, TWT::UInt Height) {
 	TW3DRenderer::Initialize(ResourceManager, SwapChain, Width, Height);
 	TWU::TW3DLogInfo("TW3DRenderer initialized."s);
 	CreateBlitResources();
@@ -139,15 +139,15 @@ void TW3D::TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager,
 	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");
 }
 
-void TW3D::TW3DDefaultRenderer::Resize(TWT::UInt Width, TWT::UInt Height) {
+void TW3DDefaultRenderer::Resize(TWT::UInt Width, TWT::UInt Height) {
 	TW3DRenderer::Resize(Width, Height);
 
 	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<TWT::Float>(Width), static_cast<TWT::Float>(Height));
 	scissor = CD3DX12_RECT(0, 0, Width, Height);
 }
 
-void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStencilOutput) {
-	TW3D::TW3DRenderer::Record(BackBufferIndex, ColorOutput, DepthStencilOutput);
+void TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStencilOutput) {
+	TW3DRenderer::Record(BackBufferIndex, ColorOutput, DepthStencilOutput);
 
 	record_cl->Reset();
 	record_cl->BindResources(ResourceManager);
@@ -179,7 +179,7 @@ void TW3D::TW3DDefaultRenderer::Record(TWT::UInt BackBufferIndex, TW3DResourceRT
 	record_cl->Close();
 }
 
-void TW3D::TW3DDefaultRenderer::RecordBeforeExecution() {
+void TW3DDefaultRenderer::RecordBeforeExecution() {
 	Scene->RecordBeforeExecution();
 
 	// Trace rays
@@ -196,11 +196,11 @@ void TW3D::TW3DDefaultRenderer::RecordBeforeExecution() {
 	rt_cl->Close();
 }
 
-void TW3D::TW3DDefaultRenderer::Update(TWT::Float DeltaTime) {
+void TW3DDefaultRenderer::Update(TWT::Float DeltaTime) {
 	Scene->Update(DeltaTime);
 }
 
-void TW3D::TW3DDefaultRenderer::Execute(TWT::UInt BackBufferIndex) {
+void TW3DDefaultRenderer::Execute(TWT::UInt BackBufferIndex) {
 	TW3DRenderer::Execute(BackBufferIndex);
 
 	ResourceManager->ExecuteCommandList(rt_cl);

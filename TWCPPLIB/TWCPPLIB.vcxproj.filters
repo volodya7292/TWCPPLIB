@@ -61,14 +61,20 @@
     <Filter Include="Source Files\TW3DEngine\TW3DModule">
       <UniqueIdentifier>{3ce63c7c-f218-4dc6-95f7-4387ddd88421}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\TW3DModule">
-      <UniqueIdentifier>{b0256958-3d81-4634-a4b7-47b5becb0758}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files\Shaders\BitonicSort">
       <UniqueIdentifier>{1284d1e6-ccd6-47ad-a77f-3719ae547363}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files\Shaders\LBVH">
       <UniqueIdentifier>{db1d1817-ab4c-4b8f-bc2c-43d53940f11a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TW3DEngine\TW3DModule">
+      <UniqueIdentifier>{b0256958-3d81-4634-a4b7-47b5becb0758}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Game">
+      <UniqueIdentifier>{1662c1f8-83c0-424b-b9b8-270e532d9f73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Game">
+      <UniqueIdentifier>{e9b4f37c-097d-4d5f-a0ba-9bec97bec004}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -178,13 +184,10 @@
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
     <ClInclude Include="TW3DBitonicSorter.h">
-      <Filter>Header Files\TW3DModule</Filter>
-    </ClInclude>
-    <ClInclude Include="TWLogger.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\TW3DEngine\TW3DModule</Filter>
     </ClInclude>
     <ClInclude Include="TW3DModules.h">
-      <Filter>Header Files\TW3DModule</Filter>
+      <Filter>Header Files\TW3DEngine\TW3DModule</Filter>
     </ClInclude>
     <ClInclude Include="TW3DLBVH.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
@@ -194,6 +197,15 @@
     </ClInclude>
     <ClInclude Include="TW3DVertexMesh.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TWLogger.h">
+      <Filter>Header Files\TWUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DSphere.h">
+      <Filter>Header Files\TW3DEngine\TW3DObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Universe3D.h">
+      <Filter>Header Files\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -306,9 +318,6 @@
     <ClCompile Include="TW3DBitonicSorter.cpp">
       <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
     </ClCompile>
-    <ClCompile Include="TWLogger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TW3DModules.cpp">
       <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
     </ClCompile>
@@ -320,6 +329,15 @@
     </ClCompile>
     <ClCompile Include="TW3DVertexMesh.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TWLogger.cpp">
+      <Filter>Source Files\TWUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DSphere.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Universe3D.cpp">
+      <Filter>Source Files\Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

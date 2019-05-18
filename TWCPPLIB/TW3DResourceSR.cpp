@@ -1,17 +1,17 @@
 #include "pch.h"
 #include "TW3DResourceSR.h"
 
-TW3D::TW3DResourceSR::TW3DResourceSR(TW3DDevice* Device, TW3DDescriptorHeap* SRVDescriptorHeap, TW3DTempGCL* TempGCL) :
+TW3DResourceSR::TW3DResourceSR(TW3DDevice* Device, TW3DDescriptorHeap* SRVDescriptorHeap, TW3DTempGCL* TempGCL) :
 	TW3DResource(Device), SRVDescriptorHeap(SRVDescriptorHeap), TempGCL(TempGCL)
 {	
 	SRVIndex = SRVDescriptorHeap->Allocate();
 }
 
-TW3D::TW3DResourceSR::~TW3DResourceSR() {
+TW3DResourceSR::~TW3DResourceSR() {
 	SRVDescriptorHeap->Free(SRVIndex);
 }
 
-void TW3D::TW3DResourceSR::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format) {
+void TW3DResourceSR::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORMAT Format) {
 	D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
 	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	desc.Format = Format;
@@ -31,7 +31,7 @@ void TW3D::TW3DResourceSR::Create2D(TWT::UInt Width, TWT::UInt Height, DXGI_FORM
 	Device->CreateShaderResourceView(Resource, &desc, SRVDescriptorHeap->GetCPUHandle(SRVIndex));
 }
 
-void TW3D::TW3DResourceSR::CreateArray2D(TWT::UInt Width, TWT::UInt Height, TWT::UInt Depth, DXGI_FORMAT Format) {
+void TW3DResourceSR::CreateArray2D(TWT::UInt Width, TWT::UInt Height, TWT::UInt Depth, DXGI_FORMAT Format) {
 	D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
 	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	desc.Format = Format;
@@ -54,7 +54,7 @@ void TW3D::TW3DResourceSR::CreateArray2D(TWT::UInt Width, TWT::UInt Height, TWT:
 	Device->CreateShaderResourceView(Resource, &desc, SRVDescriptorHeap->GetCPUHandle(SRVIndex));
 }
 
-void TW3D::TW3DResourceSR::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow, TWT::UInt Depth) {
+void TW3DResourceSR::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow, TWT::UInt Depth) {
 	D3D12_SUBRESOURCE_DATA textureData = {};
 	textureData.pData = &Data[0];
 	textureData.RowPitch = BytesPerRow;
@@ -80,7 +80,7 @@ void TW3D::TW3DResourceSR::Upload2D(TWT::Byte* Data, TWT::Int64 BytesPerRow, TWT
 	TWU::DXSafeRelease(textureBufferUploadHeap);
 }
 
-void TW3D::TW3DResourceSR::Upload2D(const TWT::WString& filename, TWT::UInt Depth) {
+void TW3DResourceSR::Upload2D(const TWT::WString& filename, TWT::UInt Depth) {
 	D3D12_RESOURCE_DESC textureDesc;
 	TWT::Int imageBytesPerRow;
 	TWT::Byte* imageData;
@@ -89,11 +89,11 @@ void TW3D::TW3DResourceSR::Upload2D(const TWT::WString& filename, TWT::UInt Dept
 	delete imageData;
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE TW3D::TW3DResourceSR::GetGPUHandle() {
+D3D12_GPU_DESCRIPTOR_HANDLE TW3DResourceSR::GetGPUHandle() {
 	return SRVDescriptorHeap->GetGPUHandle(SRVIndex);
 }
 
-TW3D::TW3DResourceSR* TW3D::TW3DResourceSR::Create2D(TW3DDevice* Device, TW3DDescriptorHeap* DescriptorHeap, const TWT::WString& filename, TW3DTempGCL* TempGCL) {
+TW3DResourceSR* TW3DResourceSR::Create2D(TW3DDevice* Device, TW3DDescriptorHeap* DescriptorHeap, const TWT::WString& filename, TW3DTempGCL* TempGCL) {
 	D3D12_RESOURCE_DESC textureDesc;
 	TWT::Int imageBytesPerRow;
 	TWT::Byte* imageData;

@@ -2,7 +2,7 @@
 #include "TW3DScene.h"
 #include "TW3DShaders.h"
 
-TW3D::TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
+TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 	resource_manager(ResourceManager) {
 	Camera = new TW3DPerspectiveCamera(ResourceManager);
 
@@ -25,7 +25,7 @@ TW3D::TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 	collision_world->setNbIterationsPositionSolver(8);
 }
 
-TW3D::TW3DScene::~TW3DScene() {
+TW3DScene::~TW3DScene() {
 	delete Camera;
 	delete gvb;
 	delete gnb;
@@ -34,32 +34,29 @@ TW3D::TW3DScene::~TW3DScene() {
 	delete collision_world;
 }
 
-void TW3D::TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRPI, TWT::UInt SceneRTNBRPI, TWT::UInt GNBRPI) {
+void TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::UInt GVBRPI, TWT::UInt SceneRTNBRPI, TWT::UInt GNBRPI) {
 	CommandList->BindUAVSRV(GVBRPI, gvb);
 	CommandList->BindUAVSRV(SceneRTNBRPI, LBVH->GetNodeBuffer());
 	CommandList->BindUAVSRV(GNBRPI, gnb);
 }
 
-void TW3D::TW3DScene::AddObject(TW3DObject* Object) {
+void TW3DScene::AddObject(TW3DObject* Object) {
 	Objects.push_back(Object);
 	objects_changed = true;
 
-	for (auto& vminst : Object->VMInstances) {
+	for (auto& vminst : Object->GetVertexMeshInstances()) {
 		if (vertex_meshes.find(vminst.VertexMesh) == vertex_meshes.end()) {
 			vertex_meshes[vminst.VertexMesh].gnb_offset = -1;
 			vertex_meshes[vminst.VertexMesh].gvb_offset = -1;
 
 			vminst.RigidBody = collision_world->createRigidBody(PhysicalTransform(vminst.Transform));
-			vminst.RigidBody->setType(rp3d::BodyType::DYNAMIC);
-			vminst.RigidBody->enableGravity(true);
 
-			rp3d::Material& material = vminst.RigidBody->getMaterial();
+			//rp3d::Material& material = vminst.RigidBody->getMaterial();
+   //         // Change the bounciness of the body 
+			//material.setBounciness(rp3d::decimal(0.4));
 
-// Change the bounciness of the body 
-			material.setBounciness(rp3d::decimal(0.4));
-
-			// Change the friction coefficient of the body 
-			material.setFrictionCoefficient(rp3d::decimal(0.2));
+			//// Change the friction coefficient of the body 
+			//material.setFrictionCoefficient(rp3d::decimal(0.2));
 
 			mesh_buffers_changed = true;
 		}
@@ -72,7 +69,7 @@ void TW3D::TW3DScene::AddObject(TW3DObject* Object) {
 	}
 }
 
-void TW3D::TW3DScene::Update(TWT::Float DeltaTime) {
+void TW3DScene::Update(TWT::Float DeltaTime) {
 	for (TW3DObject* object : Objects) {
 		object->Update();
 	}
@@ -80,7 +77,7 @@ void TW3D::TW3DScene::Update(TWT::Float DeltaTime) {
 	collision_world->update(DeltaTime);
 }
 
-void TW3D::TW3DScene::RecordBeforeExecution() {
+void TW3DScene::RecordBeforeExecution() {
 	// Update vertex & meshes buffers
 	// -------------------------------------------------------------------------------------------------------------------------
 	if (vertex_buffers_changed) {
@@ -111,7 +108,7 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	for (size_t i = 0; i < Objects.size(); i++) {
 		const auto& object = Objects[i];
 
-		for (auto& vminst : object->VMInstances) {
+		for (auto& vminst : object->GetVertexMeshInstances()) {
 			const auto& obj_mesh = vertex_meshes[vminst.VertexMesh];
 
 			vminst.LBVHInstance.GVBOffset = obj_mesh.gvb_offset;
@@ -187,7 +184,7 @@ void TW3D::TW3DScene::RecordBeforeExecution() {
 	vertex_buffers_changed = mesh_buffers_changed = objects_changed = false;
 }
 
-rp3d::Transform TW3D::TW3DScene::PhysicalTransform(TW3D::TW3DTransform Transform) {
+rp3d::Transform TW3DScene::PhysicalTransform(TW3DTransform Transform) {
 	TWT::Vector3f position = Transform.GetPosition();
 	TWT::Vector3f rotation = Transform.GetRotation();
 

@@ -1,16 +1,16 @@
 #include "pch.h"
 #include "TW3DObject.h"
 
-TW3D::TW3DObject::TW3DObject(TW3DResourceManager* ResourceManager, TWT::UInt ConstantBufferSize) {
+TW3DObject::TW3DObject(TW3DResourceManager* ResourceManager, TWT::UInt ConstantBufferSize) {
 	ConstantBuffer = ResourceManager->CreateConstantBuffer(1, ConstantBufferSize);
 }
 
-TW3D::TW3DObject::~TW3DObject() {
+TW3DObject::~TW3DObject() {
 	delete ConstantBuffer;
 }
 
-void TW3D::TW3DObject::Update() {
-	for (auto& vminst : VMInstances) {
+void TW3DObject::Update() {
+	for (auto& vminst : GetVertexMeshInstances()) {
 
 		vminst.Transform = DefaultTransform(vminst.RigidBody->getTransform());
 		vminst.Transform.Changed = true;
@@ -26,6 +26,6 @@ void TW3D::TW3DObject::Update() {
 	}
 }
 
-void TW3D::TW3DObject::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex) {
+void TW3DObject::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::UInt ModelCBRootParameterIndex) {
 	CommandList->SetRootCBV(ModelCBRootParameterIndex, ConstantBuffer, 0);
 }

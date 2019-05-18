@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TW3DResourceVB.h"
 
-TW3D::TW3DResourceVB::TW3DResourceVB(TW3DDevice* Device, TWT::UInt VertexCount, TWT::UInt SingleVertexSize, TW3DTempGCL* TempGCL) :
+TW3DResourceVB::TW3DResourceVB(TW3DDevice* Device, TWT::UInt VertexCount, TWT::UInt SingleVertexSize, TW3DTempGCL* TempGCL) :
 	TW3DResource(Device), vertex_count(VertexCount), single_vertex_size(SingleVertexSize), temp_gcl(TempGCL) {
 
 	TWT::UInt64 size = vertex_count * single_vertex_size;
@@ -28,15 +28,15 @@ TW3D::TW3DResourceVB::TW3DResourceVB(TW3DDevice* Device, TWT::UInt VertexCount, 
 	view.StrideInBytes  = SingleVertexSize;
 }
 
-TW3D::TW3DResourceVB::~TW3DResourceVB() {
+TW3DResourceVB::~TW3DResourceVB() {
 	delete upload_heap;
 }
 
-D3D12_VERTEX_BUFFER_VIEW TW3D::TW3DResourceVB::GetView() {
+D3D12_VERTEX_BUFFER_VIEW TW3DResourceVB::GetView() {
 	return view;
 }
 
-void TW3D::TW3DResourceVB::UpdateData(const void* Data, TWT::UInt VertexCount) {
+void TW3DResourceVB::UpdateData(const void* Data, TWT::UInt VertexCount) {
 	vertex_count = VertexCount;
 	TWT::UInt64 size = vertex_count * single_vertex_size;
 
@@ -52,14 +52,14 @@ void TW3D::TW3DResourceVB::UpdateData(const void* Data, TWT::UInt VertexCount) {
 	temp_gcl->Execute();
 }
 
-TWT::UInt TW3D::TW3DResourceVB::GetVertexCount() {
+TWT::UInt TW3DResourceVB::GetVertexCount() {
 	return vertex_count;
 }
 
-TWT::UInt TW3D::TW3DResourceVB::GetVertexByteSize() {
+TWT::UInt TW3DResourceVB::GetVertexByteSize() {
 	return single_vertex_size;
 }
 
-TWT::UInt TW3D::TW3DResourceVB::GetSizeInBytes() {
+TWT::UInt TW3DResourceVB::GetSizeInBytes() {
 	return vertex_count * single_vertex_size;
 }

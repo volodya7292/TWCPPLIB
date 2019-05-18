@@ -3,7 +3,7 @@
 #include "TW3DShaders.h"
 #include "TW3DModules.h"
 
-TW3D::TW3DLBVH::TW3DLBVH(TW3DResourceManager* ResourceManager, TWT::UInt ElementCount, TWT::Bool SceneLevel) :
+TW3DLBVH::TW3DLBVH(TW3DResourceManager* ResourceManager, TWT::UInt ElementCount, TWT::Bool SceneLevel) :
 	resource_manager(ResourceManager), element_count(ElementCount) {
 	morton_codes_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(LBVHMortonCode));
 	//morton_indices_buffer = resource_manager->CreateUnorderedAccessView(element_count, sizeof(TWT::UInt));
@@ -13,22 +13,22 @@ TW3D::TW3DLBVH::TW3DLBVH(TW3DResourceManager* ResourceManager, TWT::UInt Element
 	resource_manager->ResourceBarrier(bounding_box_buffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE);
 }
 
-TW3D::TW3DLBVH::~TW3DLBVH() {
+TW3DLBVH::~TW3DLBVH() {
 	delete morton_codes_buffer;
 	//delete morton_indices_buffer;
 	delete bounding_box_buffer;
 	delete node_buffer;
 }
 
-TWT::UInt TW3D::TW3DLBVH::GetNodeCount() {
+TWT::UInt TW3DLBVH::GetNodeCount() {
 	return 2 * element_count - 1;
 }
 
-TW3D::TW3DResourceUAV* TW3D::TW3DLBVH::GetNodeBuffer() {
+TW3DResourceUAV* TW3DLBVH::GetNodeBuffer() {
 	return node_buffer;
 }
 
-void TW3D::TW3DLBVH::BuildFromTriangles(TW3DResourceUAV* GVB, TWT::UInt GVBOffset, TW3DGraphicsCommandList* CommandList) {
+void TW3DLBVH::BuildFromTriangles(TW3DResourceUAV* GVB, TWT::UInt GVBOffset, TW3DGraphicsCommandList* CommandList) {
 	TW3DGraphicsCommandList* cl;
 	if (CommandList)
 		cl = CommandList;
@@ -141,7 +141,7 @@ void TW3D::TW3DLBVH::BuildFromTriangles(TW3DResourceUAV* GVB, TWT::UInt GVBOffse
 	}
 }
 
-void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, TW3DResourceUAV* SceneMeshInstancesBuffer, TW3DGraphicsCommandList* CommandList) {
+void TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, TW3DResourceUAV* SceneMeshInstancesBuffer, TW3DGraphicsCommandList* CommandList) {
 	TWT::UInt gnboffset_count = SceneMeshInstancesBuffer->GetElementCount();
 	TWT::Bool partially_presorted = true;
 
@@ -201,7 +201,7 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, TW3DResourceUAV* Scene
 		cl->CopyBufferRegion(node_buffer, offsetof(SceneLBVHNode, bounds), bounding_box_buffer, 0, sizeof(TWT::Bounds));
 
 		cl->ResourceBarriers({
-			//TW3D::TW3DUAVBarrier(),
+			//TW3DUAVBarrier(),
 			TW3DTransitionBarrier(SceneMeshInstancesBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 			//TW3DTransitionBarrier(bounding_box_buffer, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 			//TW3DTransitionBarrier(node_buffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
@@ -263,7 +263,7 @@ void TW3D::TW3DLBVH::BuildFromLBVHs(TW3DResourceUAV* GNB, TW3DResourceUAV* Scene
 		cl->ResourceBarrier(uav_barrier);
 
 		/*cl->ResourceBarriers({
-			TW3D::TW3DTransitionBarrier(node_buffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
+			TW3DTransitionBarrier(node_buffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
 		});*/
 	}
 

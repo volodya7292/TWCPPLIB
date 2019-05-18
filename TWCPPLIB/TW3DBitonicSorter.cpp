@@ -6,7 +6,7 @@
 #include "BitonicSortIndirectArgs.c.h"
 
 
-TW3D::TW3DBitonicSorter::TW3DBitonicSorter(TW3DResourceManager* ResourceManager) {
+TW3DBitonicSorter::TW3DBitonicSorter(TW3DResourceManager* ResourceManager) {
 	auto defaultHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 	auto indirectArgBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(cIndirectArgStride * 22 * 23 / 2, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
@@ -50,7 +50,7 @@ TW3D::TW3DBitonicSorter::TW3DBitonicSorter(TW3DResourceManager* ResourceManager)
 	device->CreateCommandSignature(&commandSignatureDesc, nullptr, &m_pCommandSignature);
 }
 
-TW3D::TW3DBitonicSorter::~TW3DBitonicSorter() {
+TW3DBitonicSorter::~TW3DBitonicSorter() {
 	delete m_pBitonicIndirectArgsCS;
 	delete m_pBitonicInnerSortCS;
 	delete m_pBitonicOuterSortCS;
@@ -60,7 +60,7 @@ TW3D::TW3DBitonicSorter::~TW3DBitonicSorter() {
 	TWU::DXSafeRelease(m_pCommandSignature);
 }
 
-void TW3D::TW3DBitonicSorter::RecordSort(TW3DGraphicsCommandList* CommandList, TW3DResourceUAV* SortBuffer, TWT::UInt ElementCount, bool SortAscending, bool IsPartiallyPreSorted) {
+void TW3DBitonicSorter::RecordSort(TW3DGraphicsCommandList* CommandList, TW3DResourceUAV* SortBuffer, TWT::UInt ElementCount, bool SortAscending, bool IsPartiallyPreSorted) {
 	if (ElementCount == 0) return;
 
 	const uint32_t AlignedNumElements = TWU::AlignPowerOfTwo(ElementCount);

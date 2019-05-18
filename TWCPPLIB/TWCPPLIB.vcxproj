@@ -265,6 +265,7 @@
     <ClInclude Include="TW3DLBVH.h" />
     <ClInclude Include="TW3DModules.h" />
     <ClInclude Include="TW3DShaders.h" />
+    <ClInclude Include="TW3DSphere.h" />
     <ClInclude Include="TWLogger.h" />
     <ClInclude Include="TW3DPerspectiveCamera.h" />
     <ClInclude Include="TW3DAdapter.h" />
@@ -300,6 +301,7 @@
     <ClInclude Include="TW3DUtils.h" />
     <ClInclude Include="TWTypes.h" />
     <ClInclude Include="TWUtils.h" />
+    <ClInclude Include="Universe3D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -316,6 +318,7 @@
     <ClCompile Include="TW3DLBVH.cpp" />
     <ClCompile Include="TW3DModules.cpp" />
     <ClCompile Include="TW3DShaders.cpp" />
+    <ClCompile Include="TW3DSphere.cpp" />
     <ClCompile Include="TWLogger.cpp" />
     <ClCompile Include="TW3DPerspectiveCamera.cpp" />
     <ClCompile Include="TW3DAdapter.cpp" />
@@ -351,6 +354,7 @@
     <ClCompile Include="TW3DUtils.cpp" />
     <ClCompile Include="TWTypes.cpp" />
     <ClCompile Include="TWUtils.cpp" />
+    <ClCompile Include="Universe3D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BitonicInnerSort.c.hlsl">
