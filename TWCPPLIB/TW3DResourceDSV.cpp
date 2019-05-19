@@ -26,16 +26,16 @@ void TW3DResourceDSV::Create(TWT::uint Width, TWT::uint Height) {
 	depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
 	depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
-	Device->CreateCommittedResource(
+	device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Width, Height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL | D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE),
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		&Resource,
+		&resource,
 		&depthOptimizedClearValue);
-	Resource->SetName(L"TW3DResourceDSV");
+	resource->SetName(L"TW3DResourceDSV");
 
-	Device->CreateDepthStencilView(Resource, GetCPUHandle(), &desc);
+	device->CreateDepthStencilView(resource, GetCPUHandle(), &desc);
 }
 
 void TW3DResourceDSV::Release() {

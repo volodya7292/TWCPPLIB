@@ -18,7 +18,7 @@ public:
 	void RecordBeforeExecution();
 
 	TW3DPerspectiveCamera* Camera;
-	TWT::Vector<TW3DObject*> Objects;
+	std::vector<TW3DObject*> Objects;
 
 private:
 	rp3d::Transform PhysicalTransform(TW3DTransform Transform);
@@ -31,11 +31,11 @@ private:
 
 	std::map<TW3DVertexBuffer*, TWT::uint> vertex_buffers;
 	std::map<TW3DVertexMesh*, TW3DSceneVertexMesh> vertex_meshes;
-	TWT::Vector<SceneLBVHInstance> mesh_instances;
+	std::vector<SceneLBVHInstance> mesh_instances;
 
-	TW3DResourceUAV* gvb;
-	TW3DResourceUAV* gnb;
-	TW3DResourceUAV* instance_buffer = nullptr;
+	TW3DBuffer* gvb;
+	TW3DBuffer* gnb;
+	TW3DBuffer* instance_buffer = nullptr;
 
 	TWT::uint gvb_vertex_count = 0;
 	TWT::uint gnb_node_count = 0;

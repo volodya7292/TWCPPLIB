@@ -1,19 +1,20 @@
 #pragma once
-#include "TW3DResourceVB.h"
-#include "TW3DResourceCB.h"
+#include "TW3DResource.h"
 
-class TW3DVertexBuffer {
+class TW3DVertexBuffer : public TW3DResource {
 public:
-	TW3DVertexBuffer(TW3DDevice* Device, TWT::uint VertexCount, TWT::uint SingleVertexSize, TW3DTempGCL* TempGCL);
+	TW3DVertexBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, TWT::uint VertexCount, TWT::uint SingleVertexSize);
 	~TW3DVertexBuffer();
 
-	TW3DResourceVB* GetResource();
-
+	D3D12_VERTEX_BUFFER_VIEW GetView();
 	void Update(const void* Data, TWT::uint VertexCount);
 	TWT::uint GetVertexCount();
 	TWT::uint GetVertexByteSize();
 	TWT::uint GetSizeInBytes();
 
 private:
-	TW3DResourceVB* vertex_buffer;
+	TW3DResource* upload_heap;
+	D3D12_VERTEX_BUFFER_VIEW view;
+	TWT::uint8* gpu_address = nullptr;
+	TWT::uint single_vertex_size, vertex_count;
 };

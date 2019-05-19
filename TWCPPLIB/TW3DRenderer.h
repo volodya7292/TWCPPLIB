@@ -9,7 +9,7 @@ public:
 	virtual ~TW3DRenderer();
 	virtual void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height);
 	virtual void Resize(TWT::uint Width, TWT::uint Height);
-	virtual void Record(TWT::uint BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStesncilOutput);
+	virtual void Record(TWT::uint BackBufferIndex, TW3DRenderTarget* ColorOutput, TW3DResourceDSV* DepthStesncilOutput);
 	virtual void RecordBeforeExecution() = 0;
 	void AdjustRecordIndex();
 	// Per frame
@@ -28,7 +28,7 @@ protected:
 
 	TW3DScene* Scene = nullptr;
 
-	TWT::Vector<TW3DGraphicsCommandList*> command_lists;
+	std::vector<TW3DGraphicsCommandList*> command_lists;
 	TW3DGraphicsCommandList *record_cl = nullptr, *execute_cl = nullptr;
 	TWT::uint current_record_index = 0;
 };

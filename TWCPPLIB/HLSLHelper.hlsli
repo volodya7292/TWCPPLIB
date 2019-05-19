@@ -31,6 +31,14 @@ struct Vertex {
 	float3    normal : NORMAL;
 };
 
+struct Vertex64 {
+	uint3       posLower : POSITION;
+	uint3       posHigher : POSITION;
+	float2 tex_coord : TEXCOORD;
+	float3    normal : NORMAL;
+};
+
+
 struct Ray {
 	float3 origin;
 	float3 dir;
@@ -103,13 +111,18 @@ struct SceneLBVHNode {
 };
 
 typedef StructuredBuffer<SceneLBVHNode> RTScene;
-typedef StructuredBuffer<LBVHNode> RTNB; // Ray Tracing Node Buffer
-typedef StructuredBuffer<Vertex>   GVB;  // Global Vertex Buffer
-typedef StructuredBuffer<float4x4> GMB;  // Global Matrix Buffer
+typedef StructuredBuffer<LBVHNode> RTNB;   // Ray Tracing Node Buffer
+typedef StructuredBuffer<Vertex>   GVB;    // Global Vertex Buffer
+typedef StructuredBuffer<Vertex64> GVB64;  // Global Vertex Buffer
+typedef StructuredBuffer<float4x4> GMB;    // Global Matrix Buffer
 
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------------------------------------------------
+
+inline static double3 gvb_pos64(in GVB64 gvb, uint index) {
+	return asdouble(gvb[index].posLower, gvb[index].posHigher);
+}
 
 struct Triangle {
 	float3 v0, v1, v2;

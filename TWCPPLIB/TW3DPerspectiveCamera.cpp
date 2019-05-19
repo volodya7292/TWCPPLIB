@@ -50,7 +50,7 @@ void TW3DPerspectiveCamera::Move(float to_back, float left_right) {
 	Position -= normalize(cross(d, TWT::vec3(0, 1, 0))) * left_right;
 }
 
-void TW3DPerspectiveCamera::UpdateConstantBuffer(TW3DResourceCB* ConstantBuffer) {
+void TW3DPerspectiveCamera::UpdateConstantBuffer(TW3DConstantBuffer* ConstantBuffer) {
 	TWT::DefaultCameraCB cb;
 	cb.pos = TWT::vec4(Position, 1);
 	cb.proj = GetProjectionMatrix();
@@ -63,6 +63,6 @@ void TW3DPerspectiveCamera::UpdateConstantBuffer(TW3DResourceCB* ConstantBuffer)
 		constant_buffer->Update(&cb, 0);
 }
 
-TW3DResourceCB* TW3DPerspectiveCamera::GetConstantBuffer() {
+TW3DConstantBuffer* TW3DPerspectiveCamera::GetConstantBuffer() {
 	return constant_buffer;
 }

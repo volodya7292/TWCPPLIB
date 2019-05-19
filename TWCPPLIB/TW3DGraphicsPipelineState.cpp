@@ -72,7 +72,7 @@ void TW3DGraphicsPipelineState::SetDSVFormat(DXGI_FORMAT Format) {
 	desc.DSVFormat = Format;
 }
 
-void TW3DGraphicsPipelineState::SetInputLayout(const TWT::Vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout) {
+void TW3DGraphicsPipelineState::SetInputLayout(const std::vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout) {
 	desc.InputLayout.NumElements = static_cast<UINT>(InputLayout.size());
 	desc.InputLayout.pInputElementDescs = InputLayout.data();
 }
@@ -82,8 +82,9 @@ void TW3DGraphicsPipelineState::Create(TW3DDevice* Device) {
 	pipeline_state->SetName(L"TW3DGraphicsPipelineState");
 }
 
-TWT::Vector<D3D12_INPUT_ELEMENT_DESC> CreateInputLayout(const TWT::Vector<TW3DInputLayoutElement>& Elements) {
-	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> descs;
+std::vector<D3D12_INPUT_ELEMENT_DESC> CreateInputLayout(const std::vector<TW3DInputLayoutElement>& Elements) {
+	std::vector<D3D12_INPUT_ELEMENT_DESC> descs;
+
 	for (const TW3DInputLayoutElement& element : Elements) {
 		switch (element) {
 		case TW3D_ILE_POSITION:

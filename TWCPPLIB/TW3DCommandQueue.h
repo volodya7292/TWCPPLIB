@@ -13,7 +13,7 @@ public:
 	void FlushCommandList(TW3DGraphicsCommandList* CommandList);
 	void FlushCommands();
 	void ExecuteCommandList(TW3DGraphicsCommandList* CommandList);
-	void ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists);
+	void ExecuteCommandLists(const std::vector<TW3DGraphicsCommandList*>& CommandLists);
 
 	static TW3DCommandQueue* CreateDirect(TW3DDevice* Device);
 	static TW3DCommandQueue* CreateCompute(TW3DDevice* Device);

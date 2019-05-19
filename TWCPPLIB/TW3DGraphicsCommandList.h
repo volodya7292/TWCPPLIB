@@ -1,15 +1,17 @@
 #pragma once
-#include "TW3DResourceDSV.h"
-#include "TW3DResourceRTV.h"
-#include "TW3DResourceUAV.h"
 #include "TW3DGraphicsPipelineState.h"
 #include "TW3DComputePipelineState.h"
 #include "TW3DRootSignature.h"
 
-class TW3DResourceSR;
-class TW3DResourceVB;
-class TW3DResourceCB;
+class TW3DResource;
+class TW3DResourceDSV;
+class TW3DRenderTarget;
+class TW3DResourceUAV;
+class TW3DTexture;
+class TW3DVertexBuffer;
+class TW3DConstantBuffer;
 class TW3DResourceManager;
+class TW3DDescriptorHeap;
 class TW3DObject;
 class TW3DPerspectiveCamera;
 
@@ -27,29 +29,28 @@ public:
 		TWT::uint SubresourcesCount = 1, TWT::uint64 IntermediateOffset = 0, TWT::uint FirstSubresource = 0);
 
 	void ResourceBarrier(const D3D12_RESOURCE_BARRIER& barrier);
-	void ResourceBarriers(const TWT::Vector<D3D12_RESOURCE_BARRIER>& barriers);
+	void ResourceBarriers(const std::vector<D3D12_RESOURCE_BARRIER>& barriers);
 	void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 	void ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 	void CopyBufferRegion(TW3DResource* DstBuffer, TWT::uint64 DstOffset, TW3DResource* SrcBuffer, TWT::uint64 SrcOffset, TWT::uint64 ByteCount);
 	void SetPipelineState(TW3DGraphicsPipelineState* PipelineState);
 	void SetPipelineState(TW3DComputePipelineState* PipelineState);
-	void SetRenderTarget(TW3DResourceRTV* RTV, TW3DResourceDSV* DSV);
-	void SetRenderTargets(const TWT::Vector<TW3DResourceRTV*>& RTVs, TW3DResourceDSV* DSV);
-	void ClearRTV(TW3DResourceRTV* RTV);
-	void ClearRTV(TW3DResourceRTV* RTV, TWT::vec4 Color);
+	void SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DResourceDSV* DSV);
+	void SetRenderTargets(const std::vector<TW3DRenderTarget*>& RTVs, TW3DResourceDSV* DSV);
+	void ClearRTV(TW3DRenderTarget* RenderTarget);
+	void ClearRTV(TW3DRenderTarget* RenderTarget, TWT::vec4 Color);
 	void ClearDSVDepth(TW3DResourceDSV* DSV, float Depth = 1);
 	void SetRootSignature(TW3DRootSignature* RootSignature);
 	void SetDescriptorHeap(TW3DDescriptorHeap* heap);
-	void SetDescriptorHeaps(TWT::Vector<TW3DDescriptorHeap*> heaps);
+	void SetDescriptorHeaps(std::vector<TW3DDescriptorHeap*> heaps);
 	void SetRootDescriptorTable(TWT::uint RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor);
-	void SetRootCBV(TWT::uint RootParameterIndex, TW3DResourceCB* CB, TWT::uint ElementIndex = 0);
 	void SetRoot32BitConstant(TWT::uint RootParameterIndex, TWT::uint Data, TWT::uint DestOffsetIn32BitValues);
 	void SetRoot32BitConstants(TWT::uint RootParameterIndex, TWT::uint Num32BitValuesToSet, const void* Data, TWT::uint DestOffsetIn32BitValues);
 	void SetViewport(const D3D12_VIEWPORT *viewport);
 	void SetScissor(const D3D12_RECT* scissor);
 	void SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY PrimitiveTopology);
-	void SetVertexBuffer(TWT::uint StartSlot, TW3DResourceVB* view);
-	void SetVertexBuffers(TWT::uint StartSlot, const TWT::Vector<D3D12_VERTEX_BUFFER_VIEW>& views);
+	void SetVertexBuffer(TWT::uint StartSlot, TW3DVertexBuffer* VertexBuffer);
+	void SetVertexBuffers(TWT::uint StartSlot, const std::vector<D3D12_VERTEX_BUFFER_VIEW>& views);
 	void SetIndexBuffer(const D3D12_INDEX_BUFFER_VIEW* view);
 	void Draw(TWT::uint VertexCountPerInstance, TWT::uint StartVertexLocation = 0, TWT::uint InstanceCount = 1, TWT::uint StartInstanceLocation = 0);
 	void DrawIndexed(TWT::uint IndexCountPerInstance, TWT::uint StartIndexLocation = 0, TWT::uint InstanceCount = 1, TWT::uint StartInstanceLocation = 0, int BaseVertexLocation = 0);
@@ -58,11 +59,12 @@ public:
 		TWT::uint64 ArgumentBufferOffset, ID3D12Resource* CountBuffer, TWT::uint64 CountBufferOffset);
 
 	void BindResources(TW3DResourceManager* ResourceManager);
-	void BindTexture(TWT::uint RootParameterIndex, TW3DResourceSR* SR);
-	void BindRTVTexture(TWT::uint RootParameterIndex, TW3DResourceRTV* RTV);
-	void BindUAVBuffer(TWT::uint RootParameterIndex, TW3DResource* UAV);
-	void BindUAVTexture(TWT::uint RootParameterIndex, TW3DResourceUAV* UAV);
-	void BindUAVSRV(TWT::uint RootParameterIndex, TW3DResourceUAV* UAV);
+	void BindRenderTargetTexture(TWT::uint RootParameterIndex, TW3DRenderTarget* RenderTarget);
+	void BindBuffer(TWT::uint RootParameterIndex, TW3DResource* Resource, bool UAV = false);
+	void BindTexture(TWT::uint RootParameterIndex, TW3DTexture* Resource, bool UAV = false);
+	void BindConstantBuffer(TWT::uint RootParameterIndex, TW3DConstantBuffer* CB, TWT::uint ElementIndex = 0);
+	//void BindUAVTexture(TWT::uint RootParameterIndex, TW3DResourceUAV* UAV);
+	//void BindUAVSRV(TWT::uint RootParameterIndex, TW3DResourceUAV* UAV);
 	void BindCameraCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera);
 	void DrawObject(TW3DObject* object, TWT::uint ModelCBRootParameterIndex);
 
@@ -86,3 +88,5 @@ private:
 
 	const D3D12_COMMAND_LIST_TYPE type;
 };
+
+D3D12_RESOURCE_BARRIER TW3DUAVBarrier(TW3DResource* Resource = nullptr);

@@ -6,10 +6,10 @@ TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 	resource_manager(ResourceManager) {
 	Camera = new TW3DPerspectiveCamera(ResourceManager);
 
-	gvb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(TWT::DefaultVertex));
+	gvb = ResourceManager->CreateBuffer(1024, sizeof(TWT::DefaultVertex), true);
 	ResourceManager->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 
-	gnb = ResourceManager->CreateUnorderedAccessView(1024, sizeof(LBVHNode));
+	gnb = ResourceManager->CreateBuffer(1024, sizeof(LBVHNode), true);
 	ResourceManager->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 
 	LBVH = new TW3DLBVH(ResourceManager, 1, true);
@@ -35,9 +35,9 @@ TW3DScene::~TW3DScene() {
 }
 
 void TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::uint GVBRPI, TWT::uint SceneRTNBRPI, TWT::uint GNBRPI) {
-	CommandList->BindUAVSRV(GVBRPI, gvb);
-	CommandList->BindUAVSRV(SceneRTNBRPI, LBVH->GetNodeBuffer());
-	CommandList->BindUAVSRV(GNBRPI, gnb);
+	CommandList->BindBuffer(GVBRPI, gvb);
+	CommandList->BindBuffer(SceneRTNBRPI, LBVH->GetNodeBuffer());
+	CommandList->BindBuffer(GNBRPI, gnb);
 }
 
 void TW3DScene::AddObject(TW3DObject* Object) {
@@ -127,11 +127,11 @@ void TW3DScene::RecordBeforeExecution() {
 	}
 
 	if (instance_buffer == nullptr || instance_buffer->GetElementCount() != Objects.size()) {
-		instance_buffer = resource_manager->CreateUnorderedAccessView(Objects.size(), sizeof(SceneLBVHInstance));
+		instance_buffer = resource_manager->CreateBuffer(Objects.size(), sizeof(SceneLBVHInstance), true);
 		resource_manager->ResourceBarrier(instance_buffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 	}
 	if (objects_changed)
-		instance_buffer->UpdateData(mesh_instances.data(), Objects.size());
+		instance_buffer->Update(mesh_instances.data(), Objects.size());
 
 
 	auto cl = resource_manager->GetTemporaryComputeCommandList();
@@ -142,7 +142,7 @@ void TW3DScene::RecordBeforeExecution() {
 	// -------------------------------------------------------------------------------------------------------------------------
 	if (vertex_buffers_changed) {
 		for (const auto& [vb, voffset]: vertex_buffers) {
-			cl->CopyBufferRegion(gvb, voffset * sizeof(TWT::DefaultVertex), vb->GetResource(), 0, vb->GetSizeInBytes());
+			cl->CopyBufferRegion(gvb, voffset * sizeof(TWT::DefaultVertex), vb, 0, vb->GetSizeInBytes());
 			cl_updated = true;
 		}
 	}

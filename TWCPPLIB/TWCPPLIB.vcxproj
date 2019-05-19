@@ -259,13 +259,17 @@
     <ProjectReference />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Galaxy.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Planet.h" />
     <ClInclude Include="TW3DBitonicSorter.h" />
+    <ClInclude Include="TW3DBuffer.h" />
     <ClInclude Include="TW3DComputePipelineState.h" />
     <ClInclude Include="TW3DLBVH.h" />
     <ClInclude Include="TW3DModules.h" />
     <ClInclude Include="TW3DShaders.h" />
     <ClInclude Include="TW3DSphere.h" />
+    <ClInclude Include="TW3DTexture.h" />
     <ClInclude Include="TWLogger.h" />
     <ClInclude Include="TW3DPerspectiveCamera.h" />
     <ClInclude Include="TW3DAdapter.h" />
@@ -283,15 +287,12 @@
     <ClInclude Include="TW3DDevice.h" />
     <ClInclude Include="TW3DEngine.h" />
     <ClInclude Include="TW3DFactory.h" />
-    <ClInclude Include="TW3DResourceCB.h" />
+    <ClInclude Include="TW3DConstantBuffer.h" />
     <ClInclude Include="TW3DResourceDSV.h" />
     <ClInclude Include="TW3DResourceManager.h" />
-    <ClInclude Include="TW3DResourceRTV.h" />
-    <ClInclude Include="TW3DResourceSR.h" />
-    <ClInclude Include="TW3DResourceUAV.h" />
-    <ClInclude Include="TW3DResourceVB.h" />
-    <ClInclude Include="TW3DRootSignature.h" />
+    <ClInclude Include="TW3DRenderTarget.h" />
     <ClInclude Include="TW3DVertexBuffer.h" />
+    <ClInclude Include="TW3DRootSignature.h" />
     <ClInclude Include="TW3DVertexMesh.h" />
     <ClInclude Include="TW3DScene.h" />
     <ClInclude Include="TW3DSwapChain.h" />
@@ -299,12 +300,14 @@
     <ClInclude Include="TW3DTransform.h" />
     <ClInclude Include="TW3DTypes.h" />
     <ClInclude Include="TW3DUtils.h" />
+    <ClInclude Include="TWPerlinNoise.h" />
     <ClInclude Include="TWTypes.h" />
     <ClInclude Include="TWUtils.h" />
     <ClInclude Include="Universe3D.h" />
-    <ClInclude Include="Universe3DCluster.h" />
+    <ClInclude Include="UniverseObject.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Galaxy.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -314,12 +317,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='StaticLib|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Planet.cpp" />
     <ClCompile Include="TW3DBitonicSorter.cpp" />
+    <ClCompile Include="TW3DBuffer.cpp" />
     <ClCompile Include="TW3DComputePipelineState.cpp" />
     <ClCompile Include="TW3DLBVH.cpp" />
     <ClCompile Include="TW3DModules.cpp" />
     <ClCompile Include="TW3DShaders.cpp" />
     <ClCompile Include="TW3DSphere.cpp" />
+    <ClCompile Include="TW3DTexture.cpp" />
     <ClCompile Include="TWLogger.cpp" />
     <ClCompile Include="TW3DPerspectiveCamera.cpp" />
     <ClCompile Include="TW3DAdapter.cpp" />
@@ -337,15 +343,12 @@
     <ClCompile Include="TW3DDevice.cpp" />
     <ClCompile Include="TW3DEngine.cpp" />
     <ClCompile Include="TW3DFactory.cpp" />
-    <ClCompile Include="TW3DResourceCB.cpp" />
+    <ClCompile Include="TW3DConstantBuffer.cpp" />
     <ClCompile Include="TW3DResourceDSV.cpp" />
     <ClCompile Include="TW3DResourceManager.cpp" />
-    <ClCompile Include="TW3DResourceRTV.cpp" />
-    <ClCompile Include="TW3DResourceSR.cpp" />
-    <ClCompile Include="TW3DResourceUAV.cpp" />
-    <ClCompile Include="TW3DResourceVB.cpp" />
-    <ClCompile Include="TW3DRootSignature.cpp" />
+    <ClCompile Include="TW3DRenderTarget.cpp" />
     <ClCompile Include="TW3DVertexBuffer.cpp" />
+    <ClCompile Include="TW3DRootSignature.cpp" />
     <ClCompile Include="TW3DVertexMesh.cpp" />
     <ClCompile Include="TW3DScene.cpp" />
     <ClCompile Include="TW3DSwapChain.cpp" />
@@ -353,10 +356,11 @@
     <ClCompile Include="TW3DTransform.cpp" />
     <ClCompile Include="TW3DTypes.cpp" />
     <ClCompile Include="TW3DUtils.cpp" />
+    <ClCompile Include="TWPerlinNoise.cpp" />
     <ClCompile Include="TWTypes.cpp" />
     <ClCompile Include="TWUtils.cpp" />
     <ClCompile Include="Universe3D.cpp" />
-    <ClCompile Include="Universe3DCluster.cpp" />
+    <ClCompile Include="UniverseObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BitonicInnerSort.c.hlsl">

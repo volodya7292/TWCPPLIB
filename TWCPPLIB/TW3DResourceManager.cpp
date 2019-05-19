@@ -29,14 +29,14 @@ TW3DResourceManager::~TW3DResourceManager() {
 	delete copy_command_queue;
 }
 
-TW3DResourceRTV* TW3DResourceManager::CreateRenderTargetView(ID3D12Resource* Buffer) {
-	TW3DResourceRTV* rtv = new TW3DResourceRTV(device, rtv_descriptor_heap);
+TW3DRenderTarget* TW3DResourceManager::CreateRenderTargetView(ID3D12Resource* Buffer) {
+	TW3DRenderTarget* rtv = new TW3DRenderTarget(device, rtv_descriptor_heap);
 	rtv->Create(Buffer);
 	return rtv;
 }
 
-TW3DResourceRTV* TW3DResourceManager::CreateRenderTargetView(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, TWT::vec4 ClearValue) {
-	TW3DResourceRTV* rtv = new TW3DResourceRTV(device, rtv_descriptor_heap, srv_descriptor_heap, Format, ClearValue);
+TW3DRenderTarget* TW3DResourceManager::CreateRenderTargetView(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, TWT::vec4 ClearValue) {
+	TW3DRenderTarget* rtv = new TW3DRenderTarget(device, rtv_descriptor_heap, srv_descriptor_heap, Format, ClearValue);
 	rtv->Create(Width, Height);
 	return rtv;
 }
@@ -47,34 +47,34 @@ TW3DResourceDSV* TW3DResourceManager::CreateDepthStencilView(TWT::uint Width, TW
 	return dsv;
 }
 
-TW3DResourceUAV* TW3DResourceManager::CreateUnorderedAccessView(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format) {
-	TW3DResourceUAV* uav = new TW3DResourceUAV(device, srv_descriptor_heap, Format);
-	uav->CreateTexture2D(Width, Height);
-	return uav;
-}
-
-TW3DResourceUAV* TW3DResourceManager::CreateUnorderedAccessView(TWT::uint ElementCount, TWT::uint ElementSizeInBytes) {
-	TW3DResourceUAV* uav = new TW3DResourceUAV(device, srv_descriptor_heap, ElementSizeInBytes, temp_gcl);
-	uav->CreateBuffer(ElementCount);
-	return uav;
+TW3DBuffer* TW3DResourceManager::CreateBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV) {
+	TW3DBuffer* buffer = new TW3DBuffer(device, temp_gcl, false, ElementSizeInBytes, UAV, srv_descriptor_heap);
+	buffer->Create(ElementCount);
+	return buffer;
 }
 
 TW3DVertexBuffer* TW3DResourceManager::CreateVertexBuffer(TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes) {
-	return new TW3DVertexBuffer(device, VertexCount, SingleVertexSizeInBytes, temp_gcl);
+	return new TW3DVertexBuffer(device, temp_gcl, VertexCount, SingleVertexSizeInBytes);
 }
 
-TW3DResourceCB* TW3DResourceManager::CreateConstantBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes) {
-	return new TW3DResourceCB(device, ElementCount, ElementSizeInBytes);
+TW3DConstantBuffer* TW3DResourceManager::CreateConstantBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes) {
+	return new TW3DConstantBuffer(device, ElementCount, ElementSizeInBytes);
 }
 
-TW3DResourceSR* TW3DResourceManager::CreateTexture2D(const TWT::WString& Filename) {
-	return TW3DResourceSR::Create2D(device, srv_descriptor_heap, Filename, temp_gcl);
+TW3DTexture* TW3DResourceManager::CreateTexture2D(const TWT::WString& Filename) {
+	return TW3DTexture::Create2D(device, temp_gcl, srv_descriptor_heap, Filename);
 }
 
-TW3DResourceSR* TW3DResourceManager::CreateTextureArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Depth, DXGI_FORMAT Format) {
-	TW3DResourceSR* sr = new TW3DResourceSR(device, srv_descriptor_heap, temp_gcl);
-	sr->CreateArray2D(Width, Height, Depth, Format);
-	return sr;
+TW3DTexture* TW3DResourceManager::CreateTexture2D(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, bool UAV) {
+	TW3DTexture* texture = new TW3DTexture(device, temp_gcl, srv_descriptor_heap, Format, UAV);
+	texture->Create2D(Width, Height);
+	return texture;
+}
+
+TW3DTexture* TW3DResourceManager::CreateTextureArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Depth, DXGI_FORMAT Format, bool UAV) {
+	TW3DTexture* texture = new TW3DTexture(device, temp_gcl, srv_descriptor_heap, Format, UAV);
+	texture->CreateArray2D(Width, Height, Depth);
+	return texture;
 }
 
 TW3DGraphicsCommandList* TW3DResourceManager::CreateDirectCommandList() {
@@ -145,7 +145,7 @@ void TW3DResourceManager::ExecuteCommandList(TW3DGraphicsCommandList* CommandLis
 	GetCommandListCommandQueue(CommandList)->ExecuteCommandList(CommandList);
 }
 
-void TW3DResourceManager::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists) {
+void TW3DResourceManager::ExecuteCommandLists(const std::vector<TW3DGraphicsCommandList*>& CommandLists) {
 	GetCommandListCommandQueue(CommandLists[0])->ExecuteCommandLists(CommandLists);
 }
 

@@ -93,19 +93,10 @@
     <ClInclude Include="TW3DUtils.h">
       <Filter>Header Files\TWUtils</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DResourceVB.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DResourceDSV.h">
       <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DResourceRTV.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DResource.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DResourceCB.h">
       <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -174,15 +165,6 @@
     <ClInclude Include="TW3DComputePipelineState.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DResourceSR.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DResourceUAV.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DVertexBuffer.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DBitonicSorter.h">
       <Filter>Header Files\TW3DEngine\TW3DModule</Filter>
     </ClInclude>
@@ -207,8 +189,32 @@
     <ClInclude Include="Universe3D.h">
       <Filter>Header Files\Game</Filter>
     </ClInclude>
-    <ClInclude Include="Universe3DCluster.h">
+    <ClInclude Include="Planet.h">
       <Filter>Header Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Galaxy.h">
+      <Filter>Header Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="UniverseObject.h">
+      <Filter>Header Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="TWPerlinNoise.h">
+      <Filter>Header Files\TWUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DVertexBuffer.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DConstantBuffer.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DRenderTarget.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DBuffer.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DTexture.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -235,15 +241,6 @@
       <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
     <ClCompile Include="TW3DResourceDSV.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DResourceRTV.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DResourceVB.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DResourceCB.cpp">
       <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
     <ClCompile Include="TW3DScene.cpp">
@@ -309,15 +306,6 @@
     <ClCompile Include="TW3DComputePipelineState.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DResourceSR.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DResourceUAV.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DVertexBuffer.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
     <ClCompile Include="TW3DBitonicSorter.cpp">
       <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
     </ClCompile>
@@ -342,8 +330,32 @@
     <ClCompile Include="TW3DSphere.cpp">
       <Filter>Source Files\TW3DEngine\TW3DObject</Filter>
     </ClCompile>
-    <ClCompile Include="Universe3DCluster.cpp">
+    <ClCompile Include="Planet.cpp">
       <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Galaxy.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="UniverseObject.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="TWPerlinNoise.cpp">
+      <Filter>Source Files\TWUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DVertexBuffer.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DConstantBuffer.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DRenderTarget.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DTexture.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DBuffer.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

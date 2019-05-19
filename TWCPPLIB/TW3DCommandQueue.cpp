@@ -59,11 +59,11 @@ void TW3DCommandQueue::ExecuteCommandList(TW3DGraphicsCommandList* CommandList) 
 	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value), "TW3DCommandQueue::ExecuteCommandList"s);
 }
 
-void TW3DCommandQueue::ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists) {
+void TW3DCommandQueue::ExecuteCommandLists(const std::vector<TW3DGraphicsCommandList*>& CommandLists) {
 	FlushCommands();
 	fence_flush_value++;
 
-	TWT::Vector<ID3D12CommandList*> nativeLists(CommandLists.size());
+	std::vector<ID3D12CommandList*> nativeLists(CommandLists.size());
 	for (TWT::uint i = 0; i < nativeLists.size(); i++) {
 		nativeLists[i] = CommandLists[i]->Get();
 		CommandLists[i]->SignalValue = fence_flush_value;

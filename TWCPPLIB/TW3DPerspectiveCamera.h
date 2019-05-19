@@ -18,8 +18,8 @@ public:
 
 	void SetRotation(TWT::vec3 Rotation);
 	void Move(float to_back, float left_right);
-	void UpdateConstantBuffer(TW3DResourceCB* ConstantBuffer = nullptr);
-	TW3DResourceCB* GetConstantBuffer();
+	void UpdateConstantBuffer(TW3DConstantBuffer* ConstantBuffer = nullptr);
+	TW3DConstantBuffer* GetConstantBuffer();
 
 	TWT::uint Width, Height;
 	float FOVY, ZNear, ZFar;
@@ -27,5 +27,5 @@ public:
 
 private:
 	TWT::vec3 rotation;
-	TW3DResourceCB* constant_buffer = nullptr;
+	TW3DConstantBuffer* constant_buffer = nullptr;
 };

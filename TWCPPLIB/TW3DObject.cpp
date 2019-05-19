@@ -27,5 +27,5 @@ void TW3DObject::Update() {
 }
 
 void TW3DObject::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::uint ModelCBRootParameterIndex) {
-	CommandList->SetRootCBV(ModelCBRootParameterIndex, ConstantBuffer, 0);
+	CommandList->BindConstantBuffer(ModelCBRootParameterIndex, ConstantBuffer);
 }

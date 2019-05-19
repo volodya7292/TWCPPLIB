@@ -46,7 +46,7 @@ tm TWU::GetTime() {
 	return *aTime;
 }
 
-TWT::float64 TWU::GetTimeSeconds() {
-	TWT::float64 time = static_cast<TWT::float64>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+double TWU::GetTimeSeconds() {
+	double time = static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 	return time / 1.0e9;
 }

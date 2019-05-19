@@ -17,12 +17,13 @@ TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 }
 
 void TW3DDefaultRenderer::CreateBlitResources() {
-	TW3DRootSignature* root_signature = new TW3DRootSignature(false, false, true, false);
-	root_signature->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_PIXEL, 0);  // Texture to blit
-	root_signature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
-	root_signature->Create(Device);
+	TW3DRootSignature* root_signature = new TW3DRootSignature(Device,
+		{ TW3DRPTexture(0, D3D12_SHADER_VISIBILITY_PIXEL, 0) },
+		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) },
+		true, true, false, false
+	);
 
-	//TWT::Vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({ POSITION_ILE, TEXCOORD_ILE, NORMAL_ILE });
+	//std::vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({ POSITION_ILE, TEXCOORD_ILE, NORMAL_ILE });
 
 	D3D12_RASTERIZER_DESC rastDesc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
@@ -48,16 +49,27 @@ void TW3DDefaultRenderer::CreateBlitResources() {
 }
 
 void TW3DDefaultRenderer::CreateGBufferResources() {
-	TW3DRootSignature* root_signature = new TW3DRootSignature();
-	root_signature->SetParameterCBV(0, D3D12_SHADER_VISIBILITY_VERTEX, 0); // Camera CB
-	root_signature->SetParameterCBV(1, D3D12_SHADER_VISIBILITY_VERTEX, 1); // Vertex mesh CB
-	root_signature->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_PIXEL, 0);  // Diffuse
-	root_signature->SetParameterSRV(3, D3D12_SHADER_VISIBILITY_PIXEL, 1);  // Normal
-	root_signature->SetParameterSRV(4, D3D12_SHADER_VISIBILITY_PIXEL, 2);  // Roughness
-	root_signature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
-	root_signature->Create(Device);
+	TW3DRootSignature* root_signature = new TW3DRootSignature(Device,
+		{
+			TW3DRPConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX, 0),
+			TW3DRPConstantBuffer(1, D3D12_SHADER_VISIBILITY_VERTEX, 1),
+			TW3DRPTexture(2, D3D12_SHADER_VISIBILITY_PIXEL, 0),
+			TW3DRPTexture(3, D3D12_SHADER_VISIBILITY_PIXEL, 1),
+			TW3DRPTexture(4, D3D12_SHADER_VISIBILITY_PIXEL, 2),
+		},
+		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) }
+	);
 
-	TWT::Vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({TW3D_ILE_POSITION, TW3D_ILE_TEXCOORD, TW3D_ILE_NORMAL});
+	//TW3DRootSignature* root_signature = new TW3DRootSignature();
+	//root_signature->SetParameterCBV(0, D3D12_SHADER_VISIBILITY_VERTEX, 0); // Camera CB
+	//root_signature->SetParameterCBV(1, D3D12_SHADER_VISIBILITY_VERTEX, 1); // Vertex mesh CB
+	//root_signature->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_PIXEL, 0);  // Diffuse
+	//root_signature->SetParameterSRV(3, D3D12_SHADER_VISIBILITY_PIXEL, 1);  // Normal
+	//root_signature->SetParameterSRV(4, D3D12_SHADER_VISIBILITY_PIXEL, 2);  // Roughness
+	//root_signature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
+	//root_signature->Create(Device);
+
+	std::vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({TW3D_ILE_POSITION, TW3D_ILE_TEXCOORD, TW3D_ILE_NORMAL});
 
 	D3D12_RASTERIZER_DESC rastDesc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
@@ -81,16 +93,27 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 }
 
 void TW3DDefaultRenderer::CreateRTResources() {
-	rt_output = ResourceManager->CreateUnorderedAccessView(Width, Height, TWT::RGBA8Unorm);
-	ResourceManager->ResourceBarrier(rt_output, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	rt_output = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA8Unorm, true);
+	ResourceManager->ResourceBarrier(rt_output, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-	TW3DRootSignature* rs = new TW3DRootSignature(false, false, false, false);
-	rs->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
-	rs->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Scene LBVH buffer SRV
-	rs->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_ALL, 2); // Global Node Buffer SRV
-	rs->SetParameterUAVTexture(3, D3D12_SHADER_VISIBILITY_ALL, 0); // Output texture
-	rs->SetParameterCBV(4, D3D12_SHADER_VISIBILITY_ALL, 0); // Camera CBV
-	rs->Create(Device);
+	TW3DRootSignature* rs = new TW3DRootSignature(Device,
+		{
+			TW3DRPBuffer(0, D3D12_SHADER_VISIBILITY_ALL, 0),
+			TW3DRPBuffer(1, D3D12_SHADER_VISIBILITY_ALL, 1),
+			TW3DRPBuffer(2, D3D12_SHADER_VISIBILITY_ALL, 2),
+			TW3DRPTexture(3, D3D12_SHADER_VISIBILITY_ALL, 0, true),
+			TW3DRPConstantBuffer(4, D3D12_SHADER_VISIBILITY_ALL, 0)
+		},
+		false, false, false, false
+	);
+
+	//TW3DRootSignature* rs = new TW3DRootSignature(false, false, false, false);
+	//rs->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
+	//rs->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Scene LBVH buffer SRV
+	//rs->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_ALL, 2); // Global Node Buffer SRV
+	//rs->SetParameterUAVTexture(3, D3D12_SHADER_VISIBILITY_ALL, 0); // Output texture
+	//rs->SetParameterCBV(4, D3D12_SHADER_VISIBILITY_ALL, 0); // Camera CBV
+	//rs->Create(Device);
 
 	rt_ps = new TW3DComputePipelineState(rs);
 	rt_ps->SetShader("RayTrace.c.cso");
@@ -99,7 +122,7 @@ void TW3DDefaultRenderer::CreateRTResources() {
 	rt_cl = ResourceManager->CreateComputeCommandList();
 }
 
-void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* Depth) {
+void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarget* ColorOutput, TW3DResourceDSV* Depth) {
 	cl->ResourceBarriers({
 		TW3DTransitionBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET),
 		TW3DTransitionBarrier(rt_output, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
@@ -107,7 +130,7 @@ void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DResourceRT
 
 	cl->SetPipelineState(blit_ps);
 	cl->SetRenderTarget(ColorOutput, Depth);
-	cl->BindUAVSRV(0, rt_output);
+	cl->BindTexture(0, rt_output);
 	cl->ClearRTV(ColorOutput, TWT::vec4(0, 0, 0, 1));
 	cl->ClearDSVDepth(Depth);
 	cl->SetViewport(&viewport);
@@ -146,7 +169,7 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	scissor = CD3DX12_RECT(0, 0, Width, Height);
 }
 
-void TW3DDefaultRenderer::Record(TWT::uint BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStencilOutput) {
+void TW3DDefaultRenderer::Record(TWT::uint BackBufferIndex, TW3DRenderTarget* ColorOutput, TW3DResourceDSV* DepthStencilOutput) {
 	TW3DRenderer::Record(BackBufferIndex, ColorOutput, DepthStencilOutput);
 
 	record_cl->Reset();
@@ -189,8 +212,8 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 	rt_cl->BindResources(ResourceManager);
 	rt_cl->SetPipelineState(rt_ps);
 	Scene->Bind(rt_cl, 0, 1, 2);
-	rt_cl->BindUAVTexture(3, rt_output);
-	rt_cl->SetRootCBV(4, Scene->Camera->GetConstantBuffer());
+	rt_cl->BindTexture(3, rt_output);
+	rt_cl->BindConstantBuffer(4, Scene->Camera->GetConstantBuffer());
 	rt_cl->Dispatch(ceil(Width / 8.0f), ceil(Height / 8.0f));
 	rt_cl->ResourceBarrier(TW3DUAVBarrier());
 	rt_cl->Close();

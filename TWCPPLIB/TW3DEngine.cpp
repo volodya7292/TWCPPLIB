@@ -16,11 +16,11 @@ static TW3D::ThreadTickHandler    on_thread_tick;
 static TW3D::KeyHandler           on_key;
 static TW3D::CharHandler          on_char;
 
-static TWT::Vector<bool> KeysDown(1024);
+static std::vector<bool> KeysDown(1024);
 
 static const TWT::uint engine_thread_count = 2;
 
-static TWT::Vector<std::thread>    threads;
+static std::vector<std::thread>    threads;
 static std::mutex                  resize_mutex;
 
 static TW3DRenderer*           renderer;
@@ -41,7 +41,7 @@ static TW3DAdapter*      adapter;
 static TW3DDevice*       device;
 static TW3DSwapChain*    swapChain;
 
-static TWT::Vector<TW3DResourceRTV*>    renderTargets(TW3DSwapChain::BufferCount);
+static std::vector<TW3DRenderTarget*>    renderTargets(TW3DSwapChain::BufferCount);
 static TW3DResourceDSV*                 depthStencil;
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -310,11 +310,11 @@ void main_loop() {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		} else {
-			TWT::float64 t0 = TWU::GetTimeSeconds();
+			double t0 = TWU::GetTimeSeconds();
 			update();
 			if (!minimized)
 				render();
-			TWT::float64 t1 = TWU::GetTimeSeconds();
+			double t1 = TWU::GetTimeSeconds();
 			delta_time = t1 - t0;
 		}
 	}

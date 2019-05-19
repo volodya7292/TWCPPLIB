@@ -10,15 +10,10 @@ namespace TWT {
 	using int16 = int16_t;
 	using int64 = int64_t;
 
-	using uint8   = uint8_t;
-	using uint16  = uint16_t;
-	using uint    = uint32_t;
+	using uint8  = uint8_t;
+	using uint16 = uint16_t;
+	using uint   = uint32_t;
 	using uint64 = uint64_t;
-
-	using float64 = double;
-
-	template<class T>
-	using Vector = std::vector<T>;
 
 	struct WString;
 
@@ -66,7 +61,7 @@ namespace TWT {
 	std::wstring MultibyteToWide(const std::string &str);
 
 	template<class T>
-	inline void Copy(const Vector<T>& Source, Vector<T>& Destination) {
+	inline void Copy(const std::vector<T>& Source, std::vector<T>& Destination) {
 		std::copy(Source.begin(), Source.end(), std::back_inserter(Destination));
 	}
 }

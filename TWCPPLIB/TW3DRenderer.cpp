@@ -28,7 +28,7 @@ void TW3DRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 		command_lists[i]->EmptyReset();
 }
 
-void TW3DRenderer::Record(TWT::uint BackBufferIndex, TW3DResourceRTV* ColorOutput, TW3DResourceDSV* DepthStesncilOutput) {
+void TW3DRenderer::Record(TWT::uint BackBufferIndex, TW3DRenderTarget* ColorOutput, TW3DResourceDSV* DepthStesncilOutput) {
 	record_cl = current_record_index == 0 ? command_lists[BackBufferIndex * 2] : command_lists[BackBufferIndex * 2 + 1];
 	ResourceManager->FlushCommandList(record_cl);
 }

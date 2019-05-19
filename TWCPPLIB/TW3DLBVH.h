@@ -35,17 +35,17 @@ public:
 	~TW3DLBVH();
 
 	TWT::uint GetNodeCount();
-	TW3DResourceUAV* GetNodeBuffer();
+	TW3DBuffer* GetNodeBuffer();
 
-	void BuildFromTriangles(TW3DResourceUAV* GVB, TWT::uint GVBOffset, TW3DGraphicsCommandList* CommandList = nullptr);
-	void BuildFromLBVHs(TW3DResourceUAV* GNB, TW3DResourceUAV* SceneMeshInstancesBuffer, TW3DGraphicsCommandList* CommandList);
+	void BuildFromTriangles(TW3DBuffer* GVB, TWT::uint GVBOffset, TW3DGraphicsCommandList* CommandList = nullptr);
+	void BuildFromLBVHs(TW3DBuffer* GNB, TW3DBuffer* SceneMeshInstancesBuffer, TW3DGraphicsCommandList* CommandList);
 
 private:
 	TW3DResourceManager* resource_manager;
 
-	TW3DResourceUAV* bounding_box_buffer;
-	TW3DResourceUAV* morton_codes_buffer;
-	TW3DResourceUAV* node_buffer;
+	TW3DBuffer* bounding_box_buffer;
+	TW3DBuffer* morton_codes_buffer;
+	TW3DBuffer* node_buffer;
 
 	TWT::uint element_count;
 };

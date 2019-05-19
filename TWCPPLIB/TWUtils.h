@@ -21,7 +21,7 @@ namespace TWU {
 	TWT::byte* ReadFileBytes(TWT::String filename, TWT::uint& size);
 
 	tm GetTime();
-	TWT::float64 GetTimeSeconds();
+	double GetTimeSeconds();
 
 	inline TWT::uint8 Log2(TWT::uint64 value) {
 		unsigned long mssb; // most significant set bit

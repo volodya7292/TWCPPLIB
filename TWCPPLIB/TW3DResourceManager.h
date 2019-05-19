@@ -1,26 +1,27 @@
 #pragma once
-#include "TW3DResourceCB.h"
-#include "TW3DResourceSR.h"
-#include "TW3DResourceUAV.h"
+#include "TW3DConstantBuffer.h"
+#include "TW3DTexture.h"
+#include "TW3DBuffer.h"
+#include "TW3DResourceDSV.h"
+#include "TW3DRenderTarget.h"
 #include "TW3DVertexBuffer.h"
 #include "TW3DCommandQueue.h"
 #include "TW3DTypes.h"
-
 
 class TW3DResourceManager {
 public:
 	TW3DResourceManager(TW3DDevice* Device);
 	~TW3DResourceManager();
 
-	TW3DResourceRTV* CreateRenderTargetView(ID3D12Resource* Buffer);
-	TW3DResourceRTV* CreateRenderTargetView(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, TWT::vec4 ClearValue);
+	TW3DRenderTarget* CreateRenderTargetView(ID3D12Resource* Buffer);
+	TW3DRenderTarget* CreateRenderTargetView(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, TWT::vec4 ClearValue);
 	TW3DResourceDSV* CreateDepthStencilView(TWT::uint Width, TWT::uint Height);
-	TW3DResourceUAV* CreateUnorderedAccessView(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format);
-	TW3DResourceUAV* CreateUnorderedAccessView(TWT::uint ElementCount, TWT::uint ElementSizeInBytes);
+	TW3DBuffer* CreateBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV = false);
 	TW3DVertexBuffer* CreateVertexBuffer(TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex));
-	TW3DResourceCB* CreateConstantBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes);
-	TW3DResourceSR* CreateTexture2D(const TWT::WString& Filename);
-	TW3DResourceSR* CreateTextureArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Depth, DXGI_FORMAT Format);
+	TW3DConstantBuffer* CreateConstantBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes);
+	TW3DTexture* CreateTexture2D(const TWT::WString& Filename);
+	TW3DTexture* CreateTexture2D(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, bool UAV = false);
+	TW3DTexture* CreateTextureArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Depth, DXGI_FORMAT Format, bool UAV = false);
 	TW3DGraphicsCommandList* CreateDirectCommandList();
 	TW3DGraphicsCommandList* CreateBundleCommandList();
 	TW3DGraphicsCommandList* CreateComputeCommandList();
@@ -37,7 +38,7 @@ public:
 	void FlushCommandLists();
 	void ExecuteCommandList(TW3DGraphicsCommandList* CommandList);
 	// Command lists must be of the same type
-	void ExecuteCommandLists(const TWT::Vector<TW3DGraphicsCommandList*>& CommandLists);
+	void ExecuteCommandLists(const std::vector<TW3DGraphicsCommandList*>& CommandLists);
 
 	TW3DDevice* GetDevice();
 	TW3DDescriptorHeap* GetSVDescriptorHeap();

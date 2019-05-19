@@ -24,7 +24,7 @@ public:
 	void SetPixelShader(const D3D12_SHADER_BYTECODE& ByteCode);
 	void SetRTVFormat(TWT::uint Index, DXGI_FORMAT Format);
 	void SetDSVFormat(DXGI_FORMAT Format);
-	void SetInputLayout(const TWT::Vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout);
+	void SetInputLayout(const std::vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout);
 
 	void Create(TW3DDevice* Device);
 
@@ -36,4 +36,4 @@ private:
 };
 
 
-TWT::Vector<D3D12_INPUT_ELEMENT_DESC> CreateInputLayout(const TWT::Vector<TW3DInputLayoutElement>& Elements);
+std::vector<D3D12_INPUT_ELEMENT_DESC> CreateInputLayout(const std::vector<TW3DInputLayoutElement>& Elements);
