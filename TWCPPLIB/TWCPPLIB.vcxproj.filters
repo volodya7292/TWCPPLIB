@@ -93,9 +93,6 @@
     <ClInclude Include="TW3DUtils.h">
       <Filter>Header Files\TWUtils</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DResourceDSV.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DResource.h">
       <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
@@ -104,9 +101,6 @@
     </ClInclude>
     <ClInclude Include="TW3DScene.h">
       <Filter>Header Files\TW3DEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DResourceManager.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
     <ClInclude Include="TW3DGeometry.h">
       <Filter>Header Files\TW3DEngine\TW3DObject</Filter>
@@ -216,6 +210,9 @@
     <ClInclude Include="TW3DTexture.h">
       <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DResourceManager.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -236,18 +233,11 @@
     <ClCompile Include="TW3DUtils.cpp">
       <Filter>Source Files\TWUtils</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp" />
     <ClCompile Include="TW3DResource.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DResourceDSV.cpp">
       <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
     <ClCompile Include="TW3DScene.cpp">
       <Filter>Source Files\TW3DEngine</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DResourceManager.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
     <ClCompile Include="TW3DGeometry.cpp">
       <Filter>Source Files\TW3DEngine\TW3DObject</Filter>
@@ -357,18 +347,18 @@
     <ClCompile Include="TW3DBuffer.cpp">
       <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
+    <ClCompile Include="TW3DResourceManager.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="GBuffer.v.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="GBuffer.p.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="OffscreenBlit.p.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="OffscreenBlit.v.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="BitonicInnerSort.c.hlsl">
@@ -415,6 +405,12 @@
     </FxCompile>
     <FxCompile Include="SetupLBVHNodesFromTriangles.c.hlsl">
       <Filter>Resource Files\Shaders\LBVH</Filter>
+    </FxCompile>
+    <FxCompile Include="FinalPassBlit.v.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="FinalPassBlit.p.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

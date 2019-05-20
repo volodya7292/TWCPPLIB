@@ -12,13 +12,13 @@ TW3DRenderTarget::TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* rtv_d
 	&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 	D3D12_RESOURCE_STATE_RENDER_TARGET,
 	false,
-	D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES,
-	clear_value),
+	D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES),
 	rtv_descriptor_heap(rtv_descriptor_heap), srv_descriptor_heap(srv_descriptor_heap)
 {
 	RTVIndex = rtv_descriptor_heap->Allocate();
 	SRVIndex = srv_descriptor_heap->Allocate();
 	desc = CD3DX12_RESOURCE_DESC::Tex2D(Format, 0, 0, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
+	clear_value = { Format, { ClearValue.r, ClearValue.g, ClearValue.b, ClearValue.a } };
 }
 
 TW3DRenderTarget::~TW3DRenderTarget() {
@@ -26,17 +26,17 @@ TW3DRenderTarget::~TW3DRenderTarget() {
 	srv_descriptor_heap->Free(SRVIndex);
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE TW3DRenderTarget::GetRTVCPUHandle() {
+D3D12_CPU_DESCRIPTOR_HANDLE TW3DRenderTarget::GetCPURTVHandle() {
 	return rtv_descriptor_heap->GetCPUHandle(RTVIndex);
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE TW3DRenderTarget::GetSRVGPUHandle() {
+D3D12_GPU_DESCRIPTOR_HANDLE TW3DRenderTarget::GetGPUSRVHandle() {
 	return srv_descriptor_heap->GetGPUHandle(SRVIndex);
 }
 
 void TW3DRenderTarget::Create(ID3D12Resource* Buffer) {
 	resource = Buffer;
-	device->CreateRenderTargetView(resource, GetRTVCPUHandle());
+	device->CreateRenderTargetView(resource, GetCPURTVHandle());
 }
 
 void TW3DRenderTarget::Create(TWT::uint Width, TWT::uint Height) {
@@ -53,9 +53,10 @@ void TW3DRenderTarget::Create(TWT::uint Width, TWT::uint Height) {
 	srvdesc.Texture2D.MipLevels = 1;
 
 	device->CreateShaderResourceView(resource, &srvdesc, srv_descriptor_heap->GetCPUHandle(SRVIndex));
-	device->CreateRenderTargetView(resource, GetRTVCPUHandle());
+	device->CreateRenderTargetView(resource, GetCPURTVHandle());
 }
 
-void TW3DRenderTarget::Release() {
-	TW3DResource::Release();
+void TW3DRenderTarget::Resize(TWT::uint Width, TWT::uint Height) {
+	Release();
+	Create(Width, Height);
 }

@@ -5,7 +5,6 @@
 #include "TW3DConstantBuffer.h"
 #include "TW3DRenderTarget.h"
 #include "TW3DBuffer.h"
-#include "TW3DResourceDSV.h"
 #include "TW3DResourceManager.h"
 #include "TW3DObject.h"
 #include "TW3DPerspectiveCamera.h"
@@ -73,30 +72,29 @@ void TW3DGraphicsCommandList::SetPipelineState(TW3DComputePipelineState* Pipelin
 	SetRootSignature(PipelineState->RootSignature);
 }
 
-void TW3DGraphicsCommandList::SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DResourceDSV* DSV) {
-	command_list->OMSetRenderTargets(1, &RenderTarget->GetRTVCPUHandle(), false, &DSV->GetCPUHandle());
+void TW3DGraphicsCommandList::SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DTexture* DSV) {
+	command_list->OMSetRenderTargets(1, &RenderTarget->GetCPURTVHandle(), false, &DSV->GetCPUHandle());
 }
 
-void TW3DGraphicsCommandList::SetRenderTargets(const std::vector<TW3DRenderTarget*>& RTVs, TW3DResourceDSV* DSV) {
+void TW3DGraphicsCommandList::SetRenderTargets(const std::vector<TW3DRenderTarget*>& RTVs, TW3DTexture* DSV) {
 	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> handles(RTVs.size());
 	for (int i = 0; i < RTVs.size(); i++)
-		handles[i] = RTVs[i]->GetRTVCPUHandle();
+		handles[i] = RTVs[i]->GetCPURTVHandle();
 	command_list->OMSetRenderTargets(static_cast<UINT>(RTVs.size()), handles.data(), false, &DSV->GetCPUHandle());
 }
 
 void TW3DGraphicsCommandList::ClearRTV(TW3DRenderTarget* RenderTarget) {
-	TWT::vec4 clear = RenderTarget->GetClearColor();
-	float clearV[] = { clear.x, clear.y, clear.z, clear.w };
-	command_list->ClearRenderTargetView(RenderTarget->GetRTVCPUHandle(), clearV, 0, nullptr);
+	command_list->ClearRenderTargetView(RenderTarget->GetCPURTVHandle(), RenderTarget->GetClearValue().Color, 0, nullptr);
 }
 
 void TW3DGraphicsCommandList::ClearRTV(TW3DRenderTarget* RenderTarget, TWT::vec4 Color) {
 	float clearV[] = { Color.x, Color.y, Color.z, Color.w };
-	command_list->ClearRenderTargetView(RenderTarget->GetRTVCPUHandle(), clearV, 0, nullptr);
+	command_list->ClearRenderTargetView(RenderTarget->GetCPURTVHandle(), clearV, 0, nullptr);
 }
 
-void TW3DGraphicsCommandList::ClearDSVDepth(TW3DResourceDSV* DSV, float Depth) {
-	command_list->ClearDepthStencilView(DSV->GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH, Depth, 0, 0, nullptr);
+void TW3DGraphicsCommandList::ClearDSVDepth(TW3DTexture* Texture) {
+	auto clear_value = Texture->GetClearValue();
+	command_list->ClearDepthStencilView(Texture->GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH, clear_value.DepthStencil.Depth, clear_value.DepthStencil.Stencil, 0, nullptr);
 }
 
 void TW3DGraphicsCommandList::SetRootSignature(TW3DRootSignature* RootSignature) {
@@ -187,10 +185,6 @@ void TW3DGraphicsCommandList::BindResources(TW3DResourceManager* ResourceManager
 	SetDescriptorHeap(ResourceManager->GetSVDescriptorHeap());
 }
 
-void TW3DGraphicsCommandList::BindRenderTargetTexture(TWT::uint RootParameterIndex, TW3DRenderTarget* RenderTarget) {
-	command_list->SetGraphicsRootDescriptorTable(RootParameterIndex, RenderTarget->GetSRVGPUHandle());
-}
-
 void TW3DGraphicsCommandList::BindBuffer(TWT::uint RootParameterIndex, TW3DResource* Resource, bool UAV) {
 	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE) {
 		if (UAV)
@@ -205,11 +199,15 @@ void TW3DGraphicsCommandList::BindBuffer(TWT::uint RootParameterIndex, TW3DResou
 	}
 }
 
-void TW3DGraphicsCommandList::BindTexture(TWT::uint RootParameterIndex, TW3DTexture* Resource, bool UAV) {
+void TW3DGraphicsCommandList::BindTexture(TWT::uint RootParameterIndex, TW3DTexture* Texture, bool UAV) {
 	if (UAV)
-		SetRootDescriptorTable(RootParameterIndex, Resource->GetGPUUAVHandle());
+		SetRootDescriptorTable(RootParameterIndex, Texture->GetGPUUAVHandle());
 	else
-		SetRootDescriptorTable(RootParameterIndex, Resource->GetGPUSRVHandle());
+		SetRootDescriptorTable(RootParameterIndex, Texture->GetGPUSRVHandle());
+}
+
+void TW3DGraphicsCommandList::BindTexture(TWT::uint RootParameterIndex, TW3DRenderTarget* RenderTarget) {
+	SetRootDescriptorTable(RootParameterIndex, RenderTarget->GetGPUSRVHandle());
 }
 
 void TW3DGraphicsCommandList::BindConstantBuffer(TWT::uint RootParameterIndex, TW3DConstantBuffer* CB, TWT::uint ElementIndex) {

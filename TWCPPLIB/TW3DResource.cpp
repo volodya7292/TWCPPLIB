@@ -2,7 +2,7 @@
 #include "TW3DResource.h"
 
 TW3DResource::TW3DResource(TW3DDevice* Device, TW3DTempGCL* TempGCL, const CD3DX12_HEAP_PROPERTIES* HeapProperties,
-	D3D12_RESOURCE_STATES InitialResourceState, bool OptimizeForUpdating, D3D12_HEAP_FLAGS HeapFlags, TWT::vec4 ClearValue) :
+	D3D12_RESOURCE_STATES InitialResourceState, bool OptimizeForUpdating, D3D12_HEAP_FLAGS HeapFlags, D3D12_CLEAR_VALUE const& ClearValue) :
 	device(Device), temp_gcl(TempGCL), heap_flags(HeapFlags), initial_resource_state(InitialResourceState), clear_value(ClearValue)
 {
 	if (HeapProperties)
@@ -25,7 +25,7 @@ ID3D12Resource* TW3DResource::Get() {
 	return resource;
 }
 
-TWT::vec4 TW3DResource::GetClearColor() {
+D3D12_CLEAR_VALUE TW3DResource::GetClearValue() {
 	return clear_value;
 }
 
@@ -34,22 +34,24 @@ D3D12_GPU_VIRTUAL_ADDRESS TW3DResource::GetGPUVirtualAddress() {
 }
 
 void TW3DResource::Release() {
-	TWU::DXSafeRelease(resource);
+	if (resource)
+		TWU::DXSafeRelease(resource);
+	if (staging)
+		delete staging;
 }
 
 void TW3DResource::Create(const D3D12_RESOURCE_DESC* ResourceDescription) {
-	if (ResourceDescription != nullptr)
+	if (ResourceDescription)
 		desc = *ResourceDescription;
 
-	if (clear_value.x == -1) {
+	if (clear_value.Format == DXGI_FORMAT_UNKNOWN) {
 		device->CreateCommittedResource(&heap_properties, heap_flags, &desc, initial_resource_state, &resource);
 	} else {
-		D3D12_CLEAR_VALUE optimized_clear_value = { desc.Format, { clear_value.r, clear_value.g, clear_value.b, clear_value.a } };
-		device->CreateCommittedResource(&heap_properties, heap_flags, &desc, initial_resource_state, &resource, &optimized_clear_value);
+		device->CreateCommittedResource(&heap_properties, heap_flags, &desc, initial_resource_state, &resource, &clear_value);
 	}
 
 	if (staging)
-		staging->Create(&CD3DX12_RESOURCE_DESC::Buffer(device->GetCopyableFootprints(ResourceDescription, 1)));
+		staging->Create(&CD3DX12_RESOURCE_DESC::Buffer(device->GetCopyableFootprints(&desc, 1)));
 }
 
 void TW3DResource::Map(TWT::uint SubResourceIndex, D3D12_RANGE* ReadRange, void** Data) {

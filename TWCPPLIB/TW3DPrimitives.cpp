@@ -5,7 +5,7 @@ static TW3DVertexMesh* Cube;
 static TW3DVertexMesh* Pyramid4;
 
 void TW3DPrimitives::Initialize(TW3DResourceManager* ResourceManager) {
-	TW3DVertexBuffer* CubeVertexBuffer = ResourceManager->CreateVertexBuffer(36);
+	TW3DVertexBuffer* CubeVertexBuffer = ResourceManager->CreateVertexBuffer(36, sizeof(TWT::DefaultVertex));
 	
 	TWT::DefaultVertex vertices[] = {
 		// front face
@@ -63,7 +63,7 @@ void TW3DPrimitives::Initialize(TW3DResourceManager* ResourceManager) {
 	Cube = new TW3DVertexMesh(ResourceManager, {CubeVertexBuffer});
 
 
-	TW3DVertexBuffer* Pyramid4VertexBuffer = ResourceManager->CreateVertexBuffer(18);
+	TW3DVertexBuffer* Pyramid4VertexBuffer = ResourceManager->CreateVertexBuffer(18, sizeof(TWT::DefaultVertex));
 
 	//TWT::DefaultVertex vertices2[] = {
 	//	// front face

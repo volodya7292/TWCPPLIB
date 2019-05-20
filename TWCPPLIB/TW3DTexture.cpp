@@ -1,12 +1,12 @@
 #include "pch.h"
 #include "TW3DTexture.h"
 
-TW3DTexture::TW3DTexture(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* SRVDescriptorHeap, DXGI_FORMAT Format, bool UAV) :
-	TW3DResource(Device, TempGCL, &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE), srv_descriptor_heap(SRVDescriptorHeap)
+TW3DTexture::TW3DTexture(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* DescriptorHeap, DXGI_FORMAT Format, bool UAV) :
+	TW3DResource(Device, TempGCL, &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE), descriptor_heap(DescriptorHeap)
 {
-	srv_index = SRVDescriptorHeap->Allocate();
+	main_index = DescriptorHeap->Allocate();
 	if (UAV)
-		uav_index = SRVDescriptorHeap->Allocate();
+		uav_index = DescriptorHeap->Allocate();
 
 	srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srv_desc.Format = Format;
@@ -17,19 +17,42 @@ TW3DTexture::TW3DTexture(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescripto
 	uav_desc.Format = Format;
 	uav_desc.Buffer.FirstElement = 0;
 	uav_desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+
+	dsv_desc.Format = Format;
+	dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	dsv_desc.Flags = D3D12_DSV_FLAG_NONE;
 }
 
 TW3DTexture::~TW3DTexture() {
-	srv_descriptor_heap->Free(srv_index);
-	srv_descriptor_heap->Free(uav_index);
+	descriptor_heap->Free(main_index);
+	descriptor_heap->Free(uav_index);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE TW3DTexture::GetGPUSRVHandle() {
-	return srv_descriptor_heap->GetGPUHandle(srv_index);
+	return descriptor_heap->GetGPUHandle(main_index);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE TW3DTexture::GetGPUUAVHandle() {
-	return srv_descriptor_heap->GetGPUHandle(uav_index);
+	return descriptor_heap->GetGPUHandle(uav_index);
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE TW3DTexture::GetCPUHandle() {
+	return descriptor_heap->GetCPUHandle(main_index);
+}
+
+void TW3DTexture::CreateDepthStencil(TWT::uint Width, TWT::uint Height) {
+	clear_value.Format = DXGI_FORMAT_D32_FLOAT;
+	clear_value.DepthStencil.Depth = 1.0f;
+	clear_value.DepthStencil.Stencil = 0;
+
+	desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Width, Height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL | D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE);
+	initial_resource_state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	TW3DResource::Create();
+	resource->SetName(L"TW3DResourceDSV");
+
+	device->CreateDepthStencilView(resource, descriptor_heap->GetCPUHandle(main_index), &dsv_desc);
+
+	type_depth_stencil = true;
 }
 
 void TW3DTexture::Create2D(TWT::uint Width, TWT::uint Height) {
@@ -43,9 +66,9 @@ void TW3DTexture::Create2D(TWT::uint Width, TWT::uint Height) {
 	TW3DResource::Create();
 	resource->SetName(L"TW3DResourceSR 2D");
 
-	device->CreateShaderResourceView(resource, &srv_desc, srv_descriptor_heap->GetCPUHandle(srv_index));
+	device->CreateShaderResourceView(resource, &srv_desc, descriptor_heap->GetCPUHandle(main_index));
 	if (uav_index != -1)
-		device->CreateUnorderedAccessView(resource, &uav_desc, srv_descriptor_heap->GetCPUHandle(uav_index));
+		device->CreateUnorderedAccessView(resource, &uav_desc, descriptor_heap->GetCPUHandle(uav_index));
 }
 
 void TW3DTexture::CreateArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Depth) {
@@ -64,9 +87,9 @@ void TW3DTexture::CreateArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Dep
 	TW3DResource::Create();
 	resource->SetName(L"TW3DResourceSR 2D Array");
 
-	device->CreateShaderResourceView(resource, &srv_desc, srv_descriptor_heap->GetCPUHandle(srv_index));
+	device->CreateShaderResourceView(resource, &srv_desc, descriptor_heap->GetCPUHandle(main_index));
 	if (uav_index != -1)
-		device->CreateUnorderedAccessView(resource, &uav_desc, srv_descriptor_heap->GetCPUHandle(uav_index));
+		device->CreateUnorderedAccessView(resource, &uav_desc, descriptor_heap->GetCPUHandle(uav_index));
 }
 
 void TW3DTexture::Upload2D(TWT::byte* Data, TWT::int64 BytesPerRow, TWT::uint Depth) {
@@ -96,6 +119,17 @@ void TW3DTexture::Upload2D(TWT::WString const& filename, TWT::uint Depth) {
 	int imageSize = TWU::LoadImageDataFromFile(&imageData, textureDesc, filename, imageBytesPerRow);
 	Upload2D(imageData, imageBytesPerRow, Depth);
 	delete imageData;
+}
+
+void TW3DTexture::Resize(TWT::uint Width, TWT::uint Height, TWT::uint Depth) {
+	Release();
+	desc.Width = Width;
+	desc.Height = Height;
+	desc.DepthOrArraySize = Depth;
+	if (type_depth_stencil)
+		CreateDepthStencil(Width, Height);
+	else
+		Create();
 }
 
 TW3DTexture* TW3DTexture::Create2D(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::WString const& filename) {

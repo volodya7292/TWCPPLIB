@@ -1,22 +1,17 @@
 #include "pch.h"
 #include "TW3DVertexBuffer.h"
 
-TW3DVertexBuffer::TW3DVertexBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, TWT::uint VertexCount, TWT::uint SingleVertexSize) :
-	TW3DResource(Device, TempGCL), vertex_count(VertexCount), single_vertex_size(SingleVertexSize) {
+TW3DVertexBuffer::TW3DVertexBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeForUpdating, TWT::uint VertexCount, TWT::uint SingleVertexSize) :
+	TW3DResource(Device, TempGCL,
+	&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+	D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, OptimizeForUpdating),
+	vertex_count(VertexCount), single_vertex_size(SingleVertexSize) {
 
 	TWT::uint64 size = vertex_count * single_vertex_size;
 
-	upload_heap = TW3DResource::CreateStaging(Device, size);
-
-	Device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(size),
-		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-		&resource);
+	desc = CD3DX12_RESOURCE_DESC::Buffer(size);
+	TW3DResource::Create();
 	resource->SetName(L"TW3DResourceVB");
-
-	upload_heap->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&gpu_address));
 
 	view.BufferLocation = resource->GetGPUVirtualAddress();
 	view.SizeInBytes    = size;
@@ -24,7 +19,7 @@ TW3DVertexBuffer::TW3DVertexBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, TWT
 }
 
 TW3DVertexBuffer::~TW3DVertexBuffer() {
-	delete upload_heap;
+	
 }
 
 D3D12_VERTEX_BUFFER_VIEW TW3DVertexBuffer::GetView() {
@@ -40,11 +35,18 @@ void TW3DVertexBuffer::Update(const void* Data, TWT::uint VertexCount) {
 	vertexData.RowPitch		= size;
 	vertexData.SlicePitch	= size;
 
+	TW3DResource* upload_heap = staging;
+	if (!staging)
+		upload_heap = TW3DResource::CreateStaging(device, device->GetCopyableFootprints(&desc, 1));
+
 	temp_gcl->Reset();
 	temp_gcl->ResourceBarrier(resource, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST);
 	temp_gcl->UpdateSubresources(resource, upload_heap->Get(), &vertexData);
 	temp_gcl->ResourceBarrier(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 	temp_gcl->Execute();
+
+	if (!staging)
+		delete upload_heap;
 }
 
 TWT::uint TW3DVertexBuffer::GetVertexCount() {

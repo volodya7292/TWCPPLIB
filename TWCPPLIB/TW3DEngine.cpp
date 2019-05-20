@@ -42,7 +42,7 @@ static TW3DDevice*       device;
 static TW3DSwapChain*    swapChain;
 
 static std::vector<TW3DRenderTarget*>    renderTargets(TW3DSwapChain::BufferCount);
-static TW3DResourceDSV*                 depthStencil;
+static TW3DTexture*                 depthStencil;
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -146,10 +146,10 @@ void init_dx12() {
 	logger->LogInfo("DirectX Stage 5 initialized");
 
 	for (int i = 0; i < TW3DSwapChain::BufferCount; i++)
-		renderTargets[i] = resource_manager->CreateRenderTargetView(swapChain->GetBuffer(i));
+		renderTargets[i] = resource_manager->CreateRenderTarget(swapChain->GetBuffer(i));
 	logger->LogInfo("DirectX Stage 6 initialized");
 
-	depthStencil = resource_manager->CreateDepthStencilView(width, height);
+	depthStencil = resource_manager->CreateDepthStencilTexture(width, height);
 	logger->LogInfo("DirectX Stage 7 initialized");
 
 	current_frame_index = swapChain->GetCurrentBufferIndex();
@@ -271,7 +271,7 @@ void on_resize() {
 
 		for (UINT n = 0; n < TW3DSwapChain::BufferCount; n++)
 			renderTargets[n]->Create(swapChain->GetBuffer(n));
-		depthStencil->Create(width, height);
+		depthStencil->CreateDepthStencil(width, height);
 
 		logger->LogInfo("[on_resize] Render target resized to "s + width + "x"s + height);
 

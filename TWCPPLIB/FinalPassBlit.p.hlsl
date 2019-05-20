@@ -1,5 +1,7 @@
-Texture2D<float4> tex : register(t0);
-sampler texSam : register(s0);
+Texture2D<float4> g_albedo : register(t0);
+Texture2D<float4> rt_result : register(t1);
+
+sampler sam : register(s0);
 
 struct VS_OUTPUT {
 	float4 pos: SV_POSITION;
@@ -15,5 +17,7 @@ float4 main(VS_OUTPUT input) : SV_TARGET
 
 	//return float4((texcoord.x-0.5f)*2, -(texcoord.y-0.5f)*2, 0, 1);
 
-	return tex.Sample(texSam, input.texCoord);
+	//return g_albedo.Sample(sam, input.texCoord) * rt_result.Sample(sam, input.texCoord);
+
+	return g_albedo.Sample(sam, input.texCoord);
 }

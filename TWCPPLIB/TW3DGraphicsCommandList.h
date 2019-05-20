@@ -4,7 +4,6 @@
 #include "TW3DRootSignature.h"
 
 class TW3DResource;
-class TW3DResourceDSV;
 class TW3DRenderTarget;
 class TW3DResourceUAV;
 class TW3DTexture;
@@ -35,11 +34,11 @@ public:
 	void CopyBufferRegion(TW3DResource* DstBuffer, TWT::uint64 DstOffset, TW3DResource* SrcBuffer, TWT::uint64 SrcOffset, TWT::uint64 ByteCount);
 	void SetPipelineState(TW3DGraphicsPipelineState* PipelineState);
 	void SetPipelineState(TW3DComputePipelineState* PipelineState);
-	void SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DResourceDSV* DSV);
-	void SetRenderTargets(const std::vector<TW3DRenderTarget*>& RTVs, TW3DResourceDSV* DSV);
+	void SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DTexture* DSV);
+	void SetRenderTargets(const std::vector<TW3DRenderTarget*>& RTVs, TW3DTexture* DSV);
 	void ClearRTV(TW3DRenderTarget* RenderTarget);
 	void ClearRTV(TW3DRenderTarget* RenderTarget, TWT::vec4 Color);
-	void ClearDSVDepth(TW3DResourceDSV* DSV, float Depth = 1);
+	void ClearDSVDepth(TW3DTexture* DSV);
 	void SetRootSignature(TW3DRootSignature* RootSignature);
 	void SetDescriptorHeap(TW3DDescriptorHeap* heap);
 	void SetDescriptorHeaps(std::vector<TW3DDescriptorHeap*> heaps);
@@ -59,12 +58,10 @@ public:
 		TWT::uint64 ArgumentBufferOffset, ID3D12Resource* CountBuffer, TWT::uint64 CountBufferOffset);
 
 	void BindResources(TW3DResourceManager* ResourceManager);
-	void BindRenderTargetTexture(TWT::uint RootParameterIndex, TW3DRenderTarget* RenderTarget);
 	void BindBuffer(TWT::uint RootParameterIndex, TW3DResource* Resource, bool UAV = false);
-	void BindTexture(TWT::uint RootParameterIndex, TW3DTexture* Resource, bool UAV = false);
+	void BindTexture(TWT::uint RootParameterIndex, TW3DTexture* Texture, bool UAV = false);
+	void BindTexture(TWT::uint RootParameterIndex, TW3DRenderTarget* RenderTarget);
 	void BindConstantBuffer(TWT::uint RootParameterIndex, TW3DConstantBuffer* CB, TWT::uint ElementIndex = 0);
-	//void BindUAVTexture(TWT::uint RootParameterIndex, TW3DResourceUAV* UAV);
-	//void BindUAVSRV(TWT::uint RootParameterIndex, TW3DResourceUAV* UAV);
 	void BindCameraCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera);
 	void DrawObject(TW3DObject* object, TWT::uint ModelCBRootParameterIndex);
 

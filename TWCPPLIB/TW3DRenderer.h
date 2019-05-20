@@ -9,7 +9,7 @@ public:
 	virtual ~TW3DRenderer();
 	virtual void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height);
 	virtual void Resize(TWT::uint Width, TWT::uint Height);
-	virtual void Record(TWT::uint BackBufferIndex, TW3DRenderTarget* ColorOutput, TW3DResourceDSV* DepthStesncilOutput);
+	virtual void Record(TWT::uint BackBufferIndex, TW3DRenderTarget* ColorOutput, TW3DTexture* DepthStesncilOutput);
 	virtual void RecordBeforeExecution() = 0;
 	void AdjustRecordIndex();
 	// Per frame

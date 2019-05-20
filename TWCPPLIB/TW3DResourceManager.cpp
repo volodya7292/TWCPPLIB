@@ -29,22 +29,16 @@ TW3DResourceManager::~TW3DResourceManager() {
 	delete copy_command_queue;
 }
 
-TW3DRenderTarget* TW3DResourceManager::CreateRenderTargetView(ID3D12Resource* Buffer) {
+TW3DRenderTarget* TW3DResourceManager::CreateRenderTarget(ID3D12Resource* Buffer) {
 	TW3DRenderTarget* rtv = new TW3DRenderTarget(device, rtv_descriptor_heap);
 	rtv->Create(Buffer);
 	return rtv;
 }
 
-TW3DRenderTarget* TW3DResourceManager::CreateRenderTargetView(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, TWT::vec4 ClearValue) {
+TW3DRenderTarget* TW3DResourceManager::CreateRenderTarget(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, TWT::vec4 ClearValue) {
 	TW3DRenderTarget* rtv = new TW3DRenderTarget(device, rtv_descriptor_heap, srv_descriptor_heap, Format, ClearValue);
 	rtv->Create(Width, Height);
 	return rtv;
-}
-
-TW3DResourceDSV* TW3DResourceManager::CreateDepthStencilView(TWT::uint Width, TWT::uint Height) {
-	TW3DResourceDSV* dsv = new TW3DResourceDSV(device, dsv_descriptor_heap);
-	dsv->Create(Width, Height);
-	return dsv;
 }
 
 TW3DBuffer* TW3DResourceManager::CreateBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV) {
@@ -53,12 +47,18 @@ TW3DBuffer* TW3DResourceManager::CreateBuffer(TWT::uint ElementCount, TWT::uint 
 	return buffer;
 }
 
-TW3DVertexBuffer* TW3DResourceManager::CreateVertexBuffer(TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes) {
-	return new TW3DVertexBuffer(device, temp_gcl, VertexCount, SingleVertexSizeInBytes);
+TW3DVertexBuffer* TW3DResourceManager::CreateVertexBuffer(TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes, bool OptimizeForUpdating) {
+	return new TW3DVertexBuffer(device, temp_gcl, OptimizeForUpdating, VertexCount, SingleVertexSizeInBytes);
 }
 
 TW3DConstantBuffer* TW3DResourceManager::CreateConstantBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes) {
 	return new TW3DConstantBuffer(device, ElementCount, ElementSizeInBytes);
+}
+
+TW3DTexture* TW3DResourceManager::CreateDepthStencilTexture(TWT::uint Width, TWT::uint Height) {
+	TW3DTexture* texture = new TW3DTexture(device, temp_gcl, dsv_descriptor_heap, DXGI_FORMAT_D32_FLOAT);
+	texture->CreateDepthStencil(Width, Height);
+	return texture;
 }
 
 TW3DTexture* TW3DResourceManager::CreateTexture2D(const TWT::WString& Filename) {

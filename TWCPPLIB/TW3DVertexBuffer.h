@@ -3,7 +3,7 @@
 
 class TW3DVertexBuffer : public TW3DResource {
 public:
-	TW3DVertexBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, TWT::uint VertexCount, TWT::uint SingleVertexSize);
+	TW3DVertexBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeForUpdating, TWT::uint VertexCount, TWT::uint SingleVertexSize);
 	~TW3DVertexBuffer();
 
 	D3D12_VERTEX_BUFFER_VIEW GetView();
@@ -13,7 +13,6 @@ public:
 	TWT::uint GetSizeInBytes();
 
 private:
-	TW3DResource* upload_heap;
 	D3D12_VERTEX_BUFFER_VIEW view;
 	TWT::uint8* gpu_address = nullptr;
 	TWT::uint single_vertex_size, vertex_count;

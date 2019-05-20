@@ -2,7 +2,6 @@
 #include "TW3DConstantBuffer.h"
 #include "TW3DTexture.h"
 #include "TW3DBuffer.h"
-#include "TW3DResourceDSV.h"
 #include "TW3DRenderTarget.h"
 #include "TW3DVertexBuffer.h"
 #include "TW3DCommandQueue.h"
@@ -13,12 +12,12 @@ public:
 	TW3DResourceManager(TW3DDevice* Device);
 	~TW3DResourceManager();
 
-	TW3DRenderTarget* CreateRenderTargetView(ID3D12Resource* Buffer);
-	TW3DRenderTarget* CreateRenderTargetView(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, TWT::vec4 ClearValue);
-	TW3DResourceDSV* CreateDepthStencilView(TWT::uint Width, TWT::uint Height);
+	TW3DRenderTarget* CreateRenderTarget(ID3D12Resource* Buffer);
+	TW3DRenderTarget* CreateRenderTarget(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, TWT::vec4 ClearValue = TWT::vec4(-1));
 	TW3DBuffer* CreateBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV = false);
-	TW3DVertexBuffer* CreateVertexBuffer(TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex));
+	TW3DVertexBuffer* CreateVertexBuffer(TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex), bool OptimizeForUpdating = false);
 	TW3DConstantBuffer* CreateConstantBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes);
+	TW3DTexture* CreateDepthStencilTexture(TWT::uint Width, TWT::uint Height);
 	TW3DTexture* CreateTexture2D(const TWT::WString& Filename);
 	TW3DTexture* CreateTexture2D(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, bool UAV = false);
 	TW3DTexture* CreateTextureArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Depth, DXGI_FORMAT Format, bool UAV = false);

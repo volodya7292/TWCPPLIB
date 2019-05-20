@@ -145,8 +145,6 @@ int main() {
 	cube2->VMInstance.RigidBody->enableGravity(true);
 	cube2->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);
 
-
-
 	scene->Camera->FOVY = 45;
 	scene->Camera->Position.z = 3;
 
