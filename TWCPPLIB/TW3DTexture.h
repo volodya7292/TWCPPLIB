@@ -1,5 +1,12 @@
 #pragma once
 #include "TW3DResource.h"
+
+enum TW3DTextureType {
+	TW3D_TEXTURE_2D,
+	TW3D_TEXTURE_2D_ARRAY,
+	TW3D_TEXTURE_DEPTH_STENCIL
+};
+
 class TW3DTexture : public TW3DResource {
 public:
 	TW3DTexture(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* DescriptorHeap, DXGI_FORMAT Format, bool UAV = false);
@@ -27,5 +34,5 @@ private:
 	TWT::uint8* gpu_address = nullptr;
 
 	int main_index = -1, uav_index = -1;
-	bool type_depth_stencil = false;
+	TW3DTextureType type;
 };

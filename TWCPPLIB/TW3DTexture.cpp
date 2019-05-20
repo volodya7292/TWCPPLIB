@@ -52,7 +52,7 @@ void TW3DTexture::CreateDepthStencil(TWT::uint Width, TWT::uint Height) {
 
 	device->CreateDepthStencilView(resource, descriptor_heap->GetCPUHandle(main_index), &dsv_desc);
 
-	type_depth_stencil = true;
+	type = TW3D_TEXTURE_DEPTH_STENCIL;
 }
 
 void TW3DTexture::Create2D(TWT::uint Width, TWT::uint Height) {
@@ -69,6 +69,8 @@ void TW3DTexture::Create2D(TWT::uint Width, TWT::uint Height) {
 	device->CreateShaderResourceView(resource, &srv_desc, descriptor_heap->GetCPUHandle(main_index));
 	if (uav_index != -1)
 		device->CreateUnorderedAccessView(resource, &uav_desc, descriptor_heap->GetCPUHandle(uav_index));
+
+	type = TW3D_TEXTURE_2D;
 }
 
 void TW3DTexture::CreateArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Depth) {
@@ -90,6 +92,8 @@ void TW3DTexture::CreateArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Dep
 	device->CreateShaderResourceView(resource, &srv_desc, descriptor_heap->GetCPUHandle(main_index));
 	if (uav_index != -1)
 		device->CreateUnorderedAccessView(resource, &uav_desc, descriptor_heap->GetCPUHandle(uav_index));
+
+	type = TW3D_TEXTURE_2D_ARRAY;
 }
 
 void TW3DTexture::Upload2D(TWT::byte* Data, TWT::int64 BytesPerRow, TWT::uint Depth) {
@@ -123,13 +127,18 @@ void TW3DTexture::Upload2D(TWT::WString const& filename, TWT::uint Depth) {
 
 void TW3DTexture::Resize(TWT::uint Width, TWT::uint Height, TWT::uint Depth) {
 	Release();
-	desc.Width = Width;
-	desc.Height = Height;
-	desc.DepthOrArraySize = Depth;
-	if (type_depth_stencil)
+
+	switch (type) {
+	case TW3D_TEXTURE_2D:
+		Create2D(Width, Height);
+		break;
+	case TW3D_TEXTURE_2D_ARRAY:
+		CreateArray2D(Width, Height, Depth);
+		break;
+	case TW3D_TEXTURE_DEPTH_STENCIL:
 		CreateDepthStencil(Width, Height);
-	else
-		Create();
+		break;
+	}
 }
 
 TW3DTexture* TW3DTexture::Create2D(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::WString const& filename) {
