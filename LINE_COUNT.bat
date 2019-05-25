@@ -1,2 +1,2 @@
-powershell.exe -command "(dir -include *.cs,*.cpp,*.h,*.hlsl,*.idl,*.asmx -recurse | select-string .).Count"
+powershell.exe -command "\"\";Set-Location TWCPPLIB; Write-Host -NoNewline \".cpp/.h \"; (dir -exclude *.c.h,*.v.h,*.p.h,*.g.h,*.h.h,*.d.h -include *.cpp,*.h -recurse | select-string .).Count; Write-Host -NoNewline \".hlsl \"; (dir -exclude *.c.h,*.v.h,*.p.h,*.g.h,*.h.h,*.d.h -include *.hlsl -recurse | select-string .).Count;"
 pause
