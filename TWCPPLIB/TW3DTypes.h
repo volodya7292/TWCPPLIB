@@ -35,10 +35,6 @@ namespace TWT {
 		TWT::mat4 proj_view;
 	};
 
-	struct DefaultVertexBufferCB {
-		TWT::vec4u vertex_offset;
-	};
-
 	struct DefaultModelCB {
 		TWT::mat4 model;
 	};

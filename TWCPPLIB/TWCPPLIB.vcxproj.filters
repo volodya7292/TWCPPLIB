@@ -78,9 +78,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TW3DEngine.h">
-      <Filter>Header Files\TW3DEngine</Filter>
-    </ClInclude>
     <ClInclude Include="TWTypes.h">
       <Filter>Header Files\TWTypes</Filter>
     </ClInclude>
@@ -99,9 +96,6 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DScene.h">
-      <Filter>Header Files\TW3DEngine</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DGeometry.h">
       <Filter>Header Files\TW3DEngine\TW3DObject</Filter>
     </ClInclude>
@@ -119,12 +113,6 @@
     </ClInclude>
     <ClInclude Include="TW3DObject.h">
       <Filter>Header Files\TW3DEngine\TW3DObject</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DTransform.h">
-      <Filter>Header Files\TW3DEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DPerspectiveCamera.h">
-      <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
     <ClInclude Include="TW3DAdapter.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
@@ -213,13 +201,22 @@
     <ClInclude Include="TW3DResourceManager.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DPerspectiveCamera.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DEngine.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DScene.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DTransform.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DEngine.cpp">
-      <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
     <ClCompile Include="TWTypes.cpp">
       <Filter>Source Files\TWTypes</Filter>
@@ -235,9 +232,6 @@
     </ClCompile>
     <ClCompile Include="TW3DResource.cpp">
       <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DScene.cpp">
-      <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
     <ClCompile Include="TW3DGeometry.cpp">
       <Filter>Source Files\TW3DEngine\TW3DObject</Filter>
@@ -256,12 +250,6 @@
     </ClCompile>
     <ClCompile Include="TW3DObject.cpp">
       <Filter>Source Files\TW3DEngine\TW3DObject</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DTransform.cpp">
-      <Filter>Source Files\TW3DEngine</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DPerspectiveCamera.cpp">
-      <Filter>Source Files\TW3DEngine</Filter>
     </ClCompile>
     <ClCompile Include="TW3DAdapter.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
@@ -352,6 +340,18 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DPerspectiveCamera.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DEngine.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DScene.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DTransform.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -4,11 +4,11 @@
 #include "TW3DGraphicsPipelineState.h"
 #include "TW3DBitonicSorter.h"
 
-#include "GBuffer.v.h"
-#include "GBuffer.p.h"
-#include "FinalPassBlit.v.h"
-#include "FinalPassBlit.p.h"
-#include "RayTrace.c.h"
+#include "CompiledShaders/GBuffer.v.h"
+#include "CompiledShaders/GBuffer.p.h"
+#include "CompiledShaders/FinalPassBlit.v.h"
+#include "CompiledShaders/FinalPassBlit.p.h"
+#include "CompiledShaders/RayTrace.c.h"
 
 TW3DTexture* texture;
 
@@ -252,9 +252,8 @@ void TW3DDefaultRenderer::Execute(TWT::uint BackBufferIndex) {
 
 	RenderRecordGBuffer();
 
-	ResourceManager->ExecuteCommandList(rt_cl);
-	ResourceManager->FlushCommandLists();
+	//ResourceManager->ExecuteCommandList(rt_cl);
+	//ResourceManager->FlushCommandLists();
 
 	ResourceManager->ExecuteCommandList(execute_cl);
-	//ResourceManager->FlushCommandLists();
 }

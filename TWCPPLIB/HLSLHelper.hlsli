@@ -5,6 +5,26 @@
 #define FLT_MAX        3.402823466e+38f
 #define MachineEpsilon 5.96e-08
 
+float4x4 scale(float4x4 m, in float v) {
+	m[0][0] *= v; m[1][0] *= v; m[2][0] *= v;
+	m[0][1] *= v; m[1][1] *= v; m[2][1] *= v;
+	m[0][2] *= v; m[1][2] *= v; m[2][2] *= v;
+	m[0][3] *= v; m[1][3] *= v; m[2][3] *= v;
+	return m;
+}
+
+float4x4 translate(float4x4 m, in float3 v) {
+	m[0][3] = v.x;
+	m[1][3] = v.y;
+	m[2][3] = v.z;
+	return m;
+}
+
+float3 translation(in float4x4 m) {
+	return float3(m[0][3], m[1][3], m[2][3]);
+}
+
+
 inline bool equals(in float3 v0, in float v) {
 	return v0.x == v && v0.y == v && v0.z == v;
 }

@@ -3,7 +3,7 @@
 #include "TW3DPrimitives.h"
 
 TW3DCube::TW3DCube(TW3DResourceManager* ResourceManager) :
-	TW3DGeometry(ResourceManager, sizeof(TWT::DefaultVertexBufferCB))
+	TW3DGeometry(ResourceManager, sizeof(TWT::DefaultModelCB))
 {
 	VMInstance.VertexMesh = TW3DPrimitives::GetCubeVertexMesh();
 }

@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "TW3DBitonicSorter.h"
-#include "BitonicInnerSort.c.h"
-#include "BitonicOuterSort.c.h"
-#include "BitonicPreSort.c.h"
-#include "BitonicSortIndirectArgs.c.h"
+#include "CompiledShaders/BitonicInnerSort.c.h"
+#include "CompiledShaders/BitonicOuterSort.c.h"
+#include "CompiledShaders/BitonicPreSort.c.h"
+#include "CompiledShaders/BitonicSortIndirectArgs.c.h"
 
 
 TW3DBitonicSorter::TW3DBitonicSorter(TW3DResourceManager* ResourceManager) {
