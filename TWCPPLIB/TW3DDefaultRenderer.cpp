@@ -20,8 +20,12 @@ TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete rt_cl;
 	delete g_cl;
 
-	delete g_albedo;
+	delete g_position;
+	delete g_normal;
+	delete g_diffuse;
+	delete g_specular;
 	delete g_depth;
+
 	delete rt_output;
 	delete texture;
 }
@@ -35,8 +39,6 @@ void TW3DDefaultRenderer::CreateBlitResources() {
 		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) },
 		true, true, false, false
 	);
-
-	//std::vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({ POSITION_ILE, TEXCOORD_ILE, NORMAL_ILE });
 
 	D3D12_RASTERIZER_DESC rastDesc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
@@ -64,23 +66,15 @@ void TW3DDefaultRenderer::CreateBlitResources() {
 void TW3DDefaultRenderer::CreateGBufferResources() {
 	TW3DRootSignature* root_signature = new TW3DRootSignature(Device,
 		{
-			TW3DRPConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX, 0),
-			TW3DRPConstantBuffer(1, D3D12_SHADER_VISIBILITY_VERTEX, 1),
-			TW3DRPTexture(2, D3D12_SHADER_VISIBILITY_PIXEL, 0),
-			TW3DRPTexture(3, D3D12_SHADER_VISIBILITY_PIXEL, 1),
-			TW3DRPTexture(4, D3D12_SHADER_VISIBILITY_PIXEL, 2),
+			TW3DRPConstantBuffer(GBUFFER_VERTEX_CAMERA_CB, D3D12_SHADER_VISIBILITY_VERTEX, 0),
+			TW3DRPConstantBuffer(GBUFFER_VERTEX_VMI_CB, D3D12_SHADER_VISIBILITY_VERTEX, 1),
+			TW3DRPConstantBuffer(GBUFFER_PIXEL_CAMERA_CB, D3D12_SHADER_VISIBILITY_PIXEL, 0),
+			TW3DRPConstants(GBUFFER_PIXEL_VMISCALE_CONST, D3D12_SHADER_VISIBILITY_PIXEL, 1, 1),
+			TW3DRPTexture(GBUFFER_PIXEL_ALBEDO_TEXTURE, D3D12_SHADER_VISIBILITY_PIXEL, 0),
+			TW3DRPTexture(GBUFFER_PIXEL_SPECULAR_TEXTURE, D3D12_SHADER_VISIBILITY_PIXEL, 1),
 		},
 		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) }
 	);
-
-	//TW3DRootSignature* root_signature = new TW3DRootSignature();
-	//root_signature->SetParameterCBV(0, D3D12_SHADER_VISIBILITY_VERTEX, 0); // Camera CB
-	//root_signature->SetParameterCBV(1, D3D12_SHADER_VISIBILITY_VERTEX, 1); // Vertex mesh CB
-	//root_signature->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_PIXEL, 0);  // Diffuse
-	//root_signature->SetParameterSRV(3, D3D12_SHADER_VISIBILITY_PIXEL, 1);  // Normal
-	//root_signature->SetParameterSRV(4, D3D12_SHADER_VISIBILITY_PIXEL, 2);  // Roughness
-	//root_signature->AddSampler(0, D3D12_SHADER_VISIBILITY_PIXEL, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0);
-	//root_signature->Create(Device);
 
 	std::vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({TW3D_ILE_POSITION, TW3D_ILE_TEXCOORD, TW3D_ILE_NORMAL});
 
@@ -97,15 +91,23 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 		depthDesc,
 		blendDesc,
 		root_signature,
-		1);
-	gbuffer_ps->SetRTVFormat(0, TWT::RGBA8Unorm);
+		4);
+	gbuffer_ps->SetRTVFormat(0, TWT::RGBA32Float);
+	gbuffer_ps->SetRTVFormat(1, TWT::RGBA32Float);
+	gbuffer_ps->SetRTVFormat(2, TWT::RGBA8Unorm);
+	gbuffer_ps->SetRTVFormat(3, TWT::RGBA8Unorm);
 	gbuffer_ps->SetVertexShader(TW3DCompiledShader(GBuffer_VertexByteCode));
 	gbuffer_ps->SetPixelShader(TW3DCompiledShader(GBuffer_PixelByteCode));
 	gbuffer_ps->SetInputLayout(input_layout);
 	gbuffer_ps->Create(Device);
 
-	g_albedo = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA8Unorm);
+
+	g_position = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA32Float, TWT::vec4(0));
+	g_normal = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA32Float);
+	g_diffuse = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA8Unorm);
+	g_specular = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA8Unorm);
 	g_depth = ResourceManager->CreateDepthStencilTexture(Width, Height);
+
 	g_cl = ResourceManager->CreateDirectCommandList();
 }
 
@@ -163,7 +165,10 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(Width), static_cast<float>(Height));
 	scissor = CD3DX12_RECT(0, 0, Width, Height);
 
-	g_albedo->Resize(Width, Height);
+	g_position->Resize(Width, Height);
+	g_normal->Resize(Width, Height);
+	g_diffuse->Resize(Width, Height);
+	g_specular->Resize(Width, Height);
 	g_depth->Resize(Width, Height);
 }
 
@@ -175,7 +180,7 @@ void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarg
 
 	cl->SetPipelineState(blit_ps);
 	cl->SetRenderTarget(ColorOutput, Depth);
-	cl->BindTexture(0, g_albedo);
+	cl->BindTexture(0, g_diffuse);
 	cl->BindTexture(1, rt_output);
 	cl->ClearRTV(ColorOutput, TWT::vec4(0, 0, 0, 1));
 	cl->ClearDSVDepth(Depth);
@@ -197,17 +202,18 @@ void TW3DDefaultRenderer::RenderRecordGBuffer() {
 
 	g_cl->SetPipelineState(gbuffer_ps);
 
-	g_cl->SetRenderTarget(g_albedo, g_depth);
-	g_cl->ClearRTV(g_albedo);
+	g_cl->SetRenderTargets({g_position, g_normal, g_diffuse, g_specular}, g_depth);
+	g_cl->ClearRTV(g_position);
 	g_cl->ClearDSVDepth(g_depth);
 	g_cl->SetViewport(&viewport);
 	g_cl->SetScissor(&scissor);
 
-	g_cl->BindCameraCBV(0, Scene->Camera);
-	g_cl->BindTexture(2, texture);
+	g_cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, Scene->Camera);
+	g_cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, Scene->Camera);
+	g_cl->BindTexture(GBUFFER_PIXEL_ALBEDO_TEXTURE, texture);
 
 	for (TW3DObject* object : Scene->Objects) {
-		g_cl->DrawObject(object, 1);
+		g_cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
 	}
 	g_cl->Close();
 

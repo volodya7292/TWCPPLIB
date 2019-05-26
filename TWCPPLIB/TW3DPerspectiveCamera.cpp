@@ -14,13 +14,13 @@ TW3DPerspectiveCamera::~TW3DPerspectiveCamera() {
 }
 
 TWT::mat4 TW3DPerspectiveCamera::GetProjectionMatrix() {
-	return glm::perspective(glm::radians(FOVY), (float)Width / Height, ZNear, ZFar);
+	return TWT::Perspective(TWT::Radians(FOVY), (float)Width / Height, ZNear, ZFar);
 }
 
 TWT::mat4 TW3DPerspectiveCamera::GetViewMatrix() {
-	TWT::mat4 m = TWT::Rotate(TWT::mat4(1), glm::radians(rotation.x), TWT::vec3(1, 0, 0));
-	m *= TWT::Rotate(TWT::mat4(1), glm::radians(rotation.y), TWT::vec3(0, 1, 0));
-	m *= TWT::Rotate(TWT::mat4(1), glm::radians(rotation.z), TWT::vec3(0, 0, 1));
+	TWT::mat4 m = TWT::Rotate(TWT::mat4(1), TWT::Radians(rotation.x), TWT::vec3(1, 0, 0));
+	m *= TWT::Rotate(TWT::mat4(1), TWT::Radians(rotation.y), TWT::vec3(0, 1, 0));
+	m *= TWT::Rotate(TWT::mat4(1), TWT::Radians(rotation.z), TWT::vec3(0, 0, 1));
 	return m * TWT::Translate(TWT::mat4(1), -Position);
 }
 
@@ -33,11 +33,11 @@ TWT::vec3 TW3DPerspectiveCamera::GetRotation() {
 }
 
 float TW3DPerspectiveCamera::GetRatioX() {
-	return tan(glm::radians(FOVY) / 2.0f) * ((float)Width / Height);
+	return tan(TWT::Radians(FOVY) / 2.0f) * ((float)Width / Height);
 }
 
 float TW3DPerspectiveCamera::GetRatioY() {
-	return tan(glm::radians(FOVY) / 2.0f);
+	return tan(TWT::Radians(FOVY) / 2.0f);
 }
 
 void TW3DPerspectiveCamera::SetRotation(TWT::vec3 Rotation) {
@@ -45,9 +45,9 @@ void TW3DPerspectiveCamera::SetRotation(TWT::vec3 Rotation) {
 }
 
 void TW3DPerspectiveCamera::Move(float to_back, float left_right) {
-	TWT::vec3 d = TWT::vec3(sin(glm::radians(-rotation.y)), 0, cos(glm::radians(-rotation.y)));
+	TWT::vec3 d = TWT::vec3(sin(TWT::Radians(-rotation.y)), 0, cos(TWT::Radians(-rotation.y)));
 	Position -= d * to_back;
-	Position -= normalize(cross(d, TWT::vec3(0, 1, 0))) * left_right;
+	Position -= TWT::Normalize(TWT::Cross(d, TWT::vec3(0, 1, 0))) * left_right;
 }
 
 void TW3DPerspectiveCamera::UpdateConstantBuffer(TW3DConstantBuffer* ConstantBuffer) {

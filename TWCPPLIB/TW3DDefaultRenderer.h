@@ -25,9 +25,17 @@ private:
 
 	// GBuffer render
 	// --------------------------------------------------------------------- 
+	enum GBufferRPIs {
+		GBUFFER_VERTEX_CAMERA_CB,
+		GBUFFER_VERTEX_VMI_CB,
+		GBUFFER_PIXEL_CAMERA_CB,
+		GBUFFER_PIXEL_VMISCALE_CONST,
+		GBUFFER_PIXEL_ALBEDO_TEXTURE,
+		GBUFFER_PIXEL_SPECULAR_TEXTURE
+	};
 	TW3DGraphicsPipelineState *gbuffer_ps = nullptr;
-	TW3DRenderTarget* g_albedo = nullptr;
-	TW3DTexture* g_depth = nullptr;
+	TW3DRenderTarget *g_position, *g_normal, *g_diffuse, *g_specular;
+	TW3DTexture* g_depth;
 
 	// Ray tracing compute
 	// --------------------------------------------------------------------- 

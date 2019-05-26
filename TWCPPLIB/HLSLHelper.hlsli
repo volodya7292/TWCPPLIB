@@ -24,7 +24,6 @@ float3 translation(in float4x4 m) {
 	return float3(m[0][3], m[1][3], m[2][3]);
 }
 
-
 inline bool equals(in float3 v0, in float v) {
 	return v0.x == v && v0.y == v && v0.z == v;
 }

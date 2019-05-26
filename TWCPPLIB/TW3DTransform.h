@@ -3,22 +3,23 @@
 
 class TW3DTransform {
 public:
-	TW3DTransform(TWT::vec3 Position = TWT::vec3(0), TWT::vec3 Rotation = TWT::vec3(0), TWT::vec3 Scale = TWT::vec3(1), bool ChangedInit = true);
+	TW3DTransform(TWT::vec3d Position = TWT::vec3d(0), TWT::vec3d Rotation = TWT::vec3d(0), TWT::vec3d Scale = TWT::vec3d(1), bool ChangedInit = true);
 	~TW3DTransform() = default;
 
-	TWT::mat4 GetModelMatrix();
-	TWT::vec3 GetPosition();
-	TWT::vec3 GetRotation();
-	TWT::vec3 GetScale();
-	void SetPosition(const TWT::vec3& Position);
-	void SetRotation(const TWT::vec3& Rotation);
-	void SetScale(const TWT::vec3& Scale);
-	void AdjustRotation(const TWT::vec3& Rotation);
+	TWT::mat4d GetModelMatrix();
+	TWT::mat4 GetModelMatrixReduced(TWT::vec3d const& RelativePoint, double ScaleFactor);
+	TWT::vec3d GetPosition();
+	TWT::vec3d GetRotation();
+	TWT::vec3d GetScale();
+	void SetPosition(TWT::vec3d const& Position);
+	void SetRotation(TWT::vec3d const& Rotation);
+	void SetScale(TWT::vec3d const& Scale);
+	void AdjustRotation(TWT::vec3d const& Rotation);
 
 	bool Changed = false;
 
 private:
-	TWT::vec3 position = TWT::vec3(0);
-	TWT::vec3 rotation = TWT::vec3(0);
-	TWT::vec3 scale = TWT::vec3(1);
+	TWT::vec3d position = TWT::vec3d(0);
+	TWT::vec3d rotation = TWT::vec3d(0);
+	TWT::vec3d scale = TWT::vec3d(1);
 };

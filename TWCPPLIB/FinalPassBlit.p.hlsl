@@ -18,5 +18,6 @@ float4 main(VS_OUTPUT input) : SV_TARGET
 	//return float4((texcoord.x-0.5f)*2, -(texcoord.y-0.5f)*2, 0, 1);
 
 	//return rt_result.Sample(sam, input.texCoord);
+
 	return g_albedo.Sample(sam, input.texCoord);
 }

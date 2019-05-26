@@ -45,7 +45,7 @@ void TW3DTexture::CreateDepthStencil(TWT::uint Width, TWT::uint Height) {
 	clear_value.DepthStencil.Depth = 1.0f;
 	clear_value.DepthStencil.Stencil = 0;
 
-	desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Width, Height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL | D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE);
+	desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Width, Height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 	initial_resource_state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 	TW3DResource::Create();
 	resource->SetName(L"TW3DResourceDSV");
