@@ -6,7 +6,7 @@ class TW3DRenderTarget : public TW3DResource {
 public:
 	TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap);
 	TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TW3DDescriptorHeap* SRVDescriptorHeap, DXGI_FORMAT Format, TWT::vec4 ClearValue = TWT::vec4(-1));
-	~TW3DRenderTarget();
+	~TW3DRenderTarget() final;
 
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPURTVHandle();
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRVHandle();

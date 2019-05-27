@@ -6,9 +6,9 @@ RTScene scene : register(t1);
 RTNB gnb : register(t2);
 
 // Large scale scene
-//GVB l_gvb : register(t3);
-//RTScene l_scene : register(t4);
-//RTNB l_gnb : register(t5);
+GVB l_gvb : register(t3);
+RTScene l_scene : register(t4);
+RTNB l_gnb : register(t5);
 
 // Output image
 RWTexture2D<float4> rt_output : register(u0);

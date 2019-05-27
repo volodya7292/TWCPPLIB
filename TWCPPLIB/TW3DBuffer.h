@@ -5,7 +5,7 @@
 class TW3DBuffer : public TW3DResource {
 public:
 	TW3DBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeForUpdating, TWT::uint ElementSizeInBytes, bool UAV, TW3DDescriptorHeap* SRVDescriptorHeap);
-	~TW3DBuffer();
+	~TW3DBuffer() final;
 
 	//D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRVHandle();
 	//D3D12_CPU_DESCRIPTOR_HANDLE GetCPUUAVHandle();

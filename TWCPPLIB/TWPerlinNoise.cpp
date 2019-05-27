@@ -2,7 +2,7 @@
 #include "TWPerlinNoise.h"
 
 TWPerlinNoise::TWPerlinNoise(TWT::uint seed) {
-	std::int32_t p[512];
+	reseed(seed);
 }
 
 void TWPerlinNoise::reseed(TWT::uint seed) {

@@ -13,7 +13,8 @@ void TW3DObject::Update() {
 	for (auto& vminst : GetVertexMeshInstances()) {
 
 		vminst.Transform = DefaultTransform(vminst.RigidBody->getTransform());
-		vminst.Transform.Changed = true;
+		vminst.Transform.Changed = !vminst.RigidBody->isSleeping();
+
 		if (vminst.Transform.Changed) {
 			vminst.Changed = true;
 			vminst.Transform.Changed = false;

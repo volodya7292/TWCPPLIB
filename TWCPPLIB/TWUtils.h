@@ -29,8 +29,8 @@ namespace TWU {
 
 		if (_BitScanReverse64(&mssb, value) > 0 && _BitScanForward64(&lssb, value) > 0)
 			return uint8_t(mssb + (mssb == lssb ? 0 : 1));
-		else
-			return 0;
+		
+		return 0;
 	}
 
 	template <typename T>
@@ -41,7 +41,7 @@ namespace TWU {
 	inline TWT::String BoolStr(bool Value) {
 		return Value ? "True"s : "False"s;
 	}
-}
+}  // namespace TWU
 
 // ------------------------------------------------------------------------------------------------------------------------------
 // ----------------------------------------------------- Synchronized macro -----------------------------------------------------

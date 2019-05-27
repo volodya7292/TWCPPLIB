@@ -11,6 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <codecvt>
+#include <cstdint>
 #include <chrono>
 #include <thread>
 #include <vector>
@@ -20,7 +21,6 @@
 #include <array>
 #include <map>
 
-#include <stdint.h>
 #include <comdef.h>
 #include <dxgi1_6.h>
 #include <wincodec.h>

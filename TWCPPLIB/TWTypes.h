@@ -64,7 +64,7 @@ namespace TWT {
 	inline void Copy(const std::vector<T>& Source, std::vector<T>& Destination) {
 		std::copy(Source.begin(), Source.end(), std::back_inserter(Destination));
 	}
-}
+}  // namespace TWT
 
 std::ostream&  operator << (std::ostream& os, const TWT::String& t);
 std::wostream& operator << (std::wostream& os, const TWT::WString& t);

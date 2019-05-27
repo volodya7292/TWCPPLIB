@@ -2,7 +2,7 @@
 #include "TW3DConstantBuffer.h"
 
 TW3DConstantBuffer::TW3DConstantBuffer(TW3DDevice* Device, TWT::uint ElementCount, TWT::uint ElementSize) :
-	TW3DResource(Device, nullptr, &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_RESOURCE_STATE_GENERIC_READ)
+	TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), nullptr, D3D12_RESOURCE_STATE_GENERIC_READ)
 {
 	AlignedElementSize = (ElementSize + 255) & ~255;
 
@@ -11,9 +11,6 @@ TW3DConstantBuffer::TW3DConstantBuffer(TW3DDevice* Device, TWT::uint ElementCoun
 	resource->SetName(L"TW3DResourceCB");
 
 	Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&GPUAddress));
-}
-
-TW3DConstantBuffer::~TW3DConstantBuffer() {
 }
 
 D3D12_GPU_VIRTUAL_ADDRESS TW3DConstantBuffer::GetAddress(TWT::uint ElementIndex) {

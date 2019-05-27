@@ -24,8 +24,8 @@ void TW3DRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	Scene->Camera->Width = Width;
 	Scene->Camera->Height = Height;
 
-	for (size_t i = 0; i < command_lists.size(); i++)
-		command_lists[i]->EmptyReset();
+	for (auto & command_list : command_lists)
+		command_list->EmptyReset();
 }
 
 void TW3DRenderer::Record(TWT::uint BackBufferIndex, TW3DRenderTarget* ColorOutput, TW3DTexture* DepthStesncilOutput) {
@@ -41,8 +41,4 @@ void TW3DRenderer::Execute(TWT::uint BackBufferIndex) {
 	execute_cl = current_record_index == 0 ? command_lists[BackBufferIndex * 2 + 1] : command_lists[BackBufferIndex * 2];
 	while (execute_cl->IsEmpty())
 		Sleep(1);
-}
-
-void TW3DRenderer::SetScene(TW3DScene* Scene) {
-	this->Scene = Scene;
 }

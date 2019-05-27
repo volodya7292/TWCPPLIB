@@ -14,7 +14,7 @@ TW3DPerspectiveCamera::~TW3DPerspectiveCamera() {
 }
 
 TWT::mat4 TW3DPerspectiveCamera::GetProjectionMatrix() {
-	return TWT::Perspective(TWT::Radians(FOVY), (float)Width / Height, ZNear, ZFar);
+	return TWT::Perspective(TWT::Radians(FOVY), static_cast<float>(Width) / Height, ZNear, ZFar);
 }
 
 TWT::mat4 TW3DPerspectiveCamera::GetViewMatrix() {
@@ -33,7 +33,7 @@ TWT::vec3 TW3DPerspectiveCamera::GetRotation() {
 }
 
 float TW3DPerspectiveCamera::GetRatioX() {
-	return tan(TWT::Radians(FOVY) / 2.0f) * ((float)Width / Height);
+	return tan(TWT::Radians(FOVY) / 2.0f) * (static_cast<float>(Width) / Height);
 }
 
 float TW3DPerspectiveCamera::GetRatioY() {

@@ -9,8 +9,8 @@
 TW3DBitonicSorter::TW3DBitonicSorter(TW3DResourceManager* ResourceManager) {
 	TW3DDevice* device = ResourceManager->GetDevice();
 
-	m_pDispatchArgs = new TW3DResource(device, false, &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-	m_pDispatchArgs->Create(&CD3DX12_RESOURCE_DESC::Buffer(cIndirectArgStride * 22 * 23 / 2, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS));
+	m_pDispatchArgs = new TW3DResource(device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), nullptr, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+	m_pDispatchArgs->Create(CD3DX12_RESOURCE_DESC::Buffer(cIndirectArgStride * 22 * 23 / 2, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS));
 
 
 	m_pRootSignature = new TW3DRootSignature(device,

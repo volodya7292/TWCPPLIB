@@ -2,7 +2,7 @@
 #include "TW3DTexture.h"
 
 TW3DTexture::TW3DTexture(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* DescriptorHeap, DXGI_FORMAT Format, bool UAV) :
-	TW3DResource(Device, TempGCL, &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE), descriptor_heap(DescriptorHeap)
+	TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), TempGCL, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE), descriptor_heap(DescriptorHeap)
 {
 	main_index = DescriptorHeap->Allocate();
 	if (UAV)

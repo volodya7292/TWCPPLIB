@@ -2,8 +2,8 @@
 #include "TW3DBuffer.h"
 
 TW3DBuffer::TW3DBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeForUpdating, TWT::uint ElementSizeInBytes, bool UAV, TW3DDescriptorHeap* SRVDescriptorHeap) :
-	TW3DResource(Device, TempGCL,
-	&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+	TW3DResource(Device,
+	CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), TempGCL,
 	D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, OptimizeForUpdating),
 	srv_descriptor_heap(SRVDescriptorHeap), element_size(ElementSizeInBytes)
 {

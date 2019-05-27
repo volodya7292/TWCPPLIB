@@ -18,4 +18,4 @@ namespace TW {
 		const TWT::String filename;
 		const TWT::String logname;
 	};
-}
+}  // namespace TW

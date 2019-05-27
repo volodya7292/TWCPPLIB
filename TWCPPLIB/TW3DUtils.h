@@ -43,4 +43,4 @@ namespace TWU {
 
 	// Log error to logger
 	void TW3DLogError(const TWT::String& Error);
-}
+}  // namespace TWU

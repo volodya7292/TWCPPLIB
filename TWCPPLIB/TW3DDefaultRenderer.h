@@ -4,13 +4,15 @@
 class TW3DDefaultRenderer : public TW3DRenderer {
 public:
 	TW3DDefaultRenderer() = default;
-	virtual ~TW3DDefaultRenderer();
-	void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height);
-	void Resize(TWT::uint Width, TWT::uint Height);
-	void Record(TWT::uint BackBufferIndex, TW3DRenderTarget* ColorOutput, TW3DTexture* DepthStesncilOutput);
-	void RecordBeforeExecution();
-	void Update(float DeltaTime);
-	void Execute(TWT::uint BackBufferIndex);
+	~TW3DDefaultRenderer() final;
+	void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height) final;
+	void Resize(TWT::uint Width, TWT::uint Height) final;
+	void Record(TWT::uint BackBufferIndex, TW3DRenderTarget* ColorOutput, TW3DTexture* DepthStencilOutput) final;
+	void RecordBeforeExecution() final;
+	void Update(float DeltaTime) final;
+	void Execute(TWT::uint BackBufferIndex) final;
+
+	TW3DScene* LargeScaleScene = nullptr;
 
 private:
 	void CreateBlitResources();
@@ -20,7 +22,7 @@ private:
 	void BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarget* ColorOutput, TW3DTexture* Depth);
 	void RenderRecordGBuffer();
 
-	TW3DGraphicsCommandList* g_cl = nullptr;   // Ray tracing CL
+	TW3DGraphicsCommandList* g_cl = nullptr;    // GBuffer CL
 	TW3DGraphicsCommandList* rt_cl = nullptr;   // Ray tracing CL
 
 	// GBuffer render

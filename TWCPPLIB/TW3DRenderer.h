@@ -16,7 +16,7 @@ public:
 	virtual void Update(float DeltaTime) = 0;
 	virtual void Execute(TWT::uint BackBufferIndex);
 
-	void SetScene(TW3DScene* Scene);
+	TW3DScene* Scene = nullptr;
 
 protected:
 	bool Initialized = false;
@@ -25,8 +25,6 @@ protected:
 	TW3DSwapChain* SwapChain = nullptr;
 	TWT::uint Width = 0;
 	TWT::uint Height = 0;
-
-	TW3DScene* Scene = nullptr;
 
 	std::vector<TW3DGraphicsCommandList*> command_lists;
 	TW3DGraphicsCommandList *record_cl = nullptr, *execute_cl = nullptr;

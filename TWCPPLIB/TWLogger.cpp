@@ -8,21 +8,19 @@ TW::TWLogger::TWLogger(const TWT::String& LogName) :
 }
 
 TW::TWLogger::TWLogger(const TWT::String& Filename, const TWT::String& LogName) :
-	file_based(Filename.data.size() > 0), filename(Filename), logname(LogName)
+	file_based(!Filename.data.empty()), filename(Filename), logname(LogName)
 {
 
 }
 
-TW::TWLogger::~TWLogger() {
-
-}
+TW::TWLogger::~TWLogger() = default;
 
 void TW::TWLogger::Log(char LogType, const TWT::String& Data) {
 	tm t = TWU::GetTime();
 	char time_buffer[256];
 	strftime(time_buffer, sizeof(time_buffer), "%H:%M:%S", &t);
 
-	TWT::String nlogname = logname.data.size() > 0 ? "["s + logname + "]"s : ""s;
+	TWT::String nlogname = !logname.data.empty() ? "["s + logname + "]"s : ""s;
 
 	synchronized(sync_mutex) {
 		if (file_based) {

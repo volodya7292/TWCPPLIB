@@ -149,7 +149,7 @@ int main() {
 	scene->Camera->Position.z = 3;
 
 	defaultRenderer = new TW3DDefaultRenderer();
-	defaultRenderer->SetScene(scene);
+	defaultRenderer->Scene = scene;
 
 	TW3D::SetRenderer(defaultRenderer);
 

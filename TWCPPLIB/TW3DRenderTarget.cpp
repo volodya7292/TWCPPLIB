@@ -2,14 +2,14 @@
 #include "TW3DRenderTarget.h"
 
 TW3DRenderTarget::TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* rtv_descriptor_heap) :
-	TW3DResource(Device), rtv_descriptor_heap(rtv_descriptor_heap)
+	TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT)), rtv_descriptor_heap(rtv_descriptor_heap)
 {
 	RTVIndex = rtv_descriptor_heap->Allocate();
 }
 
 TW3DRenderTarget::TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* rtv_descriptor_heap, TW3DDescriptorHeap* srv_descriptor_heap, DXGI_FORMAT Format, TWT::vec4 ClearValue) :
-	TW3DResource(Device, nullptr,
-	&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+	TW3DResource(Device,
+	CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), nullptr,
 	D3D12_RESOURCE_STATE_RENDER_TARGET,
 	false,
 	D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES),

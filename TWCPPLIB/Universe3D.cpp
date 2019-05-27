@@ -7,8 +7,7 @@ Universe3D::Universe3D(TW3DResourceManager* ResourceManager) :
 	
 }
 
-Universe3D::~Universe3D() {
-}
+Universe3D::~Universe3D() = default;
 
 std::vector<UniverseObject> Universe3D::GatherObjects(TWT::vec3d Position, TWT::vec3 Extent) {
 	std::vector<UniverseObject> objects;

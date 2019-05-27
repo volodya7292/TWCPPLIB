@@ -59,7 +59,6 @@ void TW3DDefaultRenderer::CreateBlitResources() {
 	blit_ps->SetRTVFormat(0, TWT::RGBA8Unorm);
 	blit_ps->SetVertexShader(TW3DCompiledShader(FinalPassBlit_VertexByteCode));
 	blit_ps->SetPixelShader(TW3DCompiledShader(FinalPassBlit_PixelByteCode));
-	//blit_ps->SetInputLayout(input_layout);
 	blit_ps->Create(Device);
 }
 
@@ -128,14 +127,6 @@ void TW3DDefaultRenderer::CreateRTResources() {
 		},
 		false, false, false, false
 	);
-
-	//TW3DRootSignature* rs = new TW3DRootSignature(false, false, false, false);
-	//rs->SetParameterSRV(0, D3D12_SHADER_VISIBILITY_ALL, 0); // Global Vertex Buffer SRV
-	//rs->SetParameterSRV(1, D3D12_SHADER_VISIBILITY_ALL, 1); // Scene LBVH buffer SRV
-	//rs->SetParameterSRV(2, D3D12_SHADER_VISIBILITY_ALL, 2); // Global Node Buffer SRV
-	//rs->SetParameterUAVTexture(3, D3D12_SHADER_VISIBILITY_ALL, 0); // Output texture
-	//rs->SetParameterCBV(4, D3D12_SHADER_VISIBILITY_ALL, 0); // Camera CBV
-	//rs->Create(Device);
 
 	rt_ps = new TW3DComputePipelineState(rs);
 	rt_ps->SetShader(TW3DCompiledShader(RayTrace_ByteCode));
@@ -221,7 +212,7 @@ void TW3DDefaultRenderer::RenderRecordGBuffer() {
 	g_cl->Close();
 
 	ResourceManager->ExecuteCommandList(g_cl);
-	ResourceManager->FlushCommandList(g_cl);
+	//ResourceManager->FlushCommandList(g_cl);
 }
 
 void TW3DDefaultRenderer::Record(TWT::uint BackBufferIndex, TW3DRenderTarget* ColorOutput, TW3DTexture* DepthStencilOutput) {
@@ -240,11 +231,15 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 
 	// Trace rays
 	// -------------------------------------------------------------------------------------------------------------------------
-	ResourceManager->FlushCommandList(rt_cl);
+	//ResourceManager->FlushCommandList(rt_cl);
 	rt_cl->Reset();
 	rt_cl->BindResources(ResourceManager);
 	rt_cl->SetPipelineState(rt_ps);
 	Scene->Bind(rt_cl, RT_GVB_BUFFER, RT_SCENE_BUFFER, RT_GNB_BUFFER);
+
+	if (LargeScaleScene)
+		LargeScaleScene->Bind(rt_cl, RT_L_GVB_BUFFER, RT_L_SCENE_BUFFER, RT_L_GNB_BUFFER);
+
 	rt_cl->BindTexture(RT_OUTPUT_TEXTURE, rt_output, true);
 	rt_cl->BindConstantBuffer(RT_CAMERA_CB, Scene->Camera->GetConstantBuffer());
 	rt_cl->Dispatch(ceil(Width / 8.0f), ceil(Height / 8.0f));
@@ -262,7 +257,7 @@ void TW3DDefaultRenderer::Execute(TWT::uint BackBufferIndex) {
 	RenderRecordGBuffer();
 
 	//ResourceManager->ExecuteCommandList(rt_cl);
-	//ResourceManager->FlushCommandLists();
+	//ResourceManager->FlushCommandList(rt_cl);
 
 	ResourceManager->ExecuteCommandList(execute_cl);
 }

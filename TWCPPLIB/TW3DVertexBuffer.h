@@ -4,7 +4,7 @@
 class TW3DVertexBuffer : public TW3DResource {
 public:
 	TW3DVertexBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeForUpdating, TWT::uint VertexCount, TWT::uint SingleVertexSize);
-	~TW3DVertexBuffer();
+	~TW3DVertexBuffer() final = default;
 
 	D3D12_VERTEX_BUFFER_VIEW GetView();
 	void Update(const void* Data, TWT::uint VertexCount);

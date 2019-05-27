@@ -78,6 +78,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <MultiProcFXC>true</MultiProcFXC>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -88,6 +89,7 @@
     <LinkIncremental>false</LinkIncremental>
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <MultiProcFXC>true</MultiProcFXC>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -129,6 +131,12 @@
       <AdditionalDependencies>d3d12.lib;dxgi.lib;dxguid.lib;reactphysics3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <FxCompile>
+      <ShaderModel>5.1</ShaderModel>
+    </FxCompile>
+    <FxCompile>
+      <AllResourcesBound>true</AllResourcesBound>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -171,6 +179,12 @@
       <AdditionalDependencies>d3d12.lib;dxgi.lib;reactphysics3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <FxCompile>
+      <ShaderModel>5.1</ShaderModel>
+    </FxCompile>
+    <FxCompile>
+      <AllResourcesBound>true</AllResourcesBound>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Galaxy.h" />

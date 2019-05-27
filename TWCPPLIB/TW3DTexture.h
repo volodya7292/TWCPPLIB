@@ -2,6 +2,7 @@
 #include "TW3DResource.h"
 
 enum TW3DTextureType {
+	TW3D_TEXTURE_UNKNOWN,
 	TW3D_TEXTURE_2D,
 	TW3D_TEXTURE_2D_ARRAY,
 	TW3D_TEXTURE_DEPTH_STENCIL
@@ -10,7 +11,7 @@ enum TW3DTextureType {
 class TW3DTexture : public TW3DResource {
 public:
 	TW3DTexture(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* DescriptorHeap, DXGI_FORMAT Format, bool UAV = false);
-	~TW3DTexture();
+	~TW3DTexture() final;
 
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRVHandle();
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUUAVHandle();
@@ -34,5 +35,5 @@ private:
 	TWT::uint8* gpu_address = nullptr;
 
 	int main_index = -1, uav_index = -1;
-	TW3DTextureType type;
+	TW3DTextureType type = TW3D_TEXTURE_UNKNOWN;
 };

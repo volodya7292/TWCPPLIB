@@ -28,7 +28,7 @@ TWT::byte* TWU::ReadFileBytes(TWT::String filename, TWT::uint& size) {
 	if (VertexFile.is_open()) {
 		size = (int)VertexFile.tellg();
 
-		TWT::byte* data = new TWT::byte[size];
+		auto* data = new TWT::byte[size];
 
 		VertexFile.seekg(0);
 		VertexFile.read(reinterpret_cast<char*>(data), size);
@@ -41,7 +41,7 @@ TWT::byte* TWU::ReadFileBytes(TWT::String filename, TWT::uint& size) {
 }
 
 tm TWU::GetTime() {
-	time_t theTime = time(NULL);
+	time_t theTime = time(nullptr);
 	tm *aTime = localtime(&theTime);
 	return *aTime;
 }

@@ -4,8 +4,8 @@
 class TW3DCube : public TW3DGeometry {
 public:
 	TW3DCube(TW3DResourceManager* ResourceManager);
-	~TW3DCube() = default;
+	~TW3DCube() final = default;
 
-	void Update();
-	void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::uint ModelCBRootParameterIndex);
+	void Update() final;
+	void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::uint ModelCBRootParameterIndex)  final;
 };

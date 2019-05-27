@@ -99,4 +99,4 @@ namespace TWT {
 	inline glm::mat<4, 4, T> Perspective(T Fovy, T Aspect, T ZNear, T ZFar) {
 		return glm::perspective(Fovy, Aspect, ZNear, ZFar);
 	}
-}
+}  // namespace TWT

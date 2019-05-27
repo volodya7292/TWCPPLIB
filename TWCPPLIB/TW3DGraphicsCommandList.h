@@ -38,7 +38,7 @@ public:
 	void SetRenderTargets(const std::vector<TW3DRenderTarget*>& RTVs, TW3DTexture* DSV);
 	void ClearRTV(TW3DRenderTarget* RenderTarget);
 	void ClearRTV(TW3DRenderTarget* RenderTarget, TWT::vec4 Color);
-	void ClearDSVDepth(TW3DTexture* DSV);
+	void ClearDSVDepth(TW3DTexture* Texture);
 	void SetRootSignature(TW3DRootSignature* RootSignature);
 	void SetDescriptorHeap(TW3DDescriptorHeap* heap);
 	void SetDescriptorHeaps(std::vector<TW3DDescriptorHeap*> heaps);

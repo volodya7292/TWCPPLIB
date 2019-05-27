@@ -25,4 +25,4 @@ namespace TW3DShaders {
 
 	TW3DComputePipelineState* GetComputeShader(TWT::uint Id);
 	TW3DGraphicsPipelineState* GetGraphicsShader(TWT::uint Id);
-}
+}  // namespace TW3DShaders
