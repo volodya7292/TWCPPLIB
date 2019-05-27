@@ -1,35 +1,24 @@
 #include "HLSLHelper.hlsli"
 
-struct Camera {
-	float4 pos;
-	float4x4 proj;
-	float4x4 view;
-	float4x4 proj_view;
-};
-
+// Normal scale scene
 GVB gvb : register(t0);
 RTScene scene : register(t1);
 RTNB gnb : register(t2);
+
+// Large scale scene
+//GVB l_gvb : register(t3);
+//RTScene l_scene : register(t4);
+//RTNB l_gnb : register(t5);
+
+// Output image
 RWTexture2D<float4> rt_output : register(u0);
+
+// Camera
 ConstantBuffer<Camera> camera : register(b0);
 
 
-//float4 findNearestIntersection2(in Ray ray) {
-//	for (uint i = 0; i < input.primitive_count; i++) {
-//		bool inter = check_intersection(ray, i);
-//		if (inter)
-//			return float4(1, 1, 1, 1);
-//
-//	}
-//
-//	return float4(0, 0, 0, 0);
-//}
-
-
-
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
-void main(uint3 DTid : SV_DispatchThreadID)
-{
+void main(uint3 DTid : SV_DispatchThreadID) {
 	const int WIDTH = 1280;
 	const int HEIGHT = 720;
 	const int WIDTH2 = WIDTH / 2;

@@ -1,9 +1,8 @@
 #include "pch.h"
 #include "TW3DRootSignature.h"
 
-TW3DRootSignature::TW3DRootSignature(TW3DDevice* Device, std::vector<D3D12_ROOT_PARAMETER> RootParameters,
-	std::vector<D3D12_STATIC_SAMPLER_DESC> StaticSamplers, bool VS, bool PS, bool GS, bool IA)
-{
+TW3DRootSignature::TW3DRootSignature(TW3DDevice* Device, std::vector<TW3DRSRootParameter> RootParameters,
+	std::vector<D3D12_STATIC_SAMPLER_DESC> StaticSamplers, bool VS, bool PS, bool GS, bool IA) {
 	D3D12_ROOT_SIGNATURE_DESC desc;
 	desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS | D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS;
 
@@ -16,8 +15,12 @@ TW3DRootSignature::TW3DRootSignature(TW3DDevice* Device, std::vector<D3D12_ROOT_
 	if (IA)
 		desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-	desc.NumParameters = static_cast<TWT::uint>(RootParameters.size());
-	desc.pParameters = RootParameters.data();
+	std::vector<D3D12_ROOT_PARAMETER> ordered_params(RootParameters.size());
+	for (auto const& v : RootParameters)
+		ordered_params[v.Index] = v.Parameter;
+
+	desc.NumParameters = static_cast<TWT::uint>(ordered_params.size());
+	desc.pParameters = ordered_params.data();
 	desc.NumStaticSamplers = static_cast<TWT::uint>(StaticSamplers.size());
 	desc.pStaticSamplers = StaticSamplers.data();
 
@@ -26,8 +29,8 @@ TW3DRootSignature::TW3DRootSignature(TW3DDevice* Device, std::vector<D3D12_ROOT_
 	D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1_0, &signature, &errorBuff);
 
 	for (TWT::uint i = 0; i < desc.NumParameters; i++)
-		if (RootParameters[i].ParameterType == D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE)
-			delete[] RootParameters[i].DescriptorTable.pDescriptorRanges;
+		if (ordered_params[i].ParameterType == D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE)
+			delete[] ordered_params[i].DescriptorTable.pDescriptorRanges;
 
 	if (errorBuff) {
 		char* errors = static_cast<char*>(errorBuff->GetBufferPointer());
@@ -37,7 +40,7 @@ TW3DRootSignature::TW3DRootSignature(TW3DDevice* Device, std::vector<D3D12_ROOT_
 	Device->CreateRootSignature(signature, &root_signature);
 }
 
-TW3DRootSignature::TW3DRootSignature(TW3DDevice* Device, std::vector<D3D12_ROOT_PARAMETER> RootParameters, bool VS, bool PS, bool GS, bool IA) :
+TW3DRootSignature::TW3DRootSignature(TW3DDevice* Device, std::vector<TW3DRSRootParameter> RootParameters, bool VS, bool PS, bool GS, bool IA) :
 	TW3DRootSignature(Device, RootParameters, {}, VS, PS, GS, IA)
 {
 }
@@ -50,31 +53,31 @@ ID3D12RootSignature* TW3DRootSignature::Get() {
 	return root_signature;
 }
 
-D3D12_ROOT_PARAMETER TW3DRPTexture(TWT::uint Index, D3D12_SHADER_VISIBILITY Visibility, TWT::uint Register, bool UAVAccess) {
+TW3DRSRootParameter TW3DRPTexture(TWT::uint Index, D3D12_SHADER_VISIBILITY Visibility, TWT::uint Register, bool UAVAccess) {
 	CD3DX12_ROOT_PARAMETER param = {};
 	param.InitAsDescriptorTable(1, new CD3DX12_DESCRIPTOR_RANGE(UAVAccess ? D3D12_DESCRIPTOR_RANGE_TYPE_UAV : D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, Register), Visibility);
-	return param;
+	return { Index, param };
 }
 
-D3D12_ROOT_PARAMETER TW3DRPBuffer(TWT::uint Index, D3D12_SHADER_VISIBILITY Visibility, TWT::uint Register, bool UAVAccess) {
+TW3DRSRootParameter TW3DRPBuffer(TWT::uint Index, D3D12_SHADER_VISIBILITY Visibility, TWT::uint Register, bool UAVAccess) {
 	CD3DX12_ROOT_PARAMETER param = {};
 	if (UAVAccess)
 		param.InitAsUnorderedAccessView(Register, 0, Visibility);
 	else
 		param.InitAsShaderResourceView(Register, 0, Visibility);
-	return param;
+	return { Index, param };
 }
 
-D3D12_ROOT_PARAMETER TW3DRPConstantBuffer(TWT::uint Index, D3D12_SHADER_VISIBILITY Visibility, TWT::uint Register) {
+TW3DRSRootParameter TW3DRPConstantBuffer(TWT::uint Index, D3D12_SHADER_VISIBILITY Visibility, TWT::uint Register) {
 	CD3DX12_ROOT_PARAMETER param = {};
 	param.InitAsConstantBufferView(Register, 0, Visibility);
-	return param;
+	return { Index, param };
 }
 
-D3D12_ROOT_PARAMETER TW3DRPConstants(TWT::uint Index, D3D12_SHADER_VISIBILITY Visibility, TWT::uint Register, TWT::uint Num32BitValues) {
+TW3DRSRootParameter TW3DRPConstants(TWT::uint Index, D3D12_SHADER_VISIBILITY Visibility, TWT::uint Register, TWT::uint Num32BitValues) {
 	CD3DX12_ROOT_PARAMETER param = {};
 	param.InitAsConstants(Num32BitValues, Register, 0, Visibility);
-	return param;
+	return { Index, param };
 }
 
 D3D12_STATIC_SAMPLER_DESC TW3DStaticSampler(D3D12_SHADER_VISIBILITY ShaderVisibility, TWT::uint Register, D3D12_FILTER Filter, D3D12_TEXTURE_ADDRESS_MODE AddressMode, TWT::uint MaxAnisotropy) {

@@ -44,6 +44,14 @@ inline bool greater(in float3 v0, in float3 v1) {
 	return v0.x > v1.x && v0.y > v1.y && v0.z > v1.z;
 }
 
+float depth_linearize(float d, float zNear, float zFar) {
+	return zNear * zFar / (zFar + d * (zNear - zFar));
+}
+
+float depth_delinearize(float ld, float zNear, float zFar) {
+	return (zNear * zFar / ld - zFar) / (zNear - zFar);
+}
+
 struct Vertex {
 	float3       pos : POSITION;
 	float2 tex_coord : TEXCOORD;
@@ -119,6 +127,13 @@ struct SceneLBVHNode {
 	uint parent;
 	uint left_child;
 	uint right_child;
+};
+
+struct Camera {
+	float4 pos;
+	float4x4 proj;
+	float4x4 view;
+	float4x4 proj_view;
 };
 
 typedef StructuredBuffer<SceneLBVHNode> RTScene;

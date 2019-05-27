@@ -39,6 +39,16 @@ private:
 
 	// Ray tracing compute
 	// --------------------------------------------------------------------- 
+	enum RTRPIs {
+		RT_GVB_BUFFER,
+		RT_GNB_BUFFER,
+		RT_SCENE_BUFFER,
+		RT_L_GVB_BUFFER,
+		RT_L_GNB_BUFFER,
+		RT_L_SCENE_BUFFER,
+		RT_OUTPUT_TEXTURE,
+		RT_CAMERA_CB,
+	};
 	TW3DComputePipelineState *rt_ps = nullptr;
 	TW3DTexture* rt_output = nullptr;
 
