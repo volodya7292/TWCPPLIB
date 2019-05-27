@@ -162,7 +162,7 @@ int TWU::LoadImageDataFromFile(TWT::byte** imageData, D3D12_RESOURCE_DESC& resou
 
 	// load a decoder for the image
 	hr = wicFactory->CreateDecoderFromFilename(
-		filename.data.c_str(),                        // Image we want to load in
+		filename.ToWCharArray(),                        // Image we want to load in
 		NULL,                            // This is a vendor ID, we do not prefer a specific one so set to null
 		GENERIC_READ,                    // We want to read from this file
 		WICDecodeMetadataCacheOnLoad,    // We will cache the metadata right away, rather than when needed, which might be unknown

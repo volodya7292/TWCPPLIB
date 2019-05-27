@@ -49,6 +49,7 @@ private:
 		RT_L_GNB_BUFFER,
 		RT_L_SCENE_BUFFER,
 		RT_OUTPUT_TEXTURE,
+		RT_INPUT_CONST,
 		RT_CAMERA_CB,
 	};
 	TW3DComputePipelineState *rt_ps = nullptr;

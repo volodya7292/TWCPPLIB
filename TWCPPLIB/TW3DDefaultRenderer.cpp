@@ -114,22 +114,26 @@ void TW3DDefaultRenderer::CreateRTResources() {
 	rt_output = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA8Unorm, true);
 	ResourceManager->ResourceBarrier(rt_output, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
+	TW3DShader* s = new TW3DShader(TW3DCompiledShader(RayTrace_ByteCode), "RTShader"s);
+
 	TW3DRootSignature* rs = new TW3DRootSignature(Device,
 		{
-			TW3DRPBuffer(RT_GVB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, 0),
-			TW3DRPBuffer(RT_SCENE_BUFFER, D3D12_SHADER_VISIBILITY_ALL, 1),
-			TW3DRPBuffer(RT_GNB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, 2),
-			TW3DRPBuffer(RT_L_GVB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, 3),
-			TW3DRPBuffer(RT_L_SCENE_BUFFER, D3D12_SHADER_VISIBILITY_ALL, 4),
-			TW3DRPBuffer(RT_L_GNB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, 5),
-			TW3DRPTexture(RT_OUTPUT_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 0, true),
-			TW3DRPConstantBuffer(RT_CAMERA_CB, D3D12_SHADER_VISIBILITY_ALL, 0)
+			TW3DRPBuffer(RT_GVB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("gvb"s)),
+			TW3DRPBuffer(RT_SCENE_BUFFER, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("scene"s)),
+			TW3DRPBuffer(RT_GNB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("gnb"s)),
+			TW3DRPBuffer(RT_L_GVB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("l_gvb"s)),
+			TW3DRPBuffer(RT_L_SCENE_BUFFER, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("l_scene"s)),
+			TW3DRPBuffer(RT_L_GNB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("l_gnb"s)),
+			TW3DRPTexture(RT_OUTPUT_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("rt_output"s), true),
+			TW3DRPConstantBuffer(RT_CAMERA_CB, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("camera"s)),
+			TW3DRPConstants(RT_INPUT_CONST, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("input"s), 1)
 		},
 		false, false, false, false
 	);
 
 	rt_ps = new TW3DComputePipelineState(rs);
-	rt_ps->SetShader(TW3DCompiledShader(RayTrace_ByteCode));
+
+	rt_ps->SetShader(s);
 	rt_ps->Create(Device);
 
 	rt_cl = ResourceManager->CreateComputeCommandList();
@@ -242,6 +246,7 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 
 	rt_cl->BindTexture(RT_OUTPUT_TEXTURE, rt_output, true);
 	rt_cl->BindConstantBuffer(RT_CAMERA_CB, Scene->Camera->GetConstantBuffer());
+	rt_cl->Bind32BitConstant(RT_INPUT_CONST, 0, 0);
 	rt_cl->Dispatch(ceil(Width / 8.0f), ceil(Height / 8.0f));
 	rt_cl->ResourceBarrier(TW3DUAVBarrier());
 	rt_cl->Close();

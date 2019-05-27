@@ -1,6 +1,10 @@
 #include "HLSLHelper.hlsli"
 
-// Normal scale scene
+struct InputData {
+	uint use_two_scenes;
+};
+
+// Default scale scene
 GVB gvb : register(t0);
 RTScene scene : register(t1);
 RTNB gnb : register(t2);
@@ -15,7 +19,25 @@ RWTexture2D<float4> rt_output : register(u0);
 
 // Camera
 ConstantBuffer<Camera> camera : register(b0);
+ConstantBuffer<InputData> input : register(b1);
 
+inline float to_large_scene_scale(float3 p) {
+	float3 to_p = p - camera.pos.xyz;
+	return camera.pos.xyz + normalize(to_p) * (length(to_p) * camera.info.x); // camera.info.x - scale factor for large objects
+}
+
+inline float to_default_scene_scale(float3 p) {
+	float3 to_p = p - camera.pos.xyz;
+	return camera.pos.xyz + normalize(to_p) * (length(to_p) / camera.info.x); // camera.info.x - scale factor for large objects
+}
+
+inline bool TraceRayNormal(in Ray Ray, out TriangleIntersection TriInter) {
+	return TraceRay(scene, gnb, gvb, Ray, TriInter);
+}
+
+inline bool TraceRayLarge(in Ray Ray, out TriangleIntersection TriInter) {
+	return TraceRay(l_scene, l_gnb, l_gvb, Ray, TriInter);
+}
 
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
@@ -34,28 +56,20 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	screenPos *= float2(W_RATIO, H_RATIO);
 	float3 dir = mul(float4(normalize(float3(screenPos, -1)), 1.0), camera.view).xyz;
 
-	//int index = y * WIDTH + x;
-	//randSeed = initRand(index, frameCount++, 16);
-	/*float Px = ((x + 0.5f) / WIDTH2 - 1) * W_RATIO;
-	float Py = (1 - (y + 0.5f) / HEIGHT2) * H_RATIO;
-	vec3 dir = vec3(vec4(normalize(vec3(Px, Py, -1)), 1.0) * CAM_MATRIX);*/
-
 	Ray r;
 	r.origin = camera.pos.xyz;
 	r.dir = dir;
 
-	//trace_screen_ray({ CAM_POS, dir }, index);
-
 	TriangleIntersection tri_inter;
-	bool intersected = TraceRay(scene, gnb, gvb, r, tri_inter);
+	bool intersected;
+	if (input.use_two_scenes == 1u)
+		intersected = TraceRayLarge(r, tri_inter);
+	else
+		intersected = TraceRayNormal(r, tri_inter);
 
 	float4 color = float4(1, 0.3, 0.5, 1);
 	if (intersected)
 		color = float4(abs(gvb[tri_inter.TriangleID * 3].normal * 0.5f), 1);
-	//float4 color = float4(1, 0, 1, 1);
 
-	//tet g = { float4(DTid.x / 1280.0, 0, 0, 1), float4(0, DTid.x / 1280.0, 0, 1) };
-	//buffer[DTid.x] = g;
-	//OutputTexture[DTid.xy] = float4(normalize(DTid.xy + DTid.yx), normalize(DTid.yx).x, 1);
 	rt_output[DTid.xy] = color;
 }

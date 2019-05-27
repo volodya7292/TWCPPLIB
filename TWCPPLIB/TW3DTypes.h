@@ -32,12 +32,12 @@ namespace TWT {
 		mat4 proj;
 		mat4 view;
 		mat4 proj_view;
+		vec4 info = vec4(1.0f, 0, 0, 0); // .x - scale factor (large objects are scaled down)
 	};
 
 	struct DefaultModelCB {
 		mat4 model;
 		mat4 model_reduced;
-		vec4 info = vec4(1.0f, 0, 0, 0); // .x - scale factor (large objects are scaled down)
 	};
 
 	struct Bounds {

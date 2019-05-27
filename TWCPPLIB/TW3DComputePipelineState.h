@@ -1,5 +1,6 @@
 #pragma once
 #include "TW3DRootSignature.h"
+#include "TW3DShader.h"
 
 class TW3DComputePipelineState {
 public:
@@ -8,8 +9,7 @@ public:
 
 	ID3D12PipelineState* Get();
 
-	void SetShader(const std::string& Filename);
-	void SetShader(const D3D12_SHADER_BYTECODE& ByteCode);
+	void SetShader(TW3DShader* Shader);
 	void Create(TW3DDevice* Device);
 
 	TW3DRootSignature* RootSignature;

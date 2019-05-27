@@ -48,7 +48,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 void init_window() {
 	TWT::WString wstrtitle = title.Wide();
-	const TWT::wchar* wtitle = wstrtitle.data.c_str();
+	const TWT::wchar* wtitle = wstrtitle.ToWCharArray();
 
 	WNDCLASSEX wc;
 	HINSTANCE instance = GetModuleHandle(NULL);
@@ -509,7 +509,7 @@ void TW3D::SetVSync(bool VSync) {
 void TW3D::SetWindowTitle(const TWT::String& WindowTitle) {
 	title = WindowTitle;
 	TWT::WString wstrtitle = title.Wide();
-	const TWT::wchar* wtitle = wstrtitle.data.c_str();
+	const TWT::wchar* wtitle = wstrtitle.ToWCharArray();
 	SetWindowText(hwnd, wtitle);
 }
 

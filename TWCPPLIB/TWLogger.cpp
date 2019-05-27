@@ -8,7 +8,7 @@ TW::TWLogger::TWLogger(const TWT::String& LogName) :
 }
 
 TW::TWLogger::TWLogger(const TWT::String& Filename, const TWT::String& LogName) :
-	file_based(!Filename.data.empty()), filename(Filename), logname(LogName)
+	file_based(!Filename.IsEmpty()), filename(Filename), logname(LogName)
 {
 
 }
@@ -20,11 +20,11 @@ void TW::TWLogger::Log(char LogType, const TWT::String& Data) {
 	char time_buffer[256];
 	strftime(time_buffer, sizeof(time_buffer), "%H:%M:%S", &t);
 
-	TWT::String nlogname = !logname.data.empty() ? "["s + logname + "]"s : ""s;
+	TWT::String nlogname = !logname.IsEmpty() ? "["s + logname + "]"s : ""s;
 
 	synchronized(sync_mutex) {
 		if (file_based) {
-			std::ofstream file(filename.data, std::ios_base::out | std::ios_base::app);
+			std::ofstream file(filename.GetData(), std::ios_base::out | std::ios_base::app);
 			file << ("["s + time_buffer + "] "s + nlogname + " ["s + LogType + "] "s + Data) << '\n';
 			file.close();
 		} else {

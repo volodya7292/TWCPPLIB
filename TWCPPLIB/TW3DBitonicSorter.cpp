@@ -34,19 +34,19 @@ TW3DBitonicSorter::TW3DBitonicSorter(TW3DResourceManager* ResourceManager) {
 
 
 	m_pBitonicIndirectArgsCS = new TW3DComputePipelineState(m_pRootSignature);
-	m_pBitonicIndirectArgsCS->SetShader(TW3DCompiledShader(BitonicSortIndirectArgs_ByteCode));
+	m_pBitonicIndirectArgsCS->SetShader(new TW3DShader(TW3DCompiledShader(BitonicSortIndirectArgs_ByteCode), "BitonicIndirectArgs"s));
 	m_pBitonicIndirectArgsCS->Create(device);
 
 	m_pBitonicInnerSortCS = new TW3DComputePipelineState(m_pRootSignature);
-	m_pBitonicInnerSortCS->SetShader(TW3DCompiledShader(BitonicInnerSort_ByteCode));
+	m_pBitonicInnerSortCS->SetShader(new TW3DShader(TW3DCompiledShader(BitonicInnerSort_ByteCode), "BitonicInnerSort"s));
 	m_pBitonicInnerSortCS->Create(device);
 
 	m_pBitonicOuterSortCS = new TW3DComputePipelineState(m_pRootSignature);
-	m_pBitonicOuterSortCS->SetShader(TW3DCompiledShader(BitonicOuterSort_ByteCode));
+	m_pBitonicOuterSortCS->SetShader(new TW3DShader(TW3DCompiledShader(BitonicOuterSort_ByteCode), "BitonicOuterSort"s));
 	m_pBitonicOuterSortCS->Create(device);
 
 	m_pBitonicPreSortCS = new TW3DComputePipelineState(m_pRootSignature);
-	m_pBitonicPreSortCS->SetShader(TW3DCompiledShader(BitonicPreSort_ByteCode));
+	m_pBitonicPreSortCS->SetShader(new TW3DShader(TW3DCompiledShader(BitonicPreSort_ByteCode), "BitonicPreSort"s));
 	m_pBitonicPreSortCS->Create(device);
 
 	D3D12_INDIRECT_ARGUMENT_DESC indirectArgDesc = {};
@@ -85,12 +85,12 @@ void TW3DBitonicSorter::RecordSort(TW3DGraphicsCommandList* CommandList, TW3DBuf
 		UINT ListCount;
 	};
 	InputConstants constants { SortAscending ? 0xffffffff : 0, ElementCount };
-	CommandList->SetRoot32BitConstants(GenericConstants, 2, &constants, 0); // Bugs may occur: put this line after each SetPipelineState
+	CommandList->Bind32BitConstants(GenericConstants, 2, &constants, 0); // Bugs may occur: put this line after each SetPipelineState
 
 
 	//CommandList->ResourceBarrier(m_pDispatchArgs, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-	CommandList->SetRoot32BitConstant(ShaderSpecificConstants, MaxIterations, 0);
+	CommandList->Bind32BitConstant(ShaderSpecificConstants, MaxIterations, 0);
 	CommandList->BindBuffer(OutputUAV, m_pDispatchArgs, true);
 	CommandList->BindBuffer(IndexBufferUAV, SortBuffer, true);
 	CommandList->Dispatch(1, 1, 1);
@@ -129,7 +129,7 @@ void TW3DBitonicSorter::RecordSort(TW3DGraphicsCommandList* CommandList, TW3DBuf
 				UINT j;
 			} constants { k, j };
 
-			CommandList->SetRoot32BitConstants(ShaderSpecificConstants, 2, &constants, 0);
+			CommandList->Bind32BitConstants(ShaderSpecificConstants, 2, &constants, 0);
 			CommandList->ExecuteIndirect(m_pCommandSignature, 1, m_pDispatchArgs->Get(), IndirectArgsOffset, nullptr, 0);
 			CommandList->ResourceBarrier(uavBarrier);
 			IndirectArgsOffset += cIndirectArgStride;

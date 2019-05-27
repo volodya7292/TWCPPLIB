@@ -7,14 +7,14 @@ TWT::WString TWU::HResultToWString(HRESULT Result) {
 }
 
 void TWU::FileExistsAssert(TWT::String filename) {
-	std::ifstream file(filename.data);
+	std::ifstream file(filename.GetData());
 
 	if (!file.good())
 		throw std::runtime_error("File "s + filename + " not good(not exists)!"s);
 }
 
 void TWU::FileExistsAssert(TWT::WString filename) {
-	std::wifstream file(filename.data);
+	std::wifstream file(filename.GetData());
 
 	if (!file.good())
 		throw std::runtime_error("File "s + filename.Multibyte() + " not good(not exists)!"s);
@@ -23,16 +23,16 @@ void TWU::FileExistsAssert(TWT::WString filename) {
 TWT::byte* TWU::ReadFileBytes(TWT::String filename, TWT::uint& size) {
 	TWU::FileExistsAssert(filename.Wide());
 
-	std::ifstream VertexFile(filename.data, std::ios::ate | std::ios::binary);
+	std::ifstream file(filename.GetData(), std::ios::ate | std::ios::binary);
 
-	if (VertexFile.is_open()) {
-		size = (int)VertexFile.tellg();
+	if (file.is_open()) {
+		size = (int)file.tellg();
 
 		auto* data = new TWT::byte[size];
 
-		VertexFile.seekg(0);
-		VertexFile.read(reinterpret_cast<char*>(data), size);
-		VertexFile.close();
+		file.seekg(0);
+		file.read(reinterpret_cast<char*>(data), size);
+		file.close();
 
 		return data;
 	}

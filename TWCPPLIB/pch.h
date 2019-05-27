@@ -30,6 +30,8 @@
 #endif
 
 #include <d3dx12.h>
+#include <d3d12shader.h>
+#include <d3dcompiler.h>
 #include <reactphysics/reactphysics3d.h>
 
 #include <wrl.h>

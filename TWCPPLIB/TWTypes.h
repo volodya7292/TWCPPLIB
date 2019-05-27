@@ -18,47 +18,56 @@ namespace TWT {
 	struct WString;
 
 	struct String {
+	public:
 		String() = default;
-	
+		String(const String &Str) = default;
+		String(const char* Data);
+		String(const std::string& Data);
+		~String()                         = default;
+
 		template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
-		String(T data) {
-			this->data = std::to_string(data);
+		String(T Data) {
+			this->data = std::to_string(Data);
 		};
 
-		String(const char* data);
-		String(std::string data);
-		String(const String &str) = default;
-		~String()                 = default;
-
+		const std::string& GetData() const;
+		const char* ToCharArray() const;
+		const TWT::uint64 GetSize() const;
+		const bool IsEmpty() const;
 		WString Wide();
 
-		//String& operator + (const String& t);
 		String& operator  = (const String& t) = default;
 		String& operator += (const String& t);
 
+	private:
 		std::string data;
 	};
 
 	struct WString {
+	public:
 		WString() = default;
-		WString(int data);
-		WString(const wchar* data);
-		WString(std::string data);
-		WString(std::wstring data);
-		WString(const WString &str) = default;
+		WString(const WString &Str) = default;
+		WString(const wchar* Data);
+		WString(const std::wstring& Data);
 		~WString() = default;
 
+		template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
+		WString(T Data) {
+			this->data = std::to_wstring(Data);
+		};
+
+		const std::wstring& GetData() const;
+		const TWT::wchar* ToWCharArray() const;
+		const uint64 GetSize() const;
+		const bool IsEmpty() const;
 		String Multibyte();
 
-		//WString& operator +  (const WString& t);
-		WString& operator  = (const WString& t) = default;
-		WString& operator += (const WString& t);
+		WString& operator  = (const WString& Str) = default;
+		WString& operator += (const WString& Str);
 
+	private:
 		std::wstring data;
 	};
-
-	char*   WideToMultibyte(const std::wstring &wstr);
-	std::wstring MultibyteToWide(const std::string &str);
 
 	template<class T>
 	inline void Copy(const std::vector<T>& Source, std::vector<T>& Destination) {
@@ -66,8 +75,8 @@ namespace TWT {
 	}
 }  // namespace TWT
 
-std::ostream&  operator << (std::ostream& os, const TWT::String& t);
-std::wostream& operator << (std::wostream& os, const TWT::WString& t);
+//std::ostream&  operator << (std::ostream& os, const TWT::String& t);
+//std::wostream& operator << (std::wostream& os, const TWT::WString& t);
 
 //template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
 //std::string operator+(const std::string& str, const T& t) {
@@ -78,9 +87,19 @@ std::wostream& operator << (std::wostream& os, const TWT::WString& t);
 //	return std::to_string(t) + str;
 //}
 
-TWT::String  operator+(const TWT::String&  t, const TWT::String&  str);
-std::string  operator+(const std::string&  str, const TWT::String&  t);
-std::string  operator+(const TWT::String&  t, const std::string&  str);
-TWT::WString operator+(const TWT::WString& t, const TWT::WString& str);
-std::wstring operator+(const std::wstring& str, const TWT::WString& t);
-std::wstring operator+(const TWT::WString& t, const std::wstring& str);
+//TWT::String  operator+(const TWT::String&  t, const TWT::String&  str);
+//std::string  operator+(const std::string&  str, const TWT::String&  t);
+//std::string  operator+(const TWT::String&  t, const std::string&  str);
+//TWT::WString operator+(const TWT::WString& t, const TWT::WString& str);
+//std::wstring operator+(const std::wstring& str, const TWT::WString& t);
+//std::wstring operator+(const TWT::WString& t, const std::wstring& str);
+
+std::ostream& operator << (std::ostream& os, const TWT::String& t);
+TWT::String   operator  + (const TWT::String& t, const TWT::String& str);
+std::string   operator  + (const std::string& str, const TWT::String& t);
+std::string   operator  + (const TWT::String& t, const std::string& str);
+
+std::wostream& operator << (std::wostream& os, const TWT::WString& t);
+TWT::WString   operator  + (const TWT::WString& t, const TWT::WString& str);
+std::wstring   operator  + (const std::wstring& str, const TWT::WString& t);
+std::wstring   operator  + (const TWT::WString& t, const std::wstring& str);

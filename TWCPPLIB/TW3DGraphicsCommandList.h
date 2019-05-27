@@ -43,8 +43,6 @@ public:
 	void SetDescriptorHeap(TW3DDescriptorHeap* heap);
 	void SetDescriptorHeaps(std::vector<TW3DDescriptorHeap*> heaps);
 	void SetRootDescriptorTable(TWT::uint RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor);
-	void SetRoot32BitConstant(TWT::uint RootParameterIndex, TWT::uint Data, TWT::uint DestOffsetIn32BitValues);
-	void SetRoot32BitConstants(TWT::uint RootParameterIndex, TWT::uint Num32BitValuesToSet, const void* Data, TWT::uint DestOffsetIn32BitValues);
 	void SetViewport(const D3D12_VIEWPORT *viewport);
 	void SetScissor(const D3D12_RECT* scissor);
 	void SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY PrimitiveTopology);
@@ -62,6 +60,8 @@ public:
 	void BindTexture(TWT::uint RootParameterIndex, TW3DTexture* Texture, bool UAV = false);
 	void BindTexture(TWT::uint RootParameterIndex, TW3DRenderTarget* RenderTarget);
 	void BindConstantBuffer(TWT::uint RootParameterIndex, TW3DConstantBuffer* CB, TWT::uint ElementIndex = 0);
+	void Bind32BitConstant(TWT::uint RootParameterIndex, TWT::uint Data, TWT::uint DestOffsetIn32BitValues);
+	void Bind32BitConstants(TWT::uint RootParameterIndex, TWT::uint Num32BitValuesToSet, const void* Data, TWT::uint DestOffsetIn32BitValues);
 	void BindCameraCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera);
 	void DrawObject(TW3DObject* object, TWT::uint ModelCBRootParameterIndex);
 

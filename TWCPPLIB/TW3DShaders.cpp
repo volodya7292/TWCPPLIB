@@ -36,7 +36,7 @@ void TW3DShaders::Initialize(TW3DResourceManager* ResourceManager) {
 	//rs0->Create(device);
 
 	auto* triangle_mesh_bounding_box_calc_ps = new TW3DComputePipelineState(rs0);
-	triangle_mesh_bounding_box_calc_ps->SetShader(TW3DCompiledShader(CalculateTriangleMeshBoundingBox_ByteCode));
+	triangle_mesh_bounding_box_calc_ps->SetShader(new TW3DShader(TW3DCompiledShader(CalculateTriangleMeshBoundingBox_ByteCode), "TriangleMeshBoundingBox"s));
 	triangle_mesh_bounding_box_calc_ps->Create(device);
 	compute_shaders[CalculateTriangleMeshBoundingBox] = triangle_mesh_bounding_box_calc_ps;
 
@@ -60,7 +60,7 @@ void TW3DShaders::Initialize(TW3DResourceManager* ResourceManager) {
 	//rs1->Create(device);
 
 	auto* triangle_morton_calc_ps = new TW3DComputePipelineState(rs1);
-	triangle_morton_calc_ps->SetShader(TW3DCompiledShader(CalculateMortonCodesForTriangles_ByteCode));
+	triangle_morton_calc_ps->SetShader(new TW3DShader(TW3DCompiledShader(CalculateMortonCodesForTriangles_ByteCode), "TriangleMorton"s));
 	triangle_morton_calc_ps->Create(device);
 	compute_shaders[CalculateMortonCodesForTriangles] = triangle_morton_calc_ps;
 
@@ -84,7 +84,7 @@ void TW3DShaders::Initialize(TW3DResourceManager* ResourceManager) {
 	//rs2->Create(device);
 
 	auto* triangles_setup_lbvh_nodes_ps = new TW3DComputePipelineState(rs2);
-	triangles_setup_lbvh_nodes_ps->SetShader(TW3DCompiledShader(SetupLBVHNodesFromTriangles_ByteCode));
+	triangles_setup_lbvh_nodes_ps->SetShader(new TW3DShader(TW3DCompiledShader(SetupLBVHNodesFromTriangles_ByteCode), "SetupLBVHNodes"s));
 	triangles_setup_lbvh_nodes_ps->Create(device);
 	compute_shaders[SetupLBVHNodesFromTriangles] = triangles_setup_lbvh_nodes_ps;
 
@@ -105,7 +105,7 @@ void TW3DShaders::Initialize(TW3DResourceManager* ResourceManager) {
 	//rs3->Create(device);
 
 	auto* build_lbvh_splits_ps = new TW3DComputePipelineState(rs3);
-	build_lbvh_splits_ps->SetShader(TW3DCompiledShader(BuildLBVHSplits_ByteCode));
+	build_lbvh_splits_ps->SetShader(new TW3DShader(TW3DCompiledShader(BuildLBVHSplits_ByteCode), "BuildLBVHSplits"s));
 	build_lbvh_splits_ps->Create(device);
 	compute_shaders[BuildLBVHSplits] = build_lbvh_splits_ps;
 
@@ -123,7 +123,7 @@ void TW3DShaders::Initialize(TW3DResourceManager* ResourceManager) {
 	//rs4->Create(device);
 
 	auto* update_lbvh_node_bounds = new TW3DComputePipelineState(rs4);
-	update_lbvh_node_bounds->SetShader(TW3DCompiledShader(UpdateLBVHNodeBounds_ByteCode));
+	update_lbvh_node_bounds->SetShader(new TW3DShader(TW3DCompiledShader(UpdateLBVHNodeBounds_ByteCode), "UpdateLBVHNodeBounds"));
 	update_lbvh_node_bounds->Create(device);
 	compute_shaders[UpdateLBVHNodeBounds] = update_lbvh_node_bounds;
 
@@ -145,7 +145,7 @@ void TW3DShaders::Initialize(TW3DResourceManager* ResourceManager) {
 	//rs6->Create(device);
 
 	auto* lbvhs_bounding_box_calc_ps = new TW3DComputePipelineState(rs6);
-	lbvhs_bounding_box_calc_ps->SetShader(TW3DCompiledShader(CalculateLBVHsBoundingBox_ByteCode));
+	lbvhs_bounding_box_calc_ps->SetShader(new TW3DShader(TW3DCompiledShader(CalculateLBVHsBoundingBox_ByteCode), "LBVHsBoundingBox"s));
 	lbvhs_bounding_box_calc_ps->Create(device);
 	compute_shaders[CalculateLBVHsBoundingBox] = lbvhs_bounding_box_calc_ps;
 
@@ -170,7 +170,7 @@ void TW3DShaders::Initialize(TW3DResourceManager* ResourceManager) {
 	//rs7->Create(device);
 
 	auto* lbvhs_morton_calc_ps = new TW3DComputePipelineState(rs7);
-	lbvhs_morton_calc_ps->SetShader(TW3DCompiledShader(CalculateMortonCodesForLBVHs_ByteCode));
+	lbvhs_morton_calc_ps->SetShader(new TW3DShader(TW3DCompiledShader(CalculateMortonCodesForLBVHs_ByteCode), "LBVHsMorton"s));
 	lbvhs_morton_calc_ps->Create(device);
 	compute_shaders[CalculateMortonCodesForLBVHs] = lbvhs_morton_calc_ps;
 
@@ -194,7 +194,7 @@ void TW3DShaders::Initialize(TW3DResourceManager* ResourceManager) {
 	//rs8->Create(device);
 
 	auto* lbvhs_setup_lbvh_nodes_ps = new TW3DComputePipelineState(rs8);
-	lbvhs_setup_lbvh_nodes_ps->SetShader(TW3DCompiledShader(SetupLBVHNodesFromLBVHs_ByteCode));
+	lbvhs_setup_lbvh_nodes_ps->SetShader(new TW3DShader(TW3DCompiledShader(SetupLBVHNodesFromLBVHs_ByteCode), "LBVHsSetupLBVHNodes"s));
 	lbvhs_setup_lbvh_nodes_ps->Create(device);
 	compute_shaders[SetupLBVHNodesFromLBVHs] = lbvhs_setup_lbvh_nodes_ps;
 
@@ -214,7 +214,7 @@ void TW3DShaders::Initialize(TW3DResourceManager* ResourceManager) {
 	//rs9->Create(device);
 
 	auto* lbvhs_build_lbvh_splits_ps = new TW3DComputePipelineState(rs9);
-	lbvhs_build_lbvh_splits_ps->SetShader(TW3DCompiledShader(BuildLBVHSplitsFromLBVHs_ByteCode));
+	lbvhs_build_lbvh_splits_ps->SetShader(new TW3DShader(TW3DCompiledShader(BuildLBVHSplitsFromLBVHs_ByteCode), "LBVHsBuildLBVHSplits"s));
 	lbvhs_build_lbvh_splits_ps->Create(device);
 	compute_shaders[BuildLBVHSplitsFromLBVHs] = lbvhs_build_lbvh_splits_ps;
 
@@ -232,7 +232,7 @@ void TW3DShaders::Initialize(TW3DResourceManager* ResourceManager) {
 	//rs10->Create(device);
 
 	auto* lbvhs_update_lbvh_node_bounds = new TW3DComputePipelineState(rs10);
-	lbvhs_update_lbvh_node_bounds->SetShader(TW3DCompiledShader(UpdateLBVHNodeBoundsForLBVHs_ByteCode));
+	lbvhs_update_lbvh_node_bounds->SetShader(new TW3DShader(TW3DCompiledShader(UpdateLBVHNodeBoundsForLBVHs_ByteCode), "LBVHsUpdateLBVHNodes"s));
 	lbvhs_update_lbvh_node_bounds->Create(device);
 	compute_shaders[UpdateLBVHNodeBoundsForLBVHs] = lbvhs_update_lbvh_node_bounds;
 

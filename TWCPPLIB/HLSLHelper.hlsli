@@ -134,6 +134,7 @@ struct Camera {
 	float4x4 proj;
 	float4x4 view;
 	float4x4 proj_view;
+	float4 info; // .x - scale factor (large objects are scaled down)
 };
 
 typedef StructuredBuffer<SceneLBVHNode> RTScene;
@@ -389,7 +390,7 @@ inline void check_scene_rtas_intersection(in RTNB gnb, in GVB gvb, in Ray ray, i
 	mesh_rtas_trace_ray(gnb, rtas_vertex_index, rtas_node_index, gvb, nr, tri_inter);
 }
 
-bool TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray Ray, out TriangleIntersection Triinter) {
+bool TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray Ray, out TriangleIntersection TriInter) {
 	float bounds_distance = FLT_MAX;
 	TriangleIntersection mininter, curr, tempinter;
 	mininter.TriangleID = -1;
@@ -398,9 +399,9 @@ bool TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray Ray, out Trian
 	tempinter.TriangleID = -1;
 	tempinter.intersectionPoint = float3(0, 0, 0);
 	tempinter.intersectionDistance = FLT_MAX;
-	Triinter.TriangleID = -1;
-	Triinter.intersectionPoint = float3(0, 0, 0);
-	Triinter.intersectionDistance = FLT_MAX;
+	TriInter.TriangleID = -1;
+	TriInter.intersectionPoint = float3(0, 0, 0);
+	TriInter.intersectionDistance = FLT_MAX;
 
 	uint stackNodes[64];
 	unsigned int stackIndex = 0;
@@ -463,6 +464,6 @@ bool TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray Ray, out Trian
 		}
 	}
 
-	Triinter = mininter;
+	TriInter = mininter;
 	return mininter.intersectionDistance != FLT_MAX;
 }

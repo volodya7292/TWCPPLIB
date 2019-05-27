@@ -125,14 +125,14 @@ void TW3DGraphicsCommandList::SetRootDescriptorTable(TWT::uint RootParameterInde
 		command_list->SetGraphicsRootDescriptorTable(RootParameterIndex, BaseDescriptor);
 }
 
-void TW3DGraphicsCommandList::SetRoot32BitConstant(TWT::uint RootParameterIndex, TWT::uint Data, TWT::uint DestOffsetIn32BitValues) {
+void TW3DGraphicsCommandList::Bind32BitConstant(TWT::uint RootParameterIndex, TWT::uint Data, TWT::uint DestOffsetIn32BitValues) {
 	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 		command_list->SetComputeRoot32BitConstant(RootParameterIndex, Data, DestOffsetIn32BitValues);
 	else
 		command_list->SetGraphicsRoot32BitConstant(RootParameterIndex, Data, DestOffsetIn32BitValues);
 }
 
-void TW3DGraphicsCommandList::SetRoot32BitConstants(TWT::uint RootParameterIndex, TWT::uint Num32BitValuesToSet, const void* Data, TWT::uint DestOffsetIn32BitValues) {
+void TW3DGraphicsCommandList::Bind32BitConstants(TWT::uint RootParameterIndex, TWT::uint Num32BitValuesToSet, const void* Data, TWT::uint DestOffsetIn32BitValues) {
 	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 		command_list->SetComputeRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, Data, DestOffsetIn32BitValues);
 	else

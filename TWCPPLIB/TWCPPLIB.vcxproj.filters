@@ -213,6 +213,9 @@
     <ClInclude Include="TW3DTransform.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DShader.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -351,6 +354,9 @@
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
     <ClCompile Include="TW3DTransform.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DShader.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
   </ItemGroup>
