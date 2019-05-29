@@ -1,4 +1,4 @@
-#include "HLSLHelper.hlsli"
+#include "RayTracing.hlsli"
 
 struct InputData {
 	uint use_two_scenes;
@@ -27,12 +27,12 @@ ConstantBuffer<InputData> input : register(b1);
 
 inline float to_large_scene_scale(float3 p) {
 	float3 to_p = p - camera.pos.xyz;
-	return camera.pos.xyz + normalize(to_p) * (length(to_p) * camera.info.x); // camera.info.x - scale factor for large objects
+	return camera.pos.xyz + normalize(to_p) * (length(to_p) * camera.info.y); // camera.info.y - scale factor for large objects
 }
 
 inline float to_default_scene_scale(float3 p) {
 	float3 to_p = p - camera.pos.xyz;
-	return camera.pos.xyz + normalize(to_p) * (length(to_p) / camera.info.x); // camera.info.x - scale factor for large objects
+	return camera.pos.xyz + normalize(to_p) * (length(to_p) / camera.info.y); // camera.info.y - scale factor for large objects
 }
 
 inline bool TraceRayNormal(in Ray Ray, out TriangleIntersection TriInter) {
@@ -44,32 +44,23 @@ inline bool TraceRayLarge(in Ray Ray, out TriangleIntersection TriInter) {
 }
 
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
-void main(uint3 DTid : SV_DispatchThreadID) {
-	const int WIDTH = 1280;
-	const int HEIGHT = 720;
-	const int WIDTH2 = WIDTH / 2;
-	const int HEIGHT2 = HEIGHT / 2;
-	const float FOV = 45;
-	const float WH_RATIO = (float)WIDTH / HEIGHT;
-	const float W_RATIO = tan(radians(FOV) / 2.0f) * WH_RATIO;
-	const float H_RATIO = tan(radians(FOV) / 2.0f);
+void main(uint3 DTid : SV_DispatchThreadID, uint Gi : SV_GroupIndex) {
+	uint2 SIZE;
+	rt_output.GetDimensions(SIZE.x, SIZE.y);
 
-	float2 xy = DTid.xy + 0.5f;
-	float2 screenPos = xy / float2(WIDTH, HEIGHT) * 2.0f - 1.0f;
-	screenPos.y = -screenPos.y;
-	screenPos *= float2(W_RATIO, H_RATIO);
-	float3 dir = mul(float4(normalize(float3(screenPos, -1)), 1.0), camera.view).xyz;
+	const float ct = tan(camera.info.x / 2.0f);
+	const float2 screenPos = ((DTid.xy + 0.5f) / (float2)SIZE * 2.0f - 1.0f) * float2(ct * ((float)SIZE.x / SIZE.y), -ct);
 
-	Ray r;
-	r.origin = camera.pos.xyz;
-	r.dir = dir;
+	Ray pRay; // primary ray
+	pRay.origin = camera.pos.xyz;
+	pRay.dir = mul(float4(normalize(float3(screenPos, -1)), 1.0), camera.view).xyz;
 
 	TriangleIntersection tri_inter;
 	bool intersected;
 	if (input.use_two_scenes == 1u)
-		intersected = TraceRayLarge(r, tri_inter);
+		intersected = TraceRayLarge(pRay, tri_inter);
 	else
-		intersected = TraceRayNormal(r, tri_inter);
+		intersected = TraceRayNormal(pRay, tri_inter);
 
 	float4 color = float4(1, 0.3, 0.5, 1);
 	if (input.use_two_scenes == 1u) {

@@ -56,6 +56,7 @@ void TW3DPerspectiveCamera::UpdateConstantBuffer(TW3DConstantBuffer* ConstantBuf
 	cb.proj = GetProjectionMatrix();
 	cb.view = GetViewMatrix();
 	cb.proj_view = GetProjectionViewMatrix();
+	cb.info.x = TWT::Radians(FOVY);
 
 	if (ConstantBuffer)
 		ConstantBuffer->Update(&cb, 0);

@@ -32,7 +32,7 @@ namespace TWT {
 		mat4 proj;
 		mat4 view;
 		mat4 proj_view;
-		vec4 info = vec4(1.0f, 0, 0, 0); // .x - scale factor (large objects are scaled down)
+		vec4 info = vec4(1.0f, 1.0f, 0, 0); // .x - FOVy, .y - scale factor (large objects are scaled down)
 	};
 
 	struct DefaultModelCB {

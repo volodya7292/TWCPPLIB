@@ -19,7 +19,7 @@ struct VS_OUTPUT {
 	linear float3 obj_normal : ObjectNormal;
 };
 
-ConstantBuffer<Camera> camera : register(b0); // .info.x - scale factor for large objects
+ConstantBuffer<Camera> camera : register(b0); // .info.y - scale factor for large objects
 
 PS_OUTPUT main(VS_OUTPUT input) {
 	PS_OUTPUT output;
@@ -28,7 +28,7 @@ PS_OUTPUT main(VS_OUTPUT input) {
 	output.normal = float4(input.obj_normal, 0);
 	output.diffuse = diffuseTex.Sample(sam, float3(input.tex_coord, 0));
 	output.specular = specularTex.Sample(sam, float3(input.tex_coord, 0));
-	output.depth = depth_delinearize(depth_linearize(input.pos.z, 0.1, 1000) / camera.info.x, 0.1, 1000);
+	output.depth = depth_delinearize(depth_linearize(input.pos.z, 0.1, 1000) / camera.info.y, 0.1, 1000);
 
 
 	return output;

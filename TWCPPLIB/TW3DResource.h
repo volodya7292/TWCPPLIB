@@ -7,7 +7,7 @@
 class TW3DResource {
 public:
 	TW3DResource(TW3DDevice* Device, CD3DX12_HEAP_PROPERTIES const& HeapProperties, TW3DTempGCL* TempGCL = nullptr,
-		D3D12_RESOURCE_STATES InitialResourceState = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, bool OptimizeForUpdating = false,
+		D3D12_RESOURCE_STATES InitialState = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, bool OptimizeForUpdating = false,
 		D3D12_HEAP_FLAGS HeapFlags = D3D12_HEAP_FLAG_NONE, D3D12_CLEAR_VALUE const& ClearValue = { DXGI_FORMAT_UNKNOWN });
 	TW3DResource(ID3D12Resource* Resource);
 	virtual ~TW3DResource();
@@ -25,6 +25,8 @@ public:
 
 	static TW3DResource* CreateStaging(TW3DDevice* Device, TWT::uint64 Size);
 
+	D3D12_RESOURCE_STATES InitialState = D3D12_RESOURCE_STATE_GENERIC_READ;
+
 protected:
 	TW3DDevice*     device      = nullptr;
 	TW3DTempGCL*    temp_gcl    = nullptr;
@@ -34,7 +36,6 @@ protected:
 	CD3DX12_HEAP_PROPERTIES heap_properties = {};
 	D3D12_HEAP_FLAGS heap_flags = D3D12_HEAP_FLAG_NONE;
 	D3D12_RESOURCE_DESC desc = {};
-	D3D12_RESOURCE_STATES initial_resource_state = D3D12_RESOURCE_STATE_GENERIC_READ;
 	D3D12_CLEAR_VALUE clear_value = { DXGI_FORMAT_UNKNOWN };
 };
 

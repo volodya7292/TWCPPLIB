@@ -429,5 +429,8 @@
     <None Include="RTDefaultLightModel.hlsli">
       <Filter>Resource Files\Shaders\LBVH</Filter>
     </None>
+    <None Include="RayTracing.hlsli">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

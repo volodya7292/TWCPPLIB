@@ -669,6 +669,7 @@
   <ItemGroup>
     <None Include="BitonicSortCommon.hlsli" />
     <None Include="HLSLHelper.hlsli" />
+    <None Include="RayTracing.hlsli" />
     <None Include="RTDefaultLightModel.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

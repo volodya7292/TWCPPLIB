@@ -2,8 +2,8 @@
 #include "TW3DResource.h"
 
 TW3DResource::TW3DResource(TW3DDevice* Device, CD3DX12_HEAP_PROPERTIES const& HeapProperties, TW3DTempGCL* TempGCL,
-	D3D12_RESOURCE_STATES InitialResourceState, bool OptimizeForUpdating, D3D12_HEAP_FLAGS HeapFlags, D3D12_CLEAR_VALUE const& ClearValue) :
-	device(Device), temp_gcl(TempGCL), heap_properties(HeapProperties), heap_flags(HeapFlags), initial_resource_state(InitialResourceState), clear_value(ClearValue)
+	D3D12_RESOURCE_STATES InitialState, bool OptimizeForUpdating, D3D12_HEAP_FLAGS HeapFlags, D3D12_CLEAR_VALUE const& ClearValue) :
+	device(Device), temp_gcl(TempGCL), heap_properties(HeapProperties), heap_flags(HeapFlags), InitialState(InitialState), clear_value(ClearValue)
 {
 	if (OptimizeForUpdating)
 		staging = new TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), temp_gcl, D3D12_RESOURCE_STATE_GENERIC_READ, false);
@@ -39,9 +39,9 @@ void TW3DResource::Release() {
 
 void TW3DResource::Create() {
 	if (clear_value.Format == DXGI_FORMAT_UNKNOWN) {
-		device->CreateCommittedResource(&heap_properties, heap_flags, &desc, initial_resource_state, &resource);
+		device->CreateCommittedResource(&heap_properties, heap_flags, &desc, InitialState, &resource);
 	} else {
-		device->CreateCommittedResource(&heap_properties, heap_flags, &desc, initial_resource_state, &resource, &clear_value);
+		device->CreateCommittedResource(&heap_properties, heap_flags, &desc, InitialState, &resource, &clear_value);
 	}
 
 	if (staging)

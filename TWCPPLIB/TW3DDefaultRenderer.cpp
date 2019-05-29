@@ -167,6 +167,9 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(Width), static_cast<float>(Height));
 	scissor = CD3DX12_RECT(0, 0, Width, Height);
 
+	rt_output->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	rt_output->Resize(Width, Height);
+
 	g_position->Resize(Width, Height);
 	g_normal->Resize(Width, Height);
 	g_diffuse->Resize(Width, Height);
@@ -206,6 +209,7 @@ void TW3DDefaultRenderer::RenderRecordGBuffer() {
 
 	g_cl->SetRenderTargets({g_position, g_normal, g_diffuse, g_specular}, g_depth);
 	g_cl->ClearRTV(g_position);
+	g_cl->ClearRTV(g_diffuse);
 	g_cl->ClearDSVDepth(g_depth);
 	g_cl->SetViewport(&viewport);
 	g_cl->SetScissor(&scissor);
@@ -266,8 +270,8 @@ void TW3DDefaultRenderer::Execute(TWT::uint BackBufferIndex) {
 
 	RenderRecordGBuffer();
 
-	//ResourceManager->ExecuteCommandList(rt_cl);
-	//ResourceManager->FlushCommandList(rt_cl);
+	ResourceManager->ExecuteCommandList(rt_cl);
+	ResourceManager->FlushCommandList(rt_cl);
 
 	ResourceManager->ExecuteCommandList(execute_cl);
 }

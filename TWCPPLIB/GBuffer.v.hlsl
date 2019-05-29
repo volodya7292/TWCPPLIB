@@ -18,7 +18,7 @@ VS_OUTPUT main(Vertex input, uint vertex_id : SV_VertexID) {
 	VS_OUTPUT output;
 	output.obj_normal = input.normal;
 
-	if (camera.info.x == 1.0f)
+	if (camera.info.y == 1.0f)
 		output.pos = mul(mul(camera.proj_view, vertex_mesh.model), float4(input.pos, 1));
 	else
 		output.pos = mul(mul(camera.proj_view, vertex_mesh.model_reduced), float4(input.pos, 1));
