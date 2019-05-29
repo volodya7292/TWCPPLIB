@@ -14,6 +14,10 @@ GVB l_gvb : register(t3);
 RTScene l_scene : register(t4);
 RTNB l_gnb : register(t5);
 
+Texture2DArray<float4> diffuse_tex : register(t6);
+Texture2DArray<float4> specular_tex : register(t7);
+sampler sam : register(s0);
+
 // Output image
 RWTexture2D<float4> rt_output : register(u0);
 
@@ -68,8 +72,12 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		intersected = TraceRayNormal(r, tri_inter);
 
 	float4 color = float4(1, 0.3, 0.5, 1);
-	if (intersected)
-		color = float4(abs(gvb[tri_inter.TriangleID * 3].normal * 0.5f), 1);
+	if (input.use_two_scenes == 1u) {
+		color = specular_tex.SampleLevel(sam, float3(tri_inter.Bary, 0), 0);
+	}
+	if (intersected) {
+		color.xyz = diffuse_tex.SampleLevel(sam, float3(tri_inter.Bary, 0), 0);
+	}
 
 	rt_output[DTid.xy] = color;
 }

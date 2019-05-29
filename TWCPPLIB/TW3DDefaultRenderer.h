@@ -25,6 +25,11 @@ private:
 	TW3DGraphicsCommandList* g_cl = nullptr;    // GBuffer CL
 	TW3DGraphicsCommandList* rt_cl = nullptr;   // Ray tracing CL
 
+	// Renderer resources
+	// --------------------------------------------------------------------- 
+	TW3DTexture* diffuse_texturearr;
+	TW3DTexture* specular_texturearr;
+
 	// GBuffer render
 	// --------------------------------------------------------------------- 
 	enum GBufferRPIs {
@@ -32,7 +37,7 @@ private:
 		GBUFFER_VERTEX_VMI_CB,
 		GBUFFER_PIXEL_CAMERA_CB,
 		GBUFFER_PIXEL_VMISCALE_CONST,
-		GBUFFER_PIXEL_ALBEDO_TEXTURE,
+		GBUFFER_PIXEL_DIFFUSE_TEXTURE,
 		GBUFFER_PIXEL_SPECULAR_TEXTURE
 	};
 	TW3DGraphicsPipelineState *gbuffer_ps = nullptr;
@@ -48,6 +53,8 @@ private:
 		RT_L_GVB_BUFFER,
 		RT_L_GNB_BUFFER,
 		RT_L_SCENE_BUFFER,
+		RT_DIFFUSE_TEXTURE,
+		RT_SPECULAR_TEXTURE,
 		RT_OUTPUT_TEXTURE,
 		RT_INPUT_CONST,
 		RT_CAMERA_CB,

@@ -34,34 +34,12 @@ ID3D12PipelineState* TW3DGraphicsPipelineState::Get() {
 	return pipeline_state;
 }
 
-void TW3DGraphicsPipelineState::SetVertexShader(const std::string& Filename) {
-	TWT::uint size;
-	TWT::byte* data = TWU::ReadFileBytes(Filename, size);
-
-	D3D12_SHADER_BYTECODE bytecode = {};
-	bytecode.BytecodeLength = size;
-	bytecode.pShaderBytecode = data;
-
-	desc.VS = bytecode;
+void TW3DGraphicsPipelineState::SetVertexShader(TW3DShader* Shader) {
+	desc.VS = Shader->GetByteCode();
 }
 
-void TW3DGraphicsPipelineState::SetVertexShader(const D3D12_SHADER_BYTECODE& ByteCode) {
-	desc.VS = ByteCode;
-}
-
-void TW3DGraphicsPipelineState::SetPixelShader(const std::string& Filename) {
-	TWT::uint size;
-	TWT::byte* data = TWU::ReadFileBytes(Filename, size);
-
-	D3D12_SHADER_BYTECODE bytecode = {};
-	bytecode.BytecodeLength = size;
-	bytecode.pShaderBytecode = data;
-
-	desc.PS = bytecode;
-}
-
-void TW3DGraphicsPipelineState::SetPixelShader(const D3D12_SHADER_BYTECODE& ByteCode) {
-	desc.PS = ByteCode;
+void TW3DGraphicsPipelineState::SetPixelShader(TW3DShader* Shader) {
+	desc.PS = Shader->GetByteCode();
 }
 
 void TW3DGraphicsPipelineState::SetRTVFormat(TWT::uint Index, DXGI_FORMAT Format) {

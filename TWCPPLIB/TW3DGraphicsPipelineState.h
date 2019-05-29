@@ -1,7 +1,7 @@
 #pragma once
 #include "TW3DRootSignature.h"
+#include "TW3DShader.h"
 #include "TW3DTypes.h"
-
 
 enum TW3DInputLayoutElement {
 	TW3D_ILE_POSITION,
@@ -18,10 +18,8 @@ public:
 
 	ID3D12PipelineState* Get();
 
-	void SetVertexShader(const std::string& Filename);
-	void SetVertexShader(const D3D12_SHADER_BYTECODE& ByteCode);
-	void SetPixelShader(const std::string& Filename);
-	void SetPixelShader(const D3D12_SHADER_BYTECODE& ByteCode);
+	void SetVertexShader(TW3DShader* Shader);
+	void SetPixelShader(TW3DShader* Shader);
 	void SetRTVFormat(TWT::uint Index, DXGI_FORMAT Format);
 	void SetDSVFormat(DXGI_FORMAT Format);
 	void SetInputLayout(const std::vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout);

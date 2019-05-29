@@ -10,7 +10,6 @@
 #include "CompiledShaders/FinalPassBlit.p.h"
 #include "CompiledShaders/RayTrace.c.h"
 
-TW3DTexture* texture;
 
 TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete gbuffer_ps;
@@ -27,7 +26,8 @@ TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete g_depth;
 
 	delete rt_output;
-	delete texture;
+	delete diffuse_texturearr;
+	delete specular_texturearr;
 }
 
 void TW3DDefaultRenderer::CreateBlitResources() {
@@ -57,8 +57,8 @@ void TW3DDefaultRenderer::CreateBlitResources() {
 		root_signature,
 		1);
 	blit_ps->SetRTVFormat(0, TWT::RGBA8Unorm);
-	blit_ps->SetVertexShader(TW3DCompiledShader(FinalPassBlit_VertexByteCode));
-	blit_ps->SetPixelShader(TW3DCompiledShader(FinalPassBlit_PixelByteCode));
+	blit_ps->SetVertexShader(new TW3DShader(TW3DCompiledShader(FinalPassBlit_VertexByteCode), "BlitVertex"s));
+	blit_ps->SetPixelShader(new TW3DShader(TW3DCompiledShader(FinalPassBlit_PixelByteCode), "BlitPixel"s));
 	blit_ps->Create(Device);
 }
 
@@ -69,7 +69,7 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 			TW3DRPConstantBuffer(GBUFFER_VERTEX_VMI_CB, D3D12_SHADER_VISIBILITY_VERTEX, 1),
 			TW3DRPConstantBuffer(GBUFFER_PIXEL_CAMERA_CB, D3D12_SHADER_VISIBILITY_PIXEL, 0),
 			TW3DRPConstants(GBUFFER_PIXEL_VMISCALE_CONST, D3D12_SHADER_VISIBILITY_PIXEL, 1, 1),
-			TW3DRPTexture(GBUFFER_PIXEL_ALBEDO_TEXTURE, D3D12_SHADER_VISIBILITY_PIXEL, 0),
+			TW3DRPTexture(GBUFFER_PIXEL_DIFFUSE_TEXTURE, D3D12_SHADER_VISIBILITY_PIXEL, 0),
 			TW3DRPTexture(GBUFFER_PIXEL_SPECULAR_TEXTURE, D3D12_SHADER_VISIBILITY_PIXEL, 1),
 		},
 		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) }
@@ -95,8 +95,8 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 	gbuffer_ps->SetRTVFormat(1, TWT::RGBA32Float);
 	gbuffer_ps->SetRTVFormat(2, TWT::RGBA8Unorm);
 	gbuffer_ps->SetRTVFormat(3, TWT::RGBA8Unorm);
-	gbuffer_ps->SetVertexShader(TW3DCompiledShader(GBuffer_VertexByteCode));
-	gbuffer_ps->SetPixelShader(TW3DCompiledShader(GBuffer_PixelByteCode));
+	gbuffer_ps->SetVertexShader(new TW3DShader(TW3DCompiledShader(GBuffer_VertexByteCode), "GBufferVertex"s));
+	gbuffer_ps->SetPixelShader(new TW3DShader(TW3DCompiledShader(GBuffer_PixelByteCode), "GBufferPixel"s));
 	gbuffer_ps->SetInputLayout(input_layout);
 	gbuffer_ps->Create(Device);
 
@@ -124,10 +124,13 @@ void TW3DDefaultRenderer::CreateRTResources() {
 			TW3DRPBuffer(RT_L_GVB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("l_gvb"s)),
 			TW3DRPBuffer(RT_L_SCENE_BUFFER, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("l_scene"s)),
 			TW3DRPBuffer(RT_L_GNB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("l_gnb"s)),
+			TW3DRPTexture(RT_DIFFUSE_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("diffuse_tex"s)),
+			TW3DRPTexture(RT_SPECULAR_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("specular_tex"s)),
 			TW3DRPTexture(RT_OUTPUT_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("rt_output"s), true),
 			TW3DRPConstantBuffer(RT_CAMERA_CB, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("camera"s)),
 			TW3DRPConstants(RT_INPUT_CONST, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("input"s), 1)
 		},
+		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_ALL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) },
 		false, false, false, false
 	);
 
@@ -149,10 +152,11 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	CreateRTResources();
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] RTResources initialized."s);
 
-	texture = ResourceManager->CreateTextureArray2D(400, 400, 10, DXGI_FORMAT_R8G8B8A8_UNORM);
+	diffuse_texturearr = ResourceManager->CreateTextureArray2D(400, 400, 10, DXGI_FORMAT_R8G8B8A8_UNORM);
+	specular_texturearr = ResourceManager->CreateTextureArray2D(400, 400, 10, DXGI_FORMAT_R8G8B8A8_UNORM);
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] 'texture' initialized."s);
 
-	texture->Upload2D(L"D:/OptimizedRT.png", 0);
+	diffuse_texturearr->Upload2D(L"D:/OptimizedRT.png", 0);
 	//texture->Upload2D(L"D:/тест2.png", 1);
 	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");
 }
@@ -208,7 +212,7 @@ void TW3DDefaultRenderer::RenderRecordGBuffer() {
 
 	g_cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, Scene->Camera);
 	g_cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, Scene->Camera);
-	g_cl->BindTexture(GBUFFER_PIXEL_ALBEDO_TEXTURE, texture);
+	g_cl->BindTexture(GBUFFER_PIXEL_DIFFUSE_TEXTURE, diffuse_texturearr);
 
 	for (TW3DObject* object : Scene->Objects) {
 		g_cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
@@ -244,6 +248,7 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 	if (LargeScaleScene)
 		LargeScaleScene->Bind(rt_cl, RT_L_GVB_BUFFER, RT_L_SCENE_BUFFER, RT_L_GNB_BUFFER);
 
+	rt_cl->BindTexture(RT_DIFFUSE_TEXTURE, diffuse_texturearr);
 	rt_cl->BindTexture(RT_OUTPUT_TEXTURE, rt_output, true);
 	rt_cl->BindConstantBuffer(RT_CAMERA_CB, Scene->Camera->GetConstantBuffer());
 	rt_cl->Bind32BitConstant(RT_INPUT_CONST, 0, 0);
