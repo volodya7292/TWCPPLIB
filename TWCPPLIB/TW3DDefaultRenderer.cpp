@@ -23,11 +23,14 @@ TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete g_normal;
 	delete g_diffuse;
 	delete g_specular;
+	delete g_emission;
 	delete g_depth;
 
 	delete rt_output;
-	delete diffuse_texturearr;
-	delete specular_texturearr;
+	delete diffuse_texarr;
+	delete specular_texarr;
+	delete emission_texarr;
+	delete normal_texarr;
 }
 
 void TW3DDefaultRenderer::CreateBlitResources() {
@@ -71,11 +74,13 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 			TW3DRPConstants(GBUFFER_PIXEL_VMISCALE_CONST, D3D12_SHADER_VISIBILITY_PIXEL, 1, 1),
 			TW3DRPTexture(GBUFFER_PIXEL_DIFFUSE_TEXTURE, D3D12_SHADER_VISIBILITY_PIXEL, 0),
 			TW3DRPTexture(GBUFFER_PIXEL_SPECULAR_TEXTURE, D3D12_SHADER_VISIBILITY_PIXEL, 1),
+			TW3DRPTexture(GBUFFER_PIXEL_EMISSION_TEXTURE, D3D12_SHADER_VISIBILITY_PIXEL, 2),
+			TW3DRPTexture(GBUFFER_PIXEL_NORMAL_TEXTURE, D3D12_SHADER_VISIBILITY_PIXEL, 3),
 		},
 		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) }
 	);
 
-	std::vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({TW3D_ILE_POSITION, TW3D_ILE_TEXCOORD, TW3D_ILE_NORMAL});
+	std::vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({TW3D_ILE_POSITION, TW3D_ILE_TEXCOORD, TW3D_ILE_NORMAL, TW3D_ILE_TANGENT, TW3D_ILE_BITANGENT, TW3D_ILE_MATERIAL});
 
 	D3D12_RASTERIZER_DESC rastDesc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
@@ -90,11 +95,12 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 		depthDesc,
 		blendDesc,
 		root_signature,
-		4);
+		5);
 	gbuffer_ps->SetRTVFormat(0, TWT::RGBA32Float);
 	gbuffer_ps->SetRTVFormat(1, TWT::RGBA32Float);
 	gbuffer_ps->SetRTVFormat(2, TWT::RGBA8Unorm);
 	gbuffer_ps->SetRTVFormat(3, TWT::RGBA8Unorm);
+	gbuffer_ps->SetRTVFormat(4, TWT::RGBA8Unorm);
 	gbuffer_ps->SetVertexShader(new TW3DShader(TW3DCompiledShader(GBuffer_VertexByteCode), "GBufferVertex"s));
 	gbuffer_ps->SetPixelShader(new TW3DShader(TW3DCompiledShader(GBuffer_PixelByteCode), "GBufferPixel"s));
 	gbuffer_ps->SetInputLayout(input_layout);
@@ -105,6 +111,7 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 	g_normal = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA32Float);
 	g_diffuse = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA8Unorm);
 	g_specular = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA8Unorm);
+	g_emission = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA8Unorm);
 	g_depth = ResourceManager->CreateDepthStencilTexture(Width, Height);
 
 	g_cl = ResourceManager->CreateDirectCommandList();
@@ -152,11 +159,13 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	CreateRTResources();
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] RTResources initialized."s);
 
-	diffuse_texturearr = ResourceManager->CreateTextureArray2D(400, 400, 10, DXGI_FORMAT_R8G8B8A8_UNORM);
-	specular_texturearr = ResourceManager->CreateTextureArray2D(400, 400, 10, DXGI_FORMAT_R8G8B8A8_UNORM);
-	TWU::TW3DLogInfo("[TW3DDefaultRenderer] 'texture' initialized."s);
+	diffuse_texarr = ResourceManager->CreateTextureArray2D(400, 400, material_count, TWT::RGBA8Unorm);
+	specular_texarr = ResourceManager->CreateTextureArray2D(400, 400, material_count, TWT::RGBA8Unorm);
+	emission_texarr = ResourceManager->CreateTextureArray2D(400, 400, material_count, TWT::RGBA8Unorm);
+	normal_texarr = ResourceManager->CreateTextureArray2D(400, 400, material_count, TWT::RGBA32Float);
+	TWU::TW3DLogInfo("[TW3DDefaultRenderer] Texture resources initialized."s);
 
-	diffuse_texturearr->Upload2D(L"D:/OptimizedRT.png", 0);
+	diffuse_texarr->Upload2D(L"D:/OptimizedRT.png", 0);
 	//texture->Upload2D(L"D:/тест2.png", 1);
 	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");
 }
@@ -207,7 +216,7 @@ void TW3DDefaultRenderer::RenderRecordGBuffer() {
 
 	g_cl->SetPipelineState(gbuffer_ps);
 
-	g_cl->SetRenderTargets({g_position, g_normal, g_diffuse, g_specular}, g_depth);
+	g_cl->SetRenderTargets({g_position, g_normal, g_diffuse, g_specular, g_emission}, g_depth);
 	g_cl->ClearRTV(g_position);
 	g_cl->ClearRTV(g_diffuse);
 	g_cl->ClearDSVDepth(g_depth);
@@ -216,7 +225,7 @@ void TW3DDefaultRenderer::RenderRecordGBuffer() {
 
 	g_cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, Scene->Camera);
 	g_cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, Scene->Camera);
-	g_cl->BindTexture(GBUFFER_PIXEL_DIFFUSE_TEXTURE, diffuse_texturearr);
+	g_cl->BindTexture(GBUFFER_PIXEL_DIFFUSE_TEXTURE, diffuse_texarr);
 
 	for (TW3DObject* object : Scene->Objects) {
 		g_cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
@@ -252,7 +261,7 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 	if (LargeScaleScene)
 		LargeScaleScene->Bind(rt_cl, RT_L_GVB_BUFFER, RT_L_SCENE_BUFFER, RT_L_GNB_BUFFER);
 
-	rt_cl->BindTexture(RT_DIFFUSE_TEXTURE, diffuse_texturearr);
+	rt_cl->BindTexture(RT_DIFFUSE_TEXTURE, diffuse_texarr);
 	rt_cl->BindTexture(RT_OUTPUT_TEXTURE, rt_output, true);
 	rt_cl->BindConstantBuffer(RT_CAMERA_CB, Scene->Camera->GetConstantBuffer());
 	rt_cl->Bind32BitConstant(RT_INPUT_CONST, 0, 0);

@@ -53,9 +53,11 @@ float depth_delinearize(float ld, float zNear, float zFar) {
 }
 
 struct Vertex {
-	float3       pos : POSITION;
-	float2 tex_coord : TEXCOORD;
-	float3    normal : NORMAL;
+	float3          pos : POSITION;
+	float3    tex_coord : TEXCOORD; // .z - material ID
+	float3       normal : NORMAL;
+	float3      tangent : TANGENT;
+	float3    bitangent : BITANGENT;
 };
 
 struct Ray {

@@ -14,8 +14,11 @@ GVB l_gvb : register(t3);
 RTScene l_scene : register(t4);
 RTNB l_gnb : register(t5);
 
+// Texture resources
 Texture2DArray<float4> diffuse_tex : register(t6);
 Texture2DArray<float4> specular_tex : register(t7);
+Texture2DArray<float4> emission_tex : register(t8);
+Texture2DArray<float4> normal_tex : register(t9);
 sampler sam : register(s0);
 
 // Output image
@@ -23,6 +26,7 @@ RWTexture2D<float4> rt_output : register(u0);
 
 // Camera
 ConstantBuffer<Camera> camera : register(b0);
+// Scene data
 ConstantBuffer<InputData> input : register(b1);
 
 inline float to_large_scene_scale(float3 p) {
@@ -44,7 +48,7 @@ inline bool TraceRayLarge(in Ray Ray, out TriangleIntersection TriInter) {
 }
 
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
-void main(uint3 DTid : SV_DispatchThreadID, uint Gi : SV_GroupIndex) {
+void main(uint3 DTid : SV_DispatchThreadID) {
 	uint2 SIZE;
 	rt_output.GetDimensions(SIZE.x, SIZE.y);
 

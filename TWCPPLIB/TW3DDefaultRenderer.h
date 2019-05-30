@@ -27,8 +27,8 @@ private:
 
 	// Renderer resources
 	// --------------------------------------------------------------------- 
-	TW3DTexture* diffuse_texturearr;
-	TW3DTexture* specular_texturearr;
+	const TWT::uint material_count = 64;
+	TW3DTexture *diffuse_texarr, *specular_texarr, *emission_texarr, *normal_texarr;
 
 	// GBuffer render
 	// --------------------------------------------------------------------- 
@@ -38,10 +38,12 @@ private:
 		GBUFFER_PIXEL_CAMERA_CB,
 		GBUFFER_PIXEL_VMISCALE_CONST,
 		GBUFFER_PIXEL_DIFFUSE_TEXTURE,
-		GBUFFER_PIXEL_SPECULAR_TEXTURE
+		GBUFFER_PIXEL_SPECULAR_TEXTURE,
+		GBUFFER_PIXEL_EMISSION_TEXTURE,
+		GBUFFER_PIXEL_NORMAL_TEXTURE,
 	};
 	TW3DGraphicsPipelineState *gbuffer_ps = nullptr;
-	TW3DRenderTarget *g_position, *g_normal, *g_diffuse, *g_specular;
+	TW3DRenderTarget *g_position, *g_normal, *g_diffuse, *g_specular, *g_emission;
 	TW3DTexture* g_depth;
 
 	// Ray tracing compute

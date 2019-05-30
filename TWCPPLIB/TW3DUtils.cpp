@@ -254,26 +254,58 @@ int TWU::LoadImageDataFromFile(TWT::byte** imageData, D3D12_RESOURCE_DESC& resou
 	return imageSize;
 }
 
-void TWU::TW3DCalculateTriangleNormals(void* VertexBuffer, TWT::uint VertexCount, TWT::uint VertexFloatSize, TWT::uint VertexPositionFloatOffset, TWT::uint VertexNormalFloatOffset) {
+void TWU::TW3DCalculateTriangleNormals(void* VertexBuffer, TWT::uint VCount, TWT::uint VFSize,
+	TWT::uint VPosFO, TWT::uint VTexCoordFO, TWT::uint VNormalFO, TWT::uint VTangentFO, TWT::uint VBitangentFO)
+{
 	float* FVB = static_cast<float*>(VertexBuffer);
 
-	for (size_t i = 0; i < VertexCount / 3; i++) {
-		TWT::uint index = i * 3 * VertexFloatSize;
-		TWT::uint pos_index = index + VertexPositionFloatOffset;
-		TWT::uint norm_index = index + VertexNormalFloatOffset;
+	for (size_t i = 0; i < VCount / 3; i++) {
+		TWT::uint index = i * 3 * VFSize;
+		TWT::uint pos_index = index + VPosFO;
+		TWT::uint texcoord_index = index + VTexCoordFO;
+		TWT::uint norm_index = index + VNormalFO;
+		TWT::uint tan_index = index + VTangentFO;
+		TWT::uint bitan_index = index + VBitangentFO;
 
 		TWT::vec3 v0 = TWT::vec3(FVB[pos_index], FVB[pos_index + 1], FVB[pos_index + 2]);
-		TWT::vec3 v1 = TWT::vec3(FVB[pos_index + VertexFloatSize], FVB[pos_index + VertexFloatSize + 1], FVB[pos_index + VertexFloatSize + 2]);
-		TWT::vec3 v2 = TWT::vec3(FVB[pos_index + VertexFloatSize * 2], FVB[pos_index + VertexFloatSize * 2 + 1], FVB[pos_index + VertexFloatSize * 2 + 2]);
+		TWT::vec3 v1 = TWT::vec3(FVB[pos_index + VFSize], FVB[pos_index + VFSize + 1], FVB[pos_index + VFSize + 2]);
+		TWT::vec3 v2 = TWT::vec3(FVB[pos_index + VFSize * 2], FVB[pos_index + VFSize * 2 + 1], FVB[pos_index + VFSize * 2 + 2]);
+
+		TWT::vec2 v0t = TWT::vec2(FVB[texcoord_index], FVB[texcoord_index + 1]);
+		TWT::vec2 v1t = TWT::vec2(FVB[texcoord_index + VFSize], FVB[texcoord_index + VFSize + 1]);
+		TWT::vec2 v2t = TWT::vec2(FVB[texcoord_index + VFSize * 2], FVB[texcoord_index + VFSize * 2 + 1]);
 
 		TWT::vec3 side0 = v1 - v0;
 		TWT::vec3 side1 = v2 - v0;
 		TWT::vec3 normal = normalize(cross(side0, side1));
 
+		TWT::vec2 delta_uv0 = v1t - v0t;
+		TWT::vec2 delta_uv1 = v2t - v0t;
+
+		float f = 1.0f / (delta_uv0.x * delta_uv1.y - delta_uv1.x * delta_uv0.y);
+
+		TWT::vec3 tangent = normalize(TWT::vec3(
+			f * (delta_uv1.y * side0.x - delta_uv0.y * side1.x),
+			f * (delta_uv1.y * side0.y - delta_uv0.y * side1.y),
+			f * (delta_uv1.y * side0.z - delta_uv0.y * side1.z)
+		));
+
+		TWT::vec3 bitangent = normalize(TWT::vec3(
+			f * (-delta_uv1.x * side0.x + delta_uv0.x * side1.x),
+		    f * (-delta_uv1.x * side0.y + delta_uv0.x * side1.y),
+		    f * (-delta_uv1.x * side0.z + delta_uv0.x * side1.z)
+		));
+
 		for (size_t j = 0; j < 3; j++) {
-			FVB[norm_index + j * VertexFloatSize] = normal.x;
-			FVB[norm_index + j * VertexFloatSize + 1] = normal.y;
-			FVB[norm_index + j * VertexFloatSize + 2] = normal.z;
+			FVB[norm_index + j * VFSize] = normal.x;
+			FVB[norm_index + j * VFSize + 1] = normal.y;
+			FVB[norm_index + j * VFSize + 2] = normal.z;
+			FVB[tan_index + j * VFSize] = tangent.x;
+			FVB[tan_index + j * VFSize + 1] = tangent.y;
+			FVB[tan_index + j * VFSize + 2] = tangent.z;
+			FVB[bitan_index + j * VFSize] = bitangent.x;
+			FVB[bitan_index + j * VFSize + 1] = bitangent.y;
+			FVB[bitan_index + j * VFSize + 2] = bitangent.z;
 		}
 	}
 }

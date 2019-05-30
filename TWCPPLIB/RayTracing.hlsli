@@ -8,6 +8,7 @@ struct TriangleIntersection {
 	float3 Point;
 	float2 Bary;
 	float Distance;
+	
 	inline void init() {
 		TriangleID = -1;
 		Point = float3(0, 0, 0);

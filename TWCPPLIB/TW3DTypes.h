@@ -20,11 +20,13 @@ namespace TWT {
 
 	struct DefaultVertex {
 		DefaultVertex(float x, float y, float z, float u, float v, float nx, float ny, float nz) :
-			Pos(x, y, z), TexCoord(u, v), Normal(nx, ny, nz) {}
+			Pos(x, y, z), TexCoord(u, v, 0), Normal(nx, ny, nz) {}
 
 		vec3 Pos;
-		vec2 TexCoord;
+		vec3 TexCoord; // .z - material ID
 		vec3 Normal;
+		vec3 Tangent;
+		vec3 Bitangent;
 	};
 
 	struct DefaultCameraCB {
