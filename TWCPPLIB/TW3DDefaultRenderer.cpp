@@ -131,8 +131,18 @@ void TW3DDefaultRenderer::CreateRTResources() {
 			TW3DRPBuffer(RT_L_GVB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("l_gvb"s)),
 			TW3DRPBuffer(RT_L_SCENE_BUFFER, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("l_scene"s)),
 			TW3DRPBuffer(RT_L_GNB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("l_gnb"s)),
+			
 			TW3DRPTexture(RT_DIFFUSE_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("diffuse_tex"s)),
 			TW3DRPTexture(RT_SPECULAR_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("specular_tex"s)),
+			TW3DRPTexture(RT_EMISSION_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("emission_tex"s)),
+			TW3DRPTexture(RT_NORMAL_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("normal_tex"s)),
+
+			TW3DRPTexture(RT_G_POSITION_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("g_position"s)),
+			TW3DRPTexture(RT_G_NORMAL_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("g_normal"s)),
+			TW3DRPTexture(RT_G_DIFFUSE_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("g_diffuse"s)),
+			TW3DRPTexture(RT_G_SPECULAR_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("g_specular"s)),
+			TW3DRPTexture(RT_G_EMISSION_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("g_emission"s)),
+
 			TW3DRPTexture(RT_OUTPUT_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("rt_output"s), true),
 			TW3DRPConstantBuffer(RT_CAMERA_CB, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("camera"s)),
 			TW3DRPConstants(RT_INPUT_CONST, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("input"s), 1)
@@ -226,6 +236,9 @@ void TW3DDefaultRenderer::RenderRecordGBuffer() {
 	g_cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, Scene->Camera);
 	g_cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, Scene->Camera);
 	g_cl->BindTexture(GBUFFER_PIXEL_DIFFUSE_TEXTURE, diffuse_texarr);
+	g_cl->BindTexture(GBUFFER_PIXEL_SPECULAR_TEXTURE, specular_texarr);
+	g_cl->BindTexture(GBUFFER_PIXEL_EMISSION_TEXTURE, emission_texarr);
+	g_cl->BindTexture(GBUFFER_PIXEL_NORMAL_TEXTURE, normal_texarr);
 
 	for (TW3DObject* object : Scene->Objects) {
 		g_cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);

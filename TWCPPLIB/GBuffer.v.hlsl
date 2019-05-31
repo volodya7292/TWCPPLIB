@@ -26,8 +26,8 @@ VS_OUTPUT main(Vertex input, uint vertex_id : SV_VertexID) {
 	
 	output.pos = mul(mul(camera.proj_view, model), float4(input.pos, 1));
 	output.tex_coord = input.tex_coord;
-	output.obj_normal = mul(input.normal, model);
-	output.tangent = mul(input.tangent, model);
+	output.obj_normal = mul(float4(input.normal, 1), model).xyz;
+	output.tangent = mul(float4(input.tangent, 1), model).xyz;
 
 	return output;
 }

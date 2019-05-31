@@ -20,7 +20,7 @@ float4x4 translate(float4x4 m, in float3 v) {
 	return m;
 }
 
-float3 translation(in float4x4 m) {
+inline float3 translation(in float4x4 m) {
 	return float3(m[0][3], m[1][3], m[2][3]);
 }
 
@@ -44,11 +44,11 @@ inline bool greater(in float3 v0, in float3 v1) {
 	return v0.x > v1.x && v0.y > v1.y && v0.z > v1.z;
 }
 
-float depth_linearize(float d, float zNear, float zFar) {
+inline float depth_linearize(float d, float zNear, float zFar) {
 	return zNear * zFar / (zFar + d * (zNear - zFar));
 }
 
-float depth_delinearize(float ld, float zNear, float zFar) {
+inline float depth_delinearize(float ld, float zNear, float zFar) {
 	return (zNear * zFar / ld - zFar) / (zNear - zFar);
 }
 
@@ -129,6 +129,10 @@ struct SceneLBVHNode {
 	uint parent;
 	uint left_child;
 	uint right_child;
+};
+
+struct Light {
+	float4 info; // .x - triangle id, .y - sphere radius, z - light color, .w - type
 };
 
 struct Camera {
