@@ -131,9 +131,12 @@ struct SceneLBVHNode {
 	uint right_child;
 };
 
-struct Light {
-	float4 info; // .x - triangle id, .y - sphere radius, z - light color, .w - type
+struct LightSource {
+	float4 pos;
+	float4 color;
+	float4 info; // .x - type, .y - triangle id, z - sphere radius
 };
+
 
 struct Camera {
 	float4 pos;
@@ -144,8 +147,9 @@ struct Camera {
 };
 
 typedef StructuredBuffer<SceneLBVHNode> RTScene;
-typedef StructuredBuffer<LBVHNode> RTNB;   // Ray Tracing Node Buffer
-typedef StructuredBuffer<Vertex>   GVB;    // Global Vertex Buffer
+typedef StructuredBuffer<LBVHNode>      RTNB;   // Ray Tracing Node Buffer
+typedef StructuredBuffer<Vertex>        GVB;    // Global Vertex Buffer
+typedef StructuredBuffer<LightSource>   LSB;    // Light Source Buffer
 
 
 // -----------------------------------------------------------------------------------------------------------------------------------------

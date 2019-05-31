@@ -4,33 +4,32 @@ static uint g_stack_nodes[32];
 static uint g_stack_nodes2[32];
 
 struct TriangleIntersection {
+	bool   Intersected;
 	uint   TriangleID;
 	float3 Point;
 	float2 Bary;
-	float Distance;
+	float  Distance;
 	
 	inline void init() {
+		Intersected = false;
 		TriangleID = -1;
 		Point = float3(0, 0, 0);
+		Bary = float2(0, 0);
 		Distance = FLT_MAX;
 	}
 };
 
-bool triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tri_inter) {
+void triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tri_inter) {
 	const float3 v0 = gvb[tri_inter.TriangleID * 3].pos;
-	const float2 v0t = gvb[tri_inter.TriangleID * 3].tex_coord;
 	const float3 v1 = gvb[tri_inter.TriangleID * 3 + 1].pos;
-	const float2 v1t = gvb[tri_inter.TriangleID * 3 + 1].tex_coord;
 	const float3 v2 = gvb[tri_inter.TriangleID * 3 + 2].pos;
-	const float2 v2t = gvb[tri_inter.TriangleID * 3 + 2].tex_coord;
 
-	const float EPSILON = 1e-8f;
 	const float3 edge1 = v1 - v0;
 	const float3 edge2 = v2 - v0;
 	const float3 h = cross(ray.dir, edge2);
 	const float a = dot(edge1, h);
 
-	if (abs(a) >= EPSILON) {
+	if (abs(a) >= MachineEpsilon) {
 		const float f = 1 / a;
 		const float3 s = ray.origin - v0;
 		const float u = f * dot(s, h);
@@ -44,17 +43,19 @@ bool triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tr
 
 				//float3 n = dot(normal, normalize(ray.origin - interPoint)) >= 0 ? normal : normal * float3(-1);
 
-				if (t > EPSILON) {
+				if (t > MachineEpsilon) {
+					const float2 v0t = gvb[tri_inter.TriangleID * 3].tex_coord.xy;
+					const float2 v1t = gvb[tri_inter.TriangleID * 3 + 1].tex_coord.xy;
+					const float2 v2t = gvb[tri_inter.TriangleID * 3 + 2].tex_coord.xy;
+
+					tri_inter.Intersected = true;
 					tri_inter.Point = ray.origin + ray.dir * t;
 					tri_inter.Distance = length(ray.dir * t);
 					tri_inter.Bary = v0t * (1 - u - v) + v1t * u + v2t * v;
-					return true;
 				}
 			}
 		}
 	}
-
-	return false;
 
 
 	//tri_inter.Point = float3(0, 0, 0);
@@ -116,13 +117,11 @@ bool triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tr
 
 	//tri_inter.Point = interPoint;
 	//tri_inter.Distance = distance(ray.origin, interPoint);
-
-	return true;
 }
 
 
-bool mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offset, in GVB gvb, in Ray ray, out TriangleIntersection tri_inter) {
-	TriangleIntersection mininter, curr, tempinter;
+void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offset, in GVB gvb, in Ray ray, out TriangleIntersection tri_inter) {
+	TriangleIntersection mininter, tempinter;
 	mininter.init();
 	tempinter.init();
 
@@ -144,10 +143,12 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 	elementIndex = rtas[node].element_index;
 
 	if (!found) {
-		return false;
+		tri_inter = mininter;
+		return;
 	} else if (elementIndex != -1) {
 		tempinter.TriangleID = vo + elementIndex;
-		if (triangle_intersection(ray, gvb, tempinter))
+		triangle_intersection(ray, gvb, tempinter);
+		if (tempinter.Intersected)
 			mininter = tempinter;
 	}
 
@@ -166,9 +167,9 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 
 				if (elementIndex != -1) {
 					tempinter.TriangleID = vo + elementIndex;
-					if (triangle_intersection(ray, gvb, tempinter))
-						if (tempinter.Distance < mininter.Distance)
-							mininter = tempinter;
+					triangle_intersection(ray, gvb, tempinter);
+					if (tempinter.Intersected && tempinter.Distance < mininter.Distance)
+						mininter = tempinter;
 				} else {
 					traverseL = true;
 				}
@@ -184,9 +185,9 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 
 				if (elementIndex != -1) {
 					tempinter.TriangleID = vo + elementIndex;
-					if (triangle_intersection(ray, gvb, tempinter))
-						if (tempinter.Distance < mininter.Distance)
-							mininter = tempinter;
+					triangle_intersection(ray, gvb, tempinter);
+					if (tempinter.Intersected && tempinter.Distance < mininter.Distance)
+						mininter = tempinter;
 				} else {
 					traverseR = true;
 				}
@@ -203,7 +204,6 @@ bool mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 	}
 
 	tri_inter = mininter;
-	return mininter.Distance != FLT_MAX;
 }
 
 inline void mesh_transform_ray(in Ray ray, in float4x4 inverse_transform, out Ray new_ray) {
@@ -217,9 +217,9 @@ void check_scene_rtas_intersection(in RTNB gnb, in GVB gvb, in Ray ray, in uint 
 	mesh_rtas_trace_ray(gnb, rtas_vertex_index, rtas_node_index, gvb, nr, tri_inter);
 }
 
-bool TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray Ray, out TriangleIntersection TriInter) {
+void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray Ray, out TriangleIntersection TriInter) {
 	float bounds_distance = FLT_MAX;
-	TriangleIntersection mininter, curr, tempinter;
+	TriangleIntersection mininter, tempinter;
 	mininter.init();
 	tempinter.init();
 	TriInter.init();
@@ -232,8 +232,10 @@ bool TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray Ray, out Trian
 	float d2 = 0;
 	bool found = SceneAS[node].bounds.intersect(Ray, d2);
 
-	if (!found)
-		return false;
+	if (!found) {
+		TriInter = mininter;
+		return;
+	}
 
 	bool lintersection, rintersection, traverseL, traverseR;
 
@@ -285,5 +287,4 @@ bool TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray Ray, out Trian
 	}
 
 	TriInter = mininter;
-	return mininter.Distance != FLT_MAX;
 }

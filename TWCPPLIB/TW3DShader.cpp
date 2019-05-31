@@ -32,5 +32,10 @@ TWT::uint TW3DShader::GetRegister(TWT::String InputVariableName) {
 	D3D12_SHADER_INPUT_BIND_DESC desc;
 	TWU::SuccessAssert(reflection->GetResourceBindingDescByName(InputVariableName.ToCharArray(), &desc),
 		"TW3DShader::GetRegister, GetResourceBindingDescByName \'"s + InputVariableName + "\'"s);
-	return desc.BindPoint;
+
+	TWT::uint reg = desc.BindPoint;
+	if (reg > 64)
+		TWU::TW3DLogError("TW3DShader::GetRegister : failed to get register of variable \'"s + InputVariableName + "\'"s);
+
+	return reg;
 }

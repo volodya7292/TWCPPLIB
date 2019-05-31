@@ -57,6 +57,10 @@ void TW3DResource::Map(TWT::uint SubResourceIndex, D3D12_RANGE* ReadRange, void*
 	TWU::SuccessAssert(resource->Map(SubResourceIndex, ReadRange, Data), "TW3DResource::Map"s);
 }
 
+void TW3DResource::Unmap(TWT::uint SubResourceIndex, D3D12_RANGE* WrittenRange) {
+	resource->Unmap(SubResourceIndex, WrittenRange);
+}
+
 void TW3DResource::Read(void* Out, TWT::uint ByteOffset, TWT::uint ByteCount) {
 	ID3D12Resource* read_heap;
 	device->CreateCommittedResource(

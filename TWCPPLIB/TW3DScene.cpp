@@ -12,6 +12,9 @@ TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 	gnb = ResourceManager->CreateBuffer(1024, sizeof(LBVHNode), true);
 	ResourceManager->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 
+	lsb = ResourceManager->CreateBuffer(1024, sizeof(TW3DLightSource), true);
+	ResourceManager->ResourceBarrier(lsb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+
 	LBVH = new TW3DLBVH(ResourceManager, 1, true);
 
 	rp3d::WorldSettings settings = {};
@@ -30,14 +33,16 @@ TW3DScene::~TW3DScene() {
 	delete gvb;
 	delete gnb;
 	delete instance_buffer;
+	delete lsb;
 	delete LBVH;
 	delete collision_world;
 }
 
-void TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::uint GVBRPI, TWT::uint SceneRTNBRPI, TWT::uint GNBRPI) {
+void TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::uint GVBRPI, TWT::uint SceneRTNBRPI, TWT::uint GNBRPI, TWT::uint LSBRPI) {
 	CommandList->BindBuffer(GVBRPI, gvb);
 	CommandList->BindBuffer(SceneRTNBRPI, LBVH->GetNodeBuffer());
 	CommandList->BindBuffer(GNBRPI, gnb);
+	CommandList->BindBuffer(LSBRPI, lsb);
 }
 
 void TW3DScene::AddObject(TW3DObject* Object) {
@@ -69,9 +74,28 @@ void TW3DScene::AddObject(TW3DObject* Object) {
 	}
 }
 
+void TW3DScene::AddLightSource(TW3DLightSource* LightSource) {
+	LightSources.push_back(LightSource);
+}
+
 void TW3DScene::Update(float DeltaTime) {
 	for (TW3DObject* object : Objects) {
 		object->Update();
+	}
+
+	for (TWT::uint i = 0; i < LightSources.size(); i++) {
+		TW3DLightSource* light = LightSources[i];
+
+		if (light->Updated) {
+			light->Updated = false;
+
+			TW3DSceneLightSource ls;
+			ls.position = TWT::vec4(light->GetPosition(), 1);
+			ls.color = TWT::vec4(light->GetColor(), 1);
+			ls.info = light->MakeInfo();
+
+			lsb->UpdateElement(&ls, i);
+		}
 	}
 	
 	collision_world->update(DeltaTime);
@@ -126,7 +150,7 @@ void TW3DScene::RecordBeforeExecution() {
 		}
 	}
 
-	if (instance_buffer == nullptr || instance_buffer->GetElementCount() != Objects.size()) {
+	if (!instance_buffer || instance_buffer->GetElementCount() != Objects.size()) {
 		instance_buffer = resource_manager->CreateBuffer(Objects.size(), sizeof(SceneLBVHInstance), true);
 		resource_manager->ResourceBarrier(instance_buffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 	}

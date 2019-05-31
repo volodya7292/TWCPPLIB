@@ -54,7 +54,7 @@ PS_OUTPUT main(VS_OUTPUT input) {
 	//}
 
 
-	output.position = float4(input.pos.xyz, 1);
+	output.position = float4(input.pos.xyz, 1.0f);
 	output.normal = float4(normal, 0);
 	output.diffuse = diffuse_tex.Sample(sam, input.tex_coord);
 	output.specular = specular_tex.Sample(sam, input.tex_coord);

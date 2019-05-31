@@ -14,8 +14,11 @@ public:
 
 	void Create(TWT::uint ElementCount);
 	void Update(const void* Data, TWT::uint ElementCount);
+	void UpdateElement(const void* Data, TWT::uint ElementIndex);
 
 private:
+	TWT::uint8* staging_addr;
+
 	D3D12_SHADER_RESOURCE_VIEW_DESC      srv_desc = {};
 	D3D12_UNORDERED_ACCESS_VIEW_DESC     uav_desc = {};
 

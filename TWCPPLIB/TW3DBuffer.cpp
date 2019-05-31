@@ -7,6 +7,8 @@ TW3DBuffer::TW3DBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeFo
 	D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, OptimizeForUpdating),
 	srv_descriptor_heap(SRVDescriptorHeap), element_size(ElementSizeInBytes)
 {
+	if (OptimizeForUpdating)
+		staging->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&staging_addr));
 	srv_index = SRVDescriptorHeap->Allocate();
 	if (UAV)
 		uav_index = SRVDescriptorHeap->Allocate();
@@ -60,13 +62,46 @@ void TW3DBuffer::Update(const void* Data, TWT::uint ElementCount) {
 	upload_data.SlicePitch = size;
 
 	TW3DResource* upload_heap = staging;
-	if (!staging)
+	if (!staging) {
 		upload_heap = TW3DResource::CreateStaging(device, size);
+		upload_heap->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&staging_addr));
+	}
+
+	memcpy(staging_addr, Data, size);
+
+	if (!staging)
+		upload_heap->Unmap(0, nullptr);
 
 	temp_gcl->Reset();
-	//temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-	temp_gcl->UpdateSubresources(resource, upload_heap->Get(), &upload_data);
-	//temp_gcl->ResourceBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	temp_gcl->CopyBufferRegion(this, 0, upload_heap, 0, size);
+	temp_gcl->Execute();
+
+	if (!staging)
+		delete upload_heap;
+}
+
+void TW3DBuffer::UpdateElement(const void* Data, TWT::uint ElementIndex) {
+	TWT::uint64 size = element_count * element_size;
+	TWT::uint64 index_offset = ElementIndex * element_size;
+
+	D3D12_SUBRESOURCE_DATA upload_data = {};
+	upload_data.pData = Data;
+	upload_data.RowPitch = element_size;
+	upload_data.SlicePitch = element_size;
+
+	TW3DResource* upload_heap = staging;
+	if (!staging) {
+		upload_heap = TW3DResource::CreateStaging(device, size);
+		upload_heap->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&staging_addr));
+	}
+	
+	memcpy(staging_addr + index_offset, Data, element_size);
+	
+	if(!staging)
+		upload_heap->Unmap(0, nullptr);
+
+	temp_gcl->Reset();
+	temp_gcl->CopyBufferRegion(this, index_offset, upload_heap, 0, element_size);
 	temp_gcl->Execute();
 
 	if (!staging)

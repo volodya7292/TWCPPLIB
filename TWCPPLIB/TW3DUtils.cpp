@@ -325,4 +325,8 @@ void TWU::TW3DLogInfo(const TWT::String& Info) {
 
 void TWU::TW3DLogError(const TWT::String& Error) {
 	logger->LogError(Error);
+
+#ifdef _DEBUG
+	throw std::runtime_error(Error.ToCharArray());
+#endif // _DEBUG
 }
