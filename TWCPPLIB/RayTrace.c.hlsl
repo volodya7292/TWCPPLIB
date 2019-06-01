@@ -40,6 +40,20 @@ ConstantBuffer<Camera> camera : register(b0);
 // Scene data
 ConstantBuffer<InputData> input : register(b1);
 
+void load_texture_data(in float3 tex_coord, out float4 diffuse, out float4 specular, out float4 emission, out float3 normal) {
+	diffuse = diffuse_tex.SampleLevel(sam, tex_coord, 0);
+	specular = specular_tex.SampleLevel(sam, tex_coord, 0);
+	emission = emission_tex.SampleLevel(sam, tex_coord, 0);
+	normal = normal_tex.SampleLevel(sam, tex_coord, 0).xyz;
+}
+
+inline void TraceRay(in Ray Ray, inout TriangleIntersection TriInter) {
+	if (input.use_two_scenes == 1u)
+		TraceRay(l_scene, l_gnb, l_gvb, Ray, TriInter);
+	else
+		TraceRay(scene, gnb, gvb, Ray, TriInter);
+}
+
 inline float3 to_large_scene_scale(float3 p) {
 	float3 to_p = p - camera.pos.xyz;
 	return camera.pos.xyz + normalize(to_p) * (length(to_p) * camera.info.y); // camera.info.y - scale factor for large objects
@@ -50,15 +64,7 @@ inline float3 to_default_scene_scale(float3 p) {
 	return camera.pos.xyz + normalize(to_p) * (length(to_p) / camera.info.y); // camera.info.y - scale factor for large objects
 }
 
-inline void TraceRayNormal(in Ray Ray, out TriangleIntersection TriInter) {
-	TraceRay(scene, gnb, gvb, Ray, TriInter);
-}
-
-inline void TraceRayLarge(in Ray Ray, out TriangleIntersection TriInter) {
-	TraceRay(l_scene, l_gnb, l_gvb, Ray, TriInter);
-}
-
-inline Ray primary_ray(uint2 screen_size, uint2 screen_pixel_pos) {
+Ray primary_ray(uint2 screen_size, uint2 screen_pixel_pos) {
 	const float ct = tan(camera.info.x / 2.0f);
 	const float2 screenPos = ((screen_pixel_pos + 0.5f) / (float2)screen_size * 2.0f - 1.0f) * float2(ct * ((float)screen_size.x / screen_size.y), -ct);
 
@@ -67,6 +73,33 @@ inline Ray primary_ray(uint2 screen_size, uint2 screen_pixel_pos) {
 	ray.dir = mul(float4(normalize(float3(screenPos, -1)), 1.0), camera.view).xyz;
 
 	return ray;
+}
+
+bool trace_shadow_ray(in Ray ray, in uint triangle_id, inout TriangleIntersection inter) {
+	TraceRay(ray, inter);
+	return inter.TriangleId == triangle_id;
+}
+
+void sample_direct(out float4 direct, out float4 direct_albedo) {
+
+	//float NdotL = saturate(dot(inter.normal, toLight));
+
+	//	// Shoot our ray for our direct lighting
+	//float shadowMult = trace_shadow_ray(inter.point, testLightPos);
+
+	//// Compute our GGX color
+	//vec3 ggxTerm = getGGXColor(toCamera, toLight, inter.normal, NdotV, inter.material.specular, inter.material.roughness, true);
+
+	//// Compute direct color.  Split into light and albedo terms for our SVGF filter
+	//vec3 lightIntensity = vec3(1);
+	//vec3 directColor = lightIntensity * NdotL * shadowMult;
+
+	////directAlbedo = vec4(ggxTerm + inter.material.emission + inter.material.diffuse / PI, 1);
+	//directAlbedo = vec4(ggxTerm + inter.material.emission + inter.material.diffuse / PI, 1);
+	//directI = vec4(inter.material.emission + directColor, 1);
+}
+
+void sample_indirect(out float4 indirect, out float4 indirect_albedo) {
 }
 
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
@@ -82,19 +115,17 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	float4 color = float4(0, 0, 0, 0);
 
-	if (pos.w > 0.9f) { // Not a background pixel
+	if (pos.w == 1) { // Not a background pixel
 		Ray pRay = primary_ray(SIZE, DTid.xy);
 
 		TriangleIntersection tri_inter;
-		if (input.use_two_scenes == 1u)
-			TraceRayLarge(pRay, tri_inter);
-		else
-			TraceRayNormal(pRay, tri_inter);
+		tri_inter.init();
+		tri_inter.Flags = INTERSECTION_FLAG_TEXCOORD;
+		TraceRay(pRay, tri_inter);
+		
 
-		//float4 color = float4(1, 0.3, 0.5, 1);
-			
 		if (tri_inter.Intersected) {
-			color = diffuse_tex.SampleLevel(sam, float3(tri_inter.Bary, 0), 0);
+			color = diffuse_tex.SampleLevel(sam, float3(tri_inter.TexCoord, 0), 0);
 		}
 
 	} else { // Background pixel
