@@ -315,7 +315,7 @@ void TWU::SuccessAssert(HRESULT hr, const TWT::String& AdditionalErrorInfo) {
 		char s_str[64] = {};
 		sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<TWT::uint>(hr));
 		TWT::WString error = TWU::HResultToWString(hr);
-		logger->LogError("SuccessAssert failed: ["s + AdditionalErrorInfo + "] "s + error.Multibyte());
+		TW3DLogError("SuccessAssert failed: ["s + AdditionalErrorInfo + "] "s + error.Multibyte());
 	}
 }
 
@@ -325,8 +325,4 @@ void TWU::TW3DLogInfo(const TWT::String& Info) {
 
 void TWU::TW3DLogError(const TWT::String& Error) {
 	logger->LogError(Error);
-
-#ifdef _DEBUG
-	throw std::runtime_error(Error.ToCharArray());
-#endif // _DEBUG
 }

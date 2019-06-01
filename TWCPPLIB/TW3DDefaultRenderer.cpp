@@ -18,6 +18,8 @@ TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 
 	delete rt_cl;
 	delete g_cl;
+	
+	delete info_cb;
 
 	delete g_position;
 	delete g_normal;
@@ -147,7 +149,8 @@ void TW3DDefaultRenderer::CreateRTResources() {
 
 			TW3DRPTexture(RT_OUTPUT_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("rt_output"s), true),
 			TW3DRPConstantBuffer(RT_CAMERA_CB, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("camera"s)),
-			TW3DRPConstants(RT_INPUT_CONST, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("input"s), 2)
+			TW3DRPConstants(RT_INPUT_CONST, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("input"s), 3),
+			TW3DRPConstantBuffer(RT_RENDERERINFO_CB, D3D12_SHADER_VISIBILITY_ALL, s->GetRegister("renderer"s)),
 		},
 		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_ALL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) },
 		false, false, false, false
@@ -170,6 +173,9 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] GBufferResources initialized."s);
 	CreateRTResources();
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] RTResources initialized."s);
+
+	info.info.x = 0;
+	info_cb = ResourceManager->CreateConstantBuffer(1, sizeof(TWT::DefaultRendererInfoCB));
 
 	diffuse_texarr = ResourceManager->CreateTextureArray2D(400, 400, material_count, TWT::RGBA8Unorm);
 	specular_texarr = ResourceManager->CreateTextureArray2D(400, 400, material_count, TWT::RGBA8Unorm);
@@ -291,6 +297,11 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 	rt_cl->BindConstantBuffer(RT_CAMERA_CB, Scene->Camera->GetConstantBuffer());
 	rt_cl->Bind32BitConstant(RT_INPUT_CONST, 0, 0);
 	rt_cl->Bind32BitConstant(RT_INPUT_CONST, Scene->LightSources.size(), 1);
+	
+	if (LargeScaleScene)
+		rt_cl->Bind32BitConstant(RT_INPUT_CONST, LargeScaleScene->LightSources.size(), 2);
+
+	rt_cl->BindConstantBuffer(RT_RENDERERINFO_CB, info_cb);
 	rt_cl->Dispatch(ceil(Width / 8.0f), ceil(Height / 8.0f));
 	rt_cl->ResourceBarrier(TW3DUAVBarrier());
 	rt_cl->Close();
@@ -298,6 +309,7 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 
 void TW3DDefaultRenderer::Update(float DeltaTime) {
 	Scene->Update(DeltaTime);
+	info_cb->Update(&info);
 }
 
 void TW3DDefaultRenderer::Execute(TWT::uint BackBufferIndex) {
@@ -309,4 +321,6 @@ void TW3DDefaultRenderer::Execute(TWT::uint BackBufferIndex) {
 	ResourceManager->FlushCommandList(rt_cl);
 
 	ResourceManager->ExecuteCommandList(execute_cl);
+
+	info.info.x++;
 }

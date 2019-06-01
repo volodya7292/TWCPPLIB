@@ -39,4 +39,10 @@ void TW::TWLogger::LogInfo(const TWT::String& Data) {
 
 void TW::TWLogger::LogError(const TWT::String& Data) {
 	Log('E', Data);
+
+#ifdef _DEBUG
+	auto d = Data.ToCharArray();
+	throw std::runtime_error(d);
+#endif // _DEBUG
+
 }

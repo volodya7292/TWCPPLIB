@@ -1,8 +1,11 @@
 #include "RayTracing.hlsli"
 
+#define COS_45DEG 0.7071067811
+
 struct InputData {
 	uint use_two_scenes;
-	uint light_source_count;
+	uint def_scene_light_count;
+	uint large_scene_light_count;
 };
 
 // Default scale scene
@@ -39,19 +42,14 @@ RWTexture2D<float4> rt_output : register(u0);
 ConstantBuffer<Camera> camera : register(b0);
 // Scene data
 ConstantBuffer<InputData> input : register(b1);
+ConstantBuffer<RendererInfoCB> renderer : register(b2);
+
 
 void load_texture_data(in float3 tex_coord, out float4 diffuse, out float4 specular, out float4 emission, out float3 normal) {
 	diffuse = diffuse_tex.SampleLevel(sam, tex_coord, 0);
 	specular = specular_tex.SampleLevel(sam, tex_coord, 0);
 	emission = emission_tex.SampleLevel(sam, tex_coord, 0);
 	normal = normal_tex.SampleLevel(sam, tex_coord, 0).xyz;
-}
-
-inline void TraceRay(in Ray Ray, inout TriangleIntersection TriInter) {
-	if (input.use_two_scenes == 1u)
-		TraceRay(l_scene, l_gnb, l_gvb, Ray, TriInter);
-	else
-		TraceRay(scene, gnb, gvb, Ray, TriInter);
 }
 
 inline float3 to_large_scene_scale(float3 p) {
@@ -62,6 +60,20 @@ inline float3 to_large_scene_scale(float3 p) {
 inline float3 to_default_scene_scale(float3 p) {
 	float3 to_p = p - camera.pos.xyz;
 	return camera.pos.xyz + normalize(to_p) * (length(to_p) / camera.info.y); // camera.info.y - scale factor for large objects
+}
+
+inline void TraceRay(in Ray ray, inout TriangleIntersection TriInter) {
+	TraceRay(scene, gnb, gvb, ray, TriInter);
+
+	if (input.use_two_scenes == 1u) {
+		ray.origin = to_large_scene_scale(ray.origin);
+
+		TriangleIntersection inter = TriInter;
+		TraceRay(l_scene, l_gnb, l_gvb, ray, inter);
+
+		if (inter.Distance < TriInter.Distance)
+			TriInter = inter;
+	}
 }
 
 Ray primary_ray(uint2 screen_size, uint2 screen_pixel_pos) {
@@ -75,12 +87,64 @@ Ray primary_ray(uint2 screen_size, uint2 screen_pixel_pos) {
 	return ray;
 }
 
+void def_scene_rand_triangle_light_dir(inout Ray ray, in uint triangle_id) {
+	const float r0 = sqrt(rand_next());
+	const float r1 = rand_next();
+
+	ray.dir = normalize((gvb[triangle_id * 3].pos * (1.0f - r0) +
+		gvb[triangle_id * 3 + 1].pos * r0 * (1.0f - r1) +
+		gvb[triangle_id * 3 + 2].pos * r0 * r1) -
+		ray.origin);
+}
+
+void def_scene_rand_sphere_light_dir(inout Ray ray, in uint2 sphere_info) { // sphere_info: .x - pos, .y - radius
+	// Calculate sphere disk radius
+	//float ray_dist = distance(ray.origin, sphere_info.x);
+	//float disk_r = distance(ray_dist - sphere_info.y, sqrt(sqr(ray_dist) - sqr(sphere_info.y))) * COS_45DEG;
+	//float3 disk_pos = ray.origin + ray.dir * (ray_dist - sphere_info.y + disk_r);
+
+	ray.dir = normalize((rand_cos_hemisphere_dir(normalize(ray.origin - sphere_info.x)) * sphere_info.y) - ray.origin);
+}
+
+
+void large_scene_rand_triangle_light_dir(inout Ray ray, in uint triangle_id) {
+	const float r0 = sqrt(rand_next());
+	const float r1 = rand_next();
+
+	ray.dir = normalize((l_gvb[triangle_id * 3].pos * (1.0f - r0) +
+		l_gvb[triangle_id * 3 + 1].pos * r0 * (1.0f - r1) +
+		l_gvb[triangle_id * 3 + 2].pos * r0 * r1) -
+		to_large_scene_scale(ray.origin));
+}
+
+void large_scene_rand_sphere_light_dir(inout Ray ray, in uint2 sphere_info) { // sphere_info: .x - pos, .y - radius
+	// Calculate sphere disk radius
+	//float ray_dist = distance(ray.origin, sphere_info.x);
+	//float disk_r = distance(ray_dist - sphere_info.y, sqrt(sqr(ray_dist) - sqr(sphere_info.y))) * COS_45DEG;
+	//float3 disk_pos = ray.origin + ray.dir * (ray_dist - sphere_info.y + disk_r);
+
+	const float3 pos = to_large_scene_scale(ray.origin);
+	ray.dir = normalize((rand_cos_hemisphere_dir(normalize(pos - sphere_info.x)) * sphere_info.y) - pos);
+}
+
+void rand_light_dir(inout Ray ray) {
+	uint light_index;
+
+	if (rand_next_bool() && input.use_two_scenes) {
+		light_index = min(uint(rand_next() * input.large_scene_light_count), input.large_scene_light_count - 1);
+
+	} else {
+		light_index = min(uint(rand_next() * input.def_scene_light_count), input.def_scene_light_count - 1);
+	}
+}
+
 bool trace_shadow_ray(in Ray ray, in uint triangle_id, inout TriangleIntersection inter) {
+	inter.Flags = 0;
 	TraceRay(ray, inter);
 	return inter.TriangleId == triangle_id;
 }
 
-void sample_direct(out float4 direct, out float4 direct_albedo) {
+void sample_direct(in TriangleIntersection tri_inter, out float4 direct, out float4 direct_albedo) {
 
 	//float NdotL = saturate(dot(inter.normal, toLight));
 
@@ -107,22 +171,23 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	uint2 SIZE;
 	rt_output.GetDimensions(SIZE.x, SIZE.y);
 
+	rand_init(DTid.x + DTid.y * SIZE.x, renderer.info.x, 16);
+
 	float4 pos = g_position.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
 	float4 normal = g_normal.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
 	float4 diffuse = g_diffuse.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
 	float4 specular = g_specular.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
 	float4 emission = g_emission.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
 
-	float4 color = float4(0, 0, 0, 0);
+	float4 color = float4(0, 0, 0, renderer.info.x);
 
 	if (pos.w == 1) { // Not a background pixel
 		Ray pRay = primary_ray(SIZE, DTid.xy);
 
 		TriangleIntersection tri_inter;
-		tri_inter.init();
-		tri_inter.Flags = INTERSECTION_FLAG_TEXCOORD;
+		tri_inter.init(INTERSECTION_FLAG_TEXCOORD);
 		TraceRay(pRay, tri_inter);
-		
+
 
 		if (tri_inter.Intersected) {
 			color = diffuse_tex.SampleLevel(sam, float3(tri_inter.TexCoord, 0), 0);

@@ -28,7 +28,9 @@ private:
 	// Renderer resources
 	// --------------------------------------------------------------------- 
 	const TWT::uint material_count = 64;
+	TWT::DefaultRendererInfoCB info;
 	TW3DTexture *diffuse_texarr, *specular_texarr, *emission_texarr, *normal_texarr;
+	TW3DConstantBuffer* info_cb;
 
 	// GBuffer render
 	// --------------------------------------------------------------------- 
@@ -69,6 +71,7 @@ private:
 		RT_OUTPUT_TEXTURE,
 		RT_INPUT_CONST,
 		RT_CAMERA_CB,
+		RT_RENDERERINFO_CB,
 	};
 	TW3DComputePipelineState *rt_ps = nullptr;
 	TW3DTexture* rt_output = nullptr;

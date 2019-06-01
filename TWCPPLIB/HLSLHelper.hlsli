@@ -2,8 +2,14 @@
 #define THREAD_GROUP_HEIGHT 8
 #define THREAD_GROUP_1D_WIDTH (THREAD_GROUP_WIDTH * THREAD_GROUP_HEIGHT)
 
-#define FLT_MAX        3.402823466e+38f
-#define MachineEpsilon 5.96e-08
+#define        FLT_MAX    3.402823466e+38f
+#define MachineEpsilon    5.96e-08
+#define             PI    3.141592653
+#define            PI2    6.283185307
+
+#define sqr(x) (x) * (x)
+
+static uint rand_seed;
 
 float4x4 scale(float4x4 m, in float v) {
 	m[0][0] *= v; m[1][0] *= v; m[2][0] *= v;
@@ -137,13 +143,16 @@ struct LightSource {
 	float4 info; // .x - type, .y - triangle id, z - sphere radius
 };
 
-
 struct Camera {
 	float4 pos;
 	float4x4 proj;
 	float4x4 view;
 	float4x4 proj_view;
 	float4 info; // .x - FOVy in radians, .y - scale factor (large objects are scaled down)
+};
+
+struct RendererInfoCB {
+	uint4 info; // .x - frame index
 };
 
 typedef StructuredBuffer<SceneLBVHNode> RTScene;
@@ -182,3 +191,48 @@ inline float3 Swizzle(float3 v, int3 swizzleOrder) {
 }
 
 inline bool IsPositive(float f) { return f > 0.0f; }
+
+void rand_init(uint val0, uint val1, uint backoff = 16) {
+	uint v0 = val0, v1 = val1, s0 = 0;
+
+	for (uint n = 0; n < backoff; n++) {
+		s0 += 0x9e3779b9;
+		v0 += ((v1 << 4) + 0xa341316c) ^ (v1 + s0) ^ ((v1 >> 5) + 0xc8013ea4);
+		v1 += ((v0 << 4) + 0xad90777d) ^ (v0 + s0) ^ ((v0 >> 5) + 0x7e95761e);
+	}
+
+	rand_seed = v0;
+}
+
+// Random range: [0;1]
+inline float rand_next() {
+	rand_seed = 1664525u * rand_seed + 1013904223u;
+	return float(rand_seed & 0x00FFFFFF) / float(0x01000000);
+}
+
+inline bool rand_next_bool() {
+	return round(rand_next());
+}
+
+float3 get_perpendicular_vector(float3 u) {
+	float3 a = abs(u);
+	uint xm = ((a.x - a.y) < 0 && (a.x - a.z) < 0) ? 1 : 0;
+	uint ym = (a.y - a.z) < 0 ? (1 ^ xm) : 0;
+	uint zm = 1 ^ (xm | ym);
+	return cross(u, float3(xm, ym, zm));
+}
+
+// Get a cosine-weighted random vector centered around a specified normal direction.
+float3 rand_cos_hemisphere_dir(float3 normal) {
+	// Get 2 random numbers to select our sample with
+	float2 randVal = float2(rand_next(), rand_next());
+
+	// Cosine weighted hemisphere sample from RNG
+	float3 bitangent = get_perpendicular_vector(normal);
+	float3 tangent = cross(bitangent, normal);
+	float r = sqrt(randVal.x);
+	float phi = PI2 * randVal.y;
+
+	// Get our cosine-weighted hemisphere lobe sample direction
+	return tangent * (r * cos(phi).x) + bitangent * (r * sin(phi)) + normal.xyz * sqrt(max(0.0, 1.0f - randVal.x));
+}

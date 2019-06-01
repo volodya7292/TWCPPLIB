@@ -33,9 +33,5 @@ TWT::uint TW3DShader::GetRegister(TWT::String InputVariableName) {
 	TWU::SuccessAssert(reflection->GetResourceBindingDescByName(InputVariableName.ToCharArray(), &desc),
 		"TW3DShader::GetRegister, GetResourceBindingDescByName \'"s + InputVariableName + "\'"s);
 
-	TWT::uint reg = desc.BindPoint;
-	if (reg > 64)
-		TWU::TW3DLogError("TW3DShader::GetRegister : failed to get register of variable \'"s + InputVariableName + "\'"s);
-
-	return reg;
+	return desc.BindPoint;
 }

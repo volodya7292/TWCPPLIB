@@ -15,14 +15,14 @@ struct TriangleIntersection {
 	float  Distance;
 	uint   Flags;
 
-	inline void init() {
+	inline void init(uint Flags) {
 		Intersected = false;
 		TriangleId = -1;
 		Point = float3(0, 0, 0);
 		Normal = float3(0, 0, 0);
 		TexCoord = float2(0, 0);
 		Distance = FLT_MAX;
-		Flags = 0u;
+		this.Flags = Flags;
 	}
 };
 
@@ -54,14 +54,10 @@ void triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tr
 					tri_inter.Distance = length(ray.dir * t);
 
 					if (tri_inter.Flags & INTERSECTION_FLAG_TEXCOORD) {
-						const float2 v0t = gvb[tri_inter.TriangleId * 3].tex_coord.xy;
-						const float2 v1t = gvb[tri_inter.TriangleId * 3 + 1].tex_coord.xy;
-						const float2 v2t = gvb[tri_inter.TriangleId * 3 + 2].tex_coord.xy;
-
 						tri_inter.TexCoord =
-							v0t * (1 - u - v) +
-							v1t * u +
-							v2t * v;
+							gvb[tri_inter.TriangleId * 3].tex_coord.xy * (1 - u - v) +
+							gvb[tri_inter.TriangleId * 3 + 1].tex_coord.xy * u +
+							gvb[tri_inter.TriangleId * 3 + 2].tex_coord.xy * v;
 					}
 					if (tri_inter.Flags & INTERSECTION_FLAG_NORMAL) {
 						const float3 normal = gvb[tri_inter.TriangleId * 3].normal;
@@ -136,11 +132,7 @@ void triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tr
 
 
 void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offset, in GVB gvb, in Ray ray, inout TriangleIntersection tri_inter) {
-	TriangleIntersection mininter, tempinter;
-	mininter.init();
-	tempinter.init();
-	mininter.Flags = tri_inter.Flags;
-	tempinter.Flags = tri_inter.Flags;
+	TriangleIntersection mininter = tri_inter, tempinter = tri_inter;
 
 	float distance = 0;
 
@@ -234,11 +226,8 @@ void check_scene_rtas_intersection(in RTNB gnb, in GVB gvb, in Ray ray, in uint 
 
 void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray Ray, inout TriangleIntersection TriInter) {
 	float bounds_distance = FLT_MAX;
-	TriangleIntersection mininter, tempinter;
-	mininter.init();
-	tempinter.init();
-	tempinter.Flags = TriInter.Flags;
-	mininter.Flags = TriInter.Flags;
+	TriInter.Distance = FLT_MAX;
+	TriangleIntersection mininter = TriInter, tempinter = TriInter;
 
 	uint stackIndex = 0;
 	g_stack_nodes2[stackIndex++] = -1;

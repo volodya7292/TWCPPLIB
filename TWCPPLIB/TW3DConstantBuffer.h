@@ -8,7 +8,7 @@ public:
 
 	D3D12_GPU_VIRTUAL_ADDRESS GetAddress(TWT::uint ElementIndex);
 
-	void Update(void* Data, TWT::uint ElementIndex);
+	void Update(void* Data, TWT::uint ElementIndex = 0);
 
 private:
 	TWT::uint8* GPUAddress = nullptr;
