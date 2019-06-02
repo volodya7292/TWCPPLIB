@@ -16,6 +16,12 @@ void TW3DObject::Update() {
 		vminst.Transform.Changed = !vminst.RigidBody->isSleeping();
 
 		if (vminst.Transform.Changed) {
+
+			TWT::mat4 ind = glm::inverse(vminst.Transform.GetModelMatrix());
+			TWT::vec3 n = TWT::Normalize(TWT::vec3(1, 2, 3));
+			TWT::vec4 v = ind * TWT::vec4(n, 0);
+
+
 			vminst.Changed = true;
 			vminst.Transform.Changed = false;
 

@@ -10,7 +10,7 @@ static bool movement_capture = true;
 
 TW3DDefaultRenderer* defaultRenderer;
 TW3DScene* scene;
-TW3DLightSource* light;
+TW3DLightSource *light, *light2;
 
 TW3DCube* cube, *cube2;
 
@@ -152,10 +152,15 @@ int main() {
 
 	light = new TW3DLightSource();
 	light->SetSphereRadius(2);
-	light->SetPosition(TWT::vec3(0, 10, 0));
+	light->SetPosition(TWT::vec3(5, 8, 5));
 	//light->SetTriangleId(0);
 
+	light2 = new TW3DLightSource();
+	light2->SetSphereRadius(2);
+	light2->SetPosition(TWT::vec3(5, -10, 5));
+
 	scene->AddLightSource(light);
+	scene->AddLightSource(light2);
 
 	defaultRenderer = new TW3DDefaultRenderer();
 	defaultRenderer->Scene = scene;

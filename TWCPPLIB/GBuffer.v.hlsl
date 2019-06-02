@@ -2,9 +2,9 @@
 
 struct VS_OUTPUT {
 	float4        pos : SV_Position;
-	float3  model_pos : ModelPosition;
+	linear float3  model_pos : ModelPosition;
 	float3  tex_coord : TexCoord;
-	float3 obj_normal : ObjectNormal;
+	linear float3 obj_normal : ObjectNormal;
 	float3    tangent : Tangent;
 };
 

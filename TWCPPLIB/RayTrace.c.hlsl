@@ -174,23 +174,21 @@ bool trace_shadow_ray(in Ray ray, in float light_ray_length) {
 
 	if (input.def_scene_light_count > 0 || input.large_scene_light_count > 0) {
 	    TraceRay(ray, inter);
-	    return !inter.Intersected;//(inter.Distance >= light_ray_length - RT_BIAS) || (abs(inter.Distance - light_ray_length) <= RT_BIAS);
+	    return (inter.Distance >= light_ray_length - RT_BIAS) || (abs(inter.Distance - light_ray_length) <= RT_BIAS);
 	} else {
 		return false;
 	}
 }
 
-void sample_direct(in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float roughness, in float3 emission, out float4 direct, out float4 direct_albedo) {
-
+void sample_direct(in float3 rayd, in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float roughness, in float3 emission, out float4 direct, out float4 direct_albedo) {
 	float3 to_camera = normalize(camera.pos.xyz - pos);
 
 	LightInfo light_info;
 	Ray to_light;
+	//to_light.origin = camera.pos.xyz;
+	//to_light.dir = normalize(to_light.origin - pos);
+	//light_info.ray_length = distance(to_light.origin, pos);
 	to_light.origin = pos;
-	//to_light.dir = normalize(camera.pos.xyz - pos);
-	//to_light.dir = normalize(float3(0, 5, 0) - pos);
-	//to_light.origin += to_light.dir;
-	//light_info.ray_length = distance(camera.pos.xyz, pos);
 	rand_light_dir(to_light, light_info);
 
 	float NdotL = saturate(dot(normal, to_light.dir));
@@ -201,24 +199,24 @@ void sample_direct(in float3 pos, in float3 normal, in float3 diffuse, in float3
 	float3 ggxTerm = get_ggx_color(to_camera, to_light.dir, normal, NdotV, specular, roughness, true);
 
 	// Compute direct color.  Split into light and albedo terms for our SVGF filter
-	float3 directColor = shadowMult * NdotL;
+	float3 directColor = emission + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
 	float3 directAlbedo = ggxTerm + diffuse / PI;
-	//bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
-	direct = float4(directColor, 1);//float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
-	direct_albedo = float4(directAlbedo, 1);//float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
+	bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
+	direct = float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
+	direct_albedo = float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
 }
 
 void sample_indirect(out float4 indirect, out float4 indirect_albedo) {
 
 }
 
-float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float3 emission) {
+float4 sample_color(in float3 rayd, in float3 pos, in float3 normal, in float3 diffuse, in float3 emission) {
 	float4 direct, direct_albedo;
 	float4 indirect, indirect_albedo;
 
-	sample_direct(pos, normal, diffuse, float3(0, 0, 0), 1.0f, emission, direct, direct_albedo);
+	sample_direct(rayd, pos, normal, diffuse, float3(0, 0, 0), 1.0f, emission, direct, direct_albedo);
 
-	return direct;// * direct_albedo;
+	return direct * direct_albedo;
 }
 
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
@@ -245,7 +243,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		tri_inter.init(INTERSECTION_FLAG_NORMAL);
 		TraceRay(pRay, tri_inter);
 
-		color = sample_color(pos.xyz, tri_inter.Normal, diffuse.xyz, emission.xyz);
+		color = sample_color(pRay.dir, pos.xyz, tri_inter.Normal, diffuse.xyz, emission.xyz);
 
 		//if (tri_inter.Intersected)
 		//	color = diffuse_tex.SampleLevel(sam, float3(tri_inter.TexCoord, 0), 0);

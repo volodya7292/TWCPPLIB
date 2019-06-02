@@ -84,11 +84,6 @@ void TW3DBuffer::UpdateElement(const void* Data, TWT::uint ElementIndex) {
 	TWT::uint64 size = element_count * element_size;
 	TWT::uint64 index_offset = ElementIndex * element_size;
 
-	D3D12_SUBRESOURCE_DATA upload_data = {};
-	upload_data.pData = Data;
-	upload_data.RowPitch = element_size;
-	upload_data.SlicePitch = element_size;
-
 	TW3DResource* upload_heap = staging;
 	if (!staging) {
 		upload_heap = TW3DResource::CreateStaging(device, size);
@@ -101,7 +96,7 @@ void TW3DBuffer::UpdateElement(const void* Data, TWT::uint ElementIndex) {
 		upload_heap->Unmap(0, nullptr);
 
 	temp_gcl->Reset();
-	temp_gcl->CopyBufferRegion(this, index_offset, upload_heap, 0, element_size);
+	temp_gcl->CopyBufferRegion(this, index_offset, upload_heap, index_offset, element_size);
 	temp_gcl->Execute();
 
 	if (!staging)

@@ -2,6 +2,7 @@
 
 static uint g_stack_nodes[32];
 static uint g_stack_nodes2[32];
+static float4x4 last_mesh_transform;
 
 #define RT_BIAS    0.00001f
 
@@ -52,7 +53,7 @@ void triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tr
 
 				if (t > MachineEpsilon) {
 					tri_inter.Intersected = true;
-					tri_inter.Point = ray.origin + (ray.dir * t); // -ray.dir instead of ray.dir because of scene BVH mesh transform
+					tri_inter.Point = ray.origin + (ray.dir * t);
 					tri_inter.Distance = length(ray.dir * t);
 
 					if (tri_inter.Flags & INTERSECTION_FLAG_TEXCOORD) {
@@ -63,7 +64,7 @@ void triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tr
 					}
 					if (tri_inter.Flags & INTERSECTION_FLAG_NORMAL) {
 						float3 normal = gvb[tri_inter.TriangleId * 3].normal;
-						tri_inter.Normal = (dot(normal, ray.dir) >= 0) ? normal : -normal; // ray.dir instead of -ray.dir because of scene BVH mesh transform						
+						tri_inter.Normal = (dot(normal, -ray.dir) >= 0) ? normal : -normal;
 					}
 				}
 			}
@@ -215,15 +216,14 @@ void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 	tri_inter = mininter;
 }
 
-inline void mesh_transform_ray(in Ray ray, in float4x4 inverse_transform, out Ray new_ray) {
-	new_ray.origin = mul(inverse_transform, float4(ray.origin, 1)).xyz;
-	new_ray.dir = normalize(mul(inverse_transform, float4(ray.dir, 0)).xyz);
-}
+void check_scene_rtas_intersection(in RTNB gnb, in GVB gvb, in Ray ray, in uint rtas_vertex_index,
+	in uint rtas_node_index, in float4x4 inverse_transform, inout TriangleIntersection tri_inter) {
 
-void check_scene_rtas_intersection(in RTNB gnb, in GVB gvb, in Ray ray, in uint rtas_vertex_index, in uint rtas_node_index, in float4x4 inverse_transform, inout TriangleIntersection tri_inter) {
-	Ray nr;
-	mesh_transform_ray(ray, inverse_transform, nr);
-	mesh_rtas_trace_ray(gnb, rtas_vertex_index, rtas_node_index, gvb, nr, tri_inter);
+	Ray nRay;
+	nRay.origin = mul(inverse_transform, float4(ray.origin, 1)).xyz;
+	nRay.dir = mul(inverse_transform, float4(ray.dir, 0)).xyz;
+
+	mesh_rtas_trace_ray(gnb, rtas_vertex_index, rtas_node_index, gvb, nRay, tri_inter);
 }
 
 void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray ray, inout TriangleIntersection TriInter) {
@@ -261,8 +261,10 @@ void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray ray, inout Tri
 
 				if (nodeOffset != -1) {
 					check_scene_rtas_intersection(GNB, GVB, ray, SceneAS[childL].instance.vertex_offset, nodeOffset, SceneAS[childL].instance.transform_inverse, tempinter);
-					if (tempinter.Distance < mininter.Distance)
+					if (tempinter.Distance < mininter.Distance) {
 						mininter = tempinter;
+						last_mesh_transform = SceneAS[childL].instance.transform;
+					}
 				} else {
 					traverseL = true;
 				}
@@ -278,8 +280,10 @@ void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray ray, inout Tri
 
 				if (nodeOffset != -1) {
 					check_scene_rtas_intersection(GNB, GVB, ray, SceneAS[childR].instance.vertex_offset, nodeOffset, SceneAS[childR].instance.transform_inverse, tempinter);
-					if (tempinter.Distance < mininter.Distance)
+					if (tempinter.Distance < mininter.Distance) {
 						mininter = tempinter;
+						last_mesh_transform = SceneAS[childR].instance.transform;
+					}
 				} else {
 					traverseR = true;
 				}
@@ -294,6 +298,9 @@ void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray ray, inout Tri
 				g_stack_nodes2[stackIndex++] = childR; // push
 		}
 	}
+
+	if (mininter.Intersected && (mininter.Flags & INTERSECTION_FLAG_NORMAL))
+		mininter.Normal = mul(last_mesh_transform, float4(mininter.Normal, 0)).xyz;
 
 	TriInter = mininter;
 }

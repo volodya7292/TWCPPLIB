@@ -9,12 +9,12 @@ void TW3DPrimitives::Initialize(TW3DResourceManager* ResourceManager) {
 	
 	TWT::DefaultVertex vertices[] = {
 		// front face
-		{ -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f },
-		{ -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f },
-		{ 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f },
-		{ -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f },
-		{ 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f },
-		{ 0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f },
+		{ -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f },
+		{ -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f },
+		{ 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f },
+		{ -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f },
+		{ 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f },
+		{ 0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f },
 
 		// right side face
 		{ 0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f },
@@ -33,12 +33,12 @@ void TW3DPrimitives::Initialize(TW3DResourceManager* ResourceManager) {
 		{ -0.5f, 0.5f, -0.5f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f },
 
 		// back face
-		{ 0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f },
-		{ 0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f },
-		{ -0.5f, -0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f },
-		{ 0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f },
-		{ -0.5f, -0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f },
-		{ -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f },
+		{ 0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f },
+		{ 0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f },
+		{ -0.5f, -0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f },
+		{ 0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f },
+		{ -0.5f, -0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f },
+		{ -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f },
 
 		// top face
 		{ -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f },
@@ -57,8 +57,8 @@ void TW3DPrimitives::Initialize(TW3DResourceManager* ResourceManager) {
 		{ -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f },
 	};
 
-	TWU::TW3DCalculateTriangleNormals(vertices, 36, fsizeof(TWT::DefaultVertex), foffsetof(TWT::DefaultVertex, Pos), foffsetof(TWT::DefaultVertex, TexCoord),
-		foffsetof(TWT::DefaultVertex, Normal), foffsetof(TWT::DefaultVertex, Tangent), foffsetof(TWT::DefaultVertex, Bitangent));
+	//TWU::TW3DCalculateTriangleNormals(vertices, 36, fsizeof(TWT::DefaultVertex), foffsetof(TWT::DefaultVertex, Pos), foffsetof(TWT::DefaultVertex, TexCoord),
+	//	foffsetof(TWT::DefaultVertex, Normal), foffsetof(TWT::DefaultVertex, Tangent), foffsetof(TWT::DefaultVertex, Bitangent));
 
 	CubeVertexBuffer->Update(vertices, sizeof(vertices) / sizeof(TWT::DefaultVertex));
 	Cube = new TW3DVertexMesh(ResourceManager, {CubeVertexBuffer});
