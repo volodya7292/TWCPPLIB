@@ -4,7 +4,7 @@ static uint g_stack_nodes[32];
 static uint g_stack_nodes2[32];
 static float4x4 last_mesh_transform;
 
-#define RT_BIAS    0.00001f
+#define RT_BIAS    0.0001f
 
 #define   INTERSECTION_FLAG_NORMAL    1 << 0
 #define INTERSECTION_FLAG_TEXCOORD    1 << 1
@@ -14,7 +14,7 @@ struct TriangleIntersection {
 	uint   TriangleId;
 	float3 Point;
 	float3 Normal;
-	float2 TexCoord;
+	float3 TexCoord;
 	float  Distance;
 	uint   Flags;
 
@@ -23,7 +23,7 @@ struct TriangleIntersection {
 		TriangleId = -1;
 		Point = float3(0, 0, 0);
 		Normal = float3(0, 0, 0);
-		TexCoord = float2(0, 0);
+		TexCoord = float3(0, 0, 0);
 		Distance = FLT_MAX;
 		this.Flags = Flags;
 	}
@@ -57,10 +57,11 @@ void triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tr
 					tri_inter.Distance = length(ray.dir * t);
 
 					if (tri_inter.Flags & INTERSECTION_FLAG_TEXCOORD) {
-						tri_inter.TexCoord =
+						tri_inter.TexCoord = float3(
 							gvb[tri_inter.TriangleId * 3].tex_coord.xy * (1 - u - v) +
 							gvb[tri_inter.TriangleId * 3 + 1].tex_coord.xy * u +
-							gvb[tri_inter.TriangleId * 3 + 2].tex_coord.xy * v;
+							gvb[tri_inter.TriangleId * 3 + 2].tex_coord.xy * v,
+							0);
 					}
 					if (tri_inter.Flags & INTERSECTION_FLAG_NORMAL) {
 						float3 normal = gvb[tri_inter.TriangleId * 3].normal;
@@ -299,8 +300,11 @@ void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray ray, inout Tri
 		}
 	}
 
-	if (mininter.Intersected && (mininter.Flags & INTERSECTION_FLAG_NORMAL))
-		mininter.Normal = mul(last_mesh_transform, float4(mininter.Normal, 0)).xyz;
+	if (mininter.Intersected) {
+		if (mininter.Flags & INTERSECTION_FLAG_NORMAL)
+			mininter.Normal = mul(last_mesh_transform, float4(mininter.Normal, 0)).xyz;
+		mininter.Point = mul(last_mesh_transform, float4(mininter.Point, 1)).xyz;
+	}
 
 	TriInter = mininter;
 }

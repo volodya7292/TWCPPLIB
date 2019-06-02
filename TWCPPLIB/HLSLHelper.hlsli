@@ -195,6 +195,10 @@ inline float3 Swizzle(float3 v, int3 swizzleOrder) {
 
 inline bool IsPositive(float f) { return f > 0.0f; }
 
+inline float luminance(float3 rgb) {
+	return dot(rgb, float3(0.2126f, 0.7152f, 0.0722f));
+}
+
 void rand_init(uint val0, uint val1, uint backoff = 16) {
 	uint v0 = val0, v1 = val1, s0 = 0;
 
@@ -250,7 +254,7 @@ inline float ggx_smith_masking_term(float NdotL, float NdotV, float roughness) {
 	float a2 = roughness * roughness;
 	float lambdaV = NdotL * sqrt(max(0.0f, (-NdotV * a2 + NdotV) * NdotV + a2));
 	float lambdaL = NdotV * sqrt(max(0.0f, (-NdotL * a2 + NdotL) * NdotL + a2));
-	return 0.5f / (lambdaV + lambdaL);
+	return 0.5f / max(0.001f, (lambdaV + lambdaL));
 }
 
 inline float3 schlick_fresnel(float3 f0, float u) {
@@ -278,4 +282,31 @@ float3 get_ggx_color(float3 V, float3 L, float3 N, float NdotV, float3 specColor
 
 	// Determine if the color is valid (if invalid, we likely have a NaN or Inf)
 	return (NdotV * NdotL * LdotH <= 0.0f) ? float3(0, 0, 0) : outColor;
+}
+
+float probability_to_sample_diffuse(float3 diffuse, float3 specular) {
+	float lumDiffuse = max(0.01f, luminance(diffuse));
+	float lumSpecular = max(0.01f, luminance(specular));
+	return lumDiffuse / (lumDiffuse + lumSpecular);
+}
+
+float3 rand_ggx_sample_dir(float roughness, float3 normal, float3 inVec) {
+	// Get our uniform random numbers
+	float2 randVal = float2(rand_next(), rand_next());
+
+	// Get an orthonormal basis from the normal
+	float3 B = get_perpendicular_vector(normal);
+	float3 T = cross(B, normal);
+
+	// GGX NDF sampling
+	float a2 = roughness * roughness;
+	float cosThetaH = sqrt(max(0.0f, (1.0 - randVal.x) / ((a2 - 1.0) * randVal.x + 1)));
+	float sinThetaH = sqrt(max(0.0f, 1.0f - cosThetaH * cosThetaH));
+	float phiH = randVal.y * PI * 2.0f;
+
+	// Get our GGX NDF sample (i.e., the half vector)
+	float3 H = T * (sinThetaH * cos(phiH)) + B * (sinThetaH * sin(phiH)) + normal * cosThetaH;
+
+	// Convert this into a ray direction by computing the reflection direction
+	return normalize(2.f * dot(inVec, H) * H - inVec);
 }

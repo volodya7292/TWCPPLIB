@@ -19,7 +19,8 @@ struct PS_OUTPUT {
 struct VS_OUTPUT {
 	float4        pos : SV_Position;
 	linear float3  model_pos : ModelPosition;
-	float3  tex_coord : TexCoord;
+	float2  tex_coord : TexCoord;
+	linear uint material_id : MaterialId;
 	linear float3 obj_normal : ObjectNormal;
 	float3    tangent : Tangent;
 };
@@ -29,7 +30,9 @@ ConstantBuffer<Camera> camera : register(b0); // .info.y - scale factor for larg
 PS_OUTPUT main(VS_OUTPUT input) {
 	PS_OUTPUT output;
 
-	float3 normal_sample = normal_tex.Sample(sam, input.tex_coord).xyz * 2.0f - 1.0f;
+	float3 tex_coord = float3(input.tex_coord, input.material_id);
+
+	float3 normal_sample = normal_tex.Sample(sam, tex_coord).xyz * 2.0f - 1.0f;
 	float3 bitangent = cross(input.obj_normal, input.tangent);
 	float3x3 tex_space = float3x3(input.tangent, bitangent, input.obj_normal);
 	float3 normal = normalize(mul(normal_sample, tex_space));
@@ -54,12 +57,13 @@ PS_OUTPUT main(VS_OUTPUT input) {
 	//	input.normal = normalize(mul(normalMap, texSpace));
 	//}
 
+	
 
 	output.position = float4(input.model_pos.xyz, 1.0f);
 	output.normal = float4(normal, 0);
-	output.diffuse = diffuse_tex.Sample(sam, input.tex_coord);
-	output.specular = specular_tex.Sample(sam, input.tex_coord);
-	output.emission = emission_tex.Sample(sam, input.tex_coord);
+	output.diffuse = diffuse_tex.Sample(sam, tex_coord);
+	output.specular = specular_tex.Sample(sam, tex_coord);
+	output.emission = emission_tex.Sample(sam, tex_coord);
 	output.depth = depth_delinearize(depth_linearize(input.pos.z, 0.1, 1000) / camera.info.y, 0.1, 1000);
 
 	return output;

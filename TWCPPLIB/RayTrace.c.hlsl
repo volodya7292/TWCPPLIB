@@ -95,7 +95,7 @@ Ray primary_ray(uint2 screen_size, uint2 screen_pixel_pos) {
 	return ray;
 }
 
-void def_scene_rand_triangle_light_dir(inout Ray ray, in uint triangle_id, out float ray_length) {
+inline void def_scene_rand_triangle_light_dir(inout Ray ray, in uint triangle_id, out float ray_length) {
 	const float r0 = sqrt(rand_next());
 	const float r1 = rand_next();
 
@@ -121,7 +121,7 @@ inline void def_scene_rand_sphere_light_dir(inout Ray ray, in LightSource sphere
 }
 
 
-void large_scene_rand_triangle_light_dir(inout Ray ray, in uint triangle_id, out float ray_length) {
+inline void large_scene_rand_triangle_light_dir(inout Ray ray, in uint triangle_id, out float ray_length) {
 	const float r0 = sqrt(rand_next());
 	const float r1 = rand_next();
 
@@ -146,6 +146,9 @@ void rand_light_dir(inout Ray ray, out LightInfo light_info) {
 	uint light_index;
 	LightSource light;
 
+	light_info.ray_length = 0;
+	ray.dir = 0;
+
 	if (rand_next_bool() && input.use_two_scenes) {
 		light_index = min(uint(rand_next() * input.large_scene_light_count), input.large_scene_light_count - 1);
 		light = l_lsb[light_index];
@@ -168,7 +171,7 @@ void rand_light_dir(inout Ray ray, out LightInfo light_info) {
 }
 
 // 1 - light visible, 0 - light invisible
-bool trace_shadow_ray(in Ray ray, in float light_ray_length) {
+inline bool trace_shadow_ray(in Ray ray, in float light_ray_length) {
 	TriangleIntersection inter;
 	inter.init(0);
 
@@ -180,43 +183,110 @@ bool trace_shadow_ray(in Ray ray, in float light_ray_length) {
 	}
 }
 
-void sample_direct(in float3 rayd, in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float roughness, in float3 emission, out float4 direct, out float4 direct_albedo) {
-	float3 to_camera = normalize(camera.pos.xyz - pos);
+float3 trace_indirect_ray(in Ray ray) {
+	TriangleIntersection inter;
+	inter.init(INTERSECTION_FLAG_TEXCOORD | INTERSECTION_FLAG_NORMAL);
+
+	TraceRay(ray, inter);
+
 
 	LightInfo light_info;
 	Ray to_light;
-	//to_light.origin = camera.pos.xyz;
-	//to_light.dir = normalize(to_light.origin - pos);
-	//light_info.ray_length = distance(to_light.origin, pos);
+	to_light.origin = ray.origin;
+	rand_light_dir(to_light, light_info);
+
+
+	// Compute our lambertion term (L dot N)
+	//vec3 toLight = normalize(inter.point - ray.origin);
+	float LdotN = saturate(dot(inter.Normal, to_light.dir));
+
+	// Shoot our shadow ray.
+	//Intersection shadow = trace_ray(ray);
+	float shadowMult = trace_shadow_ray(to_light, light_info.ray_length);
+
+	float4 diffuse = diffuse_tex.SampleLevel(sam, inter.TexCoord, 0);
+	float4 emission = emission_tex.SampleLevel(sam, inter.TexCoord, 0);
+
+	return emission.xyz + LdotN * shadowMult * light_info.color * (diffuse.xyz) / PI;
+	//return diffuse.xyz;
+}
+
+float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float3 emission, in float roughness) {
+	float4 direct, direct_albedo;
+	float4 indirect, indirect_albedo;
+
+
+	float3 to_camera = normalize(camera.pos.xyz - pos);
+
+
+	float randX = rand_next() * 1 - 0.5;
+	float randZ = rand_next() * 1 - 0.5;
+	float3 testLightPos = (float3(0, 0.5f, 0) + float3(randX, 0, randZ));
+	float3 toLight = normalize(testLightPos - pos);
+
+
+	LightInfo light_info;
+	Ray to_light;
 	to_light.origin = pos;
+	to_light.dir = toLight;//normalize(float3(0, 0.49f, 0) - pos);
+	light_info.color = float3(1, 1, 1);
+	light_info.ray_length = 0;
 	rand_light_dir(to_light, light_info);
 
 	float NdotL = saturate(dot(normal, to_light.dir));
 	float NdotV = dot(normal, to_camera);
 	float shadowMult = trace_shadow_ray(to_light, light_info.ray_length);
 
-	// Compute our GGX color
-	float3 ggxTerm = get_ggx_color(to_camera, to_light.dir, normal, NdotV, specular, roughness, true);
+	// Direct
+	{
+		// Compute our GGX color
+		float3 ggxTerm = get_ggx_color(to_camera, to_light.dir, normal, NdotV, specular, roughness, true);
 
-	// Compute direct color.  Split into light and albedo terms for our SVGF filter
-	float3 directColor = emission + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
-	float3 directAlbedo = ggxTerm + diffuse / PI;
-	bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
-	direct = float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
-	direct_albedo = float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
-}
+		// Compute direct color.  Split into light and albedo terms for our SVGF filter
+		float3 directColor = emission + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
+		float3 directAlbedo = emission + ggxTerm + diffuse / PI;
+		//bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
+		//direct = float4(saturate(directColor), 1);//float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
+		//direct_albedo = float4(saturate(directAlbedo), 1);//float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
+		direct = float4(emission + NdotL, 1);
+		direct_albedo = float4(diffuse, 1);
+	}
 
-void sample_indirect(out float4 indirect, out float4 indirect_albedo) {
+	// Indirect
+	{
+		// We have to decide whether we sample our diffuse or specular lobe.
+		float probDiffuse   = probability_to_sample_diffuse(diffuse, specular);
+		float chooseDiffuse = (rand_next() < probDiffuse);
 
-}
+		float3 bounceDir;
+		if (chooseDiffuse) {   // Randomly select to bounce in our diffuse lobe
+			bounceDir = rand_cos_hemisphere_dir(normal);
+		} else {   // Randomyl select to bounce in our GGX lobe
+			bounceDir = rand_ggx_sample_dir(roughness, normal, to_camera);
+		}
 
-float4 sample_color(in float3 rayd, in float3 pos, in float3 normal, in float3 diffuse, in float3 emission) {
-	float4 direct, direct_albedo;
-	float4 indirect, indirect_albedo;
+		// Shoot our indirect color ray
+		Ray iRay;
+		iRay.origin = pos;
+		iRay.dir = bounceDir;
+		float3 bounceColor = trace_indirect_ray(iRay);
 
-	sample_direct(rayd, pos, normal, diffuse, float3(0, 0, 0), 1.0f, emission, direct, direct_albedo);
+		// Compute diffuse, ggx shading terms
+		float  NdotL = saturate(dot(pos, bounceDir));
+		float3 difTerm = max(5e-3f, diffuse / PI);
+		float3 ggxTerm = NdotL * get_ggx_color(to_camera, bounceDir, normal, NdotV, specular, roughness, false);
 
-	return direct * direct_albedo;
+		// Split into an incoming light and "indirect albedo" term to help filter illumination despite sampling 2 different lobes
+		float3 difFinal = 1.0f / probDiffuse;                    // Has been divided by difTerm.  Multiplied back post-SVGF
+		float3 ggxFinal = ggxTerm / (difTerm * (1.0f - probDiffuse));    // Has been divided by difTerm.  Multiplied back post-SVGF
+		float3 shadeColor = bounceColor * (chooseDiffuse ? difFinal : ggxFinal);
+
+		bool colorsNan = any(isnan(shadeColor));
+		indirect = float4(colorsNan ? float3(0, 0, 0) : shadeColor, 1.0f);
+		indirect_albedo = float4(difTerm, 1.0f);
+	}
+
+	return direct;// + indirect * indirect_albedo;
 }
 
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
@@ -243,7 +313,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		tri_inter.init(INTERSECTION_FLAG_NORMAL);
 		TraceRay(pRay, tri_inter);
 
-		color = sample_color(pRay.dir, pos.xyz, tri_inter.Normal, diffuse.xyz, emission.xyz);
+		color = sample_color(pos.xyz, tri_inter.Normal, diffuse.xyz, 1.0f, emission.rgb, 1.0f);
 
 		//if (tri_inter.Intersected)
 		//	color = diffuse_tex.SampleLevel(sam, float3(tri_inter.TexCoord, 0), 0);

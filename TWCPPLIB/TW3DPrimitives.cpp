@@ -60,9 +60,15 @@ void TW3DPrimitives::Initialize(TW3DResourceManager* ResourceManager) {
 	//TWU::TW3DCalculateTriangleNormals(vertices, 36, fsizeof(TWT::DefaultVertex), foffsetof(TWT::DefaultVertex, Pos), foffsetof(TWT::DefaultVertex, TexCoord),
 	//	foffsetof(TWT::DefaultVertex, Normal), foffsetof(TWT::DefaultVertex, Tangent), foffsetof(TWT::DefaultVertex, Bitangent));
 
+	vertices[23].TexCoord.z = 1;
+	vertices[24].TexCoord.z = 1;
+	vertices[25].TexCoord.z = 1;
+	vertices[26].TexCoord.z = 1;
+	vertices[27].TexCoord.z = 1;
+	vertices[28].TexCoord.z = 1;
+
 	CubeVertexBuffer->Update(vertices, sizeof(vertices) / sizeof(TWT::DefaultVertex));
 	Cube = new TW3DVertexMesh(ResourceManager, {CubeVertexBuffer});
-
 
 	TW3DVertexBuffer* Pyramid4VertexBuffer = ResourceManager->CreateVertexBuffer(18, sizeof(TWT::DefaultVertex));
 

@@ -82,7 +82,7 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) }
 	);
 
-	std::vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({TW3D_ILE_POSITION, TW3D_ILE_TEXCOORD, TW3D_ILE_NORMAL, TW3D_ILE_TANGENT, TW3D_ILE_BITANGENT, TW3D_ILE_MATERIAL});
+	std::vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({TW3D_ILE_POSITION, TW3D_ILE_TEXCOORD_3D, TW3D_ILE_NORMAL, TW3D_ILE_TANGENT, TW3D_ILE_BITANGENT});
 
 	D3D12_RASTERIZER_DESC rastDesc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
@@ -183,8 +183,9 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	normal_texarr = ResourceManager->CreateTextureArray2D(400, 400, material_count, TWT::RGBA32Float);
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] Texture resources initialized."s);
 
-	diffuse_texarr->Upload2D(L"D:/OptimizedRT.png", 0);
-	//emission_texarr->Upload2D(L"D:/emission.png", 0);
+	//diffuse_texarr->Upload2D(L"D:/OptimizedRT.png", 0);
+	diffuse_texarr->Upload2D(L"D:/emission.png", 0);
+	emission_texarr->Upload2D(L"D:/emission.png", 1);
 	//texture->Upload2D(L"D:/тест2.png", 1);
 	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");
 }
