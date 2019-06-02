@@ -18,6 +18,7 @@ struct PS_OUTPUT {
 
 struct VS_OUTPUT {
 	float4        pos : SV_Position;
+	float3  model_pos : ModelPosition;
 	float3  tex_coord : TexCoord;
 	float3 obj_normal : ObjectNormal;
 	float3    tangent : Tangent;
@@ -54,7 +55,7 @@ PS_OUTPUT main(VS_OUTPUT input) {
 	//}
 
 
-	output.position = float4(input.pos.xyz, 1.0f);
+	output.position = float4(input.model_pos.xyz, 1.0f);
 	output.normal = float4(normal, 0);
 	output.diffuse = diffuse_tex.Sample(sam, input.tex_coord);
 	output.specular = specular_tex.Sample(sam, input.tex_coord);

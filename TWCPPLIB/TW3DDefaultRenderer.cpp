@@ -184,6 +184,7 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] Texture resources initialized."s);
 
 	diffuse_texarr->Upload2D(L"D:/OptimizedRT.png", 0);
+	//emission_texarr->Upload2D(L"D:/emission.png", 0);
 	//texture->Upload2D(L"D:/тест2.png", 1);
 	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");
 }

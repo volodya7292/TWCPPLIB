@@ -29,7 +29,7 @@ void TW3DLightSource::SetColor(TWT::vec3 const& Color) {
 }
 
 TWT::vec3 TW3DLightSource::GetPosition() {
-	return TWT::vec3();
+	return position;
 }
 
 TWT::vec3 TW3DLightSource::GetColor() {

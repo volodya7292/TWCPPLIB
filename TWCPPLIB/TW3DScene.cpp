@@ -12,7 +12,7 @@ TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 	gnb = ResourceManager->CreateBuffer(1024, sizeof(LBVHNode), true);
 	ResourceManager->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 
-	lsb = ResourceManager->CreateBuffer(1024, sizeof(TW3DLightSource), true);
+	lsb = ResourceManager->CreateBuffer(1024, sizeof(TW3DSceneLightSource), true);
 	ResourceManager->ResourceBarrier(lsb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 
 	LBVH = new TW3DLBVH(ResourceManager, 1, true);

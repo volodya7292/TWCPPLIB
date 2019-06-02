@@ -9,6 +9,9 @@
 
 #define sqr(x) (x) * (x)
 
+#define LIGHTSOURCE_TYPE_TRIANGLE    0
+#define   LIGHTSOURCE_TYPE_SPHERE    1
+
 static uint rand_seed;
 
 float4x4 scale(float4x4 m, in float v) {
@@ -235,4 +238,44 @@ float3 rand_cos_hemisphere_dir(float3 normal) {
 
 	// Get our cosine-weighted hemisphere lobe sample direction
 	return tangent * (r * cos(phi).x) + bitangent * (r * sin(phi)) + normal.xyz * sqrt(max(0.0, 1.0f - randVal.x));
+}
+
+inline float ggx_normal_distribution(float NdotH, float roughness) {
+	float a2 = roughness * roughness;
+	float d = ((NdotH * a2 - NdotH) * NdotH + 1);
+	return a2 / max(0.001f, (d * d * PI));
+}
+
+inline float ggx_smith_masking_term(float NdotL, float NdotV, float roughness) {
+	float a2 = roughness * roughness;
+	float lambdaV = NdotL * sqrt(max(0.0f, (-NdotV * a2 + NdotV) * NdotV + a2));
+	float lambdaL = NdotV * sqrt(max(0.0f, (-NdotL * a2 + NdotL) * NdotL + a2));
+	return 0.5f / (lambdaV + lambdaL);
+}
+
+inline float3 schlick_fresnel(float3 f0, float u) {
+	return f0 + (float3(1.0f, 1.0f, 1.0f) - f0) * pow(1.0f - u, 5.0f);
+}
+
+// Compute GGX term from input parameters
+float3 get_ggx_color(float3 V, float3 L, float3 N, float NdotV, float3 specColor, float roughness, bool evalDirect) {
+	// Compute half vector and dot products
+	float3 H = normalize(V + L);
+	float NdotL = saturate(dot(N, L));
+	float NdotH = saturate(dot(N, H));
+	float LdotH = saturate(dot(L, H));
+
+	// Evaluate our GGX BRDF term
+	float D = ggx_normal_distribution(NdotH, roughness);
+	float G = ggx_smith_masking_term(NdotL, NdotV, roughness) * 4 * NdotL;
+	float3 F = schlick_fresnel(specColor, LdotH);
+
+	// If this is direct illumination, color is simple. 
+	// If we sampled via getGGXSample(), we need to divide by the probability of this sample.
+	float3 outColor = evalDirect ?
+		F * G * D * NdotV :
+		F * G * LdotH / max(0.001f, NdotH);
+
+	// Determine if the color is valid (if invalid, we likely have a NaN or Inf)
+	return (NdotV * NdotL * LdotH <= 0.0f) ? float3(0, 0, 0) : outColor;
 }

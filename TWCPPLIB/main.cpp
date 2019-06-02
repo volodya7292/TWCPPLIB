@@ -82,6 +82,8 @@ TWT::uint on_thread_tick(TWT::uint ThreadID, TWT::uint ThreadCount) {
 	TWT::String str = "govno FPS: "s + TW3D::GetFPS();
 	TW3D::SetWindowTitle(str);
 
+
+
 	return 300;
 }
 
@@ -149,10 +151,10 @@ int main() {
 	scene->Camera->Position.z = 3;
 
 	light = new TW3DLightSource();
-	light->SetTriangleId(0);
-	light->SetPosition(TWT::vec3(0));
+	light->SetSphereRadius(2);
+	light->SetPosition(TWT::vec3(0, 10, 0));
+	//light->SetTriangleId(0);
 
-	scene->AddLightSource(light);
 	scene->AddLightSource(light);
 
 	defaultRenderer = new TW3DDefaultRenderer();
