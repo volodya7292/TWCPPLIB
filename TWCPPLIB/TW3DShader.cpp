@@ -14,6 +14,7 @@ TW3DShader::TW3DShader(TWT::String const& Filename) {
 TW3DShader::TW3DShader(D3D12_SHADER_BYTECODE const& ByteCode, TWT::String const& ShaderName) {
 	release_bytecode_data = false;
 	bytecode = ByteCode;
+
 	TWU::SuccessAssert(D3DReflect(ByteCode.pShaderBytecode, ByteCode.BytecodeLength, IID_PPV_ARGS(&reflection)), "Reflect shader failed: "s + ShaderName);
 }
 

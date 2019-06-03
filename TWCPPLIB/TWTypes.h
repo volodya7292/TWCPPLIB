@@ -20,9 +20,9 @@ namespace TWT {
 	struct String {
 	public:
 		String() = default;
-		String(const String &Str) = default;
+		String(String const& Str) = default;
 		String(const char* Data);
-		String(const std::string& Data);
+		String(std::string const& Data);
 		~String()                         = default;
 
 		template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
@@ -36,8 +36,8 @@ namespace TWT {
 		const bool IsEmpty() const;
 		WString Wide();
 
-		String& operator  = (const String& t) = default;
-		String& operator += (const String& t);
+		String& operator  = (String const& t) = default;
+		String& operator += (String const& t);
 
 	private:
 		std::string data;
@@ -46,9 +46,9 @@ namespace TWT {
 	struct WString {
 	public:
 		WString() = default;
-		WString(const WString &Str) = default;
+		WString(WString const& Str) = default;
 		WString(const wchar* Data);
-		WString(const std::wstring& Data);
+		WString(std::wstring const& Data);
 		~WString() = default;
 
 		template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
@@ -62,15 +62,15 @@ namespace TWT {
 		const bool IsEmpty() const;
 		String Multibyte();
 
-		WString& operator  = (const WString& Str) = default;
-		WString& operator += (const WString& Str);
+		WString& operator  = (WString const& Str) = default;
+		WString& operator += (WString const& Str);
 
 	private:
 		std::wstring data;
 	};
 
 	template<class T>
-	inline void Copy(const std::vector<T>& Source, std::vector<T>& Destination) {
+	inline void Copy(std::vector<T> const& Source, std::vector<T>& Destination) {
 		std::copy(Source.begin(), Source.end(), std::back_inserter(Destination));
 	}
 }  // namespace TWT
@@ -94,12 +94,16 @@ namespace TWT {
 //std::wstring operator+(const std::wstring& str, const TWT::WString& t);
 //std::wstring operator+(const TWT::WString& t, const std::wstring& str);
 
-std::ostream& operator << (std::ostream& os, const TWT::String& t);
-TWT::String   operator  + (const TWT::String& t, const TWT::String& str);
-std::string   operator  + (const std::string& str, const TWT::String& t);
-std::string   operator  + (const TWT::String& t, const std::string& str);
+bool operator ==(TWT::String const& str0, TWT::String const& str1);
+bool operator !=(TWT::String const& str0, TWT::String const& str1);
+std::ostream& operator << (std::ostream& os, TWT::String const& t);
+TWT::String   operator  + (TWT::String const& t, TWT::String const& str);
+std::string   operator  + (std::string const& str, TWT::String const& t);
+std::string   operator  + (TWT::String const& t, std::string const& str);
 
-std::wostream& operator << (std::wostream& os, const TWT::WString& t);
-TWT::WString   operator  + (const TWT::WString& t, const TWT::WString& str);
-std::wstring   operator  + (const std::wstring& str, const TWT::WString& t);
-std::wstring   operator  + (const TWT::WString& t, const std::wstring& str);
+bool operator ==(TWT::WString const& str0, TWT::WString const& str1);
+bool operator !=(TWT::WString const& str0, TWT::WString const& str1);
+std::wostream& operator << (std::wostream const& os, TWT::WString const& t);
+TWT::WString   operator  + (TWT::WString const& t, TWT::WString const& str);
+std::wstring   operator  + (std::wstring const& str, TWT::WString const& t);
+std::wstring   operator  + (TWT::WString const& t, std::wstring const& str);

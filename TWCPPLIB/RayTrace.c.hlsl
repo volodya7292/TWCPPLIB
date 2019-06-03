@@ -2,6 +2,8 @@
 
 #define COS_45DEG 0.7071067811
 
+#define RT_SHADOW_BIAS    1e-2f
+
 struct InputData {
 	uint use_two_scenes;
 	uint def_scene_light_count;
@@ -176,8 +178,8 @@ inline bool trace_shadow_ray(in Ray ray, in float light_ray_length) {
 	inter.init(0);
 
 	if (input.def_scene_light_count > 0 || input.large_scene_light_count > 0) {
-	    TraceRay(ray, inter);
-	    return (inter.Distance >= light_ray_length - RT_BIAS) || (abs(inter.Distance - light_ray_length) <= RT_BIAS);
+		TraceRay(ray, inter);
+		return (inter.Distance >= light_ray_length - RT_SHADOW_BIAS) || (abs(inter.Distance - light_ray_length) <= RT_SHADOW_BIAS);
 	} else {
 		return false;
 	}
@@ -219,18 +221,18 @@ float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float
 	float3 to_camera = normalize(camera.pos.xyz - pos);
 
 
-	float randX = rand_next() * 1 - 0.5;
+	/*float randX = rand_next() * 1 - 0.5;
 	float randZ = rand_next() * 1 - 0.5;
 	float3 testLightPos = (float3(0, 0.5f, 0) + float3(randX, 0, randZ));
-	float3 toLight = normalize(testLightPos - pos);
+	float3 toLight = normalize(testLightPos - pos);*/
 
 
 	LightInfo light_info;
 	Ray to_light;
 	to_light.origin = pos;
-	to_light.dir = toLight;//normalize(float3(0, 0.49f, 0) - pos);
-	light_info.color = float3(1, 1, 1);
-	light_info.ray_length = 0;
+	//to_light.dir = toLight;//normalize(float3(0, 0.49f, 0) - pos);
+	//light_info.color = float3(1, 1, 1);
+	//light_info.ray_length = 0;
 	rand_light_dir(to_light, light_info);
 
 	float NdotL = saturate(dot(normal, to_light.dir));
@@ -246,10 +248,10 @@ float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float
 		float3 directColor = emission + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
 		float3 directAlbedo = emission + ggxTerm + diffuse / PI;
 		//bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
-		//direct = float4(saturate(directColor), 1);//float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
-		//direct_albedo = float4(saturate(directAlbedo), 1);//float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
-		direct = float4(emission + NdotL, 1);
-		direct_albedo = float4(diffuse, 1);
+		direct = float4(saturate(directColor), 1);//float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
+		direct_albedo = float4(saturate(directAlbedo), 1);//float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
+		//direct = float4(emission + NdotL, 1);
+		//direct_albedo = float4(diffuse, 1);
 	}
 
 	// Indirect
@@ -286,7 +288,7 @@ float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float
 		indirect_albedo = float4(difTerm, 1.0f);
 	}
 
-	return direct;// + indirect * indirect_albedo;
+	return direct * direct_albedo + indirect * indirect_albedo;
 }
 
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]

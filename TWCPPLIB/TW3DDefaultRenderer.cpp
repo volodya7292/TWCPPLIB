@@ -6,7 +6,7 @@
 
 #include "CompiledShaders/GBuffer.v.h"
 #include "CompiledShaders/GBuffer.p.h"
-#include "CompiledShaders/FinalPassBlit.v.h"
+#include "CompiledShaders/ScreenQuad.v.h"
 #include "CompiledShaders/FinalPassBlit.p.h"
 #include "CompiledShaders/RayTrace.c.h"
 
@@ -62,7 +62,7 @@ void TW3DDefaultRenderer::CreateBlitResources() {
 		root_signature,
 		1);
 	blit_ps->SetRTVFormat(0, TWT::RGBA8Unorm);
-	blit_ps->SetVertexShader(new TW3DShader(TW3DCompiledShader(FinalPassBlit_VertexByteCode), "BlitVertex"s));
+	blit_ps->SetVertexShader(new TW3DShader(TW3DCompiledShader(ScreenQuad_VertexByteCode), "ScreenQuad"s));
 	blit_ps->SetPixelShader(new TW3DShader(TW3DCompiledShader(FinalPassBlit_PixelByteCode), "BlitPixel"s));
 	blit_ps->Create(Device);
 }
@@ -203,6 +203,7 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	g_normal->Resize(Width, Height);
 	g_diffuse->Resize(Width, Height);
 	g_specular->Resize(Width, Height);
+	g_emission->Resize(Width, Height);
 	g_depth->Resize(Width, Height);
 }
 

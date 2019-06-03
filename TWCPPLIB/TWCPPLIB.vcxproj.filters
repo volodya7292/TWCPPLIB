@@ -219,6 +219,9 @@
     <ClInclude Include="TW3DLightSource.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DVRSCalculator.h">
+      <Filter>Header Files\TW3DEngine\TW3DModule</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -365,6 +368,9 @@
     <ClCompile Include="TW3DLightSource.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
+    <ClCompile Include="TW3DVRSCalculator.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="GBuffer.v.hlsl">
@@ -394,9 +400,6 @@
     <FxCompile Include="UpdateLBVHNodeBounds.c.hlsl">
       <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
-    <FxCompile Include="CalculateLBVHsBoundingBox.c.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="CalculateMortonCodesForLBVHs.c.hlsl">
       <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
@@ -418,11 +421,17 @@
     <FxCompile Include="SetupLBVHNodesFromTriangles.c.hlsl">
       <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
-    <FxCompile Include="FinalPassBlit.v.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="FinalPassBlit.p.hlsl">
       <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ScreenQuad.v.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="CalculateVariableRateShading.p.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="CalculateLBVHsBoundingBox.c.hlsl">
+      <Filter>Resource Files\Shaders\LBVH</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

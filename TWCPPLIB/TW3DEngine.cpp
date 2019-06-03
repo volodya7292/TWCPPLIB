@@ -171,6 +171,7 @@ void init_dx12() {
 	device->GetFeatureData(D3D12_FEATURE_D3D12_OPTIONS4, &opt4, sizeof(opt4));
 	D3D12_FEATURE_DATA_D3D12_OPTIONS5 opt5 = {};
 	device->GetFeatureData(D3D12_FEATURE_D3D12_OPTIONS5, &opt5, sizeof(opt5));
+	
 
 	logger->LogInfo("DirectX initialized.");
 	logger->LogInfo("----------------------------------------------------------------------------------");

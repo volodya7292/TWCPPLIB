@@ -70,9 +70,8 @@ void on_update() {
 	}
 
 
-
-	//cube->VMInstances[0].Transform.SetPosition(TWT::vec3(-0.8f, 0, 0));
-	//cube->VMInstances[0].Transform.AdjustRotation(TWT::vec3(0.01f));
+	//cube2->VMInstance.Transform.SetPosition(TWT::vec3(0.0f, 5, 0));
+	//cube->VMInstance.Transform.AdjustRotation(TWT::vec3(0.01f));
 	//cube2->VMInstances[0].Transform.SetPosition(TWT::vec3(0.8f, 0, 0));
 	//cube2->VMInstances[0].Transform.AdjustRotation(TWT::vec3(0.02f));
 	scene->Camera->UpdateConstantBuffer();

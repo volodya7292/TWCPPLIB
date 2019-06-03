@@ -33,11 +33,11 @@ void TW::TWLogger::Log(char LogType, const TWT::String& Data) {
 	}
 }
 
-void TW::TWLogger::LogInfo(const TWT::String& Data) {
+void TW::TWLogger::LogInfo(TWT::String const& Data) {
 	Log('I', Data);
 }
 
-void TW::TWLogger::LogError(const TWT::String& Data) {
+void TW::TWLogger::LogError(TWT::String const& Data) {
 	Log('E', Data);
 
 #ifdef _DEBUG

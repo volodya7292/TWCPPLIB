@@ -4,7 +4,7 @@ static uint g_stack_nodes[32];
 static uint g_stack_nodes2[32];
 static float4x4 last_mesh_transform;
 
-#define RT_BIAS    0.0001f
+#define RT_BIAS    1e-4f
 
 #define   INTERSECTION_FLAG_NORMAL    1 << 0
 #define INTERSECTION_FLAG_TEXCOORD    1 << 1

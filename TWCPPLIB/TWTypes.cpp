@@ -39,6 +39,14 @@ TWT::String& TWT::String::operator+=(const String& t) {
 	return *this;
 }
 
+bool operator==(TWT::String const& str0, TWT::String const& str1) {
+	return str0.GetData().compare(str1.GetData()) == 0;
+}
+
+bool operator!=(TWT::String const& str0, TWT::String const& str1) {
+	return !(str0 == str1);
+}
+
 std::ostream& operator<<(std::ostream& os, const TWT::String& t) {
 	return os << t.GetData();
 }
@@ -104,6 +112,14 @@ TWT::String TWT::WString::Multibyte() {
 TWT::WString& TWT::WString::operator+=(const WString& Str) {
 	data += Str.data;
 	return *this;
+}
+
+bool operator==(TWT::WString const& str0, TWT::WString const& str1) {
+	return str0.GetData().compare(str1.GetData()) == 0;
+}
+
+bool operator!=(TWT::WString const& str0, TWT::WString const& str1) {
+	return !(str0 == str1);
 }
 
 std::wostream& operator<<(std::wostream& os, const TWT::WString& t) {
