@@ -133,13 +133,6 @@ int main() {
 
 	rp3d::BoxShape shape = rp3d::BoxShape(rp3d::Vector3(0.5, 0.5, 0.5));
 
-	cube->VMInstance.Transform.SetPosition(TWT::vec3(0.0f, 0, 0));
-	scene->AddObject(cube);
-	cube->VMInstance.RigidBody->setType(rp3d::BodyType::STATIC);
-	cube->VMInstance.RigidBody->enableGravity(false);
-	cube->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);
-	cube->VMInstance.RigidBody->setTransform(TW3DScene::PhysicalTransform(cube->VMInstance.Transform));
-
 	cube2->VMInstance.VertexMesh = TW3DPrimitives::GetPyramid4VertexMesh();
 	cube2->VMInstance.Transform.SetPosition(TWT::vec3(0.0f, 5, 0));
 	scene->AddObject(cube2);
@@ -147,17 +140,24 @@ int main() {
 	cube2->VMInstance.RigidBody->enableGravity(true);
 	cube2->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);
 
+	cube->VMInstance.Transform.SetPosition(TWT::vec3(0.0f, 0, 0));
+	scene->AddObject(cube);
+	cube->VMInstance.RigidBody->setType(rp3d::BodyType::STATIC);
+	cube->VMInstance.RigidBody->enableGravity(false);
+	cube->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);
+	cube->VMInstance.RigidBody->setTransform(TW3DScene::PhysicalTransform(cube->VMInstance.Transform));
+
 	scene->Camera->FOVY = 45;
 	scene->Camera->Position.z = 3;
 
 	light = new TW3DLightSource();
 	//light->SetSphereRadius(2);
 	//light->SetPosition(TWT::vec3(5, 8, 5));
-	light->SetTriangleId(8);
+	light->SetTriangleId(8, cube->VMInstance.VertexMesh->VertexBuffers[0]);
 
 	light2 = new TW3DLightSource();
 	//light2->SetSphereRadius(2);
-	light2->SetTriangleId(9);
+	light2->SetTriangleId(9, cube->VMInstance.VertexMesh->VertexBuffers[0]);
 	//light2->SetPosition(TWT::vec3(5, -10, 5));
 
 	scene->AddLightSource(light);

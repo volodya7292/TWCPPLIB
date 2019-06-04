@@ -86,13 +86,14 @@ void TW3DScene::Update(float DeltaTime) {
 	for (TWT::uint i = 0; i < LightSources.size(); i++) {
 		TW3DLightSource* light = LightSources[i];
 
-		if (light->Updated) {
+		if (light->Updated || offsets_updated) {
 			light->Updated = false;
 
 			TW3DSceneLightSource ls;
 			ls.position = TWT::vec4(light->GetPosition(), 1);
 			ls.color = TWT::vec4(light->GetColor(), 1);
 			ls.info = light->MakeInfo();
+			ls.info.y += vertex_buffers[light->GetTriangleVertexBuffer()] / 3;
 
 			lsb->UpdateElement(&ls, i);
 		}
@@ -205,6 +206,7 @@ void TW3DScene::RecordBeforeExecution() {
 		resource_manager->FlushCommandList(cl);
 	}
 
+	offsets_updated = vertex_buffers_changed || mesh_buffers_changed;
 	vertex_buffers_changed = mesh_buffers_changed = objects_changed = false;
 }
 

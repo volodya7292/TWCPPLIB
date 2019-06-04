@@ -427,11 +427,11 @@
     <FxCompile Include="ScreenQuad.v.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="CalculateVariableRateShading.p.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="CalculateLBVHsBoundingBox.c.hlsl">
       <Filter>Resource Files\Shaders\LBVH</Filter>
+    </FxCompile>
+    <FxCompile Include="CalculateVariableRateShading.c.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

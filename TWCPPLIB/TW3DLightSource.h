@@ -1,5 +1,5 @@
 #pragma once
-#include "TW3DTypes.h"
+#include "TW3DVertexBuffer.h"
 
 enum TW3DLightSourceType {
 	TW3D_LIGHT_SOURCE_TRIANGLE,
@@ -9,7 +9,7 @@ enum TW3DLightSourceType {
 class TW3DLightSource {
 public:
 	TW3DLightSource() = default;
-	void SetTriangleId(TWT::uint TriangleId);
+	void SetTriangleId(TWT::uint TriangleId, TW3DVertexBuffer* VertexBuffer);
 	void SetSphereRadius(float Radius);
 	void SetIntensity(float Intensity);
 	void SetPosition(TWT::vec3 const& Position);
@@ -20,6 +20,7 @@ public:
 	TWT::vec3 GetColor();
 
 	TWT::vec4 MakeInfo();
+	TW3DVertexBuffer* GetTriangleVertexBuffer();
 
 	bool Updated = false;
 
@@ -27,6 +28,8 @@ private:
 	TW3DLightSourceType Type;
 
 	TWT::uint triangle_id;
+	TW3DVertexBuffer* triangle_vb;
+
 	float sphere_radius;
 	float intensity = 1.0f;
 	TWT::vec3 position;

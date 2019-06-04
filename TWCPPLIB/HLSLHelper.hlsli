@@ -143,7 +143,7 @@ struct SceneLBVHNode {
 struct LightSource {
 	float4 pos;
 	float4 color;
-	float4 info; // .x - type, .y - triangle id, z - sphere radius
+	float4 info; // .x - type, .y - GVB triangle id, z - sphere radius
 };
 
 struct Camera {

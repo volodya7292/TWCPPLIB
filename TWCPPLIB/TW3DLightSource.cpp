@@ -1,9 +1,10 @@
 #include "pch.h"
 #include "TW3DLightSource.h"
 
-void TW3DLightSource::SetTriangleId(TWT::uint TriangleId) {
+void TW3DLightSource::SetTriangleId(TWT::uint TriangleId, TW3DVertexBuffer* VertexBuffer) {
 	Type = TW3D_LIGHT_SOURCE_TRIANGLE;
 	triangle_id = TriangleId;
+	triangle_vb = VertexBuffer;
 	Updated = true;
 }
 
@@ -37,5 +38,9 @@ TWT::vec3 TW3DLightSource::GetColor() {
 }
 
 TWT::vec4 TW3DLightSource::MakeInfo() {
-	return TWT::vec4(Type, triangle_id, sphere_radius, 0); // .x - type, .y - triangle id, z - sphere radius
+	return TWT::vec4(Type, triangle_id, sphere_radius, 0); // .x - type, .y - GVB triangle id, z - sphere radius
+}
+
+TW3DVertexBuffer* TW3DLightSource::GetTriangleVertexBuffer() {
+	return triangle_vb;
 }

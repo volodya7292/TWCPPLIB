@@ -141,6 +141,10 @@ void TW3DTexture::Resize(TWT::uint Width, TWT::uint Height, TWT::uint Depth) {
 	}
 }
 
+TWT::vec2u TW3DTexture::GetSize() {
+	return TWT::vec2u(desc.Width, desc.Height);
+}
+
 TW3DTexture* TW3DTexture::Create2D(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::WString const& filename) {
 	D3D12_RESOURCE_DESC textureDesc;
 	int imageBytesPerRow;

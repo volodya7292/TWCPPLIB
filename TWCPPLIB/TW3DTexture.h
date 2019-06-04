@@ -24,6 +24,8 @@ public:
 	void Upload2D(TWT::WString const& filename, TWT::uint Depth = 0);
 	void Resize(TWT::uint Width, TWT::uint Height, TWT::uint Depth = 1);
 
+	TWT::vec2u GetSize();
+
 	static TW3DTexture* Create2D(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::WString const& filename);
 
 private:

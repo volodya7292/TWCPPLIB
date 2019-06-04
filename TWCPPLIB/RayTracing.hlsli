@@ -134,7 +134,6 @@ void triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tr
 	//tri_inter.Distance = distance(ray.origin, interPoint);
 }
 
-
 void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offset, in GVB gvb, in Ray ray, inout TriangleIntersection tri_inter) {
 	TriangleIntersection mininter = tri_inter, tempinter = tri_inter;
 

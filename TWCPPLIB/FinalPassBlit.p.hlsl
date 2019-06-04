@@ -5,7 +5,7 @@ sampler sam : register(s0);
 
 struct VS_OUTPUT {
 	float4 pos: SV_POSITION;
-	float2 texCoord: TEXCOORD;
+	float2 tex_coord: TEXCOORD;
 };
 
 float4 main(VS_OUTPUT input) : SV_TARGET
@@ -18,6 +18,6 @@ float4 main(VS_OUTPUT input) : SV_TARGET
 	//return float4((texcoord.x-0.5f)*2, -(texcoord.y-0.5f)*2, 0, 1);
 
 	//return lerp(rt_result.Sample(sam, input.texCoord), g_albedo.Sample(sam, input.texCoord), 0.5);
-	return rt_result.Sample(sam, input.texCoord);
+	return rt_result.Sample(sam, input.tex_coord);
 	//return g_albedo.Sample(sam, input.texCoord);
 }

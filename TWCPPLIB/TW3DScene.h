@@ -37,6 +37,7 @@ private:
 	bool vertex_buffers_changed = false;
 	bool mesh_buffers_changed = false;
 	bool objects_changed = false;
+	bool offsets_updated = false;
 
 	std::map<TW3DVertexBuffer*, TWT::uint> vertex_buffers;
 	std::map<TW3DVertexMesh*, TW3DSceneVertexMesh> vertex_meshes;

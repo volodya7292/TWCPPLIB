@@ -146,6 +146,7 @@ inline void large_scene_rand_sphere_light_dir(inout Ray ray, in LightSource sphe
 
 void rand_light_dir(inout Ray ray, out LightInfo light_info) {
 	uint light_index;
+
 	LightSource light;
 
 	light_info.ray_length = 0;
@@ -156,7 +157,7 @@ void rand_light_dir(inout Ray ray, out LightInfo light_info) {
 		light = l_lsb[light_index];
 
 		if (light.info.x == LIGHTSOURCE_TYPE_TRIANGLE)
-			large_scene_rand_triangle_light_dir(ray, light.info.y, light_info.ray_length);
+			large_scene_rand_triangle_light_dir(ray, light.info.w + light.info.y, light_info.ray_length);
 		else if (light.info.x == LIGHTSOURCE_TYPE_SPHERE)
 			large_scene_rand_sphere_light_dir(ray, light, light_info.ray_length);
 	} else {
@@ -164,7 +165,7 @@ void rand_light_dir(inout Ray ray, out LightInfo light_info) {
 		light = lsb[light_index];
 
 		if (light.info.x == LIGHTSOURCE_TYPE_TRIANGLE)
-			def_scene_rand_triangle_light_dir(ray, light.info.y, light_info.ray_length);
+			def_scene_rand_triangle_light_dir(ray, light.info.w + light.info.y, light_info.ray_length);
 		else if (light.info.x == LIGHTSOURCE_TYPE_SPHERE)
 			def_scene_rand_sphere_light_dir(ray, light, light_info.ray_length);
 	}
@@ -315,7 +316,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		tri_inter.init(INTERSECTION_FLAG_NORMAL);
 		TraceRay(pRay, tri_inter);
 
-		color = sample_color(pos.xyz, tri_inter.Normal, diffuse.xyz, 1.0f, emission.rgb, 1.0f);
+		color = sample_color(pos.xyz, tri_inter.Normal, diffuse.rgb, specular.rgb, emission.rgb, 1.0f);
 
 		//if (tri_inter.Intersected)
 		//	color = diffuse_tex.SampleLevel(sam, float3(tri_inter.TexCoord, 0), 0);

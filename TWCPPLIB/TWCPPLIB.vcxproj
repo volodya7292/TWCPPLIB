@@ -113,7 +113,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
-      <ShaderModel>6.3</ShaderModel>
+      <ShaderModel>5.1</ShaderModel>
     </FxCompile>
     <FxCompile>
       <AllResourcesBound>true</AllResourcesBound>
@@ -161,7 +161,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
-      <ShaderModel>6.3</ShaderModel>
+      <ShaderModel>5.1</ShaderModel>
     </FxCompile>
     <FxCompile>
       <AllResourcesBound>true</AllResourcesBound>
@@ -435,16 +435,18 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="CalculateVariableRateShading.p.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+    <FxCompile Include="CalculateVariableRateShading.c.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompiledShaders/CalculateVariableRateShading.p.h</HeaderFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateVariableRateShading_PixelByteCode</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateVariableRateShading_PixelByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateVariableRateShading.p.h</HeaderFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompiledShaders/CalculateVariableRateShading.c.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateVariableRateShading_ByteCode</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateVariableRateShading_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompiledShaders/CalculateVariableRateShading.c.h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="SetupLBVHNodesFromTriangles.c.hlsl">
