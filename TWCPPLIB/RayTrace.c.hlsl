@@ -221,7 +221,6 @@ float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float
 
 	float3 to_camera = normalize(camera.pos.xyz - pos);
 
-
 	/*float randX = rand_next() * 1 - 0.5;
 	float randZ = rand_next() * 1 - 0.5;
 	float3 testLightPos = (float3(0, 0.5f, 0) + float3(randX, 0, randZ));
@@ -300,7 +299,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	rand_init(DTid.x + DTid.y * SIZE.x, renderer.info.x, 16);
 
 	float4 pos = g_position.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
-	float4 normal2 = g_normal.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
+	float4 normal = g_normal.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
 	float4 diffuse = g_diffuse.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
 	float4 specular = g_specular.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
 	float4 emission = g_emission.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
@@ -312,11 +311,11 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 		//pRay.dir = float3(1, 0, 0);
 
-		TriangleIntersection tri_inter;
+		/*TriangleIntersection tri_inter;
 		tri_inter.init(INTERSECTION_FLAG_NORMAL);
-		TraceRay(pRay, tri_inter);
+		TraceRay(pRay, tri_inter);*/
 
-		color = sample_color(pos.xyz, tri_inter.Normal, diffuse.rgb, specular.rgb, emission.rgb, 1.0f);
+		color = sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f);
 
 		//if (tri_inter.Intersected)
 		//	color = diffuse_tex.SampleLevel(sam, float3(tri_inter.TexCoord, 0), 0);
@@ -326,7 +325,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		float4 e = emission_tex.SampleLevel(sam, float3(DTid.xy / (float2)SIZE, 0), 0);
 		float4 e2 = normal_tex.SampleLevel(sam, float3(DTid.xy / (float2)SIZE, 0), 0);
 		float4 e3 = specular_tex.SampleLevel(sam, float3(DTid.xy / (float2)SIZE * e.x * e2.x, 0), 0);
-		color = float4(normal2.x, diffuse.y, specular.z, emission.a) * lsb[0].info * l_lsb[0].info * e * e2 * e3 * e1 * renderer.info.x;
+		color = float4(normal.x, diffuse.y, specular.z, emission.a) * lsb[0].info * l_lsb[0].info * e * e2 * e3 * e1 * renderer.info.x;
 	}
 
 	//if (pos.a == 0.5f) {
