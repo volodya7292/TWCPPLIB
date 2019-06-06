@@ -67,23 +67,38 @@ namespace TWT {
 		return glm::radians(Degrees);
 	}
 
+	template<uint L>
+	glm::vec<L, float> Radians(glm::vec<L, float> const& V) {
+		return glm::vec<L, float>(glm::radians(V));
+	}
+
+	template<typename T>
+	T Degrees(T Radians) {
+		return glm::radians(Radians);
+	}
+
+	template<uint L>
+	glm::vec<L, float> Degrees(glm::vec<L, float> const& V) {
+		return glm::vec<L, float>(glm::degrees(V));
+	}
+
 	template<uint L, typename T>
 	T Length(const glm::vec<L, T>& V) {
 		return glm::length(V);
 	}
 
 	template<uint L>
-	glm::vec<L, float> Distance(const glm::vec<L, float>& V0, const glm::vec<L, float>& V1) {
+	glm::vec<L, float> Distance(glm::vec<L, float> const& V0, glm::vec<L, float> const& V1) {
 		return glm::distance(V0, V1);
 	}
 
 	template<uint L, typename T>
-	glm::vec<L, T> Normalize(const glm::vec<L, T>& V) {
+	glm::vec<L, T> Normalize(glm::vec<L, T> const& V) {
 		return glm::normalize(V);
 	}
 
 	template<uint L>
-	inline glm::vec<L, float> Cross(const glm::vec<L, float>& V0, const glm::vec<L, float>& V1) {
+	inline glm::vec<L, float> Cross(glm::vec<L, float> const& V0, glm::vec<L, float> const& V1) {
 		return glm::cross(V0, V1);
 	}
 

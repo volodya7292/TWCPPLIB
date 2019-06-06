@@ -22,6 +22,7 @@ TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 
 	// Create the world with your settings
 	collision_world = new rp3d::DynamicsWorld(rp3d::Vector3(0, -9.81, 0));
+	collision_world->enableSleeping(true);
 	// Change the number of iterations of the velocity solver 
 	collision_world->setNbIterationsVelocitySolver(15);
 	// Change the number of iterations of the position solver 
@@ -54,7 +55,12 @@ void TW3DScene::AddObject(TW3DObject* Object) {
 			vertex_meshes[vminst.VertexMesh].gnb_offset = -1;
 			vertex_meshes[vminst.VertexMesh].gvb_offset = -1;
 
-			vminst.RigidBody = collision_world->createRigidBody(PhysicalTransform(vminst.Transform));
+			auto d = vminst.Transform.GetPhysicalTransform();
+
+			TW3DTransform d2;
+			d2.InitFromPhysicalTransform(d);
+
+			vminst.RigidBody = collision_world->createRigidBody(d);
 
 			//rp3d::Material& material = vminst.RigidBody->getMaterial();
    //         // Change the bounciness of the body 
@@ -208,14 +214,4 @@ void TW3DScene::RecordBeforeExecution() {
 
 	offsets_updated = vertex_buffers_changed || mesh_buffers_changed;
 	vertex_buffers_changed = mesh_buffers_changed = objects_changed = false;
-}
-
-rp3d::Transform TW3DScene::PhysicalTransform(TW3DTransform Transform) {
-	TWT::vec3 position = Transform.GetPosition();
-	TWT::vec3 rotation = Transform.GetRotation();
-
-	rp3d::Vector3 initPosition(position.x, position.y, position.z);
-	rp3d::Quaternion initOrientation = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(rotation.x, rotation.y, rotation.z));
-
-	return rp3d::Transform(initPosition, initOrientation);
 }

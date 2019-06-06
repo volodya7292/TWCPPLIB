@@ -32,6 +32,7 @@ void TW3DVRSCalculator::Record(TW3DGraphicsCommandList* CommandList, TW3DRenderT
 
 	CommandList->SetPipelineState(cp);
 
+	//CommandList->ClearTexture(OutputTexture, TWT::vec4()
 	CommandList->BindTexture(PositionTexture, GPosition);
 	CommandList->BindTexture(DiffuseTexture, GDiffuse);
 	CommandList->BindTexture(SpecularTexture, GSpecular);

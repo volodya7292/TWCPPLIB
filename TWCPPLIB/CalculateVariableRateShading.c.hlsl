@@ -17,7 +17,9 @@ sampler sam : register(s0);
 ConstantBuffer<InputData> input : register(b0);
 
 inline float weight(in float4 position, in float4 diffuse, in float4 normal) {
-	return position.w * luminance(diffuse.rgb) * ((dot(normal.xyz, float3(0, 1, 0)) + 1) / 2.0f);
+	if (position.w == 0)
+		return -1;
+	return luminance(diffuse.rgb) * ((dot(normal.xyz, float3(0, 1, 0)) + 1) / 2.0f);
 }
 
 // Kernel size: 32

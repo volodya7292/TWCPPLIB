@@ -15,17 +15,4 @@ public:
 
 protected:
 	TW3DConstantBuffer* ConstantBuffer;
-
-private:
-	TW3DTransform DefaultTransform(rp3d::Transform const& Transform) {
-		rp3d::Vector3 initPosition = Transform.getPosition();
-		TWT::vec3 position = TWT::vec3(initPosition.x, initPosition.y, initPosition.z);
-		rp3d::Quaternion initOrientation = Transform.getOrientation();
-
-		glm::quat quater = glm::quat(initOrientation.x, initOrientation.y, initOrientation.z, initOrientation.w);
-		TWT::vec3 rotation = glm::eulerAngles(quater);
-
-		return TW3DTransform(position, rotation);
-	}
-
 };

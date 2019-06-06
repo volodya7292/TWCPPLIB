@@ -330,8 +330,8 @@ void TW3DDefaultRenderer::Execute(TWT::uint BackBufferIndex) {
 
 	RenderRecordGBuffer();
 
-	//ResourceManager->ExecuteCommandList(rt_cl);
-	//ResourceManager->FlushCommandList(rt_cl);
+	ResourceManager->ExecuteCommandList(rt_cl);
+	ResourceManager->FlushCommandList(rt_cl);
 
 	ResourceManager->ExecuteCommandList(execute_cl);
 

@@ -358,6 +358,8 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		float4 e2 = normal_tex.SampleLevel(sam, float3(DTid.xy / (float2)SIZE, 0), 0);
 		float4 e3 = specular_tex.SampleLevel(sam, float3(DTid.xy / (float2)SIZE * e.x * e2.x, 0), 0);
 		color = float4(normal.x, diffuse.y, specular.z, emission.a) * lsb[0].info * l_lsb[0].info * e * e2 * e3 * e1 * renderer.info.x;
+
+		rt_output[DTid.xy] = 0;
 	}
 
 	//if (pos.a == 0.5f) {

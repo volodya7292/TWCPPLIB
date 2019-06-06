@@ -221,6 +221,11 @@ void TW3DGraphicsCommandList::BindCameraCBV(TWT::uint RootParameterIndex, TW3DPe
 	BindConstantBuffer(RootParameterIndex, Camera->GetConstantBuffer());
 }
 
+void TW3DGraphicsCommandList::ClearTexture(TW3DTexture* Texture, TWT::vec4 Color) {
+	float value[] = { Color.r, Color.b, Color.g, Color.a };
+	command_list->ClearUnorderedAccessViewFloat(Texture->GetGPUUAVHandle(), Texture->GetCPUHandle(), Texture->Get(), value, 1, nullptr);
+}
+
 void TW3DGraphicsCommandList::DrawObject(TW3DObject* object, TWT::uint ModelCBRootParameterIndex) {
 	object->RecordDraw(this, ModelCBRootParameterIndex);
 }

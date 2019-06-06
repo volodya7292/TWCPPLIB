@@ -25,8 +25,6 @@ public:
 	void Update(float DeltaTime);
 	void RecordBeforeExecution();
 
-	static rp3d::Transform PhysicalTransform(TW3DTransform Transform);
-
 	TW3DPerspectiveCamera* Camera;
 	std::vector<TW3DObject*> Objects;
 	std::vector<TW3DLightSource*> LightSources;

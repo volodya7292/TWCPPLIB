@@ -72,6 +72,7 @@ void on_update() {
 
 	//cube2->VMInstance.Transform.SetPosition(TWT::vec3(0.0f, 5, 0));
 	//cube->VMInstance.Transform.AdjustRotation(TWT::vec3(0.01f));
+	
 	//cube2->VMInstances[0].Transform.SetPosition(TWT::vec3(0.8f, 0, 0));
 	//cube2->VMInstances[0].Transform.AdjustRotation(TWT::vec3(0.02f));
 	scene->Camera->UpdateConstantBuffer();
@@ -123,7 +124,7 @@ int main() {
 	info.LogFilename = "Log.log"s;
 	TW3D::Initialize(info);
 
-	TW3D::SetVSync(false);
+	TW3D::SetVSync(true);
 
 	TW3DResourceManager* RM = TW3D::GetResourceManager();
 
@@ -135,6 +136,7 @@ int main() {
 
 	cube2->VMInstance.VertexMesh = TW3DPrimitives::GetPyramid4VertexMesh();
 	cube2->VMInstance.Transform.SetPosition(TWT::vec3(0.0f, 5, 0));
+	cube2->VMInstance.Transform.SetRotation(TWT::vec3d(0, 0, 180));
 	scene->AddObject(cube2);
 	cube2->VMInstance.RigidBody->setType(rp3d::BodyType::DYNAMIC);
 	cube2->VMInstance.RigidBody->enableGravity(true);
@@ -145,7 +147,8 @@ int main() {
 	cube->VMInstance.RigidBody->setType(rp3d::BodyType::STATIC);
 	cube->VMInstance.RigidBody->enableGravity(false);
 	cube->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);
-	cube->VMInstance.RigidBody->setTransform(TW3DScene::PhysicalTransform(cube->VMInstance.Transform));
+	//cube->VMInstance.RigidBody->setTransform(PhysicalTransform(cube->VMInstance.Transform));
+	cube->VMInstance.Transform.SetIdentity();
 
 	scene->Camera->FOVY = 45;
 	scene->Camera->Position.z = 3;

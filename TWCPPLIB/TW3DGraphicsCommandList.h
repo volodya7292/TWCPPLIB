@@ -55,6 +55,7 @@ public:
 	void ExecuteIndirect(ID3D12CommandSignature* CommandSignature, TWT::uint MaxCommandCount, ID3D12Resource* ArgumentBuffer,
 		TWT::uint64 ArgumentBufferOffset, ID3D12Resource* CountBuffer, TWT::uint64 CountBufferOffset);
 
+
 	void BindResources(TW3DResourceManager* ResourceManager);
 	void BindBuffer(TWT::uint RootParameterIndex, TW3DResource* Resource, bool UAV = false);
 	void BindTexture(TWT::uint RootParameterIndex, TW3DTexture* Texture, bool UAV = false);
@@ -63,6 +64,7 @@ public:
 	void Bind32BitConstant(TWT::uint RootParameterIndex, TWT::uint Data, TWT::uint DestOffsetIn32BitValues);
 	void Bind32BitConstants(TWT::uint RootParameterIndex, TWT::uint Num32BitValuesToSet, const void* Data, TWT::uint DestOffsetIn32BitValues);
 	void BindCameraCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera);
+	void ClearTexture(TW3DTexture* Texture, TWT::vec4 Color);
 	void DrawObject(TW3DObject* object, TWT::uint ModelCBRootParameterIndex);
 
 	void Reset();
