@@ -35,6 +35,7 @@ Texture2D<float4> g_normal : register(t13);
 Texture2D<float4> g_diffuse : register(t14);
 Texture2D<float4> g_specular : register(t15);
 Texture2D<float4> g_emission : register(t16);
+Texture2D<float2> g_vrs : register(t17);
 sampler sam : register(s0);
 
 // Output image
@@ -86,9 +87,9 @@ inline void TraceRay(in Ray ray, inout TriangleIntersection TriInter) {
 	}
 }
 
-Ray primary_ray(uint2 screen_size, uint2 screen_pixel_pos) {
+Ray primary_ray(uint2 screen_size, float2 screen_pixel_pos) {
 	const float ct = tan(camera.info.x / 2.0f);
-	const float2 screenPos = ((screen_pixel_pos + 0.5f) / (float2)screen_size * 2.0f - 1.0f) * float2(ct * ((float)screen_size.x / screen_size.y), -ct);
+	const float2 screenPos = (screen_pixel_pos / (float2)screen_size * 2.0f - 1.0f) * float2(ct * ((float)screen_size.x / screen_size.y), -ct);
 
 	Ray ray;
 	ray.origin = camera.pos.xyz;
@@ -291,6 +292,20 @@ float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float
 	return direct * direct_albedo + indirect * indirect_albedo;
 }
 
+// Returns ià pixel_pos == center_pixel_pos
+inline bool vrs_center_pixel_position(in uint vrs_scale, in uint2 pixel_pos, out uint kernel_size, out float2 new_pixel_pos_floor, out float2 new_pixel_pos) {
+	kernel_size = 1 << vrs_scale;
+	new_pixel_pos_floor = floor(pixel_pos, kernel_size);
+	new_pixel_pos = new_pixel_pos_floor + kernel_size / 2.0f;
+	return equals(uint2(floor(new_pixel_pos)), pixel_pos);
+}
+
+inline void fill_output(in uint2 pos, in uint2 size, in float4 value) {
+	for (uint x = 0; x < size.x; x++)
+		for (uint y = 0; y < size.y; y++)
+			rt_output[pos + uint2(x, y)] = value;
+}
+
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
 	uint2 SIZE;
@@ -298,16 +313,19 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	rand_init(DTid.x + DTid.y * SIZE.x, renderer.info.x, 16);
 
-	float4 pos = g_position.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
-	float4 normal = g_normal.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
-	float4 diffuse = g_diffuse.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
-	float4 specular = g_specular.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
-	float4 emission = g_emission.SampleLevel(sam, DTid.xy / (float2)SIZE, 0);
+	float2 tex_coord = DTid.xy / (float2)SIZE;
+
+	float4 pos = g_position.SampleLevel(sam, tex_coord, 0);
+	float4 normal = g_normal.SampleLevel(sam, tex_coord, 0);
+	float4 diffuse = g_diffuse.SampleLevel(sam, tex_coord, 0);
+	float4 specular = g_specular.SampleLevel(sam, tex_coord, 0);
+	float4 emission = g_emission.SampleLevel(sam, tex_coord, 0);
+	float2 vrs = g_vrs[DTid.xy];
 
 	float4 color = float4(0, 0, 0, renderer.info.x);
 
 	if (pos.w == 1) { // Not a background pixel
-		Ray pRay = primary_ray(SIZE, DTid.xy);
+		//Ray pRay = primary_ray(SIZE, DTid.xy + 0.5f);
 
 		//pRay.dir = float3(1, 0, 0);
 
@@ -315,7 +333,21 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		tri_inter.init(INTERSECTION_FLAG_NORMAL);
 		TraceRay(pRay, tri_inter);*/
 
-		color = sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f);
+		uint kernel_size;
+		float2 n_pos, n_pos_floor;
+		bool this_pixel = vrs_center_pixel_position(vrs.x, DTid.xy, kernel_size, n_pos_floor, n_pos);
+
+		if (this_pixel) {
+			tex_coord = n_pos / (float2)SIZE;
+			pos = g_position.SampleLevel(sam, tex_coord, 0);
+			normal = g_normal.SampleLevel(sam, tex_coord, 0);
+			diffuse = g_diffuse.SampleLevel(sam, tex_coord, 0);
+			specular = g_specular.SampleLevel(sam, tex_coord, 0);
+			emission = g_emission.SampleLevel(sam, tex_coord, 0);
+			color = sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f);
+
+			fill_output(n_pos_floor, kernel_size, color);
+		}
 
 		//if (tri_inter.Intersected)
 		//	color = diffuse_tex.SampleLevel(sam, float3(tri_inter.TexCoord, 0), 0);
@@ -352,5 +384,5 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	//	}
 	//}
 
-	rt_output[DTid.xy] = color;
+	//rt_output[DTid.xy] = color;
 }

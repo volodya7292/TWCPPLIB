@@ -14,6 +14,14 @@
 
 static uint rand_seed;
 
+float floor(float v, float unit_size) {
+	return floor(v / unit_size) * unit_size;
+}
+
+float2 floor(float2 v, float2 unit_size) {
+	return floor(v / unit_size) * unit_size;
+}
+
 float4x4 scale(float4x4 m, in float v) {
 	m[0][0] *= v; m[1][0] *= v; m[2][0] *= v;
 	m[0][1] *= v; m[1][1] *= v; m[2][1] *= v;
@@ -35,6 +43,10 @@ inline float3 translation(in float4x4 m) {
 
 inline bool equals(in float3 v0, in float v) {
 	return v0.x == v && v0.y == v && v0.z == v;
+}
+
+inline bool equals(in float2 v0, in float2 v1) {
+	return v0.x == v1.x && v0.y == v1.y;
 }
 
 inline bool not_equals(in float3 v0, in float v) {

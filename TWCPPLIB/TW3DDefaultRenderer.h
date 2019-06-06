@@ -46,8 +46,7 @@ private:
 	};
 	TW3DGraphicsPipelineState *gbuffer_ps = nullptr;
 	TW3DRenderTarget *g_position, *g_normal, *g_diffuse, *g_specular, *g_emission;
-	TW3DTexture* g_depth;
-	TW3DTexture* vrs_data;
+	TW3DTexture *g_depth, *g_vrs;
 
 	// Ray tracing compute
 	// --------------------------------------------------------------------- 
@@ -69,6 +68,7 @@ private:
 		RT_G_DIFFUSE_TEXTURE,
 		RT_G_SPECULAR_TEXTURE,
 		RT_G_EMISSION_TEXTURE,
+		RT_G_VRS_TEXTURE,
 		RT_OUTPUT_TEXTURE,
 		RT_INPUT_CONST,
 		RT_CAMERA_CB,

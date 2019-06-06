@@ -123,7 +123,7 @@ int main() {
 	info.LogFilename = "Log.log"s;
 	TW3D::Initialize(info);
 
-	TW3D::SetVSync(true);
+	TW3D::SetVSync(false);
 
 	TW3DResourceManager* RM = TW3D::GetResourceManager();
 

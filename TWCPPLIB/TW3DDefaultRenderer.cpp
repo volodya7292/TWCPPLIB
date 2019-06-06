@@ -27,7 +27,7 @@ TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete g_specular;
 	delete g_emission;
 	delete g_depth;
-	delete vrs_data;
+	delete g_vrs;
 
 	delete rt_output;
 	delete diffuse_texarr;
@@ -117,7 +117,7 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 	g_emission = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA8Unorm);
 	g_depth = ResourceManager->CreateDepthStencilTexture(Width, Height);
 
-	vrs_data = ResourceManager->CreateTexture2D(Width, Height, TWT::RG32Float, true);
+	g_vrs = ResourceManager->CreateTexture2D(Width, Height, TWT::RG32Float, true);
 
 	g_cl = ResourceManager->CreateDirectCommandList();
 }
@@ -149,6 +149,7 @@ void TW3DDefaultRenderer::CreateRTResources() {
 			TW3DRPTexture(RT_G_DIFFUSE_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 14),
 			TW3DRPTexture(RT_G_SPECULAR_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 15),
 			TW3DRPTexture(RT_G_EMISSION_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 16),
+			TW3DRPTexture(RT_G_VRS_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 17),
 
 			TW3DRPTexture(RT_OUTPUT_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 0, true),
 			TW3DRPConstantBuffer(RT_CAMERA_CB, D3D12_SHADER_VISIBILITY_ALL, 0),
@@ -208,6 +209,7 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	g_specular->Resize(Width, Height);
 	g_emission->Resize(Width, Height);
 	g_depth->Resize(Width, Height);
+	g_vrs->Resize(Width, Height);
 }
 
 void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarget* ColorOutput, TW3DTexture* Depth) {
@@ -261,8 +263,6 @@ void TW3DDefaultRenderer::RenderRecordGBuffer() {
 
 	ResourceManager->ExecuteCommandList(g_cl);
 	ResourceManager->FlushCommandList(g_cl);
-
-
 }
 
 void TW3DDefaultRenderer::Record(TWT::uint BackBufferIndex, TW3DRenderTarget* ColorOutput, TW3DTexture* DepthStencilOutput) {
@@ -285,7 +285,7 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 	rt_cl->Reset();
 	rt_cl->BindResources(ResourceManager);
 
-	TW3DModules::VRSCalculator()->Record(rt_cl, g_position, g_diffuse, g_specular, g_normal, vrs_data);
+	TW3DModules::VRSCalculator()->Record(rt_cl, g_position, g_diffuse, g_specular, g_normal, g_vrs);
 
 	rt_cl->SetPipelineState(rt_ps);
 	Scene->Bind(rt_cl, RT_GVB_BUFFER, RT_SCENE_BUFFER, RT_GNB_BUFFER, RT_LSB_BUFFER);
@@ -298,6 +298,7 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 	rt_cl->BindTexture(RT_G_DIFFUSE_TEXTURE, g_diffuse);
 	rt_cl->BindTexture(RT_G_SPECULAR_TEXTURE, g_specular);
 	rt_cl->BindTexture(RT_G_EMISSION_TEXTURE, g_emission);
+	rt_cl->BindTexture(RT_G_VRS_TEXTURE, g_vrs);
 
 	rt_cl->BindTexture(RT_DIFFUSE_TEXTURE, diffuse_texarr);
 	rt_cl->BindTexture(RT_SPECULAR_TEXTURE, specular_texarr);
@@ -329,10 +330,11 @@ void TW3DDefaultRenderer::Execute(TWT::uint BackBufferIndex) {
 
 	RenderRecordGBuffer();
 
-	ResourceManager->ExecuteCommandList(rt_cl);
-	ResourceManager->FlushCommandList(rt_cl);
+	//ResourceManager->ExecuteCommandList(rt_cl);
+	//ResourceManager->FlushCommandList(rt_cl);
 
 	ResourceManager->ExecuteCommandList(execute_cl);
 
+	// Adjust frame count
 	info.info.x++;
 }
