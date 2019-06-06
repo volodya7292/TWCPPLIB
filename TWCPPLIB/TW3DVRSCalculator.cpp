@@ -39,10 +39,13 @@ void TW3DVRSCalculator::Record(TW3DGraphicsCommandList* CommandList, TW3DRenderT
 	CommandList->BindTexture(OutputTexture, Output, true);
 
 	TWT::vec2u size = Output->GetSize();
-	TWT::vec2u gn = TWT::vec2u(ceil(size.x / 32.0f / 8.0f), ceil(size.y / 32.0f / 8.0f));
 
-	for (TWT::uint i = 0; i < 1; i++) {
+	for (TWT::uint i = 0; i < 4; i++) {
+		float kernel = 1 << (i + 1);
+		TWT::vec2u gn = TWT::vec2u(ceil(size.x / kernel / 8.0f), ceil(size.y / kernel / 8.0f));
+
 		CommandList->Bind32BitConstant(InputConstants, i, 0);
 		CommandList->Dispatch(gn.x, gn.y);
+		CommandList->ResourceBarrier(TW3DUAVBarrier());
 	}
 }

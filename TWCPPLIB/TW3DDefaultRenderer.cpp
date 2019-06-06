@@ -117,7 +117,7 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 	g_emission = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA8Unorm);
 	g_depth = ResourceManager->CreateDepthStencilTexture(Width, Height);
 
-	vrs_data = ResourceManager->CreateTexture2D(Width, Height, TWT::R32Float, true);
+	vrs_data = ResourceManager->CreateTexture2D(Width, Height, TWT::RG32Float, true);
 
 	g_cl = ResourceManager->CreateDirectCommandList();
 }
