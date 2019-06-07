@@ -127,9 +127,9 @@ void TW3DBitonicSorter::RecordSort(TW3DGraphicsCommandList* CommandList, TW3DBuf
 			struct OuterSortConstants {
 				UINT k;
 				UINT j;
-			} constants { k, j };
+			} constants2 { k, j };
 
-			CommandList->Bind32BitConstants(ShaderSpecificConstants, 2, &constants, 0);
+			CommandList->Bind32BitConstants(ShaderSpecificConstants, 2, &constants2, 0);
 			CommandList->ExecuteIndirect(m_pCommandSignature, 1, m_pDispatchArgs->Get(), IndirectArgsOffset, nullptr, 0);
 			CommandList->ResourceBarrier(uavBarrier);
 			IndirectArgsOffset += cIndirectArgStride;

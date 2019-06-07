@@ -145,7 +145,7 @@ inline void large_scene_rand_sphere_light_dir(inout Ray ray, in LightSource sphe
 	ray.dir = normalize(spos - ro);
 }
 
-void rand_light_dir(inout Ray ray, out LightInfo light_info) {
+inline void rand_light_dir(inout Ray ray, out LightInfo light_info) {
 	uint light_index;
 
 	LightSource light;
@@ -182,12 +182,12 @@ inline bool trace_shadow_ray(in Ray ray, in float light_ray_length) {
 	if (input.def_scene_light_count > 0 || input.large_scene_light_count > 0) {
 		TraceRay(ray, inter);
 		return (inter.Distance >= light_ray_length - RT_SHADOW_BIAS) || (abs(inter.Distance - light_ray_length) <= RT_SHADOW_BIAS);
-	} else {
-		return false;
 	}
+
+	return false;
 }
 
-float3 trace_indirect_ray(in Ray ray) {
+inline float3 trace_indirect_ray(in Ray ray) {
 	TriangleIntersection inter;
 	inter.init(INTERSECTION_FLAG_TEXCOORD | INTERSECTION_FLAG_NORMAL);
 
@@ -202,25 +202,25 @@ float3 trace_indirect_ray(in Ray ray) {
 
 	// Compute our lambertion term (L dot N)
 	//vec3 toLight = normalize(inter.point - ray.origin);
-	float LdotN = saturate(dot(inter.Normal, to_light.dir));
+	const float LdotN = saturate(dot(inter.Normal, to_light.dir));
 
 	// Shoot our shadow ray.
 	//Intersection shadow = trace_ray(ray);
-	float shadowMult = trace_shadow_ray(to_light, light_info.ray_length);
+	const float shadowMult = trace_shadow_ray(to_light, light_info.ray_length);
 
-	float4 diffuse = diffuse_tex.SampleLevel(sam, inter.TexCoord, 0);
-	float4 emission = emission_tex.SampleLevel(sam, inter.TexCoord, 0);
+	const float4 diffuse = diffuse_tex.SampleLevel(sam, inter.TexCoord, 0);
+	const float4 emission = emission_tex.SampleLevel(sam, inter.TexCoord, 0);
 
 	return emission.xyz + LdotN * shadowMult * light_info.color * (diffuse.xyz) / PI;
 	//return diffuse.xyz;
 }
 
-float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float3 emission, in float roughness) {
+inline float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float3 emission, in float roughness) {
 	float4 direct, direct_albedo;
 	float4 indirect, indirect_albedo;
 
 
-	float3 to_camera = normalize(camera.pos.xyz - pos);
+	const float3 to_camera = normalize(camera.pos.xyz - pos);
 
 	/*float randX = rand_next() * 1 - 0.5;
 	float randZ = rand_next() * 1 - 0.5;
@@ -236,18 +236,23 @@ float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float
 	//light_info.ray_length = 0;
 	rand_light_dir(to_light, light_info);
 
-	float NdotL = saturate(dot(normal, to_light.dir));
-	float NdotV = dot(normal, to_camera);
-	float shadowMult = trace_shadow_ray(to_light, light_info.ray_length);
+	const float NdotV = dot(normal, to_camera);
+	const float shadowMult = trace_shadow_ray(to_light, light_info.ray_length);
+
+
+	float3 ggxTerm;
+	float NdotL;
 
 	// Direct
 	{
+		NdotL = saturate(dot(normal, to_light.dir));
+
 		// Compute our GGX color
-		float3 ggxTerm = get_ggx_color(to_camera, to_light.dir, normal, NdotV, specular, roughness, true);
+		ggxTerm = get_ggx_color(to_camera, to_light.dir, normal, NdotV, specular, roughness, true);
 
 		// Compute direct color.  Split into light and albedo terms for our SVGF filter
-		float3 directColor = emission + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
-		float3 directAlbedo = emission + ggxTerm + diffuse / PI;
+		const float3 directColor = emission + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
+		const float3 directAlbedo = emission + ggxTerm + diffuse / PI;
 		//bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
 		direct = float4(saturate(directColor), 1);//float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
 		direct_albedo = float4(saturate(directAlbedo), 1);//float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
@@ -258,8 +263,8 @@ float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float
 	// Indirect
 	{
 		// We have to decide whether we sample our diffuse or specular lobe.
-		float probDiffuse   = probability_to_sample_diffuse(diffuse, specular);
-		float chooseDiffuse = (rand_next() < probDiffuse);
+		const float probDiffuse   = probability_to_sample_diffuse(diffuse, specular);
+		const float chooseDiffuse = (rand_next() < probDiffuse);
 
 		float3 bounceDir;
 		if (chooseDiffuse) {   // Randomly select to bounce in our diffuse lobe
@@ -272,19 +277,19 @@ float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float
 		Ray iRay;
 		iRay.origin = pos;
 		iRay.dir = bounceDir;
-		float3 bounceColor = trace_indirect_ray(iRay);
+		const float3 bounceColor = trace_indirect_ray(iRay);
 
 		// Compute diffuse, ggx shading terms
-		float  NdotL = saturate(dot(pos, bounceDir));
-		float3 difTerm = max(5e-3f, diffuse / PI);
-		float3 ggxTerm = NdotL * get_ggx_color(to_camera, bounceDir, normal, NdotV, specular, roughness, false);
+		NdotL = saturate(dot(pos, bounceDir));
+		const float3 difTerm = max(5e-3f, diffuse / PI);
+		ggxTerm = NdotL * get_ggx_color(to_camera, bounceDir, normal, NdotV, specular, roughness, false);
 
 		// Split into an incoming light and "indirect albedo" term to help filter illumination despite sampling 2 different lobes
-		float3 difFinal = 1.0f / probDiffuse;                    // Has been divided by difTerm.  Multiplied back post-SVGF
-		float3 ggxFinal = ggxTerm / (difTerm * (1.0f - probDiffuse));    // Has been divided by difTerm.  Multiplied back post-SVGF
-		float3 shadeColor = bounceColor * (chooseDiffuse ? difFinal : ggxFinal);
+		const float3 difFinal = 1.0f / probDiffuse;                    // Has been divided by difTerm.  Multiplied back post-SVGF
+		const float3 ggxFinal = ggxTerm / (difTerm * (1.0f - probDiffuse));    // Has been divided by difTerm.  Multiplied back post-SVGF
+		const float3 shadeColor = bounceColor * (chooseDiffuse ? difFinal : ggxFinal);
 
-		bool colorsNan = any(isnan(shadeColor));
+		const bool colorsNan = any(isnan(shadeColor));
 		indirect = float4(colorsNan ? float3(0, 0, 0) : shadeColor, 1.0f);
 		indirect_albedo = float4(difTerm, 1.0f);
 	}
@@ -313,78 +318,33 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	rand_init(DTid.x + DTid.y * SIZE.x, renderer.info.x, 16);
 
-	float2 tex_coord = DTid.xy / (float2)SIZE;
+	uint2 pixel = DTid.xy;
 
-	float4 pos = g_position.SampleLevel(sam, tex_coord, 0);
-	float4 normal = g_normal.SampleLevel(sam, tex_coord, 0);
-	float4 diffuse = g_diffuse.SampleLevel(sam, tex_coord, 0);
-	float4 specular = g_specular.SampleLevel(sam, tex_coord, 0);
-	float4 emission = g_emission.SampleLevel(sam, tex_coord, 0);
-	float2 vrs = g_vrs[DTid.xy];
+	float4 pos = g_position[pixel];//.SampleLevel(sam, tex_coord, 0);
+	float4 normal, diffuse, specular, emission;
 
 	float4 color = float4(0, 0, 0, renderer.info.x);
 
 	if (pos.w == 1) { // Not a background pixel
-		//Ray pRay = primary_ray(SIZE, DTid.xy + 0.5f);
-
-		//pRay.dir = float3(1, 0, 0);
-
-		/*TriangleIntersection tri_inter;
-		tri_inter.init(INTERSECTION_FLAG_NORMAL);
-		TraceRay(pRay, tri_inter);*/
+		float2 vrs = g_vrs[pixel];
 
 		uint kernel_size;
 		float2 n_pos, n_pos_floor;
-		bool this_pixel = vrs_center_pixel_position(vrs.x, DTid.xy, kernel_size, n_pos_floor, n_pos);
+		bool this_pixel = vrs_center_pixel_position(vrs.x, pixel, kernel_size, n_pos_floor, n_pos);
 
 		if (this_pixel) {
-			tex_coord = n_pos / (float2)SIZE;
-			pos = g_position.SampleLevel(sam, tex_coord, 0);
-			normal = g_normal.SampleLevel(sam, tex_coord, 0);
-			diffuse = g_diffuse.SampleLevel(sam, tex_coord, 0);
-			specular = g_specular.SampleLevel(sam, tex_coord, 0);
-			emission = g_emission.SampleLevel(sam, tex_coord, 0);
+			uint2 tex_coord = n_pos;
+			//tex_coord = n_pos / (float2)SIZE;
+			pos = g_position[tex_coord];
+			normal = g_normal[tex_coord];
+			diffuse = g_diffuse[tex_coord];
+			specular = g_specular[tex_coord];
+			emission = g_emission[tex_coord];
 			color = sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f);
 
 			fill_output(n_pos_floor, kernel_size, color);
 		}
-
-		//if (tri_inter.Intersected)
-		//	color = diffuse_tex.SampleLevel(sam, float3(tri_inter.TexCoord, 0), 0);
-
 	} else { // Background pixel
-		float4 e1 = diffuse_tex.SampleLevel(sam, float3(DTid.xy / (float2)SIZE, 0), 0);
-		float4 e = emission_tex.SampleLevel(sam, float3(DTid.xy / (float2)SIZE, 0), 0);
-		float4 e2 = normal_tex.SampleLevel(sam, float3(DTid.xy / (float2)SIZE, 0), 0);
-		float4 e3 = specular_tex.SampleLevel(sam, float3(DTid.xy / (float2)SIZE * e.x * e2.x, 0), 0);
-		color = float4(normal.x, diffuse.y, specular.z, emission.a) * lsb[0].info * l_lsb[0].info * e * e2 * e3 * e1 * renderer.info.x;
-
-		rt_output[DTid.xy] = 0;
+		rt_output[pixel] = float4(0, 0, 0, 1);
 	}
-
-	//if (pos.a == 0.5f) {
-	//	color = float4(normal.x, diffuse.y, specular.z, emission.a) * lsb[0].info * l_lsb[0].info;
-	//} else {
-
-	//	Ray pRay = primary_ray(SIZE, DTid.xy);
-
-	//	TriangleIntersection tri_inter;
-	//	bool intersected;
-	//	if (input.use_two_scenes == 1u)
-	//		intersected = TraceRayLarge(pRay, tri_inter);
-	//	else
-	//		intersected = TraceRayNormal(pRay, tri_inter);
-
-	//	//float4 color = float4(1, 0.3, 0.5, 1);
-	//	if (input.use_two_scenes == 1u) {
-	//		float4 e = emission_tex.SampleLevel(sam, float3(tri_inter.Bary, 0), 0);
-	//		float4 e2 = normal_tex.SampleLevel(sam, float3(tri_inter.Bary, 0), 0);
-	//		color = specular_tex.SampleLevel(sam, float3(tri_inter.Bary * e.x * e2.x, 0), 0);
-	//	}
-	//	if (intersected) {
-	//		color.xyz = diffuse_tex.SampleLevel(sam, float3(tri_inter.Bary, 0), 0);
-	//	}
-	//}
-
-	//rt_output[DTid.xy] = color;
 }

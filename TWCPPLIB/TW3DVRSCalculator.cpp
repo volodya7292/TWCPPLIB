@@ -47,6 +47,6 @@ void TW3DVRSCalculator::Record(TW3DGraphicsCommandList* CommandList, TW3DRenderT
 
 		CommandList->Bind32BitConstant(InputConstants, i, 0);
 		CommandList->Dispatch(gn.x, gn.y);
-		CommandList->ResourceBarrier(TW3DUAVBarrier());
+		CommandList->ResourceBarrier(TW3DUAVBarrier(Output));
 	}
 }
