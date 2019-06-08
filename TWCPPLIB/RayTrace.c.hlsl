@@ -35,7 +35,6 @@ Texture2D<float4> g_normal : register(t13);
 Texture2D<float4> g_diffuse : register(t14);
 Texture2D<float4> g_specular : register(t15);
 Texture2D<float4> g_emission : register(t16);
-Texture2D<float2> g_vrs : register(t17);
 sampler sam : register(s0);
 
 // Output image
@@ -253,7 +252,7 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 		ggxTerm = get_ggx_color(to_camera, to_light.dir, normal, NdotV, specular, roughness, true);
 
 		// Compute direct color.  Split into light and albedo terms for our SVGF filter
-		const float3 directColor = emission + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
+		const float3 directColor = (emission == 0 ? 0 : 1) + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
 		const float3 directAlbedo = emission + ggxTerm + diffuse / PI;
 		//bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
 		direct = float4(saturate(directColor), 1);//float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
@@ -325,25 +324,18 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	float4 color = float4(0, 0, 0, renderer.info.x);
 
 	if (pos.w == 1) { // Not a background pixel
-		float2 vrs = g_vrs[pixel];
+		//tex_coord = n_pos / (float2)SIZE;
+		pos = g_position[pixel];
+		normal = g_normal[pixel];
+		diffuse = g_diffuse[pixel];
+		specular = g_specular[pixel];
+		emission = g_emission[pixel];
 
-		float2 n_pos, n_pos_floor;
-		bool this_pixel = vrs_center_pixel_position(vrs.x, pixel, n_pos_floor, n_pos);
+		sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel);
+		//sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel + uint2(0, 1));
+		//sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel + uint2(1, 1));
+		//sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel + uint2(1, 0));
 
-		if (this_pixel) {
-			uint2 tex_coord = n_pos;
-			//tex_coord = n_pos / (float2)SIZE;
-			pos = g_position[tex_coord];
-			normal = g_normal[tex_coord];
-			diffuse = g_diffuse[tex_coord];
-			specular = g_specular[tex_coord];
-			emission = g_emission[tex_coord];
-
-			sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, n_pos_floor);
-
-			
-			//	fill_output(n_pos_floor, kernel_size, color);
-		}
 	} else { // Background pixel
 		rt_direct[pixel] = float4(0, 0, 0, 1);
 		rt_indirect[pixel] = float4(0, 0, 0, 1);

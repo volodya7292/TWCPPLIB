@@ -35,12 +35,15 @@ namespace TWT {
 		mat4 proj;
 		mat4 view;
 		mat4 proj_view;
+		mat4 prev_proj_view;
 		vec4 info = vec4(1.0f, 1.0f, 0, 0); // .x - FOVy in radians, .y - scale factor (large objects are scaled down)
 	};
 
 	struct DefaultModelCB {
 		mat4 model;
 		mat4 model_reduced;
+		mat4 prev_model;
+		mat4 prev_model_reduced;
 	};
 
 	struct DefaultRendererInfoCB {

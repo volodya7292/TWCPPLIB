@@ -61,6 +61,10 @@ inline bool less(in float3 v0, in float3 v1) {
 	return v0.x < v1.x && v0.y < v1.y && v0.z < v1.z;
 }
 
+inline bool greater(in float3 v0, in float v1) {
+	return v0.x > v1 && v0.y > v1 && v0.z > v1;
+}
+
 inline bool greater(in float3 v0, in float3 v1) {
 	return v0.x > v1.x && v0.y > v1.y && v0.z > v1.z;
 }
@@ -163,6 +167,7 @@ struct Camera {
 	float4x4 proj;
 	float4x4 view;
 	float4x4 proj_view;
+	float4x4 prev_proj_view;
 	float4 info; // .x - FOVy in radians, .y - scale factor (large objects are scaled down)
 };
 
@@ -321,4 +326,11 @@ float3 rand_ggx_sample_dir(float roughness, float3 normal, float3 inVec) {
 
 	// Convert this into a ray direction by computing the reflection direction
 	return normalize(2.f * dot(inVec, H) * H - inVec);
+}
+
+// A simple utility to convert a float to a 2-component octohedral representation packed into one uint
+uint dir_to_oct(float3 normal) {
+	float2 p = normal.xy * (1.0 / dot(abs(normal), 1.0.xxx));
+	float2 e = normal.z > 0.0 ? p : (1.0 - abs(p.yx)) * (step(0.0, p)*2.0-(float2)(1.0));
+	return (asuint(f32tof16(e.y)) << 16) + (asuint(f32tof16(e.x)));
 }

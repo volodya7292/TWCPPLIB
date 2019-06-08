@@ -17,12 +17,14 @@ struct PS_OUTPUT {
 };
 
 struct VS_OUTPUT {
-	float4           clip_pos : SV_Position;
-	linear float3   world_pos : ModelPosition;
-	float2          tex_coord : TexCoord;
-	uint          material_id : MaterialId;
-	linear float3  obj_normal : ObjectNormal;
-	linear float3     tangent : Tangent;
+	float4             clip_pos : SV_Position;
+	float4        prev_clip_pos : PrevPosition;
+	linear float3     world_pos : ModelPosition;
+	float2            tex_coord : TexCoord;
+	uint            material_id : MaterialId;
+	linear float3        normal : ObjectNormal;
+	linear float3  world_normal : WorldNormal;
+	linear float3       tangent : Tangent;
 };
 
 ConstantBuffer<Camera> camera : register(b0); // .info.y - scale factor for large objects
@@ -33,12 +35,12 @@ PS_OUTPUT main(VS_OUTPUT input) {
 	float3 tex_coord = float3(input.tex_coord, input.material_id);
 
 	float3 normal_sample = normal_tex.Sample(sam, tex_coord).xyz * 2.0f - 1.0f;
-	float3 bitangent = cross(input.obj_normal, input.tangent);
-	float3x3 tex_space = float3x3(input.tangent, bitangent, input.obj_normal);
+	float3 bitangent = cross(input.world_normal, input.tangent);
+	float3x3 tex_space = float3x3(input.tangent, bitangent, input.world_normal);
 	float3 normal = normalize(mul(normal_sample, tex_space));
 
 
-	normal = input.obj_normal;
+	normal = input.world_normal;
 	normal = (dot(normal, normalize(camera.pos.xyz - input.world_pos.xyz)) >= 0) ? normal : -normal;
 
 
@@ -68,6 +70,31 @@ PS_OUTPUT main(VS_OUTPUT input) {
 	output.specular = specular_tex.Sample(sam, tex_coord);
 	output.emission = emission_tex.Sample(sam, tex_coord);
 	output.depth = depth_delinearize(depth_linearize(input.clip_pos.z, 0.1, 1000) / camera.info.y, 0.1, 1000);
+
+
+
+
+
+
+
+
+
+	// The 'linearZ' buffer
+	float linearZ    = output.depth * input.clip_pos.w;
+	float maxChangeZ = max(abs(ddx(linearZ)), abs(ddy(linearZ)));
+	float objNorm    = asfloat(dir_to_oct(normalize(input.normal)));
+	float4 svgfLinearZOut = float4(linearZ, maxChangeZ, input.prev_clip_pos.z, objNorm);
+
+
+
+
+
+
+
+
+
+
+
 
 	return output;
 }

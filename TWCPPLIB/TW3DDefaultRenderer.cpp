@@ -27,7 +27,6 @@ TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete g_specular;
 	delete g_emission;
 	delete g_depth;
-	delete g_vrs;
 
 	delete rt_direct;
 	delete rt_direct_albedo;
@@ -47,7 +46,6 @@ void TW3DDefaultRenderer::CreateBlitResources() {
 			TW3DRPTexture(2, D3D12_SHADER_VISIBILITY_PIXEL, 2), // RT direct albedo
 			TW3DRPTexture(3, D3D12_SHADER_VISIBILITY_PIXEL, 3), // RT indirect
 			TW3DRPTexture(4, D3D12_SHADER_VISIBILITY_PIXEL, 4), // RT indirect albedo
-			TW3DRPTexture(5, D3D12_SHADER_VISIBILITY_PIXEL, 5)  // RT G VRS
 		},
 		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) },
 		true, true, false, false
@@ -79,7 +77,8 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 	TW3DRootSignature* root_signature = new TW3DRootSignature(Device,
 		{
 			TW3DRPConstantBuffer(GBUFFER_VERTEX_CAMERA_CB, D3D12_SHADER_VISIBILITY_VERTEX, 0),
-			TW3DRPConstantBuffer(GBUFFER_VERTEX_VMI_CB, D3D12_SHADER_VISIBILITY_VERTEX, 1),
+			TW3DRPConstantBuffer(GBUFFER_VERTEX_PREV_CAMERA_CB, D3D12_SHADER_VISIBILITY_VERTEX, 1),
+			TW3DRPConstantBuffer(GBUFFER_VERTEX_VMI_CB, D3D12_SHADER_VISIBILITY_VERTEX, 2),
 			TW3DRPConstantBuffer(GBUFFER_PIXEL_CAMERA_CB, D3D12_SHADER_VISIBILITY_PIXEL, 0),
 			TW3DRPConstants(GBUFFER_PIXEL_VMISCALE_CONST, D3D12_SHADER_VISIBILITY_PIXEL, 1, 1),
 			TW3DRPTexture(GBUFFER_PIXEL_DIFFUSE_TEXTURE, D3D12_SHADER_VISIBILITY_PIXEL, 0),
@@ -124,8 +123,6 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 	g_emission = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA8Unorm);
 	g_depth = ResourceManager->CreateDepthStencilTexture(Width, Height);
 
-	g_vrs = ResourceManager->CreateTexture2D(Width, Height, TWT::RG32Float, true);
-
 	g_cl = ResourceManager->CreateDirectCommandList();
 }
 
@@ -162,7 +159,6 @@ void TW3DDefaultRenderer::CreateRTResources() {
 			TW3DRPTexture(RT_G_DIFFUSE_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 14),
 			TW3DRPTexture(RT_G_SPECULAR_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 15),
 			TW3DRPTexture(RT_G_EMISSION_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 16),
-			TW3DRPTexture(RT_G_VRS_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 17),
 
 			// Ray tracing output resources
 			TW3DRPTexture(RT_DIRECT_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 0, true),
@@ -234,7 +230,6 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	g_specular->Resize(Width, Height);
 	g_emission->Resize(Width, Height);
 	g_depth->Resize(Width, Height);
-	g_vrs->Resize(Width, Height);
 }
 
 void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarget* ColorOutput, TW3DTexture* Depth) {
@@ -253,7 +248,6 @@ void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarg
 	cl->BindTexture(2, rt_direct_albedo);
 	cl->BindTexture(3, rt_indirect);
 	cl->BindTexture(4, rt_indirect_albedo);
-	cl->BindTexture(5, g_vrs);
 	cl->ClearRTV(ColorOutput, TWT::vec4(0, 0, 0, 1));
 	cl->ClearDSVDepth(Depth);
 	cl->SetViewport(&viewport);
@@ -320,8 +314,6 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 	rt_cl->Reset();
 	rt_cl->BindResources(ResourceManager);
 
-	TW3DModules::VRSCalculator()->Record(rt_cl, g_position, g_diffuse, g_specular, g_normal, g_vrs);
-
 	rt_cl->SetPipelineState(rt_ps);
 	Scene->Bind(rt_cl, RT_GVB_BUFFER, RT_SCENE_BUFFER, RT_GNB_BUFFER, RT_LSB_BUFFER);
 
@@ -333,7 +325,6 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 	rt_cl->BindTexture(RT_G_DIFFUSE_TEXTURE, g_diffuse);
 	rt_cl->BindTexture(RT_G_SPECULAR_TEXTURE, g_specular);
 	rt_cl->BindTexture(RT_G_EMISSION_TEXTURE, g_emission);
-	rt_cl->BindTexture(RT_G_VRS_TEXTURE, g_vrs);
 
 	rt_cl->BindTexture(RT_DIFFUSE_TEXTURE, diffuse_texarr);
 	rt_cl->BindTexture(RT_SPECULAR_TEXTURE, specular_texarr);
