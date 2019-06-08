@@ -61,7 +61,7 @@ void triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tr
 							gvb[tri_inter.TriangleId * 3].tex_coord.xy * (1 - u - v) +
 							gvb[tri_inter.TriangleId * 3 + 1].tex_coord.xy * u +
 							gvb[tri_inter.TriangleId * 3 + 2].tex_coord.xy * v,
-							0);
+							gvb[tri_inter.TriangleId * 3].tex_coord.z); // material id
 					}
 					if (tri_inter.Flags & INTERSECTION_FLAG_NORMAL) {
 						float3 normal = gvb[tri_inter.TriangleId * 3].normal;

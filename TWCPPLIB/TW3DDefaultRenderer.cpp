@@ -127,10 +127,10 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 }
 
 void TW3DDefaultRenderer::CreateRTResources() {
-	rt_direct = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA8Unorm, true);
-	rt_direct_albedo = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA8Unorm, true);
-	rt_indirect = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA8Unorm, true);
-	rt_indirect_albedo = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA8Unorm, true);
+	rt_direct = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA32Float, true);
+	rt_direct_albedo = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA32Float, true);
+	rt_indirect = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA32Float, true);
+	rt_indirect_albedo = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA32Float, true);
 	//ResourceManager->ResourceBarrier(rt_output, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 	TW3DShader* s = new TW3DShader(TW3DCompiledShader(RayTrace_ByteCode), "RTShader"s);
@@ -202,8 +202,8 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	normal_texarr = ResourceManager->CreateTextureArray2D(400, 400, material_count, TWT::RGBA32Float);
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] Texture resources initialized."s);
 
-	//diffuse_texarr->Upload2D(L"D:/OptimizedRT.png", 0);
-	diffuse_texarr->Upload2D(L"D:/emission.png", 0);
+	diffuse_texarr->Upload2D(L"D:/OptimizedRT_converged.jpg", 0);
+	//diffuse_texarr->Upload2D(L"D:/emission.png", 0);
 	emission_texarr->Upload2D(L"D:/emission.png", 1);
 	//texture->Upload2D(L"D:/тест2.png", 1);
 	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");

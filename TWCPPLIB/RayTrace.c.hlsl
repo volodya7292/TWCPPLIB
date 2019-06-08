@@ -331,7 +331,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		specular = g_specular[pixel];
 		emission = g_emission[pixel];
 
-		sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel);
+		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0, emission.rgb, 1, pixel);
 		//sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel + uint2(0, 1));
 		//sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel + uint2(1, 1));
 		//sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel + uint2(1, 0));
