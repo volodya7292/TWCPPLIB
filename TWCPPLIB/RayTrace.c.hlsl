@@ -39,7 +39,10 @@ Texture2D<float2> g_vrs : register(t17);
 sampler sam : register(s0);
 
 // Output image
-RWTexture2D<float4> rt_output : register(u0);
+RWTexture2D<float4> rt_direct : register(u0);
+RWTexture2D<float4> rt_direct_albedo : register(u1);
+RWTexture2D<float4> rt_indirect : register(u2);
+RWTexture2D<float4> rt_indirect_albedo : register(u3);
 
 // Camera
 ConstantBuffer<Camera> camera : register(b0);
@@ -182,9 +185,9 @@ inline bool trace_shadow_ray(in Ray ray, in float light_ray_length) {
 	if (input.def_scene_light_count > 0 || input.large_scene_light_count > 0) {
 		TraceRay(ray, inter);
 		return (inter.Distance >= light_ray_length - RT_SHADOW_BIAS) || (abs(inter.Distance - light_ray_length) <= RT_SHADOW_BIAS);
+	} else {
+		return false;
 	}
-
-	return false;
 }
 
 inline float3 trace_indirect_ray(in Ray ray) {
@@ -215,10 +218,9 @@ inline float3 trace_indirect_ray(in Ray ray) {
 	//return diffuse.xyz;
 }
 
-inline float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float3 emission, in float roughness) {
-	float4 direct, direct_albedo;
-	float4 indirect, indirect_albedo;
+inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float3 emission, in float roughness, in float2 pixel_pos) {
 
+	float4 direct, direct_albedo, indirect, indirect_albedo;
 
 	const float3 to_camera = normalize(camera.pos.xyz - pos);
 
@@ -294,27 +296,24 @@ inline float4 sample_color(in float3 pos, in float3 normal, in float3 diffuse, i
 		indirect_albedo = float4(difTerm, 1.0f);
 	}
 
-	return direct * direct_albedo + indirect * indirect_albedo;
+	rt_direct[pixel_pos] = direct;
+	rt_direct_albedo[pixel_pos] = direct_albedo;
+	rt_indirect[pixel_pos] = indirect;
+	rt_indirect_albedo[pixel_pos] = indirect_albedo;
 }
 
-// Returns ià pixel_pos == center_pixel_pos
-inline bool vrs_center_pixel_position(in uint vrs_scale, in uint2 pixel_pos, out uint kernel_size, out float2 new_pixel_pos_floor, out float2 new_pixel_pos) {
-	kernel_size = 1 << vrs_scale;
+// Returns if pixel_pos == center_pixel_pos
+inline bool vrs_center_pixel_position(in uint vrs_scale, in uint2 pixel_pos, out float2 new_pixel_pos_floor, out float2 new_pixel_pos) {
+	uint kernel_size = 1 << vrs_scale;
 	new_pixel_pos_floor = floor(pixel_pos, kernel_size);
 	new_pixel_pos = new_pixel_pos_floor + kernel_size / 2.0f;
 	return equals(uint2(floor(new_pixel_pos)), pixel_pos);
 }
 
-inline void fill_output(in uint2 pos, in uint2 size, in float4 value) {
-	for (uint x = 0; x < size.x; x++)
-		for (uint y = 0; y < size.y; y++)
-			rt_output[pos + uint2(x, y)] = value;
-}
-
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
 	uint2 SIZE;
-	rt_output.GetDimensions(SIZE.x, SIZE.y);
+	rt_direct.GetDimensions(SIZE.x, SIZE.y);
 
 	rand_init(DTid.x + DTid.y * SIZE.x, renderer.info.x, 16);
 
@@ -328,9 +327,8 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	if (pos.w == 1) { // Not a background pixel
 		float2 vrs = g_vrs[pixel];
 
-		uint kernel_size;
 		float2 n_pos, n_pos_floor;
-		bool this_pixel = vrs_center_pixel_position(vrs.x, pixel, kernel_size, n_pos_floor, n_pos);
+		bool this_pixel = vrs_center_pixel_position(vrs.x, pixel, n_pos_floor, n_pos);
 
 		if (this_pixel) {
 			uint2 tex_coord = n_pos;
@@ -340,11 +338,14 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 			diffuse = g_diffuse[tex_coord];
 			specular = g_specular[tex_coord];
 			emission = g_emission[tex_coord];
-			color = sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f);
 
-			fill_output(n_pos_floor, kernel_size, color);
+			sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, n_pos_floor);
+
+			
+			//	fill_output(n_pos_floor, kernel_size, color);
 		}
 	} else { // Background pixel
-		rt_output[pixel] = float4(0, 0, 0, 1);
+		rt_direct[pixel] = float4(0, 0, 0, 1);
+		rt_indirect[pixel] = float4(0, 0, 0, 1);
 	}
 }

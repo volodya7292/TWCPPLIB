@@ -18,7 +18,7 @@ TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 
 	delete rt_cl;
 	delete g_cl;
-	
+
 	delete info_cb;
 
 	delete g_position;
@@ -29,7 +29,10 @@ TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete g_depth;
 	delete g_vrs;
 
-	delete rt_output;
+	delete rt_direct;
+	delete rt_direct_albedo;
+	delete rt_indirect;
+	delete rt_indirect_albedo;
 	delete diffuse_texarr;
 	delete specular_texarr;
 	delete emission_texarr;
@@ -40,7 +43,11 @@ void TW3DDefaultRenderer::CreateBlitResources() {
 	TW3DRootSignature* root_signature = new TW3DRootSignature(Device,
 		{
 			TW3DRPTexture(0, D3D12_SHADER_VISIBILITY_PIXEL, 0), // GBuffer albedo
-			TW3DRPTexture(1, D3D12_SHADER_VISIBILITY_PIXEL, 1)  // RT result
+			TW3DRPTexture(1, D3D12_SHADER_VISIBILITY_PIXEL, 1), // RT direct
+			TW3DRPTexture(2, D3D12_SHADER_VISIBILITY_PIXEL, 2), // RT direct albedo
+			TW3DRPTexture(3, D3D12_SHADER_VISIBILITY_PIXEL, 3), // RT indirect
+			TW3DRPTexture(4, D3D12_SHADER_VISIBILITY_PIXEL, 4), // RT indirect albedo
+			TW3DRPTexture(5, D3D12_SHADER_VISIBILITY_PIXEL, 5)  // RT G VRS
 		},
 		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) },
 		true, true, false, false
@@ -83,7 +90,7 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) }
 	);
 
-	std::vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({TW3D_ILE_POSITION, TW3D_ILE_TEXCOORD_3D, TW3D_ILE_NORMAL, TW3D_ILE_TANGENT, TW3D_ILE_BITANGENT});
+	std::vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({ TW3D_ILE_POSITION, TW3D_ILE_TEXCOORD_3D, TW3D_ILE_NORMAL, TW3D_ILE_TANGENT, TW3D_ILE_BITANGENT });
 
 	D3D12_RASTERIZER_DESC rastDesc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
@@ -123,13 +130,17 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 }
 
 void TW3DDefaultRenderer::CreateRTResources() {
-	rt_output = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA8Unorm, true);
-	ResourceManager->ResourceBarrier(rt_output, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	rt_direct = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA8Unorm, true);
+	rt_direct_albedo = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA8Unorm, true);
+	rt_indirect = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA8Unorm, true);
+	rt_indirect_albedo = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA8Unorm, true);
+	//ResourceManager->ResourceBarrier(rt_output, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 	TW3DShader* s = new TW3DShader(TW3DCompiledShader(RayTrace_ByteCode), "RTShader"s);
 
 	TW3DRootSignature* rs = new TW3DRootSignature(Device,
 		{
+			// Ray tracing resources
 			TW3DRPBuffer(RT_GVB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, 0),
 			TW3DRPBuffer(RT_SCENE_BUFFER, D3D12_SHADER_VISIBILITY_ALL, 1),
 			TW3DRPBuffer(RT_GNB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, 2),
@@ -138,12 +149,14 @@ void TW3DDefaultRenderer::CreateRTResources() {
 			TW3DRPBuffer(RT_L_SCENE_BUFFER, D3D12_SHADER_VISIBILITY_ALL, 5),
 			TW3DRPBuffer(RT_L_GNB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, 6),
 			TW3DRPBuffer(RT_L_LSB_BUFFER, D3D12_SHADER_VISIBILITY_ALL, 7),
-			
+
+			// Texture resources
 			TW3DRPTexture(RT_DIFFUSE_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 8),
 			TW3DRPTexture(RT_SPECULAR_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 9),
 			TW3DRPTexture(RT_EMISSION_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 10),
 			TW3DRPTexture(RT_NORMAL_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 11),
 
+			// GBuffer
 			TW3DRPTexture(RT_G_POSITION_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 12),
 			TW3DRPTexture(RT_G_NORMAL_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 13),
 			TW3DRPTexture(RT_G_DIFFUSE_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 14),
@@ -151,14 +164,20 @@ void TW3DDefaultRenderer::CreateRTResources() {
 			TW3DRPTexture(RT_G_EMISSION_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 16),
 			TW3DRPTexture(RT_G_VRS_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 17),
 
-			TW3DRPTexture(RT_OUTPUT_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 0, true),
+			// Ray tracing output resources
+			TW3DRPTexture(RT_DIRECT_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 0, true),
+			TW3DRPTexture(RT_DIRECT_ALBEDO_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 1, true),
+			TW3DRPTexture(RT_INDIRECT_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 2, true),
+			TW3DRPTexture(RT_INDIRECT_ALBEDO_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, 3, true),
+
+			// Scene data
 			TW3DRPConstantBuffer(RT_CAMERA_CB, D3D12_SHADER_VISIBILITY_ALL, 0),
 			TW3DRPConstants(RT_INPUT_CONST, D3D12_SHADER_VISIBILITY_ALL, 1, 3),
 			TW3DRPConstantBuffer(RT_RENDERERINFO_CB, D3D12_SHADER_VISIBILITY_ALL, 2),
 		},
 		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_ALL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) },
 		false, false, false, false
-	);
+		);
 
 	rt_ps = new TW3DComputePipelineState(rs);
 
@@ -200,8 +219,14 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(Width), static_cast<float>(Height));
 	scissor = CD3DX12_RECT(0, 0, Width, Height);
 
-	rt_output->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-	rt_output->Resize(Width, Height);
+	rt_direct->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	rt_direct->Resize(Width, Height);
+	rt_direct_albedo->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	rt_direct_albedo->Resize(Width, Height);
+	rt_indirect->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	rt_indirect->Resize(Width, Height);
+	rt_indirect_albedo->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	rt_indirect_albedo->Resize(Width, Height);
 
 	g_position->Resize(Width, Height);
 	g_normal->Resize(Width, Height);
@@ -215,13 +240,20 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarget* ColorOutput, TW3DTexture* Depth) {
 	cl->ResourceBarriers({
 		TW3DTransitionBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET),
-		TW3DTransitionBarrier(rt_output, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
+		TW3DTransitionBarrier(rt_direct, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
+		TW3DTransitionBarrier(rt_direct_albedo, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
+		TW3DTransitionBarrier(rt_indirect, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
+		TW3DTransitionBarrier(rt_indirect_albedo, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
 	});
 
 	cl->SetPipelineState(blit_ps);
 	cl->SetRenderTarget(ColorOutput, Depth);
 	cl->BindTexture(0, g_diffuse);
-	cl->BindTexture(1, rt_output);
+	cl->BindTexture(1, rt_direct);
+	cl->BindTexture(2, rt_direct_albedo);
+	cl->BindTexture(3, rt_indirect);
+	cl->BindTexture(4, rt_indirect_albedo);
+	cl->BindTexture(5, g_vrs);
 	cl->ClearRTV(ColorOutput, TWT::vec4(0, 0, 0, 1));
 	cl->ClearDSVDepth(Depth);
 	cl->SetViewport(&viewport);
@@ -230,7 +262,10 @@ void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarg
 	cl->Draw(4);
 
 	cl->ResourceBarriers({
-		TW3DTransitionBarrier(rt_output, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
+		TW3DTransitionBarrier(rt_direct, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
+		TW3DTransitionBarrier(rt_direct_albedo, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
+		TW3DTransitionBarrier(rt_indirect, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
+		TW3DTransitionBarrier(rt_indirect_albedo, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
 		TW3DTransitionBarrier(ColorOutput, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT)
 	});
 }
@@ -242,7 +277,7 @@ void TW3DDefaultRenderer::RenderRecordGBuffer() {
 
 	g_cl->SetPipelineState(gbuffer_ps);
 
-	g_cl->SetRenderTargets({g_position, g_normal, g_diffuse, g_specular, g_emission}, g_depth);
+	g_cl->SetRenderTargets({ g_position, g_normal, g_diffuse, g_specular, g_emission }, g_depth);
 	g_cl->ClearRTV(g_position);
 	g_cl->ClearRTV(g_diffuse);
 	g_cl->ClearDSVDepth(g_depth);
@@ -305,11 +340,15 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 	rt_cl->BindTexture(RT_EMISSION_TEXTURE, emission_texarr);
 	rt_cl->BindTexture(RT_NORMAL_TEXTURE, normal_texarr);
 
-	rt_cl->BindTexture(RT_OUTPUT_TEXTURE, rt_output, true);
+	rt_cl->BindTexture(RT_DIRECT_TEXTURE, rt_direct, true);
+	rt_cl->BindTexture(RT_DIRECT_ALBEDO_TEXTURE, rt_direct_albedo, true);
+	rt_cl->BindTexture(RT_INDIRECT_TEXTURE, rt_indirect, true);
+	rt_cl->BindTexture(RT_INDIRECT_ALBEDO_TEXTURE, rt_indirect_albedo, true);
+
 	rt_cl->BindConstantBuffer(RT_CAMERA_CB, Scene->Camera->GetConstantBuffer());
 	rt_cl->Bind32BitConstant(RT_INPUT_CONST, 0, 0);
 	rt_cl->Bind32BitConstant(RT_INPUT_CONST, Scene->LightSources.size(), 1);
-	
+
 	if (LargeScaleScene)
 		rt_cl->Bind32BitConstant(RT_INPUT_CONST, LargeScaleScene->LightSources.size(), 2);
 

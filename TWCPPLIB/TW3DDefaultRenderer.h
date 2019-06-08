@@ -69,13 +69,16 @@ private:
 		RT_G_SPECULAR_TEXTURE,
 		RT_G_EMISSION_TEXTURE,
 		RT_G_VRS_TEXTURE,
-		RT_OUTPUT_TEXTURE,
+		RT_DIRECT_TEXTURE,
+		RT_DIRECT_ALBEDO_TEXTURE,
+		RT_INDIRECT_TEXTURE,
+		RT_INDIRECT_ALBEDO_TEXTURE,
 		RT_INPUT_CONST,
 		RT_CAMERA_CB,
 		RT_RENDERERINFO_CB,
 	};
 	TW3DComputePipelineState *rt_ps = nullptr;
-	TW3DTexture* rt_output = nullptr;
+	TW3DTexture *rt_direct, *rt_direct_albedo, *rt_indirect, *rt_indirect_albedo;
 
 	// Blit output
 	// --------------------------------------------------------------------- 
