@@ -41,7 +41,7 @@ TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 void TW3DDefaultRenderer::CreateBlitResources() {
 	TW3DRootSignature* root_signature = new TW3DRootSignature(Device,
 		{
-			TW3DRPTexture(0, D3D12_SHADER_VISIBILITY_PIXEL, 0), // GBuffer albedo
+			TW3DRPTexture(0, D3D12_SHADER_VISIBILITY_PIXEL, 0), // GBuffer diffuse
 			TW3DRPTexture(1, D3D12_SHADER_VISIBILITY_PIXEL, 1), // RT direct
 			TW3DRPTexture(2, D3D12_SHADER_VISIBILITY_PIXEL, 2), // RT direct albedo
 			TW3DRPTexture(3, D3D12_SHADER_VISIBILITY_PIXEL, 3), // RT indirect
@@ -215,14 +215,17 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(Width), static_cast<float>(Height));
 	scissor = CD3DX12_RECT(0, 0, Width, Height);
 
+	TWT::uint rt_width = Width * rt_scale;
+	TWT::uint rt_height = Height * rt_scale;
+
 	rt_direct->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-	rt_direct->Resize(Width, Height);
+	rt_direct->Resize(rt_width, rt_height);
 	rt_direct_albedo->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-	rt_direct_albedo->Resize(Width, Height);
+	rt_direct_albedo->Resize(rt_width, rt_height);
 	rt_indirect->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-	rt_indirect->Resize(Width, Height);
+	rt_indirect->Resize(rt_width, rt_height);
 	rt_indirect_albedo->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-	rt_indirect_albedo->Resize(Width, Height);
+	rt_indirect_albedo->Resize(rt_width, rt_height);
 
 	g_position->Resize(Width, Height);
 	g_normal->Resize(Width, Height);
@@ -344,7 +347,7 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 		rt_cl->Bind32BitConstant(RT_INPUT_CONST, LargeScaleScene->LightSources.size(), 2);
 
 	rt_cl->BindConstantBuffer(RT_RENDERERINFO_CB, info_cb);
-	rt_cl->Dispatch(ceil(Width / 8.0f), ceil(Height / 8.0f));
+	rt_cl->Dispatch(ceil(Width * rt_scale / 8.0f), ceil(Height * rt_scale / 8.0f));
 	rt_cl->ResourceBarrier(TW3DUAVBarrier());
 
 	rt_cl->Close();

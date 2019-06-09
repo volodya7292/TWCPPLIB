@@ -217,29 +217,19 @@ inline float3 trace_indirect_ray(in Ray ray) {
 	//return diffuse.xyz;
 }
 
-inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float3 emission, in float roughness, in float2 pixel_pos) {
+inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float3 emission, in float roughness, in float2 rt_pixel_pos) {
 
 	float4 direct, direct_albedo, indirect, indirect_albedo;
 
 	const float3 to_camera = normalize(camera.pos.xyz - pos);
 
-	/*float randX = rand_next() * 1 - 0.5;
-	float randZ = rand_next() * 1 - 0.5;
-	float3 testLightPos = (float3(0, 0.5f, 0) + float3(randX, 0, randZ));
-	float3 toLight = normalize(testLightPos - pos);*/
-
-
 	LightInfo light_info;
 	Ray to_light;
 	to_light.origin = pos;
-	//to_light.dir = toLight;//normalize(float3(0, 0.49f, 0) - pos);
-	//light_info.color = float3(1, 1, 1);
-	//light_info.ray_length = 0;
 	rand_light_dir(to_light, light_info);
 
 	const float NdotV = dot(normal, to_camera);
 	const float shadowMult = trace_shadow_ray(to_light, light_info.ray_length);
-
 
 	float3 ggxTerm;
 	float NdotL;
@@ -253,12 +243,10 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 
 		// Compute direct color.  Split into light and albedo terms for our SVGF filter
 		const float3 directColor = (emission == 0 ? 0 : 1) + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
-		const float3 directAlbedo = emission + ggxTerm + diffuse / PI;
-		//bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
-		direct = float4(saturate(directColor), 1);//float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
-		direct_albedo = float4(saturate(directAlbedo), 1);//float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
-		//direct = float4(emission + NdotL, 1);
-		//direct_albedo = float4(diffuse, 1);
+		const float3 directAlbedo = ggxTerm; // removed '+ emission + diffuse / PI'. Added back FinalPassBlit
+		bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
+		direct = float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
+		direct_albedo = float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
 	}
 
 	// Indirect
@@ -296,49 +284,41 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 		indirect_albedo = float4(difTerm, 1.0f);
 	}
 
-	rt_direct[pixel_pos] = direct;
-	rt_direct_albedo[pixel_pos] = direct_albedo;
-	rt_indirect[pixel_pos] = indirect;
-	rt_indirect_albedo[pixel_pos] = indirect_albedo;
-}
-
-// Returns if pixel_pos == center_pixel_pos
-inline bool vrs_center_pixel_position(in uint vrs_scale, in uint2 pixel_pos, out float2 new_pixel_pos_floor, out float2 new_pixel_pos) {
-	uint kernel_size = 1 << vrs_scale;
-	new_pixel_pos_floor = floor(pixel_pos, kernel_size);
-	new_pixel_pos = new_pixel_pos_floor + kernel_size / 2.0f;
-	return equals(uint2(floor(new_pixel_pos)), pixel_pos);
+	rt_direct[rt_pixel_pos] = direct;
+	rt_direct_albedo[rt_pixel_pos] = direct_albedo;
+	rt_indirect[rt_pixel_pos] = indirect;
+	rt_indirect_albedo[rt_pixel_pos] = indirect_albedo;
 }
 
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
-	uint2 SIZE;
-	rt_direct.GetDimensions(SIZE.x, SIZE.y);
+	uint2 RT_SIZE, G_SIZE;
+	rt_direct.GetDimensions(RT_SIZE.x, RT_SIZE.y);
+	g_position.GetDimensions(G_SIZE.x, G_SIZE.y);
 
-	rand_init(DTid.x + DTid.y * SIZE.x, renderer.info.x, 16);
+	const float2 G_SCALE = G_SIZE / float2(RT_SIZE);
 
-	uint2 pixel = DTid.xy;
 
-	float4 pos = g_position[pixel];//.SampleLevel(sam, tex_coord, 0);
+	rand_init(DTid.x + DTid.y * RT_SIZE.x, renderer.info.x, 16);
+
+	const uint2 g_pixel = DTid.xy * G_SCALE;
+	const uint2 rt_pixel = DTid.xy;
+
+	float4 pos = g_position[g_pixel];
 	float4 normal, diffuse, specular, emission;
 
 	float4 color = float4(0, 0, 0, renderer.info.x);
 
 	if (pos.w == 1) { // Not a background pixel
-		//tex_coord = n_pos / (float2)SIZE;
-		pos = g_position[pixel];
-		normal = g_normal[pixel];
-		diffuse = g_diffuse[pixel];
-		specular = g_specular[pixel];
-		emission = g_emission[pixel];
+		normal = g_normal[g_pixel];
+		diffuse = g_diffuse[g_pixel];
+		specular = g_specular[g_pixel];
+		emission = g_emission[g_pixel];
 
-		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 1, emission.rgb, 0, pixel);
-		//sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel + uint2(0, 1));
-		//sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel + uint2(1, 1));
-		//sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel + uint2(1, 0));
+		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0, emission.rgb, 1, rt_pixel);
 
 	} else { // Background pixel
-		rt_direct[pixel] = float4(0, 0, 0, 1);
-		rt_indirect[pixel] = float4(0, 0, 0, 1);
+		rt_direct[rt_pixel] = float4(0, 0, 0, 1);
+		rt_indirect[rt_pixel] = float4(0, 0, 0, 1);
 	}
 }

@@ -79,6 +79,7 @@ private:
 	};
 	TW3DComputePipelineState *rt_ps = nullptr;
 	TW3DTexture *rt_direct, *rt_direct_albedo, *rt_indirect, *rt_indirect_albedo;
+	float rt_scale = 0.25f;
 
 	// Blit output
 	// --------------------------------------------------------------------- 
