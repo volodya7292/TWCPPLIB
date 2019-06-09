@@ -268,9 +268,10 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 		const float chooseDiffuse = (rand_next() < probDiffuse);
 
 		float3 bounceDir;
+		
 		if (chooseDiffuse) {   // Randomly select to bounce in our diffuse lobe
 			bounceDir = rand_cos_hemisphere_dir(normal);
-		} else {   // Randomyl select to bounce in our GGX lobe
+		} else {   // Randomly select to bounce in our GGX lobe
 			bounceDir = rand_ggx_sample_dir(roughness, normal, to_camera);
 		}
 
@@ -281,7 +282,7 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 		const float3 bounceColor = trace_indirect_ray(iRay);
 
 		// Compute diffuse, ggx shading terms
-		NdotL = saturate(dot(pos, bounceDir));
+		NdotL = saturate(dot(normal, bounceDir));
 		const float3 difTerm = max(5e-3f, diffuse / PI);
 		ggxTerm = NdotL * get_ggx_color(to_camera, bounceDir, normal, NdotV, specular, roughness, false);
 
@@ -331,7 +332,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		specular = g_specular[pixel];
 		emission = g_emission[pixel];
 
-		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0, emission.rgb, 1, pixel);
+		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 1, emission.rgb, 0, pixel);
 		//sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel + uint2(0, 1));
 		//sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel + uint2(1, 1));
 		//sample_color(pos.xyz, normal.xyz, diffuse.rgb, specular.rgb, emission.rgb, 1.0f, pixel + uint2(1, 0));
