@@ -15,4 +15,5 @@ public:
 
 protected:
 	TW3DConstantBuffer* ConstantBuffer;
+	TWT::DefaultModelCB cb_data;
 };

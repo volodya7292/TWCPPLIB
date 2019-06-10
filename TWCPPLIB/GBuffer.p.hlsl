@@ -1,4 +1,5 @@
 #include "HLSLHelper.hlsli"
+#include "SVGFCommon.hlsli"
 
 Texture2DArray<float4> diffuse_tex : register(t0);
 Texture2DArray<float4> specular_tex : register(t1);

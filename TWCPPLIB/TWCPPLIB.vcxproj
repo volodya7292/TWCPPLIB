@@ -183,6 +183,7 @@
     <ClInclude Include="TW3DLBVH.h" />
     <ClInclude Include="TW3DLightSource.h" />
     <ClInclude Include="TW3DModules.h" />
+    <ClInclude Include="TW3DRaytracer.h" />
     <ClInclude Include="TW3DShader.h" />
     <ClInclude Include="TW3DShaders.h" />
     <ClInclude Include="TW3DSphere.h" />
@@ -239,6 +240,7 @@
     <ClCompile Include="TW3DLBVH.cpp" />
     <ClCompile Include="TW3DLightSource.cpp" />
     <ClCompile Include="TW3DModules.cpp" />
+    <ClCompile Include="TW3DRaytracer.cpp" />
     <ClCompile Include="TW3DShader.cpp" />
     <ClCompile Include="TW3DShaders.cpp" />
     <ClCompile Include="TW3DSphere.cpp" />
@@ -424,18 +426,18 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="CalculateVariableRateShading.c.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+    <FxCompile Include="PostCalculateFinalLighting.p.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompiledShaders/CalculateVariableRateShading.c.h</HeaderFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CalculateVariableRateShading_ByteCode</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CalculateVariableRateShading_ByteCode</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompiledShaders/CalculateVariableRateShading.c.h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </ObjectFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PostCalculateFinalLighting_PixelByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompiledShaders/PostCalculateFinalLighting.p.h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PostCalculateFinalLighting_PixelByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompiledShaders/PostCalculateFinalLighting.p.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="SetupLBVHNodesFromTriangles.c.hlsl">
@@ -471,6 +473,48 @@
       </ObjectFileOutput>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SetupLBVHNodesFromLBVHs_ByteCode</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompiledShaders/SetupLBVHNodesFromLBVHs.c.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="SVGFEstimateVariance.p.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SVGFEstimateVariance_PixelByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompiledShaders/SVGFEstimateVariance.p.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SVGFEstimateVariance_PixelByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompiledShaders/SVGFEstimateVariance.p.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="SVGFTemporalAccumulation.p.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SVGFTemporalAccumulation_PixelByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompiledShaders/SVGFTemporalAccumulation.p.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SVGFTemporalAccumulation_PixelByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompiledShaders/SVGFTemporalAccumulation.p.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="SVGFWaveletFilter.p.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SVGFWaveletFilter_PixelByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompiledShaders/SVGFWaveletFilter.p.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SVGFWaveletFilter_PixelByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompiledShaders/SVGFWaveletFilter.p.h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
     </FxCompile>
@@ -639,6 +683,7 @@
     <None Include="HLSLHelper.hlsli" />
     <None Include="RayTracing.hlsli" />
     <None Include="RTDefaultLightModel.hlsli" />
+    <None Include="SVGFCommon.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

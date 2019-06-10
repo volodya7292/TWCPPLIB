@@ -77,6 +77,11 @@ inline float depth_delinearize(float ld, float zNear, float zFar) {
 	return (zNear * zFar / ld - zFar) / (zNear - zFar);
 }
 
+struct VS_QUAD {
+	float4 pos: SV_POSITION;
+	float2 tex_coord: TEXCOORD;
+};
+
 struct Vertex {
 	float3          pos : POSITION;
 	float3    tex_coord : TEXCOORD; // .z - material ID
@@ -326,11 +331,4 @@ float3 rand_ggx_sample_dir(float roughness, float3 normal, float3 inVec) {
 
 	// Convert this into a ray direction by computing the reflection direction
 	return normalize(2.f * dot(inVec, H) * H - inVec);
-}
-
-// A simple utility to convert a float to a 2-component octohedral representation packed into one uint
-uint dir_to_oct(float3 normal) {
-	float2 p = normal.xy * (1.0 / dot(abs(normal), 1.0.xxx));
-	float2 e = normal.z > 0.0 ? p : (1.0 - abs(p.yx)) * (step(0.0, p)*2.0-(float2)(1.0));
-	return (asuint(f32tof16(e.y)) << 16) + (asuint(f32tof16(e.x)));
 }

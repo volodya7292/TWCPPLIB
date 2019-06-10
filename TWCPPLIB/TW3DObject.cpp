@@ -22,10 +22,12 @@ void TW3DObject::Update() {
 			vminst.Changed = true;
 			vminst.Transform.Updated = false;
 
-			TWT::DefaultModelCB cb;
-			cb.model = vminst.Transform.GetModelMatrix();
 
-			ConstantBuffer->Update(&cb, 0);
+			cb_data.prev_model = cb_data.model;
+			cb_data.prev_model_reduced = cb_data.model_reduced;
+			cb_data.model = vminst.Transform.GetModelMatrix();
+
+			ConstantBuffer->Update(&cb_data, 0);
 		}
 	}
 }

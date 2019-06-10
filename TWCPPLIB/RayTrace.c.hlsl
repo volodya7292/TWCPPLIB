@@ -11,43 +11,43 @@ struct InputData {
 };
 
 // Default scale scene
-GVB       gvb : register(t0);
-RTScene scene : register(t1);
-RTNB      gnb : register(t2);
-LSB       lsb : register(t3);
+GVB       gvb;
+RTScene scene;
+RTNB      gnb;
+LSB       lsb;
 
 // Large scale scene
-GVB       l_gvb : register(t4);
-RTScene l_scene : register(t5);
-RTNB      l_gnb : register(t6);
-LSB       l_lsb : register(t7);
+GVB       l_gvb;
+RTScene l_scene;
+RTNB      l_gnb;
+LSB       l_lsb;
 
 
 // Texture resources
-Texture2DArray<float4> diffuse_tex : register(t8);
-Texture2DArray<float4> specular_tex : register(t9);
-Texture2DArray<float4> emission_tex : register(t10);
-Texture2DArray<float4> normal_tex : register(t11);
+Texture2DArray<float4> diffuse_tex;
+//Texture2DArray<float4> specular_tex;
+Texture2DArray<float4> emission_tex;
+Texture2DArray<float4> normal_tex;
 
 // GBuffer resources
-Texture2D<float4> g_position : register(t12);
-Texture2D<float4> g_normal : register(t13);
-Texture2D<float4> g_diffuse : register(t14);
-Texture2D<float4> g_specular : register(t15);
-Texture2D<float4> g_emission : register(t16);
+Texture2D<float4> g_position;
+Texture2D<float4> g_normal;
+Texture2D<float4> g_diffuse;
+Texture2D<float4> g_specular;
+Texture2D<float4> g_emission;
 sampler sam : register(s0);
 
 // Output image
-RWTexture2D<float4> rt_direct : register(u0);
-RWTexture2D<float4> rt_direct_albedo : register(u1);
-RWTexture2D<float4> rt_indirect : register(u2);
-RWTexture2D<float4> rt_indirect_albedo : register(u3);
+RWTexture2D<float4> rt_direct;
+RWTexture2D<float4> rt_direct_albedo;
+RWTexture2D<float4> rt_indirect;
+RWTexture2D<float4> rt_indirect_albedo;
 
 // Camera
-ConstantBuffer<Camera> camera : register(b0);
+ConstantBuffer<Camera> camera;
 // Scene data
-ConstantBuffer<InputData> input : register(b1);
-ConstantBuffer<RendererInfoCB> renderer : register(b2);
+ConstantBuffer<InputData> input;
+ConstantBuffer<RendererInfoCB> renderer;
 
 struct LightInfo {
 	float ray_length;
@@ -55,9 +55,9 @@ struct LightInfo {
 };
 
 
-void load_texture_data(in float3 tex_coord, out float4 diffuse, out float4 specular, out float4 emission, out float3 normal) {
+inline void load_texture_data(float3 tex_coord, out float4 diffuse, out float4 emission, out float3 normal) {
 	diffuse = diffuse_tex.SampleLevel(sam, tex_coord, 0);
-	specular = specular_tex.SampleLevel(sam, tex_coord, 0);
+	//specular = specular_tex.SampleLevel(sam, tex_coord, 0);
 	emission = emission_tex.SampleLevel(sam, tex_coord, 0);
 	normal = normal_tex.SampleLevel(sam, tex_coord, 0).xyz;
 }
@@ -201,17 +201,17 @@ inline float3 trace_indirect_ray(in Ray ray) {
 	to_light.origin = ray.origin;
 	rand_light_dir(to_light, light_info);
 
+	float4 diffuse, emission;
+	float3 normal;
+	load_texture_data(inter.TexCoord, diffuse, emission, normal);
 
 	// Compute our lambertion term (L dot N)
 	//vec3 toLight = normalize(inter.point - ray.origin);
-	const float LdotN = saturate(dot(inter.Normal, to_light.dir));
+	const float LdotN = saturate(dot(inter.Normal * normal, to_light.dir));
 
 	// Shoot our shadow ray.
 	//Intersection shadow = trace_ray(ray);
 	const float shadowMult = trace_shadow_ray(to_light, light_info.ray_length);
-
-	const float4 diffuse = diffuse_tex.SampleLevel(sam, inter.TexCoord, 0);
-	const float4 emission = emission_tex.SampleLevel(sam, inter.TexCoord, 0);
 
 	return emission.xyz + LdotN * shadowMult * light_info.color * (diffuse.xyz) / PI;
 	//return diffuse.xyz;
@@ -242,8 +242,8 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 		ggxTerm = get_ggx_color(to_camera, to_light.dir, normal, NdotV, specular, roughness, true);
 
 		// Compute direct color.  Split into light and albedo terms for our SVGF filter
-		const float3 directColor = (emission == 0 ? 0 : 1) + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
-		const float3 directAlbedo = ggxTerm; // removed '+ emission + diffuse / PI'. Added back FinalPassBlit
+		const float3 directColor = (equals(emission, 0) ? 0 : 1) + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
+		const float3 directAlbedo = emission + ggxTerm + diffuse / PI;
 		bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
 		direct = float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
 		direct_albedo = float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
@@ -307,15 +307,13 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	float4 pos = g_position[g_pixel];
 	float4 normal, diffuse, specular, emission;
 
-	float4 color = float4(0, 0, 0, renderer.info.x);
-
 	if (pos.w == 1) { // Not a background pixel
 		normal = g_normal[g_pixel];
 		diffuse = g_diffuse[g_pixel];
 		specular = g_specular[g_pixel];
 		emission = g_emission[g_pixel];
 
-		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0, emission.rgb, 1, rt_pixel);
+		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0, emission.rgb, specular.a, rt_pixel);
 
 	} else { // Background pixel
 		rt_direct[rt_pixel] = float4(0, 0, 0, 1);

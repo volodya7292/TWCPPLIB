@@ -1,20 +1,16 @@
 #include "HLSLHelper.hlsli"
 
 Texture2D<float4> g_diffuse : register(t0);
+Texture2D<float4> g_emission : register(t1);
 
-Texture2D<float4> rt_direct : register(t1);
-Texture2D<float4> rt_direct_albedo : register(t2);
-Texture2D<float4> rt_indirect : register(t3);
-Texture2D<float4> rt_indirect_albedo : register(t4);
+Texture2D<float4> rt_direct : register(t2);
+Texture2D<float4> rt_direct_albedo : register(t3);
+Texture2D<float4> rt_indirect : register(t4);
+Texture2D<float4> rt_indirect_albedo : register(t5);
 
 sampler sam : register(s0);
 
-struct VS_OUTPUT {
-	float4 pos: SV_POSITION;
-	float2 tex_coord: TEXCOORD;
-};
-
-float4 main(VS_OUTPUT input) : SV_TARGET
+float4 main(VS_QUAD input) : SV_TARGET
 {
 	uint2 RT_SIZE, G_SIZE;
     rt_direct.GetDimensions(RT_SIZE.x, RT_SIZE.y);
@@ -33,5 +29,6 @@ float4 main(VS_OUTPUT input) : SV_TARGET
 
 	//return lerp(rt_result.Sample(sam, input.texCoord), g_albedo.Sample(sam, input.texCoord), 0.5);
 
-	return  g_diffuse[g_pixel];//rt_direct[rt_pixel] * (rt_direct_albedo[rt_pixel] + g_diffuse[g_pixel] / PI) + rt_indirect[rt_pixel] * (g_diffuse[g_pixel] / PI);
+	return rt_direct[rt_pixel] * rt_direct_albedo[rt_pixel] + rt_indirect[rt_pixel] * rt_indirect_albedo[rt_pixel];
+	//return g_emission[g_pixel] + rt_direct[rt_pixel] * (rt_direct_albedo[rt_pixel] + g_diffuse[g_pixel] / PI) + rt_indirect[rt_pixel] * (g_diffuse[g_pixel] / PI);
 }
