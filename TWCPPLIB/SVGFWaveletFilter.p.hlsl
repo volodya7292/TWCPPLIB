@@ -8,13 +8,12 @@ struct InputData {
 Texture2D<float4> g_direct;
 Texture2D<float4> g_indirect;
 Texture2D<float4> g_compact_norm_depth;
-Texture2D<float>  g_history_length;
 
 ConstantBuffer<InputData> input_data;
 
 struct PS_OUTPUT {
-	float4 direct    : SV_Target0;
-	float4 indirect  : SV_Target1;
+	float4 direct   : SV_Target0;
+	float4 indirect : SV_Target1;
 };
 
 // computes a 3x3 gaussian blur of the variance, centered around the current pixel
@@ -59,9 +58,6 @@ PS_OUTPUT main(VS_QUAD input) {
 
 	// variance for direct and indirect, filtered using 3x3 gaussin blur
 	const float2 var = compute_variance_center(rt_pixel);
-
-	// number of temporally integrated pixels
-	const float historyLength = g_history_length[rt_pixel];
 
 	float3 normalCenter;
 	float2 zCenter;

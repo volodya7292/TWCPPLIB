@@ -66,8 +66,7 @@ void TW3DDefaultRenderer::CreateBlitResources() {
 		rastDesc,
 		depthDesc,
 		blendDesc,
-		root_signature,
-		1);
+		root_signature);
 	blit_ps->SetRTVFormat(0, TWT::RGBA8Unorm);
 	blit_ps->SetVertexShader(new TW3DShader(TW3DCompiledShader(ScreenQuad_VertexByteCode), "ScreenQuad"s));
 	blit_ps->SetPixelShader(new TW3DShader(TW3DCompiledShader(FinalPassBlit_PixelByteCode), "BlitPixel"s));
@@ -104,8 +103,7 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 		rastDesc,
 		depthDesc,
 		blendDesc,
-		root_signature,
-		5);
+		root_signature);
 	gbuffer_ps->SetRTVFormat(0, TWT::RGBA32Float);
 	gbuffer_ps->SetRTVFormat(1, TWT::RGBA32Float);
 	gbuffer_ps->SetRTVFormat(2, TWT::RGBA8Unorm);
@@ -115,7 +113,6 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 	gbuffer_ps->SetPixelShader(new TW3DShader(TW3DCompiledShader(GBuffer_PixelByteCode), "GBufferPixel"s));
 	gbuffer_ps->SetInputLayout(input_layout);
 	gbuffer_ps->Create(Device);
-
 
 	g_position = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA32Float, TWT::vec4(0));
 	g_normal = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA32Float);

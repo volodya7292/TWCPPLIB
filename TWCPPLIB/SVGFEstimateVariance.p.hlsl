@@ -8,8 +8,8 @@ Texture2D<float4> g_compact_norm_depth;
 Texture2D<float>  g_history_length;
 
 struct PS_OUTPUT {
-	float4 direct         : SV_Target0;
-	float4 indirect       : SV_Target1;
+	float4 direct   : SV_Target0;
+	float4 indirect : SV_Target1;
 };
 
 PS_OUTPUT main(VS_QUAD input) {

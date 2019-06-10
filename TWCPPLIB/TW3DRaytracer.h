@@ -1,5 +1,7 @@
 #pragma once
-#include "TW3DScene.h"
+#include "TW3DResourceManager.h"
+
+class TW3DScene;
 
 class TW3DRaytracer {
 public:
@@ -33,19 +35,34 @@ private:
 		RT_INDIRECT_ALBEDO_TEXTURE,
 		RT_INPUT_CONST,
 		RT_CAMERA_CB,
-		RT_RENDERERINFO_CB,
+		RT_RENDERERINFO_CB
 	};
 	enum RootSignatureParamsSVGFTA {
-		RT_CAMERA_CB1,
-		
+		SVGFTA_DIRECT,
+		SVGFTA_INDIRECT,
+		SVGFTA_PREV_DIRECT,
+		SVGFTA_PREV_INDIRECT,
+		SVGFTA_PREV_MOMENTS,
+		SVGFTA_MOTION,
+		SVGFTA_LINEAR_Z,
+		SVGFTA_PREV_LINEAR_Z,
+		SVGFTA_HISTORY_LENGTH
 	};
 	enum RootSignatureParamsSVGFEV {
-		RT_CAMERA_CB2,
+		SVGFEV_DIRECT,
+		SVGFEV_INDIRECT,
+		SVGFEV_MOMENTS,
+		SVGFEV_COMPACT_NORM_DEPTH,
+		SVGFEV_HISTORY_LENGTH
 	};
 	enum RootSignatureParamsSVGFWF {
-		RT_CAMERA_CB3,
+		SVGFWF_DIRECT,
+		SVGFWF_INDIRECT,
+		SVGFWF_COMPACT_NORM_DEPTH,
+		SVGFWF_INPUT_DATA
 	};
 
-	TW3DShader *rt_s, *svgf_ta_s, *svgf_ev_s, *svgf_wf_s;
-	TW3DComputePipelineState *rt_ps, *svgf_ta_ps, *svgf_ev_ps, *svgf_wf_ps;
+	TW3DShader *sq_s, *rt_s, *svgf_ta_s, *svgf_ev_s, *svgf_wf_s;
+	TW3DComputePipelineState* rt_ps;
+	TW3DGraphicsPipelineState *svgf_ta_ps, *svgf_ev_ps, *svgf_wf_ps;
 };

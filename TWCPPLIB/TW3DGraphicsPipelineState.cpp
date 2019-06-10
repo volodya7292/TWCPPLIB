@@ -2,7 +2,7 @@
 #include "TW3DGraphicsPipelineState.h"
 
 TW3DGraphicsPipelineState::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, DXGI_SAMPLE_DESC Sampledesc, D3D12_RASTERIZER_DESC RasterizerState,
-	D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, TW3DRootSignature* RootSignature, TWT::uint RTCount) :
+	D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, TW3DRootSignature* RootSignature) :
 	RootSignature(RootSignature)
 {
 	desc.PrimitiveTopologyType = PrimitiveTopologyType;
@@ -11,17 +11,18 @@ TW3DGraphicsPipelineState::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TY
 	desc.DepthStencilState = DepthStencilState;
 	desc.BlendState = BlendState;
 	desc.pRootSignature = RootSignature->Get();
-	desc.NumRenderTargets = RTCount;
+	desc.NumRenderTargets = 1;
 	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	desc.SampleMask = 0xffffffff;
 }
 
-TW3DGraphicsPipelineState::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, TW3DRootSignature* RootSignature) :
+TW3DGraphicsPipelineState::TW3DGraphicsPipelineState(TW3DRootSignature* RootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType) :
 	TW3DGraphicsPipelineState(PrimitiveTopologyType, {1, 0}, CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
-		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT), CD3DX12_BLEND_DESC(D3D12_DEFAULT), RootSignature, 0)
+		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT), CD3DX12_BLEND_DESC(D3D12_DEFAULT), RootSignature)
 {
 	desc.DepthStencilState.DepthEnable = false;
 	desc.DepthStencilState.StencilEnable = false;
+	desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 }
 
 TW3DGraphicsPipelineState::~TW3DGraphicsPipelineState() {
@@ -44,6 +45,7 @@ void TW3DGraphicsPipelineState::SetPixelShader(TW3DShader* Shader) {
 
 void TW3DGraphicsPipelineState::SetRTVFormat(TWT::uint Index, DXGI_FORMAT Format) {
 	desc.RTVFormats[Index] = Format;
+	desc.NumRenderTargets = Index + 1;
 }
 
 void TW3DGraphicsPipelineState::SetDSVFormat(DXGI_FORMAT Format) {

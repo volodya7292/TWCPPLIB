@@ -188,7 +188,6 @@
     <ClInclude Include="TW3DShaders.h" />
     <ClInclude Include="TW3DSphere.h" />
     <ClInclude Include="TW3DTexture.h" />
-    <ClInclude Include="TW3DVRSCalculator.h" />
     <ClInclude Include="TWLogger.h" />
     <ClInclude Include="TW3DPerspectiveCamera.h" />
     <ClInclude Include="TW3DAdapter.h" />
@@ -245,7 +244,6 @@
     <ClCompile Include="TW3DShaders.cpp" />
     <ClCompile Include="TW3DSphere.cpp" />
     <ClCompile Include="TW3DTexture.cpp" />
-    <ClCompile Include="TW3DVRSCalculator.cpp" />
     <ClCompile Include="TWLogger.cpp" />
     <ClCompile Include="TW3DPerspectiveCamera.cpp" />
     <ClCompile Include="TW3DAdapter.cpp" />

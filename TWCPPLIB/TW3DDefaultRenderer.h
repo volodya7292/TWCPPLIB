@@ -51,6 +51,7 @@ private:
 
 	// Ray tracing compute
 	// --------------------------------------------------------------------- 
+
 	enum RTRPIs {
 		RT_GVB_BUFFER,
 		RT_GNB_BUFFER,
