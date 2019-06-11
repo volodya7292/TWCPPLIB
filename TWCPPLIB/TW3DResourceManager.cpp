@@ -29,15 +29,19 @@ TW3DResourceManager::~TW3DResourceManager() {
 	delete copy_command_queue;
 }
 
+TW3DFramebuffer* TW3DResourceManager::CreateFramebuffer(TWT::uint2 Size) {
+	return new TW3DFramebuffer(this, Size);
+}
+
 TW3DRenderTarget* TW3DResourceManager::CreateRenderTarget(ID3D12Resource* Buffer) {
 	auto* rtv = new TW3DRenderTarget(device, rtv_descriptor_heap);
 	rtv->Create(Buffer);
 	return rtv;
 }
 
-TW3DRenderTarget* TW3DResourceManager::CreateRenderTarget(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, TWT::vec4 ClearValue) {
+TW3DRenderTarget* TW3DResourceManager::CreateRenderTarget(TWT::uint2 Size, DXGI_FORMAT Format, TWT::float4 ClearValue) {
 	auto* rtv = new TW3DRenderTarget(device, rtv_descriptor_heap, srv_descriptor_heap, Format, ClearValue);
-	rtv->Create(Width, Height);
+	rtv->Create(Size);
 	return rtv;
 }
 
@@ -55,9 +59,9 @@ TW3DConstantBuffer* TW3DResourceManager::CreateConstantBuffer(TWT::uint ElementC
 	return new TW3DConstantBuffer(device, ElementCount, ElementSizeInBytes);
 }
 
-TW3DTexture* TW3DResourceManager::CreateDepthStencilTexture(TWT::uint Width, TWT::uint Height) {
+TW3DTexture* TW3DResourceManager::CreateDepthStencilTexture(TWT::uint2 Size) {
 	auto* texture = new TW3DTexture(device, temp_gcl, dsv_descriptor_heap, DXGI_FORMAT_D32_FLOAT);
-	texture->CreateDepthStencil(Width, Height);
+	texture->CreateDepthStencil(Size);
 	return texture;
 }
 
@@ -65,15 +69,15 @@ TW3DTexture* TW3DResourceManager::CreateTexture2D(const TWT::WString& Filename) 
 	return TW3DTexture::Create2D(device, temp_gcl, srv_descriptor_heap, Filename);
 }
 
-TW3DTexture* TW3DResourceManager::CreateTexture2D(TWT::uint Width, TWT::uint Height, DXGI_FORMAT Format, bool UAV) {
+TW3DTexture* TW3DResourceManager::CreateTexture2D(TWT::uint2 Size, DXGI_FORMAT Format, bool UAV) {
 	auto* texture = new TW3DTexture(device, temp_gcl, srv_descriptor_heap, Format, UAV);
-	texture->Create2D(Width, Height);
+	texture->Create2D(Size);
 	return texture;
 }
 
-TW3DTexture* TW3DResourceManager::CreateTextureArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Depth, DXGI_FORMAT Format, bool UAV) {
+TW3DTexture* TW3DResourceManager::CreateTextureArray2D(TWT::uint2 Size, TWT::uint Depth, DXGI_FORMAT Format, bool UAV) {
 	auto* texture = new TW3DTexture(device, temp_gcl, srv_descriptor_heap, Format, UAV);
-	texture->CreateArray2D(Width, Height, Depth);
+	texture->CreateArray2D(Size, Depth);
 	return texture;
 }
 

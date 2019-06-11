@@ -225,6 +225,9 @@
     <ClInclude Include="TW3DRaytracer.h">
       <Filter>Header Files\TW3DEngine\TW3DModule</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DFramebuffer.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -373,6 +376,9 @@
     </ClCompile>
     <ClCompile Include="TW3DRaytracer.cpp">
       <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DFramebuffer.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

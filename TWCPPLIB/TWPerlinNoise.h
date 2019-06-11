@@ -26,8 +26,8 @@ public:
 		}
 	}
 
-	double noise(TWT::vec3d xyz) const;
-	double octaveNoise(TWT::vec3d xyz, int octaves) const;
+	double noise(TWT::double3 xyz) const;
+	double octaveNoise(TWT::double3 xyz, int octaves) const;
 
 private:
 	static double Fade(double t) noexcept;

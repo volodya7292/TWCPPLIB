@@ -36,13 +36,13 @@ public:
 	static void SetVSync(bool VSync);
 	static void SetWindowTitle(const TWT::String&	WindowTitle);
 	static bool IsKeyDown(TWT::uint KeyCode);
-	static TWT::vec2u GetCursorPosition();
+	static TWT::uint2 GetCursorPosition();
 	// Get window global center position without window adjusted bounds
-	static TWT::vec2u GetWindowCenterPosition();
+	static TWT::uint2 GetWindowCenterPosition();
 	// Get window global top-left position without window adjusted bounds
-	static TWT::vec2u GetWindowPosition();
+	static TWT::uint2 GetWindowPosition();
 	// Get window main panel size
-	static TWT::vec2u GetCurrentWindowSize();
+	static TWT::uint2 GetCurrentWindowSize();
 
 	static float GetFPS();
 	static float GetDeltaTime();

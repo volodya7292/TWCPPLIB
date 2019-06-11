@@ -7,5 +7,4 @@ namespace TW3DModules {
 	void Release();
 
 	TW3DBitonicSorter* BitonicSorter();
-	TW3DRaytracer* RayTracer();
 }

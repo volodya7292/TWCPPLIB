@@ -180,6 +180,7 @@
     <ClInclude Include="TW3DBitonicSorter.h" />
     <ClInclude Include="TW3DBuffer.h" />
     <ClInclude Include="TW3DComputePipelineState.h" />
+    <ClInclude Include="TW3DFramebuffer.h" />
     <ClInclude Include="TW3DLBVH.h" />
     <ClInclude Include="TW3DLightSource.h" />
     <ClInclude Include="TW3DModules.h" />
@@ -236,6 +237,7 @@
     <ClCompile Include="TW3DBitonicSorter.cpp" />
     <ClCompile Include="TW3DBuffer.cpp" />
     <ClCompile Include="TW3DComputePipelineState.cpp" />
+    <ClCompile Include="TW3DFramebuffer.cpp" />
     <ClCompile Include="TW3DLBVH.cpp" />
     <ClCompile Include="TW3DLightSource.cpp" />
     <ClCompile Include="TW3DModules.cpp" />

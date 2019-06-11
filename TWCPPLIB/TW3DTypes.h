@@ -2,17 +2,17 @@
 #include "TWTypes.h"
 
 namespace TWT {
-	using vec2 = glm::vec2;
-	using vec2d = glm::vec<2, double>;
-	using vec2i = glm::ivec2;
-	using vec2u = glm::uvec2;
-	using vec3 = glm::vec3;
-	using vec3d = glm::vec<3, double>;
-	using vec3u = glm::uvec3;
-	using vec4 = glm::vec4;
-	using vec4u = glm::uvec4;
-	using mat4 = glm::mat4;
-	using mat4d = glm::mat<4, 4, double>;
+	using float2    = glm::vec<2, float>;
+	using double2   = glm::vec<2, double>;
+	using int2      = glm::vec<2, int>;
+	using uint2     = glm::vec<2, TWT::uint>;
+	using float3    = glm::vec<3, float>;
+	using double3   = glm::vec<3, double>;
+	using uint3     = glm::vec<3, TWT::uint>;
+	using float4    = glm::vec<4, float>;
+	using uint4     = glm::vec<4, TWT::uint>;
+	using float4x4  = glm::mat<4, 4, float>;
+	using double4x4 = glm::mat<4, 4, double>;
 
 	const static DXGI_FORMAT RGBA8Unorm = DXGI_FORMAT_R8G8B8A8_UNORM;
 	const static DXGI_FORMAT RGBA16Float = DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -22,38 +22,39 @@ namespace TWT {
 
 	struct DefaultVertex {
 		DefaultVertex(float x, float y, float z, float u, float v, float nx, float ny, float nz) :
-			Pos(x, y, z), TexCoord(u, v, 0), Normal(nx, ny, nz) {}
+			Pos(x, y, z), TexCoord(u, v, 0), Normal(nx, ny, nz) {
+		}
 
-		vec3 Pos;
-		vec3 TexCoord; // .z - material ID
-		vec3 Normal;
-		vec3 Tangent;
-		vec3 Bitangent;
+		float3 Pos;
+		float3 TexCoord; // .z - material ID
+		float3 Normal;
+		float3 Tangent;
+		float3 Bitangent;
 	};
 
 	struct DefaultCameraCB {
-		vec4 pos;
-		mat4 proj;
-		mat4 view;
-		mat4 proj_view;
-		mat4 prev_proj_view;
-		vec4 info = vec4(1.0f, 1.0f, 0, 0); // .x - FOVy in radians, .y - scale factor (large objects are scaled down)
+		float4 pos;
+		float4x4 proj;
+		float4x4 view;
+		float4x4 proj_view;
+		float4x4 prev_proj_view;
+		float4 info = float4(1.0f, 1.0f, 0, 0); // .x - FOVy in radians, .y - scale factor (large objects are scaled down)
 	};
 
 	struct DefaultModelCB {
-		mat4 model;
-		mat4 model_reduced;
-		mat4 prev_model;
-		mat4 prev_model_reduced;
+		float4x4 model;
+		float4x4 model_reduced;
+		float4x4 prev_model;
+		float4x4 prev_model_reduced;
 	};
 
 	struct DefaultRendererInfoCB {
-		vec4u info; // .x - frame index
+		uint4 info; // .x - frame index
 	};
 
 	struct Bounds {
-		vec4 pMin;
-		vec4 pMax;
+		float4 pMin;
+		float4 pMax;
 	};
 
 	template<typename T>

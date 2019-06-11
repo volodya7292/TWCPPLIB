@@ -5,15 +5,17 @@
 class TW3DRenderTarget : public TW3DResource {
 public:
 	TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap);
-	TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TW3DDescriptorHeap* SRVDescriptorHeap, DXGI_FORMAT Format, TWT::vec4 ClearValue = TWT::vec4(-1));
+	TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TW3DDescriptorHeap* SRVDescriptorHeap, DXGI_FORMAT Format, TWT::float4 ClearValue = TWT::float4(-1));
 	~TW3DRenderTarget() final;
 
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPURTVHandle();
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRVHandle();
 
 	void Create(ID3D12Resource* Buffer);
-	void Create(TWT::uint Width, TWT::uint Height);
-	void Resize(TWT::uint Width, TWT::uint Height);
+	void Create(TWT::uint2 Size);
+	void Resize(TWT::uint2 Size);
+
+	TWT::uint2 GetSize();
 
 private:
 	TW3DDescriptorHeap*	rtv_descriptor_heap;

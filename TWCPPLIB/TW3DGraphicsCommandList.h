@@ -9,6 +9,7 @@ class TW3DResourceUAV;
 class TW3DTexture;
 class TW3DVertexBuffer;
 class TW3DConstantBuffer;
+class TW3DFramebuffer;
 class TW3DResourceManager;
 class TW3DDescriptorHeap;
 class TW3DObject;
@@ -37,7 +38,7 @@ public:
 	void SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DTexture* DSV);
 	void SetRenderTargets(const std::vector<TW3DRenderTarget*>& RTVs, TW3DTexture* DSV);
 	void ClearRTV(TW3DRenderTarget* RenderTarget);
-	void ClearRTV(TW3DRenderTarget* RenderTarget, TWT::vec4 Color);
+	void ClearRTV(TW3DRenderTarget* RenderTarget, TWT::float4 Color);
 	void ClearDSVDepth(TW3DTexture* Texture);
 	void SetRootSignature(TW3DRootSignature* RootSignature);
 	void SetDescriptorHeap(TW3DDescriptorHeap* heap);
@@ -52,11 +53,13 @@ public:
 	void Draw(TWT::uint VertexCountPerInstance, TWT::uint StartVertexLocation = 0, TWT::uint InstanceCount = 1, TWT::uint StartInstanceLocation = 0);
 	void DrawIndexed(TWT::uint IndexCountPerInstance, TWT::uint StartIndexLocation = 0, TWT::uint InstanceCount = 1, TWT::uint StartInstanceLocation = 0, int BaseVertexLocation = 0);
 	void Dispatch(TWT::uint ThreadGroupCountX = 1, TWT::uint ThreadGroupCountY = 1, TWT::uint ThreadGroupCountZ = 1);
+	void Dispatch(TWT::uint2 ThreadGroupCountXY = TWT::uint2(1), TWT::uint ThreadGroupCountZ = 1);
 	void ExecuteIndirect(ID3D12CommandSignature* CommandSignature, TWT::uint MaxCommandCount, ID3D12Resource* ArgumentBuffer,
 		TWT::uint64 ArgumentBufferOffset, ID3D12Resource* CountBuffer, TWT::uint64 CountBufferOffset);
 
 
 	void BindResources(TW3DResourceManager* ResourceManager);
+	void BindFramebuffer(TW3DFramebuffer* Framebuffer);
 	void BindBuffer(TWT::uint RootParameterIndex, TW3DResource* Resource, bool UAV = false);
 	void BindTexture(TWT::uint RootParameterIndex, TW3DTexture* Texture, bool UAV = false);
 	void BindTexture(TWT::uint RootParameterIndex, TW3DRenderTarget* RenderTarget);
@@ -64,7 +67,7 @@ public:
 	void Bind32BitConstant(TWT::uint RootParameterIndex, TWT::uint Data, TWT::uint DestOffsetIn32BitValues);
 	void Bind32BitConstants(TWT::uint RootParameterIndex, TWT::uint Num32BitValuesToSet, const void* Data, TWT::uint DestOffsetIn32BitValues);
 	void BindCameraCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera);
-	void ClearTexture(TW3DTexture* Texture, TWT::vec4 Color);
+	void ClearTexture(TW3DTexture* Texture, TWT::float4 Color);
 	void DrawObject(TW3DObject* object, TWT::uint ModelCBRootParameterIndex);
 
 	void Reset();

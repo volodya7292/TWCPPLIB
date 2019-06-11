@@ -96,8 +96,8 @@ void TW3DScene::Update(float DeltaTime) {
 			light->Updated = false;
 
 			TW3DSceneLightSource ls;
-			ls.position = TWT::vec4(light->GetPosition(), 1);
-			ls.color = TWT::vec4(light->GetColor(), 1);
+			ls.position = TWT::float4(light->GetPosition(), 1);
+			ls.color = TWT::float4(light->GetColor(), 1);
 			ls.info = light->MakeInfo();
 			ls.info.y += vertex_buffers[light->GetTriangleVertexBuffer()] / 3;
 
@@ -147,7 +147,7 @@ void TW3DScene::RecordBeforeExecution() {
 
 			if (vminst.Changed) {
 				vminst.Changed = false;
-				TWT::mat4 transform = vminst.Transform.GetModelMatrix();
+				TWT::float4x4 transform = vminst.Transform.GetModelMatrix();
 				vminst.LBVHInstance.Transform = transform;
 				vminst.LBVHInstance.TransformInverse = inverse(transform);
 				objects_changed = true;

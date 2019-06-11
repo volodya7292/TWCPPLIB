@@ -40,12 +40,12 @@ D3D12_CPU_DESCRIPTOR_HANDLE TW3DTexture::GetCPUHandle() {
 	return descriptor_heap->GetCPUHandle(main_index);
 }
 
-void TW3DTexture::CreateDepthStencil(TWT::uint Width, TWT::uint Height) {
+void TW3DTexture::CreateDepthStencil(TWT::uint2 Size) {
 	clear_value.Format = DXGI_FORMAT_D32_FLOAT;
 	clear_value.DepthStencil.Depth = 1.0f;
 	clear_value.DepthStencil.Stencil = 0;
 
-	desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Width, Height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+	desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Size.x, Size.y, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 	InitialState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 	TW3DResource::Create();
 	resource->SetName(L"TW3DResourceDSV");
@@ -55,13 +55,13 @@ void TW3DTexture::CreateDepthStencil(TWT::uint Width, TWT::uint Height) {
 	type = TW3D_TEXTURE_DEPTH_STENCIL;
 }
 
-void TW3DTexture::Create2D(TWT::uint Width, TWT::uint Height) {
+void TW3DTexture::Create2D(TWT::uint2 Size) {
 	srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srv_desc.Texture2D.MipLevels = 1;
 
 	uav_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 
-	desc = CD3DX12_RESOURCE_DESC::Tex2D(srv_desc.Format, Width, Height, 1, 1, 1, 0, uav_index == -1 ? D3D12_RESOURCE_FLAG_NONE : D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	desc = CD3DX12_RESOURCE_DESC::Tex2D(srv_desc.Format, Size.x, Size.y, 1, 1, 1, 0, uav_index == -1 ? D3D12_RESOURCE_FLAG_NONE : D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
 	TW3DResource::Create();
 	resource->SetName(L"TW3DResourceSR 2D");
@@ -73,7 +73,7 @@ void TW3DTexture::Create2D(TWT::uint Width, TWT::uint Height) {
 	type = TW3D_TEXTURE_2D;
 }
 
-void TW3DTexture::CreateArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Depth) {
+void TW3DTexture::CreateArray2D(TWT::uint2 Size, TWT::uint Depth) {
 	srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
 	srv_desc.Texture2DArray.MipLevels = 1;
 	srv_desc.Texture2DArray.ArraySize = Depth;
@@ -84,7 +84,7 @@ void TW3DTexture::CreateArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Dep
 	uav_desc.Texture2DArray.ArraySize = Depth;
 	uav_desc.Texture2DArray.FirstArraySlice = 0;
 
-	desc = CD3DX12_RESOURCE_DESC::Tex2D(srv_desc.Format, Width, Height, Depth, 1, 1, 0, uav_index == -1 ? D3D12_RESOURCE_FLAG_NONE : D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	desc = CD3DX12_RESOURCE_DESC::Tex2D(srv_desc.Format, Size.x, Size.y, Depth, 1, 1, 0, uav_index == -1 ? D3D12_RESOURCE_FLAG_NONE : D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
 	TW3DResource::Create();
 	resource->SetName(L"TW3DResourceSR 2D Array");
@@ -125,24 +125,24 @@ void TW3DTexture::Upload2D(TWT::WString const& filename, TWT::uint Depth) {
 	delete imageData;
 }
 
-void TW3DTexture::Resize(TWT::uint Width, TWT::uint Height, TWT::uint Depth) {
+void TW3DTexture::Resize(TWT::uint2 Size, TWT::uint Depth) {
 	Release();
 
 	switch (type) {
 	case TW3D_TEXTURE_2D:
-		Create2D(Width, Height);
+		Create2D(Size);
 		break;
 	case TW3D_TEXTURE_2D_ARRAY:
-		CreateArray2D(Width, Height, Depth);
+		CreateArray2D(Size, Depth);
 		break;
 	case TW3D_TEXTURE_DEPTH_STENCIL:
-		CreateDepthStencil(Width, Height);
+		CreateDepthStencil(Size);
 		break;
 	}
 }
 
-TWT::vec2u TW3DTexture::GetSize() {
-	return TWT::vec2u(desc.Width, desc.Height);
+TWT::uint2 TW3DTexture::GetSize() {
+	return TWT::uint2(desc.Width, desc.Height);
 }
 
 TW3DTexture* TW3DTexture::Create2D(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::WString const& filename) {
@@ -152,7 +152,7 @@ TW3DTexture* TW3DTexture::Create2D(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3
 	int imageSize = TWU::LoadImageDataFromFile(&imageData, textureDesc, filename, imageBytesPerRow);
 
 	TW3DTexture* texture = new TW3DTexture(Device, TempGCL, SRVDescriptorHeap, textureDesc.Format, false);
-	texture->Create2D(static_cast<TWT::uint>(textureDesc.Width), static_cast<TWT::uint>(textureDesc.Height));
+	texture->Create2D(TWT::uint2(static_cast<TWT::uint>(textureDesc.Width), static_cast<TWT::uint>(textureDesc.Height)));
 	texture->Upload2D(imageData, imageBytesPerRow);
 
 	delete imageData;

@@ -15,5 +15,5 @@ public:
 private:
 	// Position: Universe relative position
 	// Extent: Area extent(radius)
-	std::vector<UniverseObject> GatherObjects(TWT::vec3d Position, TWT::vec3 Extent);
+	std::vector<UniverseObject> GatherObjects(TWT::double3 Position, TWT::float3 Extent);
 };

@@ -1,10 +1,5 @@
 #include "pch.h"
 #include "TW3DGraphicsCommandList.h"
-#include "TW3DTexture.h"
-#include "TW3DVertexBuffer.h"
-#include "TW3DConstantBuffer.h"
-#include "TW3DRenderTarget.h"
-#include "TW3DBuffer.h"
 #include "TW3DResourceManager.h"
 #include "TW3DObject.h"
 #include "TW3DPerspectiveCamera.h"
@@ -87,7 +82,7 @@ void TW3DGraphicsCommandList::ClearRTV(TW3DRenderTarget* RenderTarget) {
 	command_list->ClearRenderTargetView(RenderTarget->GetCPURTVHandle(), RenderTarget->GetClearValue().Color, 0, nullptr);
 }
 
-void TW3DGraphicsCommandList::ClearRTV(TW3DRenderTarget* RenderTarget, TWT::vec4 Color) {
+void TW3DGraphicsCommandList::ClearRTV(TW3DRenderTarget* RenderTarget, TWT::float4 Color) {
 	float clearV[] = { Color.x, Color.y, Color.z, Color.w };
 	command_list->ClearRenderTargetView(RenderTarget->GetCPURTVHandle(), clearV, 0, nullptr);
 }
@@ -175,6 +170,10 @@ void TW3DGraphicsCommandList::Dispatch(TWT::uint ThreadGroupCountX, TWT::uint Th
 	command_list->Dispatch(ThreadGroupCountX, ThreadGroupCountY, ThreadGroupCountZ);
 }
 
+void TW3DGraphicsCommandList::Dispatch(TWT::uint2 ThreadGroupCountXY, TWT::uint ThreadGroupCountZ) {
+	command_list->Dispatch(ThreadGroupCountXY.x, ThreadGroupCountXY.y, ThreadGroupCountZ);
+}
+
 void TW3DGraphicsCommandList::ExecuteIndirect(ID3D12CommandSignature* CommandSignature, TWT::uint MaxCommandCount, ID3D12Resource* ArgumentBuffer,
 	TWT::uint64 ArgumentBufferOffset, ID3D12Resource* CountBuffer, TWT::uint64 CountBufferOffset)
 {
@@ -183,6 +182,10 @@ void TW3DGraphicsCommandList::ExecuteIndirect(ID3D12CommandSignature* CommandSig
 
 void TW3DGraphicsCommandList::BindResources(TW3DResourceManager* ResourceManager) {
 	SetDescriptorHeap(ResourceManager->GetSVDescriptorHeap());
+}
+
+void TW3DGraphicsCommandList::BindFramebuffer(TW3DFramebuffer* Framebuffer) {
+	SetRenderTargets(Framebuffer->GetRenderTargets(), Framebuffer->GetDepthStencilTexture());
 }
 
 void TW3DGraphicsCommandList::BindBuffer(TWT::uint RootParameterIndex, TW3DResource* Resource, bool UAV) {
@@ -221,7 +224,7 @@ void TW3DGraphicsCommandList::BindCameraCBV(TWT::uint RootParameterIndex, TW3DPe
 	BindConstantBuffer(RootParameterIndex, Camera->GetConstantBuffer());
 }
 
-void TW3DGraphicsCommandList::ClearTexture(TW3DTexture* Texture, TWT::vec4 Color) {
+void TW3DGraphicsCommandList::ClearTexture(TW3DTexture* Texture, TWT::float4 Color) {
 	float value[] = { Color.r, Color.b, Color.g, Color.a };
 	command_list->ClearUnorderedAccessViewFloat(Texture->GetGPUUAVHandle(), Texture->GetCPUHandle(), Texture->Get(), value, 1, nullptr);
 }

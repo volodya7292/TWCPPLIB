@@ -7,7 +7,7 @@ TW3DRenderTarget::TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* rtv_d
 	RTVIndex = rtv_descriptor_heap->Allocate();
 }
 
-TW3DRenderTarget::TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* rtv_descriptor_heap, TW3DDescriptorHeap* srv_descriptor_heap, DXGI_FORMAT Format, TWT::vec4 ClearValue) :
+TW3DRenderTarget::TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* rtv_descriptor_heap, TW3DDescriptorHeap* srv_descriptor_heap, DXGI_FORMAT Format, TWT::float4 ClearValue) :
 	TW3DResource(Device,
 	CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), nullptr,
 	D3D12_RESOURCE_STATE_RENDER_TARGET,
@@ -39,9 +39,9 @@ void TW3DRenderTarget::Create(ID3D12Resource* Buffer) {
 	device->CreateRenderTargetView(resource, GetCPURTVHandle());
 }
 
-void TW3DRenderTarget::Create(TWT::uint Width, TWT::uint Height) {
-	desc.Width = Width;
-	desc.Height = Height;
+void TW3DRenderTarget::Create(TWT::uint2 Size) {
+	desc.Width = Size.x;
+	desc.Height = Size.y;
 	
 	TW3DResource::Create();
 	resource->SetName(L"TW3DResourceRTV");
@@ -56,7 +56,13 @@ void TW3DRenderTarget::Create(TWT::uint Width, TWT::uint Height) {
 	device->CreateRenderTargetView(resource, GetCPURTVHandle());
 }
 
-void TW3DRenderTarget::Resize(TWT::uint Width, TWT::uint Height) {
-	Release();
-	Create(Width, Height);
+void TW3DRenderTarget::Resize(TWT::uint2 Size) {
+	if (GetSize() != Size) {
+		Release();
+		Create(Size);
+	}
+}
+
+TWT::uint2 TW3DRenderTarget::GetSize() {
+	return TWT::uint2(desc.Width, desc.Height);
 }

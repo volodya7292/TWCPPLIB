@@ -19,26 +19,26 @@ void TW3DLightSource::SetIntensity(float Intensity) {
 	Updated = true;
 }
 
-void TW3DLightSource::SetPosition(TWT::vec3 const& Position) {
+void TW3DLightSource::SetPosition(TWT::float3 const& Position) {
 	position = Position;
 	Updated = true;
 }
 
-void TW3DLightSource::SetColor(TWT::vec3 const& Color) {
+void TW3DLightSource::SetColor(TWT::float3 const& Color) {
 	color = Color;
 	Updated = true;
 }
 
-TWT::vec3 TW3DLightSource::GetPosition() {
+TWT::float3 TW3DLightSource::GetPosition() {
 	return position;
 }
 
-TWT::vec3 TW3DLightSource::GetColor() {
+TWT::float3 TW3DLightSource::GetColor() {
 	return color * intensity;
 }
 
-TWT::vec4 TW3DLightSource::MakeInfo() {
-	return TWT::vec4(Type, triangle_id, sphere_radius, 0); // .x - type, .y - GVB triangle id, z - sphere radius
+TWT::float4 TW3DLightSource::MakeInfo() {
+	return TWT::float4(Type, triangle_id, sphere_radius, 0); // .x - type, .y - GVB triangle id, z - sphere radius
 }
 
 TW3DVertexBuffer* TW3DLightSource::GetTriangleVertexBuffer() {

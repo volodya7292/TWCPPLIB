@@ -39,12 +39,8 @@ TWT::String& TWT::String::operator+=(const String& t) {
 	return *this;
 }
 
-bool operator==(TWT::String const& str0, TWT::String const& str1) {
-	return str0.GetData().compare(str1.GetData()) == 0;
-}
-
-bool operator!=(TWT::String const& str0, TWT::String const& str1) {
-	return !(str0 == str1);
+bool TWT::String::operator==(String const& other) const {
+	return data.compare(other.data) == 0;
 }
 
 std::ostream& operator<<(std::ostream& os, const TWT::String& t) {
@@ -114,12 +110,8 @@ TWT::WString& TWT::WString::operator+=(const WString& Str) {
 	return *this;
 }
 
-bool operator==(TWT::WString const& str0, TWT::WString const& str1) {
-	return str0.GetData().compare(str1.GetData()) == 0;
-}
-
-bool operator!=(TWT::WString const& str0, TWT::WString const& str1) {
-	return !(str0 == str1);
+bool TWT::WString::operator==(WString const& other) const {
+	return data.compare(other.data) == 0;
 }
 
 std::wostream& operator<<(std::wostream& os, const TWT::WString& t) {

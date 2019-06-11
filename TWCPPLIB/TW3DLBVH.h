@@ -3,7 +3,7 @@
 #include "TW3DModules.h"
 
 struct LBVHMortonCode {
-	TWT::vec4u data; // .x - code, .y - index
+	TWT::uint4 data; // .x - code, .y - index
 };
 
 struct LBVHNode {
@@ -17,8 +17,8 @@ struct LBVHNode {
 struct SceneLBVHInstance {
 	TWT::uint GVBOffset;
 	TWT::uint GNBOffset;
-	TWT::mat4 Transform;
-	TWT::mat4 TransformInverse;
+	TWT::float4x4 Transform;
+	TWT::float4x4 TransformInverse;
 };
 
 struct SceneLBVHNode {

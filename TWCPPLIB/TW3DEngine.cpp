@@ -149,7 +149,7 @@ void init_dx12() {
 		renderTargets[i] = resource_manager->CreateRenderTarget(swapChain->GetBuffer(i));
 	logger->LogInfo("DirectX Stage 6 initialized");
 
-	depthStencil = resource_manager->CreateDepthStencilTexture(width, height);
+	depthStencil = resource_manager->CreateDepthStencilTexture(TWT::uint2(width, height));
 	logger->LogInfo("DirectX Stage 7 initialized");
 
 	current_frame_index = swapChain->GetCurrentBufferIndex();
@@ -272,7 +272,7 @@ void on_resize() {
 
 		for (UINT n = 0; n < TW3DSwapChain::BufferCount; n++)
 			renderTargets[n]->Create(swapChain->GetBuffer(n));
-		depthStencil->CreateDepthStencil(width, height);
+		depthStencil->CreateDepthStencil(TWT::uint2(width, height));
 
 		logger->LogInfo("[on_resize] Render target resized to "s + width + "x"s + height);
 
@@ -473,26 +473,26 @@ bool TW3D::IsKeyDown(TWT::uint KeyCode) {
 	return KeysDown[KeyCode];
 }
 
-TWT::vec2u TW3D::GetCursorPosition() {
+TWT::uint2 TW3D::GetCursorPosition() {
 	POINT pos;
 	GetCursorPos(&pos);
-	return TWT::vec2u(pos.x, pos.y);
+	return TWT::uint2(pos.x, pos.y);
 }
 
-TWT::vec2u TW3D::GetWindowPosition() {
+TWT::uint2 TW3D::GetWindowPosition() {
 	RECT rect;
 	GetWindowRect(hwnd, &rect);
 	RECT rect2 = {};
 	AdjustWindowRect(&rect2, WS_OVERLAPPEDWINDOW, FALSE);
-	return TWT::vec2u(rect.left - rect2.left, rect.top - rect2.top);
+	return TWT::uint2(rect.left - rect2.left, rect.top - rect2.top);
 }
 
-TWT::vec2u TW3D::GetWindowCenterPosition() {
-	return GetWindowPosition() + TWT::vec2u(width, height) / 2u;
+TWT::uint2 TW3D::GetWindowCenterPosition() {
+	return GetWindowPosition() + TWT::uint2(width, height) / 2u;
 }
 
-TWT::vec2u TW3D::GetCurrentWindowSize() {
-	return TWT::vec2u(width, height);
+TWT::uint2 TW3D::GetCurrentWindowSize() {
+	return TWT::uint2(width, height);
 }
 
 float TW3D::GetFPS() {

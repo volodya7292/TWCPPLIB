@@ -44,14 +44,14 @@ void on_update() {
 		scene->Camera->Move(to_back_movement * ms, right_left_movement * ms);
 
 		// Mouse movement
-		TWT::vec2i centerMousePos = TW3D::GetWindowCenterPosition();
+		TWT::int2 centerMousePos = TW3D::GetWindowCenterPosition();
 
-		TWT::vec2i mousePos = TW3D::GetCursorPosition();
+		TWT::int2 mousePos = TW3D::GetCursorPosition();
 
 		float xOffset = (mousePos.x - centerMousePos.x) * mouseSensitivity;
 		float yOffset = (centerMousePos.y - mousePos.y) * mouseSensitivity;
 
-		TWT::vec3 rotation = scene->Camera->GetRotation();
+		TWT::float3 rotation = scene->Camera->GetRotation();
 		float xRotation = rotation.x;
 		float newXRotation = xRotation - yOffset;
 
@@ -70,11 +70,11 @@ void on_update() {
 	}
 
 
-	//cube2->VMInstance.Transform.SetPosition(TWT::vec3(0.0f, 5, 0));
-	//cube->VMInstance.Transform.AdjustRotation(TWT::vec3(0.01f));
+	//cube2->VMInstance.Transform.SetPosition(TWT::float3(0.0f, 5, 0));
+	//cube->VMInstance.Transform.AdjustRotation(TWT::float3(0.01f));
 	
-	//cube2->VMInstances[0].Transform.SetPosition(TWT::vec3(0.8f, 0, 0));
-	//cube2->VMInstances[0].Transform.AdjustRotation(TWT::vec3(0.02f));
+	//cube2->VMInstances[0].Transform.SetPosition(TWT::float3(0.8f, 0, 0));
+	//cube2->VMInstances[0].Transform.AdjustRotation(TWT::float3(0.02f));
 	scene->Camera->UpdateConstantBuffer();
 }
 
@@ -135,14 +135,14 @@ int main() {
 	rp3d::BoxShape shape = rp3d::BoxShape(rp3d::Vector3(0.5, 0.5, 0.5));
 
 	cube2->VMInstance.VertexMesh = TW3DPrimitives::GetPyramid4VertexMesh();
-	cube2->VMInstance.Transform.SetPosition(TWT::vec3(0.0f, 5, 0));
-	cube2->VMInstance.Transform.SetRotation(TWT::vec3d(0, 0, 180));
+	cube2->VMInstance.Transform.SetPosition(TWT::float3(0.0f, 5, 0));
+	cube2->VMInstance.Transform.SetRotation(TWT::double3(0, 0, 180));
 	scene->AddObject(cube2);
 	cube2->VMInstance.RigidBody->setType(rp3d::BodyType::DYNAMIC);
 	cube2->VMInstance.RigidBody->enableGravity(true);
 	cube2->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);
 
-	cube->VMInstance.Transform.SetPosition(TWT::vec3(0.0f, 0, 0));
+	cube->VMInstance.Transform.SetPosition(TWT::float3(0.0f, 0, 0));
 	scene->AddObject(cube);
 	cube->VMInstance.RigidBody->setType(rp3d::BodyType::STATIC);
 	cube->VMInstance.RigidBody->enableGravity(false);
@@ -155,13 +155,13 @@ int main() {
 
 	light = new TW3DLightSource();
 	//light->SetSphereRadius(2);
-	//light->SetPosition(TWT::vec3(5, 8, 5));
+	//light->SetPosition(TWT::float3(5, 8, 5));
 	light->SetTriangleId(8, cube->VMInstance.VertexMesh->VertexBuffers[0]);
 
 	light2 = new TW3DLightSource();
 	//light2->SetSphereRadius(2);
 	light2->SetTriangleId(9, cube->VMInstance.VertexMesh->VertexBuffers[0]);
-	//light2->SetPosition(TWT::vec3(5, -10, 5));
+	//light2->SetPosition(TWT::float3(5, -10, 5));
 
 	scene->AddLightSource(light);
 	scene->AddLightSource(light2);

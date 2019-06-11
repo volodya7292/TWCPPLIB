@@ -38,6 +38,7 @@ namespace TWT {
 
 		String& operator  = (String const& t) = default;
 		String& operator += (String const& t);
+		bool operator==(String const& other) const;
 
 	private:
 		std::string data;
@@ -64,6 +65,7 @@ namespace TWT {
 
 		WString& operator  = (WString const& Str) = default;
 		WString& operator += (WString const& Str);
+		bool operator==(WString const& other) const;
 
 	private:
 		std::wstring data;
@@ -94,16 +96,34 @@ namespace TWT {
 //std::wstring operator+(const std::wstring& str, const TWT::WString& t);
 //std::wstring operator+(const TWT::WString& t, const std::wstring& str);
 
-bool operator ==(TWT::String const& str0, TWT::String const& str1);
-bool operator !=(TWT::String const& str0, TWT::String const& str1);
+//bool operator ==(TWT::String const& str0, TWT::String const& str1);
+//bool operator !=(TWT::String const& str0, TWT::String const& str1);
 std::ostream& operator << (std::ostream& os, TWT::String const& t);
 TWT::String   operator  + (TWT::String const& t, TWT::String const& str);
 std::string   operator  + (std::string const& str, TWT::String const& t);
 std::string   operator  + (TWT::String const& t, std::string const& str);
 
-bool operator ==(TWT::WString const& str0, TWT::WString const& str1);
-bool operator !=(TWT::WString const& str0, TWT::WString const& str1);
+//bool operator ==(TWT::WString const& str0, TWT::WString const& str1);
+//bool operator !=(TWT::WString const& str0, TWT::WString const& str1);
 std::wostream& operator << (std::wostream const& os, TWT::WString const& t);
 TWT::WString   operator  + (TWT::WString const& t, TWT::WString const& str);
 std::wstring   operator  + (std::wstring const& str, TWT::WString const& t);
 std::wstring   operator  + (TWT::WString const& t, std::wstring const& str);
+
+namespace std {
+	template <>
+	struct hash<TWT::String> {
+		std::size_t operator() (TWT::String const& str) const {
+			std::hash<std::string> hash_fn;
+			return hash_fn(str.GetData());
+		}
+	};
+
+	template <>
+	struct hash<TWT::WString> {
+		std::size_t operator() (TWT::WString const& str) const {
+			std::hash<std::wstring> hash_fn;
+			return hash_fn(str.GetData());
+		}
+	};
+}

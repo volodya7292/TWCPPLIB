@@ -36,6 +36,8 @@ TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete specular_texarr;
 	delete emission_texarr;
 	delete normal_texarr;
+
+	delete ray_tracer;
 }
 
 void TW3DDefaultRenderer::CreateBlitResources() {
@@ -114,21 +116,21 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 	gbuffer_ps->SetInputLayout(input_layout);
 	gbuffer_ps->Create(Device);
 
-	g_position = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA32Float, TWT::vec4(0));
-	g_normal = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA32Float);
-	g_diffuse = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA8Unorm);
-	g_specular = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA8Unorm);
-	g_emission = ResourceManager->CreateRenderTarget(Width, Height, TWT::RGBA8Unorm);
-	g_depth = ResourceManager->CreateDepthStencilTexture(Width, Height);
+	g_position = ResourceManager->CreateRenderTarget(TWT::uint2(Width, Height), TWT::RGBA32Float, TWT::float4(0));
+	g_normal = ResourceManager->CreateRenderTarget(TWT::uint2(Width, Height), TWT::RGBA32Float);
+	g_diffuse = ResourceManager->CreateRenderTarget(TWT::uint2(Width, Height), TWT::RGBA8Unorm);
+	g_specular = ResourceManager->CreateRenderTarget(TWT::uint2(Width, Height), TWT::RGBA8Unorm);
+	g_emission = ResourceManager->CreateRenderTarget(TWT::uint2(Width, Height), TWT::RGBA8Unorm);
+	g_depth = ResourceManager->CreateDepthStencilTexture(TWT::uint2(Width, Height));
 
 	g_cl = ResourceManager->CreateDirectCommandList();
 }
 
 void TW3DDefaultRenderer::CreateRTResources() {
-	rt_direct = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA32Float, true);
-	rt_direct_albedo = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA32Float, true);
-	rt_indirect = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA32Float, true);
-	rt_indirect_albedo = ResourceManager->CreateTexture2D(Width, Height, TWT::RGBA32Float, true);
+	rt_direct = ResourceManager->CreateTexture2D(TWT::uint2(Width, Height), TWT::RGBA32Float, true);
+	rt_direct_albedo = ResourceManager->CreateTexture2D(TWT::uint2(Width, Height), TWT::RGBA32Float, true);
+	rt_indirect = ResourceManager->CreateTexture2D(TWT::uint2(Width, Height), TWT::RGBA32Float, true);
+	rt_indirect_albedo = ResourceManager->CreateTexture2D(TWT::uint2(Width, Height), TWT::RGBA32Float, true);
 	//ResourceManager->ResourceBarrier(rt_output, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 	TW3DShader* s = new TW3DShader(TW3DCompiledShader(RayTrace_ByteCode), "RTShader"s);
@@ -178,6 +180,8 @@ void TW3DDefaultRenderer::CreateRTResources() {
 	rt_ps->Create(Device);
 
 	rt_cl = ResourceManager->CreateComputeCommandList();
+
+	ray_tracer = new TW3DRaytracer(ResourceManager, TWT::uint2(Width, Height));
 }
 
 void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height) {
@@ -193,10 +197,10 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	info.info.x = 0;
 	info_cb = ResourceManager->CreateConstantBuffer(1, sizeof(TWT::DefaultRendererInfoCB));
 
-	diffuse_texarr = ResourceManager->CreateTextureArray2D(400, 400, material_count, TWT::RGBA8Unorm);
-	specular_texarr = ResourceManager->CreateTextureArray2D(400, 400, material_count, TWT::RGBA8Unorm);
-	emission_texarr = ResourceManager->CreateTextureArray2D(400, 400, material_count, TWT::RGBA8Unorm);
-	normal_texarr = ResourceManager->CreateTextureArray2D(400, 400, material_count, TWT::RGBA32Float);
+	diffuse_texarr = ResourceManager->CreateTextureArray2D(TWT::uint2(400, 400), material_count, TWT::RGBA8Unorm);
+	specular_texarr = ResourceManager->CreateTextureArray2D(TWT::uint2(400, 400), material_count, TWT::RGBA8Unorm);
+	emission_texarr = ResourceManager->CreateTextureArray2D(TWT::uint2(400, 400), material_count, TWT::RGBA8Unorm);
+	normal_texarr = ResourceManager->CreateTextureArray2D(TWT::uint2(400, 400), material_count, TWT::RGBA32Float);
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] Texture resources initialized."s);
 
 	diffuse_texarr->Upload2D(L"D:/OptimizedRT_converged.jpg", 0);
@@ -216,21 +220,23 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	TWT::uint rt_height = Height * rt_scale;
 
 	rt_direct->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-	rt_direct->Resize(rt_width, rt_height);
+	rt_direct->Resize(TWT::uint2(rt_width, rt_height));
 	rt_indirect->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-	rt_indirect->Resize(rt_width, rt_height);
+	rt_indirect->Resize(TWT::uint2(rt_width, rt_height));
 
 	rt_direct_albedo->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-	rt_direct_albedo->Resize(Width, Height);
+	rt_direct_albedo->Resize(TWT::uint2(Width, Height));
 	rt_indirect_albedo->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-	rt_indirect_albedo->Resize(Width, Height);
+	rt_indirect_albedo->Resize(TWT::uint2(Width, Height));
 
-	g_position->Resize(Width, Height);
-	g_normal->Resize(Width, Height);
-	g_diffuse->Resize(Width, Height);
-	g_specular->Resize(Width, Height);
-	g_emission->Resize(Width, Height);
-	g_depth->Resize(Width, Height);
+	g_position->Resize(TWT::uint2(Width, Height));
+	g_normal->Resize(TWT::uint2(Width, Height));
+	g_diffuse->Resize(TWT::uint2(Width, Height));
+	g_specular->Resize(TWT::uint2(Width, Height));
+	g_emission->Resize(TWT::uint2(Width, Height));
+	g_depth->Resize(TWT::uint2(Width, Height));
+
+	ray_tracer->Resize(TWT::uint2(Width, Height));
 }
 
 void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarget* ColorOutput, TW3DTexture* Depth) {
@@ -250,7 +256,7 @@ void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarg
 	cl->BindTexture(3, rt_direct_albedo);
 	cl->BindTexture(4, rt_indirect);
 	cl->BindTexture(5, rt_indirect_albedo);
-	cl->ClearRTV(ColorOutput, TWT::vec4(0, 0, 0, 1));
+	cl->ClearRTV(ColorOutput, TWT::float4(0, 0, 0, 1));
 	cl->ClearDSVDepth(Depth);
 	cl->SetViewport(&viewport);
 	cl->SetScissor(&scissor);

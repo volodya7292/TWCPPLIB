@@ -1,5 +1,6 @@
 #pragma once
 #include "TW3DRenderer.h"
+#include "TW3DRaytracer.h"
 
 class TW3DDefaultRenderer : public TW3DRenderer {
 public:
@@ -51,7 +52,7 @@ private:
 
 	// Ray tracing compute
 	// --------------------------------------------------------------------- 
-
+	TW3DRaytracer* ray_tracer;
 	enum RTRPIs {
 		RT_GVB_BUFFER,
 		RT_GNB_BUFFER,

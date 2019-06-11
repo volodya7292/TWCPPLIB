@@ -7,7 +7,9 @@
 #include "CompiledShaders/SVGFEstimateVariance.p.h"
 #include "CompiledShaders/SVGFWaveletFilter.p.h"
 
-TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager) {
+TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 RTSize) :
+	size(RTSize)
+{
 	auto device = ResourceManager->GetDevice();
 
 	sq_s = new TW3DShader(TW3DCompiledShader(ScreenQuad_VertexByteCode), "ScreenQuad");
@@ -75,7 +77,7 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager) {
 			TW3DRPTexture(SVGFTA_HISTORY_LENGTH, D3D12_SHADER_VISIBILITY_PIXEL, svgf_ta_s->GetRegister("g_history_length"s))
 		},
 		true, true, false, false
-		);
+	);
 
 	svgf_ta_ps = new TW3DGraphicsPipelineState(rs);
 	svgf_ta_ps->SetRTVFormat(0, TWT::RGBA32Float);
@@ -96,7 +98,7 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager) {
 			TW3DRPTexture(SVGFEV_HISTORY_LENGTH, D3D12_SHADER_VISIBILITY_PIXEL, svgf_ev_s->GetRegister("g_history_length"s)),
 		},
 		true, true, false, false
-	);
+		);
 
 	svgf_ev_ps = new TW3DGraphicsPipelineState(rs);
 	svgf_ev_ps->SetRTVFormat(0, TWT::RGBA32Float);
@@ -114,7 +116,7 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager) {
 			TW3DRPConstants(SVGFWF_INPUT_DATA, D3D12_SHADER_VISIBILITY_PIXEL, svgf_wf_s->GetRegister("input_data"s), 1)
 		},
 		true, true, false, false
-		);
+	);
 
 	svgf_wf_ps = new TW3DGraphicsPipelineState(rs);
 	svgf_wf_ps->SetRTVFormat(0, TWT::RGBA32Float);
@@ -122,6 +124,34 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager) {
 	svgf_wf_ps->SetVertexShader(sq_s);
 	svgf_wf_ps->SetPixelShader(svgf_wf_s);
 	svgf_wf_ps->Create(device);
+
+
+	direct_tex = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
+	indirect_tex = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
+	direct_albedo_tex = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
+	indirect_albedo_tex = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
+
+	for (TWT::uint i = 0; i < 2; i++) {
+		svgf_swap_fb[i] = ResourceManager->CreateFramebuffer(RTSize);
+		svgf_swap_fb[i]->AddRenderTarget(0, TWT::RGBA32Float);
+		svgf_swap_fb[i]->AddRenderTarget(1, TWT::RGBA32Float);
+	}
+
+	svgf_filtered_fb = ResourceManager->CreateFramebuffer(RTSize);
+	svgf_filtered_fb->AddRenderTarget(0, TWT::RGBA32Float);
+	svgf_filtered_fb->AddRenderTarget(1, TWT::RGBA32Float);
+
+	svgf_ta_curr_fb = ResourceManager->CreateFramebuffer(RTSize);
+	svgf_ta_curr_fb->AddRenderTarget(0, TWT::RGBA32Float);
+	svgf_ta_curr_fb->AddRenderTarget(1, TWT::RGBA32Float);
+	svgf_ta_curr_fb->AddRenderTarget(2, TWT::RGBA32Float);
+	svgf_ta_curr_fb->AddRenderTarget(3, TWT::R16Float);
+
+	svgf_ta_prev_fb = ResourceManager->CreateFramebuffer(RTSize);
+	svgf_ta_prev_fb->AddRenderTarget(0, TWT::RGBA32Float);
+	svgf_ta_prev_fb->AddRenderTarget(1, TWT::RGBA32Float);
+	svgf_ta_prev_fb->AddRenderTarget(2, TWT::RGBA32Float);
+	svgf_ta_prev_fb->AddRenderTarget(3, TWT::R16Float);
 }
 
 TW3DRaytracer::~TW3DRaytracer() {
@@ -134,7 +164,63 @@ TW3DRaytracer::~TW3DRaytracer() {
 	delete svgf_ta_ps;
 	delete svgf_ev_ps;
 	delete svgf_wf_ps;
+
+	delete direct_tex;
+	delete indirect_tex;
+	delete direct_albedo_tex;
+	delete indirect_albedo_tex;
+
+	for (TWT::uint i = 0; i < 2; i++)
+		delete svgf_swap_fb[i];
+	delete svgf_filtered_fb;
+	delete svgf_ta_curr_fb;
+	delete svgf_ta_prev_fb;
 }
 
-void TW3DRaytracer::TraceRays(TW3DGraphicsCommandList* CommandList, TW3DScene* Scene, TW3DScene* LargeScaleScene) {
+void TW3DRaytracer::Resize(TWT::uint2 Size) {
+	for (TWT::uint i = 0; i < 2; i++)
+		svgf_swap_fb[i]->Resize(Size);
+
+	svgf_filtered_fb->Resize(Size);
+	svgf_ta_curr_fb->Resize(Size);
+	svgf_ta_prev_fb->Resize(Size);
+}
+
+void TW3DRaytracer::TraceRays(TW3DGraphicsCommandList* CL,
+		TW3DRenderTarget* GPosition, TW3DRenderTarget* GDiffuse, TW3DRenderTarget* GSpecular, TW3DRenderTarget* GNormal, TW3DRenderTarget* GEmission, TW3DTexture* GDepth,
+		TW3DTexture* DiffuseTexArr, TW3DTexture* EmissionTexArr, TW3DTexture* NormalTexArr, TW3DConstantBuffer* RendererInfoCB,
+		TW3DScene* Scene, TW3DScene* LargeScaleScene) {
+
+	CL->SetPipelineState(rt_ps);
+	Scene->Bind(CL, RT_GVB_BUFFER, RT_SCENE_BUFFER, RT_GNB_BUFFER, RT_LSB_BUFFER);
+
+	if (LargeScaleScene)
+		LargeScaleScene->Bind(CL, RT_L_GVB_BUFFER, RT_L_SCENE_BUFFER, RT_L_GNB_BUFFER, RT_L_LSB_BUFFER);
+
+	CL->BindTexture(RT_G_POSITION_TEXTURE, GPosition);
+	CL->BindTexture(RT_G_DIFFUSE_TEXTURE, GDiffuse);
+	CL->BindTexture(RT_G_SPECULAR_TEXTURE, GSpecular);
+	CL->BindTexture(RT_G_EMISSION_TEXTURE, GEmission);
+	CL->BindTexture(RT_G_NORMAL_TEXTURE, GNormal);
+
+	CL->BindTexture(RT_DIFFUSE_TEXTURE, DiffuseTexArr);
+	//CL->BindTexture(RT_SPECULAR_TEXTURE, specular_texarr);
+	CL->BindTexture(RT_EMISSION_TEXTURE, EmissionTexArr);
+	CL->BindTexture(RT_NORMAL_TEXTURE, NormalTexArr);
+
+	CL->BindTexture(RT_DIRECT_TEXTURE, direct_tex, true);
+	CL->BindTexture(RT_DIRECT_ALBEDO_TEXTURE, direct_albedo_tex, true);
+	CL->BindTexture(RT_INDIRECT_TEXTURE, indirect_tex, true);
+	CL->BindTexture(RT_INDIRECT_ALBEDO_TEXTURE, indirect_albedo_tex, true);
+
+	CL->BindConstantBuffer(RT_CAMERA_CB, Scene->Camera->GetConstantBuffer());
+	CL->Bind32BitConstant(RT_INPUT_CONST, 0, 0);
+	CL->Bind32BitConstant(RT_INPUT_CONST, Scene->LightSources.size(), 1);
+
+	if (LargeScaleScene)
+		CL->Bind32BitConstant(RT_INPUT_CONST, LargeScaleScene->LightSources.size(), 2);
+
+	CL->BindConstantBuffer(RT_RENDERERINFO_CB, RendererInfoCB);
+	CL->Dispatch(ceil(TWT::float2(size) / 8.0f));
+	CL->ResourceBarrier(TW3DUAVBarrier());
 }

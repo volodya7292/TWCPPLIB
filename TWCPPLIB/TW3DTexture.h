@@ -17,14 +17,14 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUUAVHandle();
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle();
 
-	void CreateDepthStencil(TWT::uint Width, TWT::uint Height);
-	void Create2D(TWT::uint Width, TWT::uint Height);
-	void CreateArray2D(TWT::uint Width, TWT::uint Height, TWT::uint Depth);
+	void CreateDepthStencil(TWT::uint2 Size);
+	void Create2D(TWT::uint2 Size);
+	void CreateArray2D(TWT::uint2 Size, TWT::uint Depth);
 	void Upload2D(TWT::byte* Data, TWT::int64 BytesPerRow, TWT::uint Depth = 0);
 	void Upload2D(TWT::WString const& filename, TWT::uint Depth = 0);
-	void Resize(TWT::uint Width, TWT::uint Height, TWT::uint Depth = 1);
+	void Resize(TWT::uint2 Size, TWT::uint Depth = 1);
 
-	TWT::vec2u GetSize();
+	TWT::uint2 GetSize();
 
 	static TW3DTexture* Create2D(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::WString const& filename);
 
