@@ -13,10 +13,8 @@ groupshared uint gs_SortKeys[2048];
 groupshared uint gs_SortIndices[2048];
 
 void LoadKeyIndexPair(uint Element, uint ListCount) {
-	uint keyValue = Element < ListCount ? g_SortBuffer.Load(Element * 4 * 4) : CB1.NullItem;
-	uint index = Element < ListCount ? g_SortBuffer.Load(Element * 4 * 4 + 4) : CB1.NullItem;
-	gs_SortIndices[Element & 2047] = index;
-	gs_SortKeys[Element & 2047] = keyValue;
+	gs_SortIndices[Element & 2047] = Element < ListCount ? g_SortBuffer.Load(Element * 4 * 4 + 4) : CB1.NullItem;
+	gs_SortKeys[Element & 2047]    = Element < ListCount ? g_SortBuffer.Load(Element * 4 * 4) : CB1.NullItem;
 }
 
 void StoreKeyIndexPair(uint Element, uint ListCount) {

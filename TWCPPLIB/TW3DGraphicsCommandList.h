@@ -35,8 +35,8 @@ public:
 	void CopyBufferRegion(TW3DResource* DstBuffer, TWT::uint64 DstOffset, TW3DResource* SrcBuffer, TWT::uint64 SrcOffset, TWT::uint64 ByteCount);
 	void SetPipelineState(TW3DGraphicsPipelineState* PipelineState);
 	void SetPipelineState(TW3DComputePipelineState* PipelineState);
-	void SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DTexture* DSV);
-	void SetRenderTargets(const std::vector<TW3DRenderTarget*>& RTVs, TW3DTexture* DSV);
+	void SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DTexture* DSV = nullptr);
+	void SetRenderTargets(const std::vector<TW3DRenderTarget*>& RTVs, TW3DTexture* DSV = nullptr);
 	void ClearRTV(TW3DRenderTarget* RenderTarget);
 	void ClearRTV(TW3DRenderTarget* RenderTarget, TWT::float4 Color);
 	void ClearDSVDepth(TW3DTexture* Texture);
@@ -46,6 +46,7 @@ public:
 	void SetRootDescriptorTable(TWT::uint RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor);
 	void SetViewport(const D3D12_VIEWPORT *viewport);
 	void SetScissor(const D3D12_RECT* scissor);
+	void SetViewportScissor(TWT::uint2 Size);
 	void SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY PrimitiveTopology);
 	void SetVertexBuffer(TWT::uint StartSlot, TW3DVertexBuffer* VertexBuffer);
 	void SetVertexBuffers(TWT::uint StartSlot, const std::vector<D3D12_VERTEX_BUFFER_VIEW>& views);
@@ -58,6 +59,7 @@ public:
 		TWT::uint64 ArgumentBufferOffset, ID3D12Resource* CountBuffer, TWT::uint64 CountBufferOffset);
 
 
+	void DrawQuad();
 	void BindResources(TW3DResourceManager* ResourceManager);
 	void BindFramebuffer(TW3DFramebuffer* Framebuffer);
 	void BindBuffer(TWT::uint RootParameterIndex, TW3DResource* Resource, bool UAV = false);
@@ -67,6 +69,7 @@ public:
 	void Bind32BitConstant(TWT::uint RootParameterIndex, TWT::uint Data, TWT::uint DestOffsetIn32BitValues);
 	void Bind32BitConstants(TWT::uint RootParameterIndex, TWT::uint Num32BitValuesToSet, const void* Data, TWT::uint DestOffsetIn32BitValues);
 	void BindCameraCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera);
+	void BindCameraPrevCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera);
 	void ClearTexture(TW3DTexture* Texture, TWT::float4 Color);
 	void DrawObject(TW3DObject* object, TWT::uint ModelCBRootParameterIndex);
 

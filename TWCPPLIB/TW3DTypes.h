@@ -49,7 +49,7 @@ namespace TWT {
 	};
 
 	struct DefaultRendererInfoCB {
-		uint4 info; // .x - frame index
+		uint4 info; // .x - width, .y - height, .z - frame index
 	};
 
 	struct Bounds {

@@ -176,8 +176,8 @@ struct Camera {
 	float4 info; // .x - FOVy in radians, .y - scale factor (large objects are scaled down)
 };
 
-struct RendererInfoCB {
-	uint4 info; // .x - frame index
+struct RendererInfo {
+	uint4 info; // .x - width, .y - height, .z - frame index
 };
 
 typedef StructuredBuffer<SceneLBVHNode> RTScene;

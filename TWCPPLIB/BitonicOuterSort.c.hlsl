@@ -23,10 +23,10 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	uint B = g_SortBuffer.Load(Index2 * 4 * 4);
 	uint indexA = g_SortBuffer.Load(Index1 * 4 * 4 + 4);
 	uint indexB = g_SortBuffer.Load(Index2 * 4 * 4 + 4);
+
 	if (ShouldSwap(A, B, indexA, indexB)) {
 		g_SortBuffer.Store(Index1 * 4 * 4, B);
 		g_SortBuffer.Store(Index2 * 4 * 4, A);
-
 
 		g_SortBuffer.Store(Index1 * 4 * 4 + 4, indexB);
 		g_SortBuffer.Store(Index2 * 4 * 4 + 4, indexA);

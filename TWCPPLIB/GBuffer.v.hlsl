@@ -3,7 +3,7 @@
 struct VS_OUTPUT {
 	float4             clip_pos : SV_Position;
 	float4        prev_clip_pos : PrevPosition;
-	linear float3     world_pos : ModelPosition;
+	linear float3     world_pos : WorldPosition;
 	float2            tex_coord : TexCoord;
 	uint            material_id : MaterialId;
 	linear float3        normal : ObjectNormal;

@@ -228,6 +228,9 @@
     <ClInclude Include="TW3DFramebuffer.h">
       <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DBlitter.h">
+      <Filter>Header Files\TW3DEngine\TW3DModule</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -380,6 +383,9 @@
     <ClCompile Include="TW3DFramebuffer.cpp">
       <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
+    <ClCompile Include="TW3DBlitter.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="GBuffer.v.hlsl">
@@ -442,13 +448,16 @@
     <FxCompile Include="PostCalculateFinalLighting.p.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="SVGFTemporalAccumulation.p.hlsl">
-      <Filter>Resource Files\Shaders\SVGF</Filter>
-    </FxCompile>
     <FxCompile Include="SVGFEstimateVariance.p.hlsl">
       <Filter>Resource Files\Shaders\SVGF</Filter>
     </FxCompile>
-    <FxCompile Include="SVGFWaveletFilter.p.hlsl">
+    <FxCompile Include="Blit.p.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="RTDTemporalAccumulation.p.hlsl">
+      <Filter>Resource Files\Shaders\SVGF</Filter>
+    </FxCompile>
+    <FxCompile Include="RTDWaveletFilter.p.hlsl">
       <Filter>Resource Files\Shaders\SVGF</Filter>
     </FxCompile>
   </ItemGroup>

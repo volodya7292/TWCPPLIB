@@ -68,14 +68,14 @@ void TW3DGraphicsCommandList::SetPipelineState(TW3DComputePipelineState* Pipelin
 }
 
 void TW3DGraphicsCommandList::SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DTexture* DSV) {
-	command_list->OMSetRenderTargets(1, &RenderTarget->GetCPURTVHandle(), false, &DSV->GetCPUHandle());
+	command_list->OMSetRenderTargets(1, &RenderTarget->GetCPURTVHandle(), false, DSV ? &DSV->GetCPUHandle() : nullptr);
 }
 
 void TW3DGraphicsCommandList::SetRenderTargets(const std::vector<TW3DRenderTarget*>& RTVs, TW3DTexture* DSV) {
 	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> handles(RTVs.size());
 	for (int i = 0; i < RTVs.size(); i++)
 		handles[i] = RTVs[i]->GetCPURTVHandle();
-	command_list->OMSetRenderTargets(static_cast<UINT>(RTVs.size()), handles.data(), false, &DSV->GetCPUHandle());
+	command_list->OMSetRenderTargets(static_cast<UINT>(RTVs.size()), handles.data(), false, DSV ? &DSV->GetCPUHandle() : nullptr);
 }
 
 void TW3DGraphicsCommandList::ClearRTV(TW3DRenderTarget* RenderTarget) {
@@ -142,6 +142,11 @@ void TW3DGraphicsCommandList::SetScissor(const D3D12_RECT* scissor) {
 	command_list->RSSetScissorRects(1, scissor);
 }
 
+void TW3DGraphicsCommandList::SetViewportScissor(TWT::uint2 Size) {
+	command_list->RSSetViewports(1, &CD3DX12_VIEWPORT(0.0f, 0.0f, Size.x, Size.y));
+	command_list->RSSetScissorRects(1, &CD3DX12_RECT(0, 0, Size.x, Size.y));
+}
+
 void TW3DGraphicsCommandList::SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY PrimitiveTopology) {
 	command_list->IASetPrimitiveTopology(PrimitiveTopology);
 }
@@ -178,6 +183,11 @@ void TW3DGraphicsCommandList::ExecuteIndirect(ID3D12CommandSignature* CommandSig
 	TWT::uint64 ArgumentBufferOffset, ID3D12Resource* CountBuffer, TWT::uint64 CountBufferOffset)
 {
 	command_list->ExecuteIndirect(CommandSignature, MaxCommandCount, ArgumentBuffer, ArgumentBufferOffset, CountBuffer, CountBufferOffset);
+}
+
+void TW3DGraphicsCommandList::DrawQuad() {
+	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	Draw(4);
 }
 
 void TW3DGraphicsCommandList::BindResources(TW3DResourceManager* ResourceManager) {
@@ -222,6 +232,10 @@ void TW3DGraphicsCommandList::BindConstantBuffer(TWT::uint RootParameterIndex, T
 
 void TW3DGraphicsCommandList::BindCameraCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera) {
 	BindConstantBuffer(RootParameterIndex, Camera->GetConstantBuffer());
+}
+
+void TW3DGraphicsCommandList::BindCameraPrevCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera) {
+	BindConstantBuffer(RootParameterIndex, Camera->GetPreviousConstantBuffer());
 }
 
 void TW3DGraphicsCommandList::ClearTexture(TW3DTexture* Texture, TWT::float4 Color) {

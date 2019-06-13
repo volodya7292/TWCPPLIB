@@ -14,7 +14,7 @@ public:
 	void AddDepthStencil(TW3DTexture* DepthStencil);
 	void Resize(TWT::uint2 Size);
 
-	const TW3DRenderTarget* GetRenderTarget(TWT::uint Index) const;
+	TW3DRenderTarget* GetRenderTarget(TWT::uint Index) const;
 	const std::vector<TW3DRenderTarget*> GetRenderTargets() const;
 	TW3DTexture* GetDepthStencilTexture() const;
 

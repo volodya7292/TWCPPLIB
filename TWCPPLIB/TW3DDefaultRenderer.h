@@ -25,6 +25,7 @@ private:
 
 	TW3DGraphicsCommandList* g_cl = nullptr;    // GBuffer CL
 	TW3DGraphicsCommandList* rt_cl = nullptr;   // Ray tracing CL
+	TW3DGraphicsCommandList* gd_cl = nullptr;   // Ray tracing denoiser CL
 
 	// Renderer resources
 	// --------------------------------------------------------------------- 
@@ -40,7 +41,7 @@ private:
 		GBUFFER_VERTEX_PREV_CAMERA_CB,
 		GBUFFER_VERTEX_VMI_CB,
 		GBUFFER_PIXEL_CAMERA_CB,
-		GBUFFER_PIXEL_VMISCALE_CONST,
+		GBUFFER_PIXEL_RENDERER_CB,
 		GBUFFER_PIXEL_DIFFUSE_TEXTURE,
 		GBUFFER_PIXEL_SPECULAR_TEXTURE,
 		GBUFFER_PIXEL_EMISSION_TEXTURE,
@@ -53,34 +54,6 @@ private:
 	// Ray tracing compute
 	// --------------------------------------------------------------------- 
 	TW3DRaytracer* ray_tracer;
-	enum RTRPIs {
-		RT_GVB_BUFFER,
-		RT_GNB_BUFFER,
-		RT_SCENE_BUFFER,
-		RT_LSB_BUFFER,
-		RT_L_GVB_BUFFER,
-		RT_L_GNB_BUFFER,
-		RT_L_SCENE_BUFFER,
-		RT_L_LSB_BUFFER,
-		RT_DIFFUSE_TEXTURE,
-		//RT_SPECULAR_TEXTURE,
-		RT_EMISSION_TEXTURE,
-		RT_NORMAL_TEXTURE,
-		RT_G_POSITION_TEXTURE,
-		RT_G_NORMAL_TEXTURE,
-		RT_G_DIFFUSE_TEXTURE,
-		RT_G_SPECULAR_TEXTURE,
-		RT_G_EMISSION_TEXTURE,
-		RT_DIRECT_TEXTURE,
-		RT_DIRECT_ALBEDO_TEXTURE,
-		RT_INDIRECT_TEXTURE,
-		RT_INDIRECT_ALBEDO_TEXTURE,
-		RT_INPUT_CONST,
-		RT_CAMERA_CB,
-		RT_RENDERERINFO_CB,
-	};
-	TW3DComputePipelineState *rt_ps = nullptr;
-	TW3DTexture *rt_direct, *rt_direct_albedo, *rt_indirect, *rt_indirect_albedo;
 	float rt_scale = 0.25f;
 
 	// Blit output

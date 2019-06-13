@@ -47,7 +47,7 @@ RWTexture2D<float4> rt_indirect_albedo;
 ConstantBuffer<Camera> camera;
 // Scene data
 ConstantBuffer<InputData> input;
-ConstantBuffer<RendererInfoCB> renderer;
+ConstantBuffer<RendererInfo> renderer;
 
 struct LightInfo {
 	float ray_length;
@@ -299,7 +299,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	const float2 G_SCALE = G_SIZE / float2(RT_SIZE);
 
 
-	rand_init(DTid.x + DTid.y * RT_SIZE.x, renderer.info.x, 16);
+	rand_init(DTid.x + DTid.y * RT_SIZE.x, renderer.info.z, 16);
 
 	const uint2 g_pixel = DTid.xy * G_SCALE;
 	const uint2 rt_pixel = DTid.xy;

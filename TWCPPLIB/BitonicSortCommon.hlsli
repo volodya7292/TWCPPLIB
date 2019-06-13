@@ -24,9 +24,8 @@ uint InsertOneBit(uint Value, uint OneBitMask) {
 // 0, we are sorting descending, so when A < B, they should swap.  For an
 // ascending sort, ~A < ~B should swap.
 bool ShouldSwap(uint A, uint B, uint indexA, uint indexB) {
-	if (A == B) {
+	if (A == B)
 		return indexA > indexB;
-	} else {
+	else
 		return (A ^ CB1.NullItem) < (B ^ CB1.NullItem);
-	}
 }

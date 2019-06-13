@@ -8,19 +8,10 @@ Texture2DArray<float4> normal_tex : register(t3);
 
 sampler sam : register(s0);
 
-struct PS_OUTPUT {
-	float4 position : SV_Target0;    // World space position.  .w component = 0 if a background pixel
-	float4 normal   : SV_Target1;    // World space normal.  (.w is distance from camera to hit point; this may not be used)
-	float4 diffuse  : SV_Target2;    // .rgb diffuse material color, .a pixel opacity/transparency
-	float4 specular : SV_Target3;    // .rgb Falcor's specular representation, .a specular roughness
-	float4 emission : SV_Target4;    // .rgb emission material color
-	float  depth    : SV_Depth;
-};
-
 struct VS_OUTPUT {
 	float4             clip_pos : SV_Position;
 	float4        prev_clip_pos : PrevPosition;
-	linear float3     world_pos : ModelPosition;
+	linear float3     world_pos : WorldPosition;
 	float2            tex_coord : TexCoord;
 	uint            material_id : MaterialId;
 	linear float3        normal : ObjectNormal;
@@ -28,9 +19,37 @@ struct VS_OUTPUT {
 	linear float3       tangent : Tangent;
 };
 
+struct PS_OUTPUT {
+	float4 position    : SV_Target0;    // World space position.  .w component = 0 if a background pixel
+	float4 normal      : SV_Target1;    // World space normal.  (.w is distance from camera to hit point; this may not be used)
+	float4 diffuse     : SV_Target2;    // .rgb diffuse material color, .a pixel opacity/transparency
+	float4 specular    : SV_Target3;    // .rgb Falcor's specular representation, .a specular roughness
+	float4 emission    : SV_Target4;    // .rgb emission material color
+	float4 svgfMoVec   : SV_Target5;    // SVGF-specific buffer containing motion vector and fwidth of pos & normal
+	float4 svgfCompact : SV_Target6;    // SVGF-specific buffer containing duplicate data that allows reducing memory traffic in some passes
+	float  depth    : SV_Depth;
+};
+
 ConstantBuffer<Camera> camera : register(b0); // .info.y - scale factor for large objects
+ConstantBuffer<RendererInfo> renderer : register(b1); // .info.y - scale factor for large objects
+
+// Take current clip position, last frame pixel position and compute a motion vector
+float2 calcMotionVector(float4 prevClipPos, float2 currentPixelTexPos) {
+	float2 prevPosNDC = (prevClipPos.xy / prevClipPos.w) * float2(0.5, -0.5) + float2(0.5, 0.5);
+	float2 motionVec  = prevPosNDC - currentPixelTexPos;
+
+	// Guard against inf/nan due to projection by w <= 0.
+	const float epsilon = 1e-5f;
+	motionVec = (prevClipPos.w < epsilon) ? float2(0, 0) : motionVec;
+	return motionVec;
+}
 
 PS_OUTPUT main(VS_OUTPUT input) {
+	uint2 pixel = input.prev_clip_pos.xy * uint2(renderer.info.x, renderer.info.y);
+
+	rand_init(pixel.x + pixel.y * renderer.info.x, renderer.info.z, 16);
+
+
 	PS_OUTPUT output;
 
 	float3 tex_coord = float3(input.tex_coord, input.material_id);
@@ -83,17 +102,27 @@ PS_OUTPUT main(VS_OUTPUT input) {
 	// The 'linearZ' buffer
 	float linearZ    = output.depth * input.clip_pos.w;
 	float maxChangeZ = max(abs(ddx(linearZ)), abs(ddy(linearZ)));
-	float objNorm    = asfloat(dir_to_oct(normalize(input.normal)));
-	float4 svgfLinearZOut = float4(linearZ, maxChangeZ, input.prev_clip_pos.z, objNorm);
+	//float objNorm    = asfloat(dir_to_oct(normalize(input.normal)));
+	//float4 svgfLinearZOut = float4(linearZ, maxChangeZ, input.prev_clip_pos.z, objNorm);
+
+
+	// The 'motion vector' buffer
+	float2 svgfMotionVec = calcMotionVector(input.prev_clip_pos, input.clip_pos.xy / float2(renderer.info.x, renderer.info.y)) + float2(rand_next(), -rand_next()) / float2(renderer.info.x, renderer.info.y);
+	float2 posNormFWidth = float2(length(fwidth(input.world_pos)), length(fwidth(normal)));
+	float4 svgfMotionVecOut = float4(svgfMotionVec, posNormFWidth);
 
 
 
 
+	//gBufOut.wsPos     = float4(hitPt.posW, 1.f);
+	//gBufOut.wsNorm    = float4(hitPt.N, length(hitPt.posW - gCamera.posW));
+	//gBufOut.matDif    = float4(hitPt.diffuse, hitPt.opacity);
+	//gBufOut.matSpec   = float4(hitPt.specular, hitPt.linearRoughness);
+	//output.svgfLinZ  = svgfLinearZOut;
+	output.svgfMoVec = svgfMotionVecOut;
 
-
-
-
-
+	// A compacted buffer containing discretizied normal, depth, depth derivative
+	output.svgfCompact = float4(asfloat(dir_to_oct(input.world_normal)), linearZ, maxChangeZ, 0.0f);
 
 
 
