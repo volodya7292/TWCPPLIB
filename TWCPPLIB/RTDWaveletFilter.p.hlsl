@@ -32,6 +32,10 @@ float weight(float3 normal, float3 prev_normal, float depth, float prev_depth, f
 PS_OUTPUT main(VS_QUAD input) {
 	uint2 RT_SIZE;
 	g_direct.GetDimensions(RT_SIZE.x, RT_SIZE.y);
+	uint2 G_SIZE;
+	g_compact_data.GetDimensions(G_SIZE.x, G_SIZE.y);
+
+	float2 G_SCALE = G_SIZE / float2(RT_SIZE);
 
 	int2 rt_pixel = input.tex_coord * RT_SIZE;
 
@@ -47,7 +51,7 @@ PS_OUTPUT main(VS_QUAD input) {
 
 	float3 normalCenter;
 	float2 zCenter;
-	fetch_normal_and_linear_z(g_compact_data, rt_pixel, normalCenter, zCenter);
+	fetch_normal_and_linear_z(g_compact_data, rt_pixel * G_SCALE, normalCenter, zCenter);
 
 	float4 m1_direct = sumDirect;
 	float4 m1_indirect = sumIndirect;
@@ -69,7 +73,7 @@ PS_OUTPUT main(VS_QUAD input) {
 
 				float3 normalP;
 				float2 zP;
-				fetch_normal_and_linear_z(g_compact_data, p, normalP, zP);
+				fetch_normal_and_linear_z(g_compact_data, p * G_SCALE, normalP, zP);
 
 				// compute the edge-stopping functions
 				const float w = weight(normalP, normalCenter, zP.x, zCenter.x, zCenter.y, length(float2(xx, yy)));
