@@ -14,7 +14,7 @@ namespace TWU {
 
 	TWT::WString HResultToWString(HRESULT Result);
 
-	void FileExistsAssert(TWT::String filename);
+	void FileExistsAssert(TWT::String const& filename);
 	void FileExistsAssert(TWT::WString filename);
 
 	// Read entire file into byte array

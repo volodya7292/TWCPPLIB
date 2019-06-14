@@ -68,14 +68,14 @@ void TW3DGraphicsCommandList::SetPipelineState(TW3DComputePipelineState* Pipelin
 }
 
 void TW3DGraphicsCommandList::SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DTexture* DSV) {
-	command_list->OMSetRenderTargets(1, &RenderTarget->GetCPURTVHandle(), false, DSV ? &DSV->GetCPUHandle() : nullptr);
+	command_list->OMSetRenderTargets(1, &RenderTarget->GetCPURTVHandle(), false, DSV ? &DSV->GetCPUDSVHandle() : nullptr);
 }
 
 void TW3DGraphicsCommandList::SetRenderTargets(const std::vector<TW3DRenderTarget*>& RTVs, TW3DTexture* DSV) {
 	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> handles(RTVs.size());
 	for (int i = 0; i < RTVs.size(); i++)
 		handles[i] = RTVs[i]->GetCPURTVHandle();
-	command_list->OMSetRenderTargets(static_cast<UINT>(RTVs.size()), handles.data(), false, DSV ? &DSV->GetCPUHandle() : nullptr);
+	command_list->OMSetRenderTargets(static_cast<UINT>(RTVs.size()), handles.data(), false, DSV ? &DSV->GetCPUDSVHandle() : nullptr);
 }
 
 void TW3DGraphicsCommandList::ClearRTV(TW3DRenderTarget* RenderTarget) {
@@ -89,7 +89,7 @@ void TW3DGraphicsCommandList::ClearRTV(TW3DRenderTarget* RenderTarget, TWT::floa
 
 void TW3DGraphicsCommandList::ClearDSVDepth(TW3DTexture* Texture) {
 	auto clear_value = Texture->GetClearValue();
-	command_list->ClearDepthStencilView(Texture->GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH, clear_value.DepthStencil.Depth, clear_value.DepthStencil.Stencil, 0, nullptr);
+	command_list->ClearDepthStencilView(Texture->GetCPUDSVHandle(), D3D12_CLEAR_FLAG_DEPTH, clear_value.DepthStencil.Depth, clear_value.DepthStencil.Stencil, 0, nullptr);
 }
 
 void TW3DGraphicsCommandList::SetRootSignature(TW3DRootSignature* RootSignature) {
@@ -213,10 +213,7 @@ void TW3DGraphicsCommandList::BindBuffer(TWT::uint RootParameterIndex, TW3DResou
 }
 
 void TW3DGraphicsCommandList::BindTexture(TWT::uint RootParameterIndex, TW3DTexture* Texture, bool UAV) {
-	if (UAV)
-		SetRootDescriptorTable(RootParameterIndex, Texture->GetGPUUAVHandle());
-	else
-		SetRootDescriptorTable(RootParameterIndex, Texture->GetGPUSRVHandle());
+	SetRootDescriptorTable(RootParameterIndex, UAV ? Texture->GetGPUUAVHandle() : Texture->GetGPUSRVHandle());
 }
 
 void TW3DGraphicsCommandList::BindTexture(TWT::uint RootParameterIndex, TW3DRenderTarget* RenderTarget) {
@@ -240,7 +237,7 @@ void TW3DGraphicsCommandList::BindCameraPrevCBV(TWT::uint RootParameterIndex, TW
 
 void TW3DGraphicsCommandList::ClearTexture(TW3DTexture* Texture, TWT::float4 Color) {
 	float value[] = { Color.r, Color.b, Color.g, Color.a };
-	command_list->ClearUnorderedAccessViewFloat(Texture->GetGPUUAVHandle(), Texture->GetCPUHandle(), Texture->Get(), value, 1, nullptr);
+	command_list->ClearUnorderedAccessViewFloat(Texture->GetGPUCPUUAVHandle(), Texture->GetCPUUAVHandle(), Texture->Get(), value, 0, nullptr);
 }
 
 void TW3DGraphicsCommandList::DrawObject(TW3DObject* object, TWT::uint ModelCBRootParameterIndex) {

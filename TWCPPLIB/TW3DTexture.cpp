@@ -1,12 +1,19 @@
 #include "pch.h"
 #include "TW3DTexture.h"
 
-TW3DTexture::TW3DTexture(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* DescriptorHeap, DXGI_FORMAT Format, bool UAV) :
-	TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), TempGCL, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE), descriptor_heap(DescriptorHeap)
-{
-	main_index = DescriptorHeap->Allocate();
-	if (UAV)
-		uav_index = DescriptorHeap->Allocate();
+TW3DTexture::TW3DTexture(TW3DDevice* Device, TW3DTempGCL* TempGCL, DXGI_FORMAT Format,
+		TW3DDescriptorHeap* SRVDescriptorHeap, TW3DDescriptorHeap* UAVDescriptorHeap, TW3DDescriptorHeap* DSVDescriptorHeap) :
+	TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), TempGCL, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
+	srv_descriptor_heap(SRVDescriptorHeap), uav_descriptor_heap(UAVDescriptorHeap), dsv_descriptor_heap(DSVDescriptorHeap) {
+
+	if (SRVDescriptorHeap)
+		srv_index = srv_descriptor_heap->Allocate();
+	if (UAVDescriptorHeap) {
+		uav_cpu_index = uav_descriptor_heap->Allocate();
+		uav_index = srv_descriptor_heap->Allocate();
+	}
+	if (DSVDescriptorHeap)
+		dsv_index = dsv_descriptor_heap->Allocate();
 
 	srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srv_desc.Format = Format;
@@ -24,20 +31,38 @@ TW3DTexture::TW3DTexture(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescripto
 }
 
 TW3DTexture::~TW3DTexture() {
-	descriptor_heap->Free(main_index);
-	descriptor_heap->Free(uav_index);
+	if (srv_descriptor_heap)
+		srv_descriptor_heap->Free(srv_index);
+	if (uav_descriptor_heap) {
+		uav_descriptor_heap->Free(uav_index);
+		srv_descriptor_heap->Free(uav_cpu_index);
+	}
+	if (dsv_descriptor_heap)
+		dsv_descriptor_heap->Free(dsv_index);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE TW3DTexture::GetGPUSRVHandle() {
-	return descriptor_heap->GetGPUHandle(main_index);
+	return srv_descriptor_heap->GetGPUHandle(srv_index);
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE TW3DTexture::GetGPUCPUUAVHandle() {
+	return uav_descriptor_heap->GetGPUHandle(uav_cpu_index);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE TW3DTexture::GetGPUUAVHandle() {
-	return descriptor_heap->GetGPUHandle(uav_index);
+	return srv_descriptor_heap->GetGPUHandle(uav_index);
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE TW3DTexture::GetCPUHandle() {
-	return descriptor_heap->GetCPUHandle(main_index);
+D3D12_CPU_DESCRIPTOR_HANDLE TW3DTexture::GetCPUSRVHandle() {
+	return srv_descriptor_heap->GetCPUHandle(srv_index);
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE TW3DTexture::GetCPUUAVHandle() {
+	return uav_descriptor_heap->GetCPUHandle(uav_cpu_index);
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE TW3DTexture::GetCPUDSVHandle() {
+	return dsv_descriptor_heap->GetCPUHandle(dsv_index);
 }
 
 void TW3DTexture::CreateDepthStencil(TWT::uint2 Size) {
@@ -50,7 +75,7 @@ void TW3DTexture::CreateDepthStencil(TWT::uint2 Size) {
 	TW3DResource::Create();
 	resource->SetName(L"TW3DResourceDSV");
 
-	device->CreateDepthStencilView(resource, descriptor_heap->GetCPUHandle(main_index), &dsv_desc);
+	device->CreateDepthStencilView(resource, dsv_descriptor_heap->GetCPUHandle(dsv_index), &dsv_desc);
 
 	type = TW3D_TEXTURE_DEPTH_STENCIL;
 }
@@ -66,9 +91,11 @@ void TW3DTexture::Create2D(TWT::uint2 Size) {
 	TW3DResource::Create();
 	resource->SetName(L"TW3DResourceSR 2D");
 
-	device->CreateShaderResourceView(resource, &srv_desc, descriptor_heap->GetCPUHandle(main_index));
-	if (uav_index != -1)
-		device->CreateUnorderedAccessView(resource, &uav_desc, descriptor_heap->GetCPUHandle(uav_index));
+	device->CreateShaderResourceView(resource, &srv_desc, srv_descriptor_heap->GetCPUHandle(srv_index));
+	if (uav_index != -1) {
+		device->CreateUnorderedAccessView(resource, &uav_desc, srv_descriptor_heap->GetCPUHandle(uav_index));
+		device->CreateUnorderedAccessView(resource, &uav_desc, uav_descriptor_heap->GetCPUHandle(uav_cpu_index));
+	}
 
 	type = TW3D_TEXTURE_2D;
 }
@@ -89,9 +116,9 @@ void TW3DTexture::CreateArray2D(TWT::uint2 Size, TWT::uint Depth) {
 	TW3DResource::Create();
 	resource->SetName(L"TW3DResourceSR 2D Array");
 
-	device->CreateShaderResourceView(resource, &srv_desc, descriptor_heap->GetCPUHandle(main_index));
+	device->CreateShaderResourceView(resource, &srv_desc, srv_descriptor_heap->GetCPUHandle(srv_index));
 	if (uav_index != -1)
-		device->CreateUnorderedAccessView(resource, &uav_desc, descriptor_heap->GetCPUHandle(uav_index));
+		device->CreateUnorderedAccessView(resource, &uav_desc, uav_descriptor_heap->GetCPUHandle(uav_index));
 
 	type = TW3D_TEXTURE_2D_ARRAY;
 }
@@ -151,7 +178,7 @@ TW3DTexture* TW3DTexture::Create2D(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3
 	TWT::byte* imageData;
 	int imageSize = TWU::LoadImageDataFromFile(&imageData, textureDesc, filename, imageBytesPerRow);
 
-	TW3DTexture* texture = new TW3DTexture(Device, TempGCL, SRVDescriptorHeap, textureDesc.Format, false);
+	TW3DTexture* texture = new TW3DTexture(Device, TempGCL, textureDesc.Format, SRVDescriptorHeap, nullptr, nullptr);
 	texture->Create2D(TWT::uint2(static_cast<TWT::uint>(textureDesc.Width), static_cast<TWT::uint>(textureDesc.Height)));
 	texture->Upload2D(imageData, imageBytesPerRow);
 

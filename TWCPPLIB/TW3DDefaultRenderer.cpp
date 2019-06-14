@@ -102,7 +102,7 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 		depthDesc,
 		blendDesc,
 		root_signature);
-	gbuffer_ps->SetRTVFormat(0, TWT::RGBA32Float);
+	gbuffer_ps->SetRTVFormat(0, TWT::RGBA32Float); //-V525
 	gbuffer_ps->SetRTVFormat(1, TWT::RGBA32Float);
 	gbuffer_ps->SetRTVFormat(2, TWT::RGBA8Unorm);
 	gbuffer_ps->SetRTVFormat(3, TWT::RGBA8Unorm);
@@ -217,7 +217,7 @@ void TW3DDefaultRenderer::RenderRecordGBuffer() {
 	g_cl->SetPipelineState(gbuffer_ps);
 
 	g_cl->SetRenderTargets({ g_position, g_normal, g_diffuse, g_specular, g_emission, ray_tracer->svgf_mo_vec_rt, ray_tracer->svgf_compact_rt }, g_depth);
-	g_cl->ClearRTV(ray_tracer->svgf_compact_rt, TWT::float4(1000));
+	g_cl->ClearRTV(ray_tracer->svgf_compact_rt);
 	g_cl->ClearRTV(g_emission);
 	g_cl->ClearRTV(g_position);
 	g_cl->ClearRTV(g_diffuse);

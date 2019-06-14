@@ -33,9 +33,11 @@ void TW3DBlitter::Blit(TW3DGraphicsCommandList* CL, TW3DRenderTarget* RenderTarg
 }
 
 void TW3DBlitter::Blit(TW3DGraphicsCommandList* CL, TW3DRenderTarget* SrcRenderTarget, TW3DRenderTarget* DstRenderTarget) {
+	CL->ResourceBarrier(SrcRenderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	CL->SetPipelineState(ps);
 	CL->SetViewportScissor(SrcRenderTarget->GetSize());
 	CL->BindTexture(0, SrcRenderTarget);
 	CL->SetRenderTarget(DstRenderTarget);
 	CL->DrawQuad();
+	CL->ResourceBarrier(SrcRenderTarget, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 }

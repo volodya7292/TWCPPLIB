@@ -20,7 +20,7 @@ public:
 
 private:
 	struct TW3DFBRT {
-		TW3DRenderTarget* RenderTarget;
+		TW3DRenderTarget* RenderTarget = nullptr;
 		bool DestroyOnFBDestroy = true;
 	};
 

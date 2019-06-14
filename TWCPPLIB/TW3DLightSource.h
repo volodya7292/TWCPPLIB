@@ -25,12 +25,12 @@ public:
 	bool Updated = false;
 
 private:
-	TW3DLightSourceType Type;
+	TW3DLightSourceType Type = TW3D_LIGHT_SOURCE_TRIANGLE;
 
-	TWT::uint triangle_id;
-	TW3DVertexBuffer* triangle_vb;
+	TWT::uint triangle_id = 0;
+	TW3DVertexBuffer* triangle_vb = nullptr;
 
-	float sphere_radius;
+	float sphere_radius = 1.0f;
 	float intensity = 1.0f;
 	TWT::float3 position;
 	TWT::float3 color = TWT::float3(1);

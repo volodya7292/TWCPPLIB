@@ -9,7 +9,7 @@ public:
 
 	D3D12_SHADER_BYTECODE GetByteCode();
 
-	TWT::uint GetRegister(TWT::String  InputVariableName);
+	TWT::uint GetRegister(TWT::String const& InputVariableName);
 
 private:
 	ID3D12ShaderReflection* reflection;

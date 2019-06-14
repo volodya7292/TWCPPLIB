@@ -54,6 +54,7 @@ private:
 	TW3DDescriptorHeap* rtv_descriptor_heap;
 	TW3DDescriptorHeap* dsv_descriptor_heap;
 	TW3DDescriptorHeap* srv_descriptor_heap;
+	TW3DDescriptorHeap* uav_descriptor_heap;
 	TW3DCommandQueue* direct_command_queue;
 	TW3DCommandQueue* compute_command_queue;
 	TW3DCommandQueue* copy_command_queue;

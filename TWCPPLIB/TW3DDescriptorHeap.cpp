@@ -53,14 +53,14 @@ D3D12_GPU_DESCRIPTOR_HANDLE TW3DDescriptorHeap::GetGPUHandle(int Index) {
 	return CD3DX12_GPU_DESCRIPTOR_HANDLE(GetGPUDescriptorHandleForHeapStart(), Index, IncrementSize);
 }
 
-TW3DDescriptorHeap* TW3DDescriptorHeap::CreateForRTV(TW3DDevice* Device, TWT::uint Count) {
-	return new TW3DDescriptorHeap(Device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, Count);
+TW3DDescriptorHeap* TW3DDescriptorHeap::CreateForRTV(TW3DDevice* Device, TWT::uint Count, D3D12_DESCRIPTOR_HEAP_FLAGS Flags) {
+	return new TW3DDescriptorHeap(Device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, Flags, Count);
 }
 
-TW3DDescriptorHeap* TW3DDescriptorHeap::CreateForDSV(TW3DDevice* Device, TWT::uint Count) {
-	return new TW3DDescriptorHeap(Device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, Count);
+TW3DDescriptorHeap* TW3DDescriptorHeap::CreateForDSV(TW3DDevice* Device, TWT::uint Count, D3D12_DESCRIPTOR_HEAP_FLAGS Flags) {
+	return new TW3DDescriptorHeap(Device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, Flags, Count);
 }
 
-TW3DDescriptorHeap* TW3DDescriptorHeap::CreateForSR(TW3DDevice* Device, TWT::uint Count) {
-	return new TW3DDescriptorHeap(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE, Count);
+TW3DDescriptorHeap* TW3DDescriptorHeap::CreateForSR(TW3DDevice* Device, TWT::uint Count, D3D12_DESCRIPTOR_HEAP_FLAGS Flags) {
+	return new TW3DDescriptorHeap(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, Flags, Count);
 }

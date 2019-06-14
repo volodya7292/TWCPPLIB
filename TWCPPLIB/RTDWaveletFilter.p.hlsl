@@ -3,11 +3,16 @@
 
 struct InputData {
 	uint iteration;
+	uint max_iterations;
 };
 
 Texture2D<float4> g_direct;
 Texture2D<float4> g_indirect;
-Texture2D<float4> g_compact_norm_depth;
+Texture2D<float4> g_prev_direct;
+Texture2D<float4> g_prev_indirect;
+Texture2D<float4> g_compact_data;
+RWTexture2D<float4> g_detail_sum_direct;
+RWTexture2D<float4> g_detail_sum_indirect;
 
 ConstantBuffer<InputData> input_data;
 
@@ -16,27 +21,12 @@ struct PS_OUTPUT {
 	float4 indirect : SV_Target1;
 };
 
-// computes a 3x3 gaussian blur of the variance, centered around the current pixel
-float2 compute_variance_center(int2 pixel) {
-	float2 sum = 0;
+float weight(float3 normal, float3 prev_normal, float depth, float prev_depth, float depth_max_change, float pq_length) {
+	//float w_z = exp(-abs(depth - prev_depth));
+	float w_z = exp(-(abs(depth - prev_depth) / (depth_max_change * pq_length + 0.0001f)));
+	float w_n = pow(max(0.0f, dot(normal, prev_normal)), 32.0f);
 
-	const float kernel[2][2] = {
-		{ 1.0 / 4.0, 1.0 / 8.0 },
-		{ 1.0 / 8.0, 1.0 / 16.0 }
-	};
-
-	// 3x3
-	for (int yy = -1; yy <= 1; yy++) {
-		for (int xx = -1; xx <= 1; xx++) {
-			int2 p = pixel + int2(xx, yy);
-			float k = kernel[abs(xx)][abs(yy)];
-
-			sum.r += g_direct[p].a * k;
-			sum.g += g_indirect[p].a * k;
-		}
-	}
-
-	return sum;
+	return w_z * w_n;
 }
 
 PS_OUTPUT main(VS_QUAD input) {
@@ -45,44 +35,25 @@ PS_OUTPUT main(VS_QUAD input) {
 
 	int2 rt_pixel = input.tex_coord * RT_SIZE;
 
-
-	const float epsVariance      = 1e-10;
+	const int   gStepSize        = 1 << input_data.iteration;
 	const float kernelWeights[3] = { 1.0, 2.0 / 3.0, 1.0 / 6.0 };
-
-	// constant samplers to prevent the compiler from generating code which
-	// fetches the sampler descriptor from memory for each texture access
-	const float4 directCenter    = g_direct[rt_pixel];
-	const float4 indirectCenter  = g_indirect[rt_pixel];
-	const float  lDirectCenter   = luminance(directCenter.rgb);
-	const float  lIndirectCenter = luminance(indirectCenter.rgb);
-
-	// variance for direct and indirect, filtered using 3x3 gaussin blur
-	const float2 var = compute_variance_center(rt_pixel);
-
-	float3 normalCenter;
-	float2 zCenter;
-	fetch_normal_and_linear_z(g_compact_norm_depth, rt_pixel, normalCenter, zCenter);
-
-	PS_OUTPUT output;
-
-	if (zCenter.x < 0) { // not a valid depth => must be envmap => do not filter
-		output.direct   = directCenter;
-		output.indirect = indirectCenter;
-
-		return output;
-	}
-
-	const int   gStepSize    = 1 << input_data.iteration;
-	const float phiLDirect   = 10.0f * sqrt(max(0.0, epsVariance + var.r));
-	const float phiLIndirect = 10.0f * sqrt(max(0.0, epsVariance + var.g));
-	const float phiDepth     = max(zCenter.y, 1e-8) * gStepSize;
 
 	// explicitly store/accumulate center pixel with weight 1 to prevent issues
 	// with the edge-stopping functions
-	float  sumWDirect   = 1.0;
-	float  sumWIndirect = 1.0;
-	float4 sumDirect    = directCenter;
-	float4 sumIndirect  = indirectCenter;
+	float  sumW = 1.0;
+	//float  sumWIndirect = 1.0;
+	float4 sumDirect    = g_direct[rt_pixel];//directCenter;
+	float4 sumIndirect  = g_indirect[rt_pixel];//indirectCenter;
+
+	float3 normalCenter;
+	float2 zCenter;
+	fetch_normal_and_linear_z(g_compact_data, rt_pixel, normalCenter, zCenter);
+
+	float4 m1_direct = sumDirect;
+	float4 m1_indirect = sumIndirect;
+	float4 m2_direct = sumDirect * sumDirect;
+	float4 m2_indirect = sumIndirect * sumIndirect;
+	float  m_count = 1;
 
 	// 5x5
 	for (int yy = -2; yy <= 2; yy++) {
@@ -98,33 +69,54 @@ PS_OUTPUT main(VS_QUAD input) {
 
 				float3 normalP;
 				float2 zP;
-				fetch_normal_and_linear_z(g_compact_norm_depth, p, normalP, zP);
-				const float lDirectP   = luminance(directP.rgb);
-				const float lIndirectP = luminance(indirectP.rgb);
+				fetch_normal_and_linear_z(g_compact_data, p, normalP, zP);
 
 				// compute the edge-stopping functions
-				const float2 w = computeWeight(
-					zCenter.x, zP.x, phiDepth * length(float2(xx, yy)),
-					normalCenter, normalP,
-					lDirectCenter, lDirectP, phiLDirect,
-					lIndirectCenter, lIndirectP, phiLIndirect);
+				const float w = weight(normalP, normalCenter, zP.x, zCenter.x, zCenter.y, length(float2(xx, yy)));
 
-				const float wDirect   = w.x * kernel;
-				const float wIndirect = w.y * kernel;
+				sumW += kernel * w;
+				sumDirect += kernel * w * directP;
+				sumIndirect += kernel * w * indirectP;
 
-				// alpha channel contains the variance, therefore the weights need to be squared, see paper for the formula
-				sumWDirect  += wDirect;
-				sumDirect   += float4(wDirect.xxx, wDirect * wDirect) * directP;
-
-				sumWIndirect  += wIndirect;
-				sumIndirect   += float4(wIndirect.xxx, wIndirect * wIndirect) * indirectP;
+				m1_direct += directP;
+				m1_indirect += indirectP;
+				m2_direct += directP * directP;
+				m2_indirect += indirectP * indirectP;
+				m_count++;
 			}
 		}
 	}
 
-	// renormalization is different for variance, check paper for the formula
-	output.direct   = float4(sumDirect   / float4(sumWDirect.xxx, sumWDirect * sumWDirect));
-	output.indirect = float4(sumIndirect / float4(sumWIndirect.xxx, sumWIndirect * sumWIndirect));
+	float4 sn_direct   = sumDirect / sumW;
+	float4 sn_indirect = sumIndirect / sumW;
+
+	float4 mu_direct = m1_direct / m_count;
+	float4 mu_indirect = m1_indirect / m_count;
+	float4 sigma_direct = sqrt(m2_direct / m_count - mu_direct * mu_direct);
+	float4 sigma_indirect = sqrt(m2_indirect / m_count - mu_indirect * mu_indirect);
+	float4 bound_min_direct = mu_direct - sigma_direct;
+	float4 bound_max_direct = mu_direct + sigma_direct;
+	float4 bound_min_indirect = mu_indirect - sigma_indirect;
+	float4 bound_max_indirect = mu_indirect + sigma_indirect;
+
+	float4 coofs_direct = g_detail_sum_direct[rt_pixel];
+	float4 coofs_indirect = g_detail_sum_indirect[rt_pixel];
+	coofs_direct += clamp(sn_direct - g_prev_direct[rt_pixel], bound_min_direct, bound_max_direct);
+	coofs_indirect += clamp(sn_indirect - g_prev_indirect[rt_pixel], bound_min_indirect, bound_max_indirect);
+
+	g_detail_sum_direct[rt_pixel] = coofs_direct;
+	g_detail_sum_indirect[rt_pixel] = coofs_indirect;
+
+
+	PS_OUTPUT output;
+
+	if (input_data.iteration == input_data.max_iterations - 1) {
+		output.direct   = sn_direct - coofs_direct;
+		output.indirect = sn_indirect - coofs_indirect;
+	} else {
+		output.direct   = sumDirect / sumW;
+		output.indirect = sumIndirect / sumW;
+	}
 
 	return output;
 }

@@ -6,7 +6,7 @@ TWT::WString TWU::HResultToWString(HRESULT Result) {
 	return TWT::WString(err.ErrorMessage());
 }
 
-void TWU::FileExistsAssert(TWT::String filename) {
+void TWU::FileExistsAssert(TWT::String const& filename) {
 	std::ifstream file(filename.GetData());
 
 	if (!file.good())

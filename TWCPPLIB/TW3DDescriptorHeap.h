@@ -14,9 +14,9 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(int Index);
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle(int Index);
 
-	static TW3DDescriptorHeap* CreateForRTV(TW3DDevice* Device, TWT::uint Count);
-	static TW3DDescriptorHeap* CreateForDSV(TW3DDevice* Device, TWT::uint Count);
-	static TW3DDescriptorHeap* CreateForSR(TW3DDevice* Device, TWT::uint Count);
+	static TW3DDescriptorHeap* CreateForRTV(TW3DDevice* Device, TWT::uint Count, D3D12_DESCRIPTOR_HEAP_FLAGS Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+	static TW3DDescriptorHeap* CreateForDSV(TW3DDevice* Device, TWT::uint Count, D3D12_DESCRIPTOR_HEAP_FLAGS Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+	static TW3DDescriptorHeap* CreateForSR(TW3DDevice* Device, TWT::uint Count, D3D12_DESCRIPTOR_HEAP_FLAGS Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
 private:
 	static const TWT::uint MAX_DESCRIPTOR_COUNT = 1024;

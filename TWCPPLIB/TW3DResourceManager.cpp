@@ -8,6 +8,7 @@ TW3DResourceManager::TW3DResourceManager(TW3DDevice* Device) :
 	rtv_descriptor_heap = TW3DDescriptorHeap::CreateForRTV(device, 1024);
 	dsv_descriptor_heap = TW3DDescriptorHeap::CreateForDSV(device, 1024);
 	srv_descriptor_heap = TW3DDescriptorHeap::CreateForSR(device, 1024);
+	uav_descriptor_heap = TW3DDescriptorHeap::CreateForSR(device, 1024, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 	direct_command_queue = TW3DCommandQueue::CreateDirect(device);
 	compute_command_queue = TW3DCommandQueue::CreateCompute(device);
 	copy_command_queue = TW3DCommandQueue::CreateCopy(device);
@@ -24,6 +25,7 @@ TW3DResourceManager::~TW3DResourceManager() {
 	delete rtv_descriptor_heap;
 	delete dsv_descriptor_heap;
 	delete srv_descriptor_heap;
+	delete uav_descriptor_heap;
 	delete direct_command_queue;
 	delete compute_command_queue;
 	delete copy_command_queue;
@@ -60,7 +62,7 @@ TW3DConstantBuffer* TW3DResourceManager::CreateConstantBuffer(TWT::uint ElementC
 }
 
 TW3DTexture* TW3DResourceManager::CreateDepthStencilTexture(TWT::uint2 Size) {
-	auto* texture = new TW3DTexture(device, temp_gcl, dsv_descriptor_heap, DXGI_FORMAT_D32_FLOAT);
+	auto* texture = new TW3DTexture(device, temp_gcl, DXGI_FORMAT_D32_FLOAT, nullptr, nullptr, dsv_descriptor_heap);
 	texture->CreateDepthStencil(Size);
 	return texture;
 }
@@ -70,13 +72,13 @@ TW3DTexture* TW3DResourceManager::CreateTexture2D(const TWT::WString& Filename) 
 }
 
 TW3DTexture* TW3DResourceManager::CreateTexture2D(TWT::uint2 Size, DXGI_FORMAT Format, bool UAV) {
-	auto* texture = new TW3DTexture(device, temp_gcl, srv_descriptor_heap, Format, UAV);
+	auto* texture = new TW3DTexture(device, temp_gcl, Format, srv_descriptor_heap, UAV ? uav_descriptor_heap : nullptr, nullptr);
 	texture->Create2D(Size);
 	return texture;
 }
 
 TW3DTexture* TW3DResourceManager::CreateTextureArray2D(TWT::uint2 Size, TWT::uint Depth, DXGI_FORMAT Format, bool UAV) {
-	auto* texture = new TW3DTexture(device, temp_gcl, srv_descriptor_heap, Format, UAV);
+	auto* texture = new TW3DTexture(device, temp_gcl, Format, srv_descriptor_heap, UAV ? uav_descriptor_heap : nullptr, nullptr);
 	texture->CreateArray2D(Size, Depth);
 	return texture;
 }

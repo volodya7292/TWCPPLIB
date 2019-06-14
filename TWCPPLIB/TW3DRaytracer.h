@@ -67,7 +67,11 @@ private:
 	enum RootSignatureParamsSVGFWF {
 		SVGFWF_DIRECT,
 		SVGFWF_INDIRECT,
-		SVGFWF_COMPACT_NORM_DEPTH,
+		SVGFWF_PREV_DIRECT,
+		SVGFWF_PREV_INDIRECT,
+		SVGFWF_DETAIL_SUM_DIRECT,
+		SVGFWF_DETAIL_SUM_INDIRECT,
+		SVGFWF_COMPACT_DATA,
 		SVGFWF_INPUT_DATA
 	};
 
@@ -77,6 +81,7 @@ private:
 	TW3DComputePipelineState* rt_ps;
 	TW3DGraphicsPipelineState *svgf_ta_ps, *svgf_ev_ps, *svgf_wf_ps;
 
+	TW3DTexture *detail_sum_direct, *detail_sum_indirect;
 	//TW3DRenderTarget* svgf_prev_linear_z_rt;
 	TW3DFramebuffer *svgf_swap_fb[2], *svgf_filtered_fb;    // direct | indirect
 	//TW3DFramebuffer *svgf_ta_curr_fb, *svgf_ta_prev_fb;     // direct | indirect | moments | history length
