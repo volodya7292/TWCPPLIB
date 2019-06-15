@@ -277,30 +277,19 @@ void TW3DRaytracer::TraceRays(TW3DGraphicsCommandList* CL,
 	CL->ResourceBarrier(TW3DUAVBarrier());
 }
 
-bool clear = true;
-
 void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 	// SVGF Temporal Accululation
 	CL->SetViewportScissor(direct_tex->GetSize());
 
 	CL->SetPipelineState(svgf_ta_ps);
-	
-	if (clear) {
-		clear = false;
-		CL->ClearRTV(svgf_swap_fb[0]->GetRenderTarget(0));
-		CL->ClearRTV(svgf_swap_fb[0]->GetRenderTarget(1));
-		CL->ClearRTV(svgf_swap_fb[1]->GetRenderTarget(0));
-		CL->ClearRTV(svgf_swap_fb[1]->GetRenderTarget(1));
-	}
 
-
-	CL->ResourceBarrier(svgf_swap_fb[0]->GetRenderTarget(0), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-	CL->ResourceBarrier(svgf_swap_fb[0]->GetRenderTarget(1), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	CL->ResourceBarrier(svgf_filtered_fb->GetRenderTarget(0), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	CL->ResourceBarrier(svgf_filtered_fb->GetRenderTarget(1), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 	CL->BindTexture(SVGFTA_DIRECT, direct_tex);
 	CL->BindTexture(SVGFTA_INDIRECT, indirect_tex);
-	CL->BindTexture(SVGFTA_FILTERED_DIRECT, svgf_swap_fb[0]->GetRenderTarget(0));
-	CL->BindTexture(SVGFTA_FILTERED_INDIRECT, svgf_swap_fb[0]->GetRenderTarget(1));
+	CL->BindTexture(SVGFTA_FILTERED_DIRECT, svgf_filtered_fb->GetRenderTarget(0));
+	CL->BindTexture(SVGFTA_FILTERED_INDIRECT, svgf_filtered_fb->GetRenderTarget(1));
 	CL->BindTexture(SVGFTA_MOTION, svgf_mo_vec_rt);
 	CL->BindTexture(SVGFTA_COMPACT_DATA, svgf_compact_rt);
 	CL->BindTexture(SVGFTA_PREV_COMPACT_DATA, svgf_prev_compact_rt);
@@ -308,15 +297,20 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 	CL->BindFramebuffer(svgf_swap_fb[1]);
 	CL->DrawQuad();
 
-	CL->ResourceBarrier(svgf_swap_fb[0]->GetRenderTarget(0), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	CL->ResourceBarrier(svgf_swap_fb[0]->GetRenderTarget(1), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	CL->ResourceBarrier(svgf_filtered_fb->GetRenderTarget(0), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	CL->ResourceBarrier(svgf_filtered_fb->GetRenderTarget(1), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+
+
 
 
 	// SVGF Wavelet filtering
 	CL->ClearTexture(detail_sum_direct, TWT::float4(0));
 	CL->ClearTexture(detail_sum_indirect, TWT::float4(0));
 
-	for (TWT::uint i = 0; i < 4; i++) {
+	const TWT::uint max_iterations = 4;
+
+	for (TWT::uint i = 0; i < max_iterations; i++) {
 		CL->ResourceBarrier(svgf_swap_fb[1]->GetRenderTarget(0), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		CL->ResourceBarrier(svgf_swap_fb[1]->GetRenderTarget(1), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		CL->ResourceBarrier(svgf_filtered_fb->GetRenderTarget(0), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -330,8 +324,8 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 		CL->BindTexture(SVGFWF_DETAIL_SUM_DIRECT, detail_sum_direct, true);
 		CL->BindTexture(SVGFWF_DETAIL_SUM_INDIRECT, detail_sum_indirect, true);
 		CL->BindTexture(SVGFWF_COMPACT_DATA, svgf_compact_rt);
-		CL->Bind32BitConstant(SVGFWF_INPUT_DATA, 0, 0);
-		CL->Bind32BitConstant(SVGFWF_INPUT_DATA, 4, 1);
+		CL->Bind32BitConstant(SVGFWF_INPUT_DATA, i, 0);
+		CL->Bind32BitConstant(SVGFWF_INPUT_DATA, max_iterations, 1);
 
 		CL->BindFramebuffer(svgf_swap_fb[0]);
 		CL->DrawQuad();
@@ -347,7 +341,8 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 		std::swap(svgf_swap_fb[0], svgf_swap_fb[1]);
 	}
 
-	std::swap(svgf_swap_fb[0], svgf_swap_fb[1]);
+	if (max_iterations % 2 == 0)
+		std::swap(svgf_swap_fb[0], svgf_swap_fb[1]);
 
 	TW3DModules::Blitter()->Blit(CL, svgf_compact_rt, svgf_prev_compact_rt);
 

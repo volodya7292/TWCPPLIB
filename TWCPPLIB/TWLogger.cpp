@@ -44,5 +44,4 @@ void TW::TWLogger::LogError(TWT::String const& Data) {
 	auto d = Data.ToCharArray();
 	throw std::runtime_error(d);
 #endif // _DEBUG
-
 }

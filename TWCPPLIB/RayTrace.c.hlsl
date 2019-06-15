@@ -313,10 +313,10 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		specular = g_specular[g_pixel];
 		emission = g_emission[g_pixel];
 
-		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0, emission.rgb, specular.a, rt_pixel);
+		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0, emission.rgb, clamp(specular.a + 1, 0, 1), rt_pixel);
 
 	} else { // Background pixel
-		rt_direct[rt_pixel] = float4(0, 0, 0, 1);
+		rt_direct[rt_pixel] = float4(0, 0, 0, 1) ;
 		rt_indirect[rt_pixel] = float4(0, 0, 0, 1);
 	}
 }

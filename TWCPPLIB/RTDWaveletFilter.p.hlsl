@@ -26,7 +26,7 @@ float weight(float3 normal, float3 prev_normal, float depth, float prev_depth, f
 	float w_z = exp(-(abs(depth - prev_depth) / (depth_max_change * pq_length + 0.0001f)));
 	float w_n = pow(max(0.0f, dot(normal, prev_normal)), 32.0f);
 
-	return w_z * w_n;
+	return w_n;
 }
 
 PS_OUTPUT main(VS_QUAD input) {
@@ -44,20 +44,20 @@ PS_OUTPUT main(VS_QUAD input) {
 
 	// explicitly store/accumulate center pixel with weight 1 to prevent issues
 	// with the edge-stopping functions
-	float  sumW = 1.0;
+	float  sumW = 0.0;
 	//float  sumWIndirect = 1.0;
-	float4 sumDirect    = g_direct[rt_pixel];//directCenter;
-	float4 sumIndirect  = g_indirect[rt_pixel];//indirectCenter;
+	float4 sumDirect    = 0;//g_direct[rt_pixel];//directCenter;
+	float4 sumIndirect  = 0;//g_indirect[rt_pixel];//indirectCenter;
 
 	float3 normalCenter;
 	float2 zCenter;
 	fetch_normal_and_linear_z(g_compact_data, rt_pixel * G_SCALE, normalCenter, zCenter);
 
-	float4 m1_direct = sumDirect;
-	float4 m1_indirect = sumIndirect;
-	float4 m2_direct = sumDirect * sumDirect;
-	float4 m2_indirect = sumIndirect * sumIndirect;
-	float  m_count = 1;
+	float4 m1_direct = 0;//sumDirect;
+	float4 m1_indirect = 0;//sumIndirect;
+	float4 m2_direct = 0;//sumDirect * sumDirect;
+	float4 m2_indirect = 0;//sumIndirect * sumIndirect;
+	float  m_count = 0;
 
 	// 5x5
 	for (int yy = -2; yy <= 2; yy++) {
@@ -67,7 +67,7 @@ PS_OUTPUT main(VS_QUAD input) {
 
 			const float kernel = kernelWeights[abs(xx)] * kernelWeights[abs(yy)];
 
-			if (inside && (xx != 0 || yy != 0)) { // skip center pixel, it is already accumulated
+			if (inside) {
 				const float4 directP     = g_direct[p];
 				const float4 indirectP   = g_indirect[p];
 
@@ -98,28 +98,36 @@ PS_OUTPUT main(VS_QUAD input) {
 	float4 mu_indirect = m1_indirect / m_count;
 	float4 sigma_direct = sqrt(m2_direct / m_count - mu_direct * mu_direct);
 	float4 sigma_indirect = sqrt(m2_indirect / m_count - mu_indirect * mu_indirect);
-	float4 bound_min_direct = mu_direct - sigma_direct;
-	float4 bound_max_direct = mu_direct + sigma_direct;
-	float4 bound_min_indirect = mu_indirect - sigma_indirect;
-	float4 bound_max_indirect = mu_indirect + sigma_indirect;
+	float gamma = 0.1;
+	float4 bound_min_direct = -sigma_direct * gamma;
+	float4 bound_max_direct = sigma_direct * gamma;
+	float4 bound_min_indirect = -sigma_indirect * gamma;
+	float4 bound_max_indirect = sigma_indirect * gamma;
 
-	float4 coofs_direct = g_detail_sum_direct[rt_pixel];
-	float4 coofs_indirect = g_detail_sum_indirect[rt_pixel];
-	coofs_direct += clamp(sn_direct - g_prev_direct[rt_pixel], bound_min_direct, bound_max_direct);
-	coofs_indirect += clamp(sn_indirect - g_prev_indirect[rt_pixel], bound_min_indirect, bound_max_indirect);
+	float4 coof_direct = g_detail_sum_direct[rt_pixel];
+	float4 coof_indirect = g_detail_sum_indirect[rt_pixel];
+	float4 prev_direct = g_prev_direct[rt_pixel];
+	float4 prev_indirect = g_prev_indirect[rt_pixel];
+	float4 curr_coof_direct = clamp(sn_direct - prev_direct, bound_min_direct, bound_max_direct);
+	float4 curr_coof_indirect = clamp(sn_indirect - prev_indirect, bound_min_indirect, bound_max_indirect);
+	coof_direct += curr_coof_direct;
+	coof_indirect += curr_coof_indirect;
 
-	g_detail_sum_direct[rt_pixel] = coofs_direct;
-	g_detail_sum_indirect[rt_pixel] = coofs_indirect;
+	g_detail_sum_direct[rt_pixel] = coof_direct;
+	g_detail_sum_indirect[rt_pixel] = coof_indirect;
 
 
 	PS_OUTPUT output;
 
+	/*output.direct   = sn_direct - curr_coof_direct;
+	output.indirect = sn_indirect - curr_coof_indirect;*/
+
 	if (input_data.iteration == input_data.max_iterations - 1) {
-		output.direct   = sn_direct - coofs_direct;
-		output.indirect = sn_indirect - coofs_indirect;
+		output.direct   = sn_direct - coof_direct;
+		output.indirect = sn_indirect - coof_indirect;
 	} else {
-		output.direct   = sumDirect / sumW;
-		output.indirect = sumIndirect / sumW;
+		output.direct   = sn_direct;
+		output.indirect = sn_indirect;
 	}
 
 	return output;
