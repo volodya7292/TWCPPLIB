@@ -164,7 +164,6 @@ void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 
 	bool lintersection, rintersection, traverseL, traverseR;
 
-	[loop]
 	while (node != -1) {
 		lintersection = rintersection = traverseL = traverseR = false;
 
@@ -248,7 +247,6 @@ void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray ray, inout Tri
 
 	bool lintersection, rintersection, traverseL, traverseR;
 
-	[loop]
 	while (node != -1) {
 		lintersection = rintersection = traverseL = traverseR = false;
 

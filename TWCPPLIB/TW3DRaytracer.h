@@ -57,13 +57,13 @@ private:
 		SVGFTA_COMPACT_DATA,
 		SVGFTA_PREV_COMPACT_DATA
 	};
-	enum RootSignatureParamsSVGFEV {
+	/*enum RootSignatureParamsSVGFEV {
 		SVGFEV_DIRECT,
 		SVGFEV_INDIRECT,
 		SVGFEV_MOMENTS,
 		SVGFEV_COMPACT_NORM_DEPTH,
 		SVGFEV_HISTORY_LENGTH
-	};
+	};*/
 	enum RootSignatureParamsSVGFWF {
 		SVGFWF_DIRECT,
 		SVGFWF_INDIRECT,
@@ -77,9 +77,9 @@ private:
 
 	TWT::uint2 size;
 
-	TW3DShader *sq_s, *rt_s, *svgf_ta_s, *svgf_ev_s, *svgf_wf_s;
+	TW3DShader *sq_s, *rt_s, *svgf_ta_s, *svgf_wf_s;
 	TW3DComputePipelineState* rt_ps;
-	TW3DGraphicsPipelineState *svgf_ta_ps, *svgf_ev_ps, *svgf_wf_ps;
+	TW3DGraphicsPipelineState *svgf_ta_ps, *svgf_wf_ps;
 
 	TW3DTexture *detail_sum_direct, *detail_sum_indirect;
 	//TW3DRenderTarget* svgf_prev_linear_z_rt;

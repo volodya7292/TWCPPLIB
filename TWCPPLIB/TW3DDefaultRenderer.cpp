@@ -46,7 +46,7 @@ void TW3DDefaultRenderer::CreateBlitResources() {
 			TW3DRPTexture(4, D3D12_SHADER_VISIBILITY_PIXEL, 4), // RT indirect
 			TW3DRPTexture(5, D3D12_SHADER_VISIBILITY_PIXEL, 5), // RT indirect albedo
 		},
-		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) },
+		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) },
 		true, true, false, false
 	);
 
@@ -149,8 +149,8 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	normal_texarr = ResourceManager->CreateTextureArray2D(TWT::uint2(400, 400), material_count, TWT::RGBA32Float);
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] Texture resources initialized."s);
 
-	diffuse_texarr->Upload2D(L"D:/OptimizedRT_converged.jpg", 0);
-	//diffuse_texarr->Upload2D(L"D:/emission.png", 0);
+	//diffuse_texarr->Upload2D(L"D:/OptimizedRT_converged.jpg", 0);
+	diffuse_texarr->Upload2D(L"D:/emission.png", 0);
 	emission_texarr->Upload2D(L"D:/emission.png", 1);
 	//texture->Upload2D(L"D:/тест2.png", 1);
 	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");

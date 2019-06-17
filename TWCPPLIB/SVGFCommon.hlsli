@@ -35,6 +35,13 @@ void fetch_normal_and_linear_z(Texture2D tex, uint2 pixel, out float3 normal, ou
 	linear_z = float2(nd.y, nd.z);
 }
 
+void fetch_normal_and_linear_z(Texture2D tex, uint2 pixel, out float3 normal, out float2 linear_z, out float roughness) {
+	float4 nd = tex[pixel];
+	normal = normalize(oct_to_dir(asuint(nd.x)));
+	linear_z = float2(nd.y, nd.z);
+	roughness = nd.w;
+}
+
 float2 computeWeight(
 	float depthCenter, float depthP, float phiDepth,
 	float3 normalCenter, float3 normalP,

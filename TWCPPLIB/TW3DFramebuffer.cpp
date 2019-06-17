@@ -67,6 +67,10 @@ void TW3DFramebuffer::Resize(TWT::uint2 Size) {
 		rt.RenderTarget->Resize(Size);
 }
 
+TWT::uint2 TW3DFramebuffer::GetSize() {
+	return size;
+}
+
 TW3DRenderTarget* TW3DFramebuffer::GetRenderTarget(TWT::uint Index) const {
 	return rts.at(Index).RenderTarget;
 }

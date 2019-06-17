@@ -35,7 +35,6 @@ Texture2D<float4> g_normal;
 Texture2D<float4> g_diffuse;
 Texture2D<float4> g_specular;
 Texture2D<float4> g_emission;
-sampler sam : register(s0);
 
 // Output image
 RWTexture2D<float4> rt_direct;
@@ -48,6 +47,8 @@ ConstantBuffer<Camera> camera;
 // Scene data
 ConstantBuffer<InputData> input;
 ConstantBuffer<RendererInfo> renderer;
+
+sampler sam : register(s0);
 
 struct LightInfo {
 	float ray_length;
@@ -236,15 +237,18 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 
 	// Direct
 	{
+		const float probDiffuse   = probability_to_sample_diffuse(diffuse, specular);
+		const float chooseDiffuse = (rand_next() < probDiffuse);
+
 		NdotL = saturate(dot(normal, to_light.dir));
 
 		// Compute our GGX color
 		ggxTerm = get_ggx_color(to_camera, to_light.dir, normal, NdotV, specular, roughness, true);
 
 		// Compute direct color.  Split into light and albedo terms for our SVGF filter
-		const float3 directColor = (equals(emission, 0) ? 0 : 1) + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
-		const float3 directAlbedo = emission + ggxTerm + diffuse / PI;
-		bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
+		const float3 directColor = (equals(emission, 0.0f) ? 0 : 1) + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
+		const float3 directAlbedo = ggxTerm;//diffuse / PI;
+		const bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
 		direct = float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
 		direct_albedo = float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
 	}
@@ -277,7 +281,7 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 		// Split into an incoming light and "indirect albedo" term to help filter illumination despite sampling 2 different lobes
 		const float3 difFinal = 1.0f / probDiffuse;                    // Has been divided by difTerm.  Multiplied back post-SVGF
 		const float3 ggxFinal = ggxTerm / (difTerm * (1.0f - probDiffuse));    // Has been divided by difTerm.  Multiplied back post-SVGF
-		const float3 shadeColor = bounceColor * (chooseDiffuse ? difFinal : ggxFinal);
+		const float3 shadeColor = (equals(emission, 0.0f) ? 0 : 1) + bounceColor * (chooseDiffuse ? difFinal : ggxFinal);
 
 		const bool colorsNan = any(isnan(shadeColor));
 		indirect = float4(colorsNan ? float3(0, 0, 0) : shadeColor, 1.0f);
@@ -288,6 +292,20 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 	rt_direct_albedo[rt_pixel_pos] = direct_albedo;
 	rt_indirect[rt_pixel_pos] = indirect;
 	rt_indirect_albedo[rt_pixel_pos] = indirect_albedo;
+}
+
+uint2 select_g_pixel(uint2 g_center_p, uint2 kernel) {
+	if (g_position[g_center_p].w == 1)
+		return g_center_p;
+
+	for (uint x = 0; x < kernel.x; x++)
+		for (uint y = 0; y < kernel.y; y++) {
+			uint2 pixel = g_center_p + uint2(x, y);
+			if (g_position[pixel].w == 1)
+				return pixel;
+		}
+
+	return g_center_p;
 }
 
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
@@ -301,10 +319,12 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	rand_init(DTid.x + DTid.y * RT_SIZE.x, renderer.info.z, 16);
 
-	const uint2 g_pixel = DTid.xy * G_SCALE;
+	const uint2 g_pixel = select_g_pixel(DTid.xy * G_SCALE, G_SCALE);
 	const uint2 rt_pixel = DTid.xy;
 
-	float4 pos = g_position[g_pixel];
+	//const float2 tex_coord = (float2(DTid.xy) * G_SCALE + G_SCALE / 2.0f) / float2(G_SIZE);
+
+	float4 pos = g_position[g_pixel];//.SampleLevel(sam, tex_coord, 0);
 	float4 normal, diffuse, specular, emission;
 
 	if (pos.w == 1) { // Not a background pixel
@@ -313,10 +333,10 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		specular = g_specular[g_pixel];
 		emission = g_emission[g_pixel];
 
-		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0, emission.rgb, clamp(specular.a + 1, 0, 1), rt_pixel);
+		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0.25, emission.rgb, specular.a, rt_pixel);
 
 	} else { // Background pixel
-		rt_direct[rt_pixel] = float4(0, 0, 0, 1) ;
+		rt_direct[rt_pixel] = float4(0, 0, 0, 1);
 		rt_indirect[rt_pixel] = float4(0, 0, 0, 1);
 	}
 }

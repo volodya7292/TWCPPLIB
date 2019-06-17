@@ -145,6 +145,7 @@ void TW3DResourceManager::FlushCommandLists() {
 	copy_command_queue->FlushCommands();
 	compute_command_queue->FlushCommands();
 	direct_command_queue->FlushCommands();
+	
 }
 
 void TW3DResourceManager::ExecuteCommandList(TW3DGraphicsCommandList* CommandList) {

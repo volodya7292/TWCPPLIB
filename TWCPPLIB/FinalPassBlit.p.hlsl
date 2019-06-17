@@ -29,6 +29,6 @@ float4 main(VS_QUAD input) : SV_TARGET
 
 	//return lerp(rt_result.Sample(sam, input.texCoord), g_albedo.Sample(sam, input.texCoord), 0.5);
 
-	return rt_direct[rt_pixel] * rt_direct_albedo[rt_pixel] + rt_indirect[rt_pixel] * rt_indirect_albedo[rt_pixel];
-	//return g_emission[g_pixel] + rt_direct[rt_pixel] * (rt_direct_albedo[rt_pixel] + g_diffuse[g_pixel] / PI) + rt_indirect[rt_pixel] * (g_diffuse[g_pixel] / PI);
+	//return g_emission[g_pixel] + rt_direct[rt_pixel] * rt_direct_albedo[rt_pixel] + rt_indirect[rt_pixel] * rt_indirect_albedo[rt_pixel];
+	return g_emission[g_pixel] + rt_direct[rt_pixel] * ((rt_direct_albedo[rt_pixel] + g_diffuse[g_pixel] / PI)) + rt_indirect.Sample(sam, input.tex_coord) * (g_diffuse[g_pixel] / PI);
 }

@@ -448,9 +448,6 @@
     <FxCompile Include="PostCalculateFinalLighting.p.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="SVGFEstimateVariance.p.hlsl">
-      <Filter>Resource Files\Shaders\SVGF</Filter>
-    </FxCompile>
     <FxCompile Include="Blit.p.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>

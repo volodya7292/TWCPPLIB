@@ -28,12 +28,12 @@ PS_OUTPUT main(VS_QUAD input) {
 	g_prev_compact_data.GetDimensions(G_SIZE.x, G_SIZE.y);
 
 
-	int2 rt_pixel = input.tex_coord * RT_SIZE;
-	int2 g_pixel = rt_pixel * (G_SIZE / float2(RT_SIZE));
+	int2 g_pixel = input.tex_coord * G_SIZE;
+	int2 rt_pixel = g_pixel / (G_SIZE / float2(RT_SIZE));
 
 	float4 motion = g_motion[g_pixel];
-	int2 rt_pixel_prev = int2(rt_pixel + motion.xy * float2(RT_SIZE) + float2(0.5f, 0.5));
-	int2 g_pixel_prev = float2(rt_pixel_prev) * (G_SIZE / float2(RT_SIZE));
+	//int2 rt_pixel_prev = int2(rt_pixel + motion.xy * float2(RT_SIZE) + float2(0.5f, 0.5f));
+	int2 g_pixel_prev = int2(g_pixel + motion.xy * float2(G_SIZE) + float2(0.5f, 0.5));
 
 
 	float3 normalP;
@@ -46,10 +46,10 @@ PS_OUTPUT main(VS_QUAD input) {
 
 	float4 direct = g_direct[rt_pixel];
 	float4 indirect = g_indirect[rt_pixel];
-	float4 prev_direct = g_filt_direct[rt_pixel_prev];
-	float4 prev_indirect = g_filt_indirect[rt_pixel_prev];
+	float4 prev_direct = g_filt_direct[g_pixel_prev];
+	float4 prev_indirect = g_filt_indirect[g_pixel_prev];
 
-	float alpha = 0.95f * weight(normalP, prev_normalP, zP.x, prev_zP.x, zP.y, length(rt_pixel - rt_pixel_prev));
+	float alpha = 0.95f * weight(normalP, prev_normalP, zP.x, prev_zP.x, zP.y, length(g_pixel - g_pixel_prev));
 
 	PS_OUTPUT output;
 	output.direct = lerp(direct, prev_direct, alpha);

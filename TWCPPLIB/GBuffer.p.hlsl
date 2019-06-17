@@ -122,7 +122,7 @@ PS_OUTPUT main(VS_OUTPUT input) {
 	output.svgfMoVec = svgfMotionVecOut;
 
 	// A compacted buffer containing discretizied normal, depth, depth derivative
-	output.svgfCompact = float4(asfloat(dir_to_oct(input.world_normal)), linearZ, maxChangeZ, 0.0f);
+	output.svgfCompact = float4(asfloat(dir_to_oct(input.world_normal)), linearZ, maxChangeZ, output.specular.a);
 
 
 
