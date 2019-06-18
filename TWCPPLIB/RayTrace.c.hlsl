@@ -333,7 +333,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		specular = g_specular[g_pixel];
 		emission = g_emission[g_pixel];
 
-		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0.25, emission.rgb, specular.a, rt_pixel);
+		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 1, emission.rgb, specular.a, rt_pixel);
 
 	} else { // Background pixel
 		rt_direct[rt_pixel] = float4(0, 0, 0, 1);

@@ -85,12 +85,12 @@ void TW3DBitonicSorter::RecordSort(TW3DGraphicsCommandList* CommandList, TW3DBuf
 		UINT ListCount;
 	};
 	InputConstants constants { SortAscending ? 0xffffffff : 0, ElementCount };
-	CommandList->Bind32BitConstants(GenericConstants, 2, &constants, 0); // Bugs may occur: put this line after each SetPipelineState
+	CommandList->BindUIntConstants(GenericConstants, 2, &constants, 0); // Bugs may occur: put this line after each SetPipelineState
 
 
 	//CommandList->ResourceBarrier(m_pDispatchArgs, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-	CommandList->Bind32BitConstant(ShaderSpecificConstants, MaxIterations, 0);
+	CommandList->BindUIntConstant(ShaderSpecificConstants, MaxIterations, 0);
 	CommandList->BindBuffer(OutputUAV, m_pDispatchArgs, true);
 	CommandList->BindBuffer(IndexBufferUAV, SortBuffer, true);
 	CommandList->Dispatch(1, 1, 1);
@@ -129,7 +129,7 @@ void TW3DBitonicSorter::RecordSort(TW3DGraphicsCommandList* CommandList, TW3DBuf
 				UINT j;
 			} constants2 { k, j };
 
-			CommandList->Bind32BitConstants(ShaderSpecificConstants, 2, &constants2, 0);
+			CommandList->BindUIntConstants(ShaderSpecificConstants, 2, &constants2, 0);
 			CommandList->ExecuteIndirect(m_pCommandSignature, 1, m_pDispatchArgs->Get(), IndirectArgsOffset, nullptr, 0);
 			CommandList->ResourceBarrier(uavBarrier);
 			IndirectArgsOffset += cIndirectArgStride;

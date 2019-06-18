@@ -57,6 +57,10 @@ void TW3DGraphicsCommandList::CopyBufferRegion(TW3DResource* DstBuffer, TWT::uin
 	command_list->CopyBufferRegion(DstBuffer->Get(), DstOffset, SrcBuffer->Get(), SrcOffset, ByteCount);
 }
 
+void TW3DGraphicsCommandList::CopyTextureRegion(TW3DResource* DstTexture, TW3DResource* SrcTexture) {
+	command_list->CopyTextureRegion(&CD3DX12_TEXTURE_COPY_LOCATION(DstTexture->Get()), 0, 0, 0, &CD3DX12_TEXTURE_COPY_LOCATION(SrcTexture->Get()), nullptr);
+}
+
 void TW3DGraphicsCommandList::SetPipelineState(TW3DGraphicsPipelineState* PipelineState) {
 	command_list->SetPipelineState(PipelineState->Get());
 	SetRootSignature(PipelineState->RootSignature);
@@ -120,14 +124,18 @@ void TW3DGraphicsCommandList::SetRootDescriptorTable(TWT::uint RootParameterInde
 		command_list->SetGraphicsRootDescriptorTable(RootParameterIndex, BaseDescriptor);
 }
 
-void TW3DGraphicsCommandList::Bind32BitConstant(TWT::uint RootParameterIndex, TWT::uint Data, TWT::uint DestOffsetIn32BitValues) {
+void TW3DGraphicsCommandList::BindUIntConstant(TWT::uint RootParameterIndex, TWT::uint Data, TWT::uint DestOffsetIn32BitValues) {
 	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 		command_list->SetComputeRoot32BitConstant(RootParameterIndex, Data, DestOffsetIn32BitValues);
 	else
 		command_list->SetGraphicsRoot32BitConstant(RootParameterIndex, Data, DestOffsetIn32BitValues);
 }
 
-void TW3DGraphicsCommandList::Bind32BitConstants(TWT::uint RootParameterIndex, TWT::uint Num32BitValuesToSet, const void* Data, TWT::uint DestOffsetIn32BitValues) {
+void TW3DGraphicsCommandList::BindFloatConstant(TWT::uint RootParameterIndex, float Data, TWT::uint DestOffsetIn32BitValues) {
+	BindUIntConstant(RootParameterIndex, *(TWT::uint*)&Data, DestOffsetIn32BitValues);
+}
+
+void TW3DGraphicsCommandList::BindUIntConstants(TWT::uint RootParameterIndex, TWT::uint Num32BitValuesToSet, const void* Data, TWT::uint DestOffsetIn32BitValues) {
 	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 		command_list->SetComputeRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, Data, DestOffsetIn32BitValues);
 	else
@@ -245,6 +253,7 @@ void TW3DGraphicsCommandList::DrawObject(TW3DObject* object, TWT::uint ModelCBRo
 }
 
 void TW3DGraphicsCommandList::Reset() {
+	empty = true;
 	TWU::SuccessAssert(command_allocator->Reset(), "TW3DGraphicsCommandList::Reset, command_allocator->Reset"s);
 	TWU::SuccessAssert(command_list->Reset(command_allocator, nullptr), "TW3DGraphicsCommandList::Reset, command_list->Reset"s);
 }
@@ -252,12 +261,6 @@ void TW3DGraphicsCommandList::Reset() {
 void TW3DGraphicsCommandList::Close() {
 	TWU::SuccessAssert(command_list->Close(), "TW3DGraphicsCommandList::Close"s);
 	empty = false;
-}
-
-void TW3DGraphicsCommandList::EmptyReset() {
-	Reset();
-	Close();
-	empty = true;
 }
 
 bool TW3DGraphicsCommandList::IsEmpty() {

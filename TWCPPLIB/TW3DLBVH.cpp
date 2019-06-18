@@ -42,13 +42,13 @@ void TW3DLBVH::BuildFromTriangles(TW3DBuffer* GVB, TWT::uint GVBOffset, TW3DGrap
 	//cl->ResourceBarrier(bounding_box_buffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	cl->BindBuffer(0, GVB);
 	cl->BindBuffer(1, bounding_box_buffer, true);
-	cl->Bind32BitConstant(2, GVBOffset, 0);
-	cl->Bind32BitConstant(2, element_count * 3, 1);
+	cl->BindUIntConstant(2, GVBOffset, 0);
+	cl->BindUIntConstant(2, element_count * 3, 1);
 	int element_count2 = element_count;
 	TWT::uint iteration = 0;
 	do {
-		cl->Bind32BitConstant(2, iteration, 2);
-		cl->Bind32BitConstant(2, element_count2, 3);
+		cl->BindUIntConstant(2, iteration, 2);
+		cl->BindUIntConstant(2, element_count2, 3);
 
 		element_count2 = ceil(element_count2 / 16.0f);
 		cl->Dispatch(ceil(element_count2 / 64.0f));
@@ -84,8 +84,8 @@ void TW3DLBVH::BuildFromTriangles(TW3DBuffer* GVB, TWT::uint GVBOffset, TW3DGrap
 		cl->BindBuffer(1, bounding_box_buffer);
 		cl->BindBuffer(2, morton_codes_buffer, true);
 		//cl->BindUAVBuffer(3, morton_indices_buffer);
-		cl->Bind32BitConstant(3, GVBOffset, 0);
-		cl->Bind32BitConstant(3, element_count * 3, 1);
+		cl->BindUIntConstant(3, GVBOffset, 0);
+		cl->BindUIntConstant(3, element_count * 3, 1);
 		cl->Dispatch(ceil(element_count / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
@@ -105,9 +105,9 @@ void TW3DLBVH::BuildFromTriangles(TW3DBuffer* GVB, TWT::uint GVBOffset, TW3DGrap
 		//cl->BindBuffer(1, morton_indices_buffer);
 		cl->BindBuffer(2, node_buffer, true);
 		//cl->BindUAVBuffer(4, VertexMesh->GetLBVHNodeLockBufferResource());
-		cl->Bind32BitConstant(3, GVBOffset, 0);
-		cl->Bind32BitConstant(3, element_count - 1, 1);
-		cl->Bind32BitConstant(3, GetNodeCount(), 2);
+		cl->BindUIntConstant(3, GVBOffset, 0);
+		cl->BindUIntConstant(3, element_count - 1, 1);
+		cl->BindUIntConstant(3, GetNodeCount(), 2);
 		cl->Dispatch(ceil(GetNodeCount() / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
@@ -115,16 +115,16 @@ void TW3DLBVH::BuildFromTriangles(TW3DBuffer* GVB, TWT::uint GVBOffset, TW3DGrap
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::BuildLBVHSplits));
 		cl->BindBuffer(0, morton_codes_buffer);
 		cl->BindBuffer(1, node_buffer, true);
-		cl->Bind32BitConstant(2, element_count, 0);
-		cl->Bind32BitConstant(2, element_count - 1, 1);
+		cl->BindUIntConstant(2, element_count, 0);
+		cl->BindUIntConstant(2, element_count - 1, 1);
 		cl->Dispatch(ceil((element_count - 1) / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
 		// Update LVBH node bounds
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::UpdateLBVHNodeBounds));
 		cl->BindBuffer(0, node_buffer, true);
-		cl->Bind32BitConstant(1, element_count - 1, 0);
-		cl->Bind32BitConstant(1, GetNodeCount(), 1);
+		cl->BindUIntConstant(1, element_count - 1, 0);
+		cl->BindUIntConstant(1, GetNodeCount(), 1);
 		cl->Dispatch(ceil(element_count / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
@@ -176,12 +176,12 @@ void TW3DLBVH::BuildFromLBVHs(TW3DBuffer* GNB, TW3DBuffer* SceneMeshInstancesBuf
 	cl->BindBuffer(0, GNB);
 	cl->BindBuffer(1, SceneMeshInstancesBuffer);
 	cl->BindBuffer(2, bounding_box_buffer, true);
-	cl->Bind32BitConstant(3, gnboffset_count, 0);
+	cl->BindUIntConstant(3, gnboffset_count, 0);
 	int element_count2 = element_count;
 	TWT::uint iteration = 0;
 	do {
-		cl->Bind32BitConstant(3, iteration, 1);
-		cl->Bind32BitConstant(3, element_count2, 2);
+		cl->BindUIntConstant(3, iteration, 1);
+		cl->BindUIntConstant(3, element_count2, 2);
 
 		element_count2 = ceil(element_count2 / 16.0f);
 		cl->Dispatch(ceil(element_count2 / 64.0f));
@@ -220,7 +220,7 @@ void TW3DLBVH::BuildFromLBVHs(TW3DBuffer* GNB, TW3DBuffer* SceneMeshInstancesBuf
 		cl->BindBuffer(2, bounding_box_buffer);
 		cl->BindBuffer(3, morton_codes_buffer, true);
 		//cl->BindUAVBuffer(4, morton_indices_buffer);
-		cl->Bind32BitConstant(4, gnboffset_count, 0);
+		cl->BindUIntConstant(4, gnboffset_count, 0);
 		cl->Dispatch(ceil(element_count / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
@@ -239,9 +239,9 @@ void TW3DLBVH::BuildFromLBVHs(TW3DBuffer* GNB, TW3DBuffer* SceneMeshInstancesBuf
 		cl->BindBuffer(1, SceneMeshInstancesBuffer);
 		cl->BindBuffer(2, morton_codes_buffer);
 		cl->BindBuffer(3, node_buffer, true);
-		cl->Bind32BitConstant(4, gnboffset_count, 0);
-		cl->Bind32BitConstant(4, element_count - 1, 1);
-		cl->Bind32BitConstant(4, GetNodeCount(), 2);
+		cl->BindUIntConstant(4, gnboffset_count, 0);
+		cl->BindUIntConstant(4, element_count - 1, 1);
+		cl->BindUIntConstant(4, GetNodeCount(), 2);
 		cl->Dispatch(ceil(GetNodeCount() / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
@@ -249,16 +249,16 @@ void TW3DLBVH::BuildFromLBVHs(TW3DBuffer* GNB, TW3DBuffer* SceneMeshInstancesBuf
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::BuildLBVHSplitsFromLBVHs));
 		cl->BindBuffer(0, morton_codes_buffer);
 		cl->BindBuffer(1, node_buffer, true);
-		cl->Bind32BitConstant(2, element_count, 0);
-		cl->Bind32BitConstant(2, element_count - 1, 1);
+		cl->BindUIntConstant(2, element_count, 0);
+		cl->BindUIntConstant(2, element_count - 1, 1);
 		cl->Dispatch(ceil((element_count - 1) / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 
 		// Update LVBH node boundaries
 		cl->SetPipelineState(TW3DShaders::GetComputeShader(TW3DShaders::UpdateLBVHNodeBoundsForLBVHs));
 		cl->BindBuffer(0, node_buffer, true);
-		cl->Bind32BitConstant(1, element_count - 1, 0);
-		cl->Bind32BitConstant(1, GetNodeCount(), 1);
+		cl->BindUIntConstant(1, element_count - 1, 0);
+		cl->BindUIntConstant(1, GetNodeCount(), 1);
 		cl->Dispatch(ceil(element_count / 64.0f));
 		cl->ResourceBarrier(uav_barrier);
 

@@ -246,8 +246,7 @@ void TW3DDefaultRenderer::RenderRecordGBuffer() {
 void TW3DDefaultRenderer::Record(TWT::uint BackBufferIndex, TW3DRenderTarget* ColorOutput, TW3DTexture* DepthStencilOutput) {
 	TW3DRenderer::Record(BackBufferIndex, ColorOutput, DepthStencilOutput);
 
-	record_cl->Reset();
-	record_cl->BindResources(ResourceManager);
+	
 	record_cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	BlitOutput(record_cl, ColorOutput, DepthStencilOutput);
@@ -287,7 +286,7 @@ void TW3DDefaultRenderer::Execute(TWT::uint BackBufferIndex) {
 	ResourceManager->ExecuteCommandList(rt_cl);
 	ResourceManager->FlushCommandList(rt_cl);
 	ResourceManager->ExecuteCommandList(gd_cl);
-	ResourceManager->FlushCommandList(gd_cl);
+	//ResourceManager->FlushCommandList(gd_cl);
 
 	ResourceManager->ExecuteCommandList(execute_cl);
 

@@ -4,6 +4,8 @@
 struct InputData {
 	uint iteration;
 	uint max_iterations;
+	float g_scale_x;
+	float g_scale_y;
 };
 
 Texture2D<float4> g_direct;
@@ -64,24 +66,19 @@ PS_OUTPUT main(VS_QUAD input) {
 	float  m_count = 0;
 
 	int2 p;
-	bool inside;
 	float kernel, rP, w;
 	float4 directP, indirectP;
 	float3 normalP;
 	float2 zP;
 
-
 	// 5x5
-	[unroll]
 	for (int yy = -2; yy <= 2; yy++) {
-		[unroll]
 		for (int xx = -2; xx <= 2; xx++) {
-			p      = g_pixel + int2(xx, yy) * gStepSize;
-			inside = greater_equals(p, 0) && less(p, G_SIZE);
+			p      = g_pixel + float2(xx, yy) * gStepSize * float2(input_data.g_scale_x, input_data.g_scale_y);
 
-			kernel = kernelWeights[abs(xx)] * kernelWeights[abs(yy)];
+			if (greater_equals(p, 0) && less(p, G_SIZE)) {
+				kernel = kernelWeights[abs(xx)] * kernelWeights[abs(yy)];
 
-			if (inside) {
 				directP     = g_direct[p];
 				indirectP   = g_indirect[p];
 

@@ -33,6 +33,7 @@ public:
 	void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 	void ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 	void CopyBufferRegion(TW3DResource* DstBuffer, TWT::uint64 DstOffset, TW3DResource* SrcBuffer, TWT::uint64 SrcOffset, TWT::uint64 ByteCount);
+	void CopyTextureRegion(TW3DResource* DstTexture, TW3DResource* SrcTexture);
 	void SetPipelineState(TW3DGraphicsPipelineState* PipelineState);
 	void SetPipelineState(TW3DComputePipelineState* PipelineState);
 	void SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DTexture* DSV = nullptr);
@@ -66,8 +67,9 @@ public:
 	void BindTexture(TWT::uint RootParameterIndex, TW3DTexture* Texture, bool UAV = false);
 	void BindTexture(TWT::uint RootParameterIndex, TW3DRenderTarget* RenderTarget);
 	void BindConstantBuffer(TWT::uint RootParameterIndex, TW3DConstantBuffer* CB, TWT::uint ElementIndex = 0);
-	void Bind32BitConstant(TWT::uint RootParameterIndex, TWT::uint Data, TWT::uint DestOffsetIn32BitValues);
-	void Bind32BitConstants(TWT::uint RootParameterIndex, TWT::uint Num32BitValuesToSet, const void* Data, TWT::uint DestOffsetIn32BitValues);
+	void BindUIntConstant(TWT::uint RootParameterIndex, TWT::uint Data, TWT::uint DestOffsetIn32BitValues);
+	void BindFloatConstant(TWT::uint RootParameterIndex, float Data, TWT::uint DestOffsetIn32BitValues);
+	void BindUIntConstants(TWT::uint RootParameterIndex, TWT::uint Num32BitValuesToSet, const void* Data, TWT::uint DestOffsetIn32BitValues);
 	void BindCameraCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera);
 	void BindCameraPrevCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera);
 	void ClearTexture(TW3DTexture* Texture, TWT::float4 Color);
@@ -75,7 +77,6 @@ public:
 
 	void Reset();
 	void Close();
-	void EmptyReset();
 	bool IsEmpty();
 
 	static TW3DGraphicsCommandList* CreateDirect(TW3DDevice* device);
