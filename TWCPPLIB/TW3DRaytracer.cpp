@@ -4,7 +4,7 @@
 #include "CompiledShaders/RayTrace.c.h"
 #include "CompiledShaders/ScreenQuad.v.h"
 #include "CompiledShaders/RTDTemporalAccumulation.p.h"
-#include "CompiledShaders/RTDWaveletFilter.p.h"
+#include "CompiledShaders/RTDWaveletFilter.c.h"
 
 TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GSize, TWT::uint2 RTSize) :
 	size(RTSize) {
@@ -13,7 +13,7 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 	sq_s = new TW3DShader(TW3DCompiledShader(ScreenQuad_VertexByteCode), "ScreenQuad");
 	rt_s = new TW3DShader(TW3DCompiledShader(RayTrace_ByteCode), "RayTrace");
 	svgf_ta_s = new TW3DShader(TW3DCompiledShader(RTDTemporalAccumulation_PixelByteCode), "SVGFTemporalAccumulation");
-	svgf_wf_s = new TW3DShader(TW3DCompiledShader(RTDWaveletFilter_PixelByteCode), "SVGFWaveletFilter");
+	svgf_wf_s = new TW3DShader(TW3DCompiledShader(RTDWaveletFilter_ByteCode), "SVGFWaveletFilter");
 
 
 	auto rs = new TW3DRootSignature(device,
@@ -86,24 +86,25 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 
 	rs = new TW3DRootSignature(device,
 		{
-			TW3DRPTexture(SVGFWF_DIRECT, D3D12_SHADER_VISIBILITY_PIXEL, svgf_wf_s->GetRegister("g_direct"s)),
-			TW3DRPTexture(SVGFWF_INDIRECT, D3D12_SHADER_VISIBILITY_PIXEL, svgf_wf_s->GetRegister("g_indirect"s)),
-			TW3DRPTexture(SVGFWF_PREV_DIRECT, D3D12_SHADER_VISIBILITY_PIXEL, svgf_wf_s->GetRegister("g_prev_direct"s)),
-			TW3DRPTexture(SVGFWF_PREV_INDIRECT, D3D12_SHADER_VISIBILITY_PIXEL, svgf_wf_s->GetRegister("g_prev_indirect"s)),
-			TW3DRPTexture(SVGFWF_DETAIL_SUM_DIRECT, D3D12_SHADER_VISIBILITY_PIXEL, svgf_wf_s->GetRegister("g_detail_sum_direct"s), true),
-			TW3DRPTexture(SVGFWF_DETAIL_SUM_INDIRECT, D3D12_SHADER_VISIBILITY_PIXEL, svgf_wf_s->GetRegister("g_detail_sum_indirect"s), true),
-			TW3DRPTexture(SVGFWF_COMPACT_DATA, D3D12_SHADER_VISIBILITY_PIXEL, svgf_wf_s->GetRegister("g_compact_data"s)),
-			TW3DRPConstants(SVGFWF_INPUT_DATA, D3D12_SHADER_VISIBILITY_PIXEL, svgf_wf_s->GetRegister("input_data"s), 4)
-		},
-		true, true, false, false
+			TW3DRPTexture(SVGFWF_DIRECT, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_direct"s)),
+			TW3DRPTexture(SVGFWF_INDIRECT, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_indirect"s)),
+			TW3DRPTexture(SVGFWF_PREV_DIRECT, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_prev_direct"s)),
+			TW3DRPTexture(SVGFWF_PREV_INDIRECT, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_prev_indirect"s)),
+			TW3DRPTexture(SVGFWF_DETAIL_SUM_DIRECT, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_detail_sum_direct"s), true),
+			TW3DRPTexture(SVGFWF_DETAIL_SUM_INDIRECT, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_detail_sum_indirect"s), true),
+			TW3DRPTexture(SVGFWF_DIRECT_OUT, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_direct_out"s), true),
+			TW3DRPTexture(SVGFWF_INDIRECT_OUT, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_indirect_out"s), true),
+			TW3DRPTexture(SVGFWF_COMPACT_DATA, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_compact_data"s)),
+			TW3DRPConstants(SVGFWF_INPUT_DATA, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("input_data"s), 4)
+		}
 	);
 
-	svgf_wf_ps = new TW3DGraphicsPipelineState(rs);
-	svgf_wf_ps->SetRTVFormat(0, TWT::RGBA32Float);
-	svgf_wf_ps->SetRTVFormat(1, TWT::RGBA32Float);
-	svgf_wf_ps->SetVertexShader(sq_s);
-	svgf_wf_ps->SetPixelShader(svgf_wf_s);
-	svgf_wf_ps->Create(device);
+	svgf_wf_cs = new TW3DComputePipelineState(rs);
+	//svgf_wf_cs->SetRTVFormat(0, TWT::RGBA32Float);
+	//svgf_wf_cs->SetRTVFormat(1, TWT::RGBA32Float);
+	//svgf_wf_cs->SetVertexShader(sq_s);
+	svgf_wf_cs->SetShader(svgf_wf_s);
+	svgf_wf_cs->Create(device);
 
 
 	direct_tex = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
@@ -160,7 +161,7 @@ TW3DRaytracer::~TW3DRaytracer() {
 	delete svgf_wf_s;
 	delete rt_ps;
 	delete svgf_ta_ps;
-	delete svgf_wf_ps;
+	delete svgf_wf_cs;
 
 	delete direct_tex;
 	delete indirect_tex;
@@ -265,7 +266,7 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 		TW3DTransitionBarrier(svgf_prev_compact_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
 		TW3DTransitionBarrier(svgf_filtered_fb->GetRenderTarget(0), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
 		TW3DTransitionBarrier(svgf_filtered_fb->GetRenderTarget(1), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
-		});
+	});
 
 	CL->BindTexture(SVGFTA_DIRECT, direct_tex);
 	CL->BindTexture(SVGFTA_INDIRECT, indirect_tex);
@@ -279,8 +280,6 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 	CL->DrawQuad();
 
 	CL->ResourceBarriers({
-		TW3DTransitionBarrier(svgf_filtered_fb->GetRenderTarget(0), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET),
-		TW3DTransitionBarrier(svgf_filtered_fb->GetRenderTarget(1), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET),
 		TW3DTransitionBarrier(svgf_mo_vec_rt, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET),
 		TW3DTransitionBarrier(svgf_prev_compact_rt, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET)
 	});
@@ -292,30 +291,31 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 
 	const TWT::uint max_iterations = 4;
 
+	CL->SetPipelineState(svgf_wf_cs);
+	CL->BindTexture(SVGFWF_DETAIL_SUM_DIRECT, detail_sum_direct, true);
+	CL->BindTexture(SVGFWF_DETAIL_SUM_INDIRECT, detail_sum_indirect, true);
+	CL->BindTexture(SVGFWF_COMPACT_DATA, svgf_compact_rt);
+
+	CL->BindUIntConstant(SVGFWF_INPUT_DATA, max_iterations, 1);
+	TWT::float2 g_scale = TWT::float2(direct_out->GetSize()) / TWT::float2(direct_tex->GetSize());
+	CL->BindFloatConstant(SVGFWF_INPUT_DATA, g_scale.x, 2);
+	CL->BindFloatConstant(SVGFWF_INPUT_DATA, g_scale.y, 3);
+
 	for (TWT::uint i = 0; i < max_iterations; i++) {
 		CL->ResourceBarriers({
 			TW3DTransitionBarrier(svgf_swap_fb[1]->GetRenderTarget(0), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
 			TW3DTransitionBarrier(svgf_swap_fb[1]->GetRenderTarget(1), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
-			TW3DTransitionBarrier(svgf_filtered_fb->GetRenderTarget(0), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
-			TW3DTransitionBarrier(svgf_filtered_fb->GetRenderTarget(1), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
 		});
 
-		CL->SetPipelineState(svgf_wf_ps);
 		CL->BindTexture(SVGFWF_DIRECT, svgf_swap_fb[1]->GetRenderTarget(0));
 		CL->BindTexture(SVGFWF_INDIRECT, svgf_swap_fb[1]->GetRenderTarget(1));
 		CL->BindTexture(SVGFWF_PREV_DIRECT, svgf_filtered_fb->GetRenderTarget(0));
-		CL->BindTexture(SVGFWF_PREV_INDIRECT, svgf_filtered_fb->GetRenderTarget(1));
-		CL->BindTexture(SVGFWF_DETAIL_SUM_DIRECT, detail_sum_direct, true);
-		CL->BindTexture(SVGFWF_DETAIL_SUM_INDIRECT, detail_sum_indirect, true);
-		CL->BindTexture(SVGFWF_COMPACT_DATA, svgf_compact_rt);
+		CL->BindTexture(SVGFWF_PREV_INDIRECT, svgf_filtered_fb->GetRenderTarget(1));	
 		CL->BindUIntConstant(SVGFWF_INPUT_DATA, i, 0);
-		CL->BindUIntConstant(SVGFWF_INPUT_DATA, max_iterations, 1);
-		TWT::float2 g_scale = TWT::float2(direct_out->GetSize()) / TWT::float2(direct_tex->GetSize());
-		CL->BindFloatConstant(SVGFWF_INPUT_DATA, g_scale.x, 2);
-		CL->BindFloatConstant(SVGFWF_INPUT_DATA, g_scale.y, 3);
 
-		CL->BindFramebuffer(svgf_swap_fb[0]);
-		CL->DrawQuad();
+		CL->Dispatch(ceil(TWT::float2(size) / 8.0f));
+		//CL->BindFramebuffer(svgf_swap_fb[0]);
+		//CL->DrawQuad();
 
 		CL->ResourceBarriers({
 			TW3DTransitionBarrier(svgf_filtered_fb->GetRenderTarget(0), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST),
@@ -330,8 +330,8 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 		CL->CopyTextureRegion(svgf_filtered_fb->GetRenderTarget(1), svgf_swap_fb[0]->GetRenderTarget(1));
 
 		CL->ResourceBarriers({
-			TW3DTransitionBarrier(svgf_filtered_fb->GetRenderTarget(0), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET),
-			TW3DTransitionBarrier(svgf_filtered_fb->GetRenderTarget(1), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET),
+			TW3DTransitionBarrier(svgf_filtered_fb->GetRenderTarget(0), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
+			TW3DTransitionBarrier(svgf_filtered_fb->GetRenderTarget(1), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
 			TW3DTransitionBarrier(svgf_swap_fb[0]->GetRenderTarget(0), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET),
 			TW3DTransitionBarrier(svgf_swap_fb[0]->GetRenderTarget(1), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET)
 		});
@@ -343,32 +343,25 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 	if (max_iterations % 2 == 0)
 		std::swap(svgf_swap_fb[0], svgf_swap_fb[1]);
 
-	/*CL->ResourceBarriers({
-		TW3DTransitionBarrier(svgf_compact_rt, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE),
-	    TW3DTransitionBarrier(svgf_prev_compact_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST)
-	});*/
-
-	//CL->CopyTextureRegion(svgf_prev_compact_rt, svgf_compact_rt);
-
 	CL->ResourceBarriers({
 		TW3DTransitionBarrier(svgf_compact_rt, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET),
-	    //TW3DTransitionBarrier(svgf_prev_compact_rt, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET),
-	    TW3DTransitionBarrier(svgf_swap_fb[0]->GetRenderTarget(0), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE),
-	    TW3DTransitionBarrier(svgf_swap_fb[0]->GetRenderTarget(1), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE),
-	    TW3DTransitionBarrier(direct_out, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST),
-	    TW3DTransitionBarrier(indirect_out, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST)
+		TW3DTransitionBarrier(svgf_swap_fb[0]->GetRenderTarget(0), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE),
+		TW3DTransitionBarrier(svgf_swap_fb[0]->GetRenderTarget(1), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE),
+		TW3DTransitionBarrier(direct_out, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST),
+		TW3DTransitionBarrier(indirect_out, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST)
 	});
 
 	std::swap(svgf_compact_rt, svgf_prev_compact_rt);
 
-	// Output the result of SVGF to the expected output buffer for subsequent passes.
 	CL->CopyTextureRegion(direct_out, svgf_swap_fb[0]->GetRenderTarget(0));
 	CL->CopyTextureRegion(indirect_out, svgf_swap_fb[0]->GetRenderTarget(1));
 
 	CL->ResourceBarriers({
 		TW3DTransitionBarrier(svgf_swap_fb[0]->GetRenderTarget(0), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET),
-	    TW3DTransitionBarrier(svgf_swap_fb[0]->GetRenderTarget(1), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET),
-	    TW3DTransitionBarrier(direct_out, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET),
-	    TW3DTransitionBarrier(indirect_out, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET)
+		TW3DTransitionBarrier(svgf_swap_fb[0]->GetRenderTarget(1), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET),
+		TW3DTransitionBarrier(direct_out, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET),
+		TW3DTransitionBarrier(indirect_out, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET),
+		TW3DTransitionBarrier(svgf_filtered_fb->GetRenderTarget(0), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET),
+		TW3DTransitionBarrier(svgf_filtered_fb->GetRenderTarget(1), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET),
 	});
 }

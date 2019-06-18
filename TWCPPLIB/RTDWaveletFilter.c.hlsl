@@ -15,15 +15,17 @@ Texture2D<float4> g_prev_indirect;
 Texture2D<float4> g_compact_data;
 RWTexture2D<float4> g_detail_sum_direct;
 RWTexture2D<float4> g_detail_sum_indirect;
+RWTexture2D<float4> g_direct_out;
+RWTexture2D<float4> g_indirect_out;
 
 ConstantBuffer<InputData> input_data;
 
-struct PS_OUTPUT {
-	float4 direct   : SV_Target0;
-	float4 indirect : SV_Target1;
-};
+//struct PS_OUTPUT {
+//	float4 direct   : SV_Target0;
+//	float4 indirect : SV_Target1;
+//};
 
-float weight(float3 normal, float3 prev_normal, float depth, float prev_depth, float depth_max_change, float rough, float prev_rough, float pq_length) {
+inline float weight(float3 normal, float3 prev_normal, float depth, float prev_depth, float depth_max_change, float rough, float prev_rough, float pq_length) {
 	float w_z = exp(-abs(depth - prev_depth));
 	//float w_z = exp(-(abs(depth - prev_depth) / (depth_max_change * pq_length + 0.0001f)));
 	float w_n = pow(max(0.0f, dot(normal, prev_normal)), 32.0f);
@@ -33,7 +35,8 @@ float weight(float3 normal, float3 prev_normal, float depth, float prev_depth, f
 	return w_n * w_z;
 }
 
-PS_OUTPUT main(VS_QUAD input) {
+[numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
+void main(uint3 DTid : SV_DispatchThreadID) {
 	//uint2 RT_SIZE;
 	//g_direct.GetDimensions(RT_SIZE.x, RT_SIZE.y);
 	uint2 G_SIZE;
@@ -42,9 +45,8 @@ PS_OUTPUT main(VS_QUAD input) {
 	//float2 G_SCALE = G_SIZE / float2(RT_SIZE);
 
 	//int2 rt_pixel = input.tex_coord * RT_SIZE;
-	int2 g_pixel = input.tex_coord * G_SIZE;
+	int2 g_pixel = DTid.xy;
 
-	const int   gStepSize        = 1 << input_data.iteration;
 	const float kernelWeights[3] = { 1.0, 2.0 / 3.0, 1.0 / 6.0 };
 
 	// explicitly store/accumulate center pixel with weight 1 to prevent issues
@@ -65,27 +67,24 @@ PS_OUTPUT main(VS_QUAD input) {
 	float4 m2_indirect = 0;//sumIndirect * sumIndirect;
 	float  m_count = 0;
 
-	int2 p;
-	float kernel, rP, w;
-	float4 directP, indirectP;
-	float3 normalP;
-	float2 zP;
-
 	// 5x5
 	for (int yy = -2; yy <= 2; yy++) {
 		for (int xx = -2; xx <= 2; xx++) {
-			p      = g_pixel + float2(xx, yy) * gStepSize * float2(input_data.g_scale_x, input_data.g_scale_y);
+			const int2 p = g_pixel + float2(xx, yy) * (1 << input_data.iteration) * float2(input_data.g_scale_x, input_data.g_scale_y);
 
 			if (greater_equals(p, 0) && less(p, G_SIZE)) {
-				kernel = kernelWeights[abs(xx)] * kernelWeights[abs(yy)];
+				const float kernel = kernelWeights[abs(xx)] * kernelWeights[abs(yy)];
 
-				directP     = g_direct[p];
-				indirectP   = g_indirect[p];
+				const float4 directP     = g_direct[p];
+				const float4 indirectP   = g_indirect[p];
 
+				float3 normalP;
+				float2 zP;
+				float rP;
 				fetch_normal_and_linear_z(g_compact_data, p, normalP, zP,rP);
 
 				// compute the edge-stopping functions
-				w = weight(normalP, normalCenter, zP.x, zCenter.x, zCenter.y, rP, rCenter, length(float2(xx, yy)));
+				const float w = weight(normalP, normalCenter, zP.x, zCenter.x, zCenter.y, rP, rCenter, length(float2(xx, yy)));
 
 				sumW += kernel * w;
 				sumDirect += kernel * w * directP;
@@ -107,28 +106,25 @@ PS_OUTPUT main(VS_QUAD input) {
 	const float4 sigma_indirect = sqrt(m2_indirect / m_count - sqr(m1_indirect / m_count));
 	const float gamma = 0.1;
 
-	float4 coof_direct = g_detail_sum_direct[g_pixel];
-	float4 coof_indirect = g_detail_sum_indirect[g_pixel];
-
-	coof_direct += clamp(sn_direct - g_prev_direct[g_pixel], -sigma_direct * gamma, sigma_direct * gamma);
-	coof_indirect += clamp(sn_indirect - g_prev_indirect[g_pixel], -sigma_indirect * gamma, sigma_indirect * gamma);
+	float4 coof_direct = g_detail_sum_direct[g_pixel] + clamp(sn_direct - g_prev_direct[g_pixel], -sigma_direct * gamma, sigma_direct * gamma);
+	float4 coof_indirect = g_detail_sum_indirect[g_pixel] + clamp(sn_indirect - g_prev_indirect[g_pixel], -sigma_indirect * gamma, sigma_indirect * gamma);
 
 	g_detail_sum_direct[g_pixel] = coof_direct;
 	g_detail_sum_indirect[g_pixel] = coof_indirect;
 
 
-	PS_OUTPUT output;
-
-	/*output.direct   = sn_direct - curr_coof_direct;
-	output.indirect = sn_indirect - curr_coof_indirect;*/
+	/*PS_OUTPUT output;
+	output.direct   = sn_direct;
+	output.indirect = sn_indirect;*/
+	
 
 	if (input_data.iteration == input_data.max_iterations - 1) {
-		output.direct   = sn_direct - coof_direct;
-		output.indirect = sn_indirect - coof_indirect;
+		g_direct_out[g_pixel] = sn_direct - coof_direct;
+		g_indirect_out[g_pixel] = sn_indirect - coof_indirect;
 	} else {
-		output.direct   = sn_direct;
-		output.indirect = sn_indirect;
+		g_direct_out[g_pixel] = sn_direct;
+		g_indirect_out[g_pixel] = sn_indirect;
 	}
 
-	return output;
+	//return output;
 }

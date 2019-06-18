@@ -454,7 +454,7 @@
     <FxCompile Include="RTDTemporalAccumulation.p.hlsl">
       <Filter>Resource Files\Shaders\SVGF</Filter>
     </FxCompile>
-    <FxCompile Include="RTDWaveletFilter.p.hlsl">
+    <FxCompile Include="RTDWaveletFilter.c.hlsl">
       <Filter>Resource Files\Shaders\SVGF</Filter>
     </FxCompile>
   </ItemGroup>
