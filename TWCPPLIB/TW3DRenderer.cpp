@@ -44,6 +44,7 @@ void TW3DRenderer::AdjustRecordIndex() {
 
 void TW3DRenderer::Execute(TWT::uint BackBufferIndex) {
 	execute_cl = current_record_index == 0 ? command_lists[BackBufferIndex * 2 + 1] : command_lists[BackBufferIndex * 2];
-	while (execute_cl->IsEmpty())
+	while (execute_cl->IsEmpty()) {
 		Sleep(1);
+	}
 }

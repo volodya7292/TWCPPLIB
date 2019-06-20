@@ -57,10 +57,10 @@ void TW3DRenderTarget::Create(TWT::uint2 Size) {
 }
 
 void TW3DRenderTarget::Resize(TWT::uint2 Size) {
-	if (GetSize() != Size) {
+	//if (GetSize() != Size) {
 		Release();
 		Create(Size);
-	}
+	//}
 }
 
 TWT::uint2 TW3DRenderTarget::GetSize() {

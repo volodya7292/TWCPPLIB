@@ -4,8 +4,6 @@
 struct InputData {
 	uint iteration;
 	uint max_iterations;
-	float g_scale_x;
-	float g_scale_y;
 };
 
 Texture2D<float4> g_direct;
@@ -19,6 +17,9 @@ RWTexture2D<float4> g_direct_out;
 RWTexture2D<float4> g_indirect_out;
 
 ConstantBuffer<InputData> input_data;
+
+//uniform float kernelWeights[3] = { 1.0, 2.0 / 3.0, 1.0 / 6.0 };
+//uniform float gamma            = 0.1;
 
 //struct PS_OUTPUT {
 //	float4 direct   : SV_Target0;
@@ -37,51 +38,53 @@ inline float weight(float3 normal, float3 prev_normal, float depth, float prev_d
 
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
-	//uint2 RT_SIZE;
-	//g_direct.GetDimensions(RT_SIZE.x, RT_SIZE.y);
+	uint2 RT_SIZE;
+	g_direct.GetDimensions(RT_SIZE.x, RT_SIZE.y);
 	uint2 G_SIZE;
 	g_compact_data.GetDimensions(G_SIZE.x, G_SIZE.y);
 
-	//float2 G_SCALE = G_SIZE / float2(RT_SIZE);
+	float2 G_SCALE = G_SIZE / float2(RT_SIZE);
 
-	//int2 rt_pixel = input.tex_coord * RT_SIZE;
-	int2 g_pixel = DTid.xy;
+	int2 rt_pixel = DTid.xy;
+	int2 g_pixel = rt_pixel * G_SCALE;
+
+	if (greater_equals_any(g_pixel, G_SIZE))
+		return;
 
 	const float kernelWeights[3] = { 1.0, 2.0 / 3.0, 1.0 / 6.0 };
 
-	// explicitly store/accumulate center pixel with weight 1 to prevent issues
-	// with the edge-stopping functions
 	float  sumW = 0.0;
-	//float  sumWIndirect = 1.0;
-	float4 sumDirect    = 0;//g_direct[rt_pixel];//directCenter;
-	float4 sumIndirect  = 0;//g_indirect[rt_pixel];//indirectCenter;
+	float4 sumDirect    = 0;
+	float4 sumIndirect  = 0;
 
 	float3 normalCenter;
 	float2 zCenter;
 	float  rCenter;
 	fetch_normal_and_linear_z(g_compact_data, g_pixel, normalCenter, zCenter, rCenter);
 
-	float4 m1_direct = 0;//sumDirect;
-	float4 m1_indirect = 0;//sumIndirect;
-	float4 m2_direct = 0;//sumDirect * sumDirect;
-	float4 m2_indirect = 0;//sumIndirect * sumIndirect;
+	float4 m1_direct = 0;
+	float4 m1_indirect = 0;
+	float4 m2_direct = 0;
+	float4 m2_indirect = 0;
 	float  m_count = 0;
+
+	uint iteration_mul = 1 << input_data.iteration;
 
 	// 5x5
 	for (int yy = -2; yy <= 2; yy++) {
 		for (int xx = -2; xx <= 2; xx++) {
-			const int2 p = g_pixel + float2(xx, yy) * (1 << input_data.iteration) * float2(input_data.g_scale_x, input_data.g_scale_y);
+			const int2 p = rt_pixel + float2(xx, yy) * iteration_mul;
 
-			if (greater_equals(p, 0) && less(p, G_SIZE)) {
+			if (greater_equals(p, 0) && less(p, RT_SIZE)) {
 				const float kernel = kernelWeights[abs(xx)] * kernelWeights[abs(yy)];
 
-				const float4 directP     = g_direct[p];
-				const float4 indirectP   = g_indirect[p];
+				const float4 directP   = g_direct[p];
+				const float4 indirectP = g_indirect[p];
 
 				float3 normalP;
 				float2 zP;
 				float rP;
-				fetch_normal_and_linear_z(g_compact_data, p, normalP, zP,rP);
+				fetch_normal_and_linear_z(g_compact_data, p * G_SCALE, normalP, zP,rP);
 
 				// compute the edge-stopping functions
 				const float w = weight(normalP, normalCenter, zP.x, zCenter.x, zCenter.y, rP, rCenter, length(float2(xx, yy)));
@@ -102,29 +105,21 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	const float4 sn_direct   = sumDirect / sumW;
 	const float4 sn_indirect = sumIndirect / sumW;
 
-	const float4 sigma_direct = sqrt(m2_direct / m_count - sqr(m1_direct / m_count));
+	const float4 sigma_direct   = sqrt(m2_direct / m_count - sqr(m1_direct / m_count));
 	const float4 sigma_indirect = sqrt(m2_indirect / m_count - sqr(m1_indirect / m_count));
-	const float gamma = 0.1;
+	const float  gamma          = 0.1f;
 
-	float4 coof_direct = g_detail_sum_direct[g_pixel] + clamp(sn_direct - g_prev_direct[g_pixel], -sigma_direct * gamma, sigma_direct * gamma);
-	float4 coof_indirect = g_detail_sum_indirect[g_pixel] + clamp(sn_indirect - g_prev_indirect[g_pixel], -sigma_indirect * gamma, sigma_indirect * gamma);
+	float4 coof_direct = g_detail_sum_direct[rt_pixel] + clamp(sn_direct - g_prev_direct[rt_pixel], -sigma_direct * gamma, sigma_direct * gamma);
+	float4 coof_indirect = g_detail_sum_indirect[rt_pixel] + clamp(sn_indirect - g_prev_indirect[rt_pixel], -sigma_indirect * gamma, sigma_indirect * gamma);
 
-	g_detail_sum_direct[g_pixel] = coof_direct;
-	g_detail_sum_indirect[g_pixel] = coof_indirect;
-
-
-	/*PS_OUTPUT output;
-	output.direct   = sn_direct;
-	output.indirect = sn_indirect;*/
-	
+	g_detail_sum_direct[rt_pixel] = coof_direct;
+	g_detail_sum_indirect[rt_pixel] = coof_indirect;
 
 	if (input_data.iteration == input_data.max_iterations - 1) {
-		g_direct_out[g_pixel] = sn_direct - coof_direct;
-		g_indirect_out[g_pixel] = sn_indirect - coof_indirect;
+		g_direct_out[rt_pixel] = sn_direct - coof_direct;
+		g_indirect_out[rt_pixel] = sn_indirect - coof_indirect;
 	} else {
-		g_direct_out[g_pixel] = sn_direct;
-		g_indirect_out[g_pixel] = sn_indirect;
+		g_direct_out[rt_pixel] = sn_direct;
+		g_indirect_out[rt_pixel] = sn_indirect;
 	}
-
-	//return output;
 }

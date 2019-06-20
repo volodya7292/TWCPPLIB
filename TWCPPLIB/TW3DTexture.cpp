@@ -70,7 +70,7 @@ void TW3DTexture::CreateDepthStencil(TWT::uint2 Size) {
 	clear_value.DepthStencil.Depth = 1.0f;
 	clear_value.DepthStencil.Stencil = 0;
 
-	desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Size.x, Size.y, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+	desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Size.x, Size.y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 	InitialState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 	TW3DResource::Create();
 	resource->SetName(L"TW3DResourceDSV");
@@ -133,9 +133,11 @@ void TW3DTexture::Upload2D(TWT::byte* Data, TWT::int64 BytesPerRow, TWT::uint De
 	if (!staging)
 		upload_heap = TW3DResource::CreateStaging(device, device->GetCopyableFootprints(&desc, 1));
 
+	TWT::uint subres = D3D12CalcSubresource(0, Depth, 0, desc.MipLevels, desc.DepthOrArraySize);
+	
 	temp_gcl->Reset();
 	temp_gcl->ResourceBarrier(resource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-	temp_gcl->UpdateSubresources(resource, upload_heap->Get(), &textureData, 1, 0, Depth);
+	temp_gcl->UpdateSubresources(resource, upload_heap->Get(), &textureData, 1, 0, subres);
 	temp_gcl->ResourceBarrier(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	temp_gcl->Execute();
 

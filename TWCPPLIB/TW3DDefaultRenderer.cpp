@@ -216,6 +216,10 @@ void TW3DDefaultRenderer::RenderRecordGBuffer() {
 
 	g_cl->SetPipelineState(gbuffer_ps);
 
+	g_cl->ResourceBarrier(ray_tracer->svgf_mo_vec_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	g_cl->ResourceBarrier(ray_tracer->svgf_compact_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	g_cl->ResourceBarrier(ray_tracer->svgf_prev_compact_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
 	g_cl->SetRenderTargets({ g_position, g_normal, g_diffuse, g_specular, g_emission, ray_tracer->svgf_mo_vec_rt, ray_tracer->svgf_compact_rt }, g_depth);
 	g_cl->ClearRTV(ray_tracer->svgf_compact_rt);
 	g_cl->ClearRTV(g_emission);
@@ -236,6 +240,10 @@ void TW3DDefaultRenderer::RenderRecordGBuffer() {
 
 	for (TW3DObject* object : Scene->Objects)
 		g_cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
+
+	g_cl->ResourceBarrier(ray_tracer->svgf_mo_vec_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	g_cl->ResourceBarrier(ray_tracer->svgf_compact_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	g_cl->ResourceBarrier(ray_tracer->svgf_prev_compact_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 	g_cl->Close();
 
@@ -263,14 +271,16 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 
 	ray_tracer->TraceRays(rt_cl, g_position, g_diffuse, g_specular, g_normal, g_emission, g_depth, diffuse_texarr, emission_texarr, normal_texarr, info_cb, Scene, LargeScaleScene);
 
+	ray_tracer->DenoiseResult(rt_cl);
+
 	rt_cl->Close();
 
-	gd_cl->Reset();
+	/*gd_cl->Reset();
 	gd_cl->BindResources(ResourceManager);
 
 	ray_tracer->DenoiseResult(gd_cl);
 
-	gd_cl->Close();
+	gd_cl->Close();*/
 }
 
 void TW3DDefaultRenderer::Update(float DeltaTime) {
@@ -285,7 +295,7 @@ void TW3DDefaultRenderer::Execute(TWT::uint BackBufferIndex) {
 
 	ResourceManager->ExecuteCommandList(rt_cl);
 	ResourceManager->FlushCommandList(rt_cl);
-	ResourceManager->ExecuteCommandList(gd_cl);
+	//ResourceManager->ExecuteCommandList(gd_cl);
 	//ResourceManager->FlushCommandList(gd_cl);
 
 	ResourceManager->ExecuteCommandList(execute_cl);

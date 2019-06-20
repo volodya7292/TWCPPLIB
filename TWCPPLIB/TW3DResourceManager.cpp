@@ -5,10 +5,10 @@ TW3DResourceManager::TW3DResourceManager(TW3DDevice* Device) :
 	device(Device)
 {
 	temp_gcl = new TW3DTempGCL(device);
-	rtv_descriptor_heap = TW3DDescriptorHeap::CreateForRTV(device, 1024);
-	dsv_descriptor_heap = TW3DDescriptorHeap::CreateForDSV(device, 1024);
-	srv_descriptor_heap = TW3DDescriptorHeap::CreateForSR(device, 1024);
-	uav_descriptor_heap = TW3DDescriptorHeap::CreateForSR(device, 1024, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+	rtv_descriptor_heap = TW3DDescriptorHeap::CreateForRTV(device, 16);
+	dsv_descriptor_heap = TW3DDescriptorHeap::CreateForDSV(device, 4);
+	srv_descriptor_heap = TW3DDescriptorHeap::CreateForSR(device, 64);
+	uav_descriptor_heap = TW3DDescriptorHeap::CreateForSR(device, 64, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 	direct_command_queue = TW3DCommandQueue::CreateDirect(device);
 	compute_command_queue = TW3DCommandQueue::CreateCompute(device);
 	copy_command_queue = TW3DCommandQueue::CreateCopy(device);

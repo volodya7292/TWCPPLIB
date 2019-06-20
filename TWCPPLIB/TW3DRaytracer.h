@@ -15,11 +15,11 @@ public:
 		TW3DRenderTarget* GPosition, TW3DRenderTarget* GDiffuse, TW3DRenderTarget* GSpecular, TW3DRenderTarget* GNormal, TW3DRenderTarget* GEmission, TW3DTexture* GDepth,
 		TW3DTexture* DiffuseTexArr, TW3DTexture* EmissionTexArr, TW3DTexture* NormalTexArr, TW3DConstantBuffer* RendererInfoCB,
 		TW3DScene* Scene, TW3DScene* LargeScaleScene = nullptr);
-	// CL : Graphics command list
+	// CL : Compute command list
 	void DenoiseResult(TW3DGraphicsCommandList* CL);
 
-	TW3DRenderTarget *svgf_mo_vec_rt, *svgf_compact_rt, *svgf_prev_compact_rt, *direct_out, *indirect_out;
-	TW3DTexture *direct_tex, *indirect_tex, *direct_albedo_tex, *indirect_albedo_tex;
+	TW3DRenderTarget *svgf_mo_vec_rt, *svgf_compact_rt, *svgf_prev_compact_rt;
+	TW3DTexture *direct_tex, *indirect_tex, *direct_albedo_tex, *indirect_albedo_tex, *direct_out, *indirect_out;
 
 private:
 	enum RootSignatureParamsRT {
@@ -51,6 +51,8 @@ private:
 	enum RootSignatureParamsSVGFTA {
 		SVGFTA_DIRECT,
 		SVGFTA_INDIRECT,
+		SVGFTA_DIRECT_OUT,
+		SVGFTA_INDIRECT_OUT,
 		SVGFTA_FILTERED_DIRECT,
 		SVGFTA_FILTERED_INDIRECT,
 		SVGFTA_MOTION,
@@ -80,11 +82,11 @@ private:
 	TWT::uint2 size;
 
 	TW3DShader *sq_s, *rt_s, *svgf_ta_s, *svgf_wf_s;
-	TW3DComputePipelineState* rt_ps, *svgf_wf_cs;
-	TW3DGraphicsPipelineState *svgf_ta_ps;
+	TW3DComputePipelineState *rt_ps, *svgf_ta_ps, *svgf_wf_ps;
 
 	TW3DTexture *detail_sum_direct, *detail_sum_indirect;
+	TW3DTexture *svgf_swap_direct[2], *svgf_swap_indirect[2], *svgf_filtered_direct, *svgf_filtered_indirect;
 	//TW3DRenderTarget* svgf_prev_linear_z_rt;
-	TW3DFramebuffer *svgf_swap_fb[2], *svgf_filtered_fb;    // direct | indirect
+	//TW3DFramebuffer *svgf_swap_fb[2], *svgf_filtered_fb;    // direct | indirect
 	//TW3DFramebuffer *svgf_ta_curr_fb, *svgf_ta_prev_fb;     // direct | indirect | moments | history length
 };

@@ -451,10 +451,10 @@
     <FxCompile Include="Blit.p.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="RTDTemporalAccumulation.p.hlsl">
+    <FxCompile Include="RTDWaveletFilter.c.hlsl">
       <Filter>Resource Files\Shaders\SVGF</Filter>
     </FxCompile>
-    <FxCompile Include="RTDWaveletFilter.c.hlsl">
+    <FxCompile Include="RTDTemporalAccumulation.c.hlsl">
       <Filter>Resource Files\Shaders\SVGF</Filter>
     </FxCompile>
   </ItemGroup>

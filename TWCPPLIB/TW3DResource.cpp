@@ -34,7 +34,7 @@ void TW3DResource::Release() {
 	if (resource)
 		TWU::DXSafeRelease(resource);
 	
-		delete staging;
+	delete staging;
 }
 
 void TW3DResource::Create() {
