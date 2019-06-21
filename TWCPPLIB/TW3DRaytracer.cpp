@@ -39,7 +39,7 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 			TW3DRPTexture(RT_G_NORMAL_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("g_normal"s)),
 			TW3DRPTexture(RT_G_DIFFUSE_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("g_diffuse"s)),
 			TW3DRPTexture(RT_G_SPECULAR_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("g_specular"s)),
-			TW3DRPTexture(RT_G_EMISSION_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("g_emission"s)),
+			//TW3DRPTexture(RT_G_EMISSION_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("g_emission"s)),
 
 			// Ray tracing output resources
 			TW3DRPTexture(RT_DIRECT_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("rt_direct"s), true),
@@ -264,7 +264,7 @@ void TW3DRaytracer::TraceRays(TW3DGraphicsCommandList* CL,
 	CL->BindTexture(RT_G_POSITION_TEXTURE, GPosition);
 	CL->BindTexture(RT_G_DIFFUSE_TEXTURE, GDiffuse);
 	CL->BindTexture(RT_G_SPECULAR_TEXTURE, GSpecular);
-	CL->BindTexture(RT_G_EMISSION_TEXTURE, GEmission);
+	//CL->BindTexture(RT_G_EMISSION_TEXTURE, GEmission);
 	CL->BindTexture(RT_G_NORMAL_TEXTURE, GNormal);
 
 	CL->BindTexture(RT_DIFFUSE_TEXTURE, DiffuseTexArr);

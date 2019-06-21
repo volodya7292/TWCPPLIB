@@ -288,7 +288,7 @@ inline float3 schlick_fresnel(float3 f0, float u) {
 }
 
 // Compute GGX term from input parameters
-float3 get_ggx_color(float3 V, float3 L, float3 N, float NdotV, float3 specColor, float roughness, bool evalDirect) {
+float3 get_direct_ggx_color(float3 V, float3 L, float3 N, float NdotV, float3 specColor, float roughness) {
 	// Compute half vector and dot products
 	float3 H = normalize(V + L);
 	float NdotL = saturate(dot(N, L));
@@ -300,14 +300,24 @@ float3 get_ggx_color(float3 V, float3 L, float3 N, float NdotV, float3 specColor
 	float G = ggx_smith_masking_term(NdotL, NdotV, roughness) * 4 * NdotL;
 	float3 F = schlick_fresnel(specColor, LdotH);
 
-	// If this is direct illumination, color is simple. 
-	// If we sampled via getGGXSample(), we need to divide by the probability of this sample.
-	float3 outColor = evalDirect ?
-		F * G * D * NdotV :
-		F * G * LdotH / max(0.001f, NdotH);
+	// Determine if the color is valid (if invalid, we likely have a NaN or Inf)
+	return (NdotV * NdotL * LdotH <= 0.0f) ? 0 : (F * G * D * NdotV);
+}
+
+// Compute GGX term from input parameters
+float3 get_indirect_ggx_color(float3 V, float3 L, float3 N, float NdotV, float3 specColor, float roughness) {
+	// Compute half vector and dot products
+	float3 H = normalize(V + L);
+	float NdotL = saturate(dot(N, L));
+	float NdotH = saturate(dot(N, H));
+	float LdotH = saturate(dot(L, H));
+
+	// Evaluate our GGX BRDF term
+	float G = ggx_smith_masking_term(NdotL, NdotV, roughness) * 4 * NdotL;
+	float3 F = schlick_fresnel(specColor, LdotH);
 
 	// Determine if the color is valid (if invalid, we likely have a NaN or Inf)
-	return (NdotV * NdotL * LdotH <= 0.0f) ? float3(0, 0, 0) : outColor;
+	return (NdotV * NdotL * LdotH <= 0.0f) ? 0 : (F * G * LdotH / max(0.001f, NdotH));
 }
 
 float probability_to_sample_diffuse(float3 diffuse, float3 specular) {

@@ -34,7 +34,7 @@ Texture2D<float4> g_position;
 Texture2D<float4> g_normal;
 Texture2D<float4> g_diffuse;
 Texture2D<float4> g_specular;
-Texture2D<float4> g_emission;
+//Texture2D<float4> g_emission;
 
 // Output image
 RWTexture2D<float4> rt_direct;
@@ -218,7 +218,7 @@ inline float3 trace_indirect_ray(in Ray ray) {
 	//return diffuse.xyz;
 }
 
-inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float3 emission, in float roughness, in float2 rt_pixel_pos) {
+inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float roughness, in float2 rt_pixel_pos) {
 
 	float4 direct, direct_albedo, indirect, indirect_albedo;
 
@@ -237,17 +237,16 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 
 	// Direct
 	{
-		const float probDiffuse   = probability_to_sample_diffuse(diffuse, specular);
-		const float chooseDiffuse = (rand_next() < probDiffuse);
-
 		NdotL = saturate(dot(normal, to_light.dir));
 
 		// Compute our GGX color
-		ggxTerm = get_ggx_color(to_camera, to_light.dir, normal, NdotV, specular, roughness, true);
+		ggxTerm = get_direct_ggx_color(to_camera, to_light.dir, normal, NdotV, specular, roughness);
 
 		// Compute direct color.  Split into light and albedo terms for our SVGF filter
-		const float3 directColor = (equals(emission, 0.0f) ? 0 : 1) + shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
-		const float3 directAlbedo = ggxTerm;//diffuse / PI;
+		float3 directColor = shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
+		directColor = (directColor + (PI / max(5e-3f, diffuse)) * directColor * ggxTerm);
+		const float3 directAlbedo = 0;//ggxTerm;//diffuse / PI;
+
 		const bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
 		direct = float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
 		direct_albedo = float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
@@ -276,12 +275,12 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 		// Compute diffuse, ggx shading terms
 		NdotL = saturate(dot(normal, bounceDir));
 		const float3 difTerm = max(5e-3f, diffuse / PI);
-		ggxTerm = NdotL * get_ggx_color(to_camera, bounceDir, normal, NdotV, specular, roughness, false);
+		ggxTerm = NdotL * get_indirect_ggx_color(to_camera, bounceDir, normal, NdotV, specular, roughness);
 
 		// Split into an incoming light and "indirect albedo" term to help filter illumination despite sampling 2 different lobes
 		const float3 difFinal = 1.0f / probDiffuse;                    // Has been divided by difTerm.  Multiplied back post-SVGF
 		const float3 ggxFinal = ggxTerm / (difTerm * (1.0f - probDiffuse));    // Has been divided by difTerm.  Multiplied back post-SVGF
-		const float3 shadeColor = (equals(emission, 0.0f) ? 0 : 1) + bounceColor * (chooseDiffuse ? difFinal : ggxFinal);
+		const float3 shadeColor = bounceColor * (chooseDiffuse ? difFinal : ggxFinal);
 
 		const bool colorsNan = any(isnan(shadeColor));
 		indirect = float4(colorsNan ? float3(0, 0, 0) : shadeColor, 1.0f);
@@ -331,9 +330,9 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		normal = g_normal[g_pixel];
 		diffuse = g_diffuse[g_pixel];
 		specular = g_specular[g_pixel];
-		emission = g_emission[g_pixel];
+		//emission = g_emission[g_pixel];
 
-		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 1, emission.rgb, specular.a, rt_pixel);
+		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 1, clamp(specular.a, 0, 1), rt_pixel);
 
 	} else { // Background pixel
 		rt_direct[rt_pixel] = float4(0, 0, 0, 1);

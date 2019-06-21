@@ -31,9 +31,9 @@ inline float weight(float3 normal, float3 prev_normal, float depth, float prev_d
 	//float w_z = exp(-(abs(depth - prev_depth) / (depth_max_change * pq_length + 0.0001f)));
 	float w_n = pow(max(0.0f, dot(normal, prev_normal)), 32.0f);
 
-	//float w_r = 0.01;//1.0f - smoothstep(0.01f, 0.1f, abs(rough - prev_rough));
+	float w_d = 1.0f - smoothstep(10.0f * rough, 70.0f * rough, pq_length);
 
-	return w_n * w_z;
+	return w_n * w_z * w_d;
 }
 
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
@@ -47,7 +47,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	int2 rt_pixel = DTid.xy;
 	int2 g_pixel = rt_pixel * G_SCALE;
-
+	
 	if (greater_equals_any(g_pixel, G_SIZE))
 		return;
 
@@ -84,10 +84,10 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 				float3 normalP;
 				float2 zP;
 				float rP;
-				fetch_normal_and_linear_z(g_compact_data, p * G_SCALE, normalP, zP,rP);
+				fetch_normal_and_linear_z(g_compact_data, p * G_SCALE, normalP, zP, rP);
 
 				// compute the edge-stopping functions
-				const float w = weight(normalP, normalCenter, zP.x, zCenter.x, zCenter.y, rP, rCenter, length(float2(xx, yy)));
+				const float w = weight(normalP, normalCenter, zP.x, zCenter.x, zCenter.y, rCenter, rP, length(float2(xx, yy)));
 
 				sumW += kernel * w;
 				sumDirect += kernel * w * directP;
@@ -107,7 +107,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	const float4 sigma_direct   = sqrt(m2_direct / m_count - sqr(m1_direct / m_count));
 	const float4 sigma_indirect = sqrt(m2_indirect / m_count - sqr(m1_indirect / m_count));
-	const float  gamma          = 0.1f;
+	const float  gamma          = 0.02f;
 
 	float4 coof_direct = g_detail_sum_direct[rt_pixel] + clamp(sn_direct - g_prev_direct[rt_pixel], -sigma_direct * gamma, sigma_direct * gamma);
 	float4 coof_indirect = g_detail_sum_indirect[rt_pixel] + clamp(sn_indirect - g_prev_indirect[rt_pixel], -sigma_indirect * gamma, sigma_indirect * gamma);

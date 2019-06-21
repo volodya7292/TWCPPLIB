@@ -20,15 +20,7 @@ float4 main(VS_QUAD input) : SV_TARGET
 	uint2 g_pixel = input.tex_coord * G_SIZE;
 
 
-	//return float4(1,0,0,1); //the red color
+	float4 diffuse = max(5e-3f, g_diffuse[g_pixel] / PI);
 
-	//float2 texcoord = float2(vI&1, vI>>1);
-	//float2 texcoord = float2(pos.x / 2 + 0.5f, -(pos.y) / 2 + 0.5f);
-
-	//return float4((texcoord.x-0.5f)*2, -(texcoord.y-0.5f)*2, 0, 1);
-
-	//return lerp(rt_result.Sample(sam, input.texCoord), g_albedo.Sample(sam, input.texCoord), 0.5);
-
-	//return g_emission[g_pixel] + rt_direct[rt_pixel] * rt_direct_albedo[rt_pixel] + rt_indirect[rt_pixel] * rt_indirect_albedo[rt_pixel];
-	return g_emission[g_pixel] + rt_direct[rt_pixel] * ((rt_direct_albedo[rt_pixel] + g_diffuse[g_pixel] / PI)) + rt_indirect[rt_pixel] * (g_diffuse[g_pixel] / PI);
+	return g_emission[g_pixel] + (rt_direct[rt_pixel] + rt_indirect[rt_pixel]) * diffuse;
 }

@@ -102,7 +102,7 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 		depthDesc,
 		blendDesc,
 		root_signature);
-	gbuffer_ps->SetRTVFormat(0, TWT::RGBA32Float); //-V525
+	gbuffer_ps->SetRTVFormat(0, TWT::RGBA32Float);
 	gbuffer_ps->SetRTVFormat(1, TWT::RGBA32Float);
 	gbuffer_ps->SetRTVFormat(2, TWT::RGBA8Unorm);
 	gbuffer_ps->SetRTVFormat(3, TWT::RGBA8Unorm);

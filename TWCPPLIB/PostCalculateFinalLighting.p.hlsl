@@ -29,5 +29,5 @@ uint2 g_pixel = input.tex_coord * G_SIZE;
 
 //return lerp(rt_result.Sample(sam, input.texCoord), g_albedo.Sample(sam, input.texCoord), 0.5);
 
-return g_emission[g_pixel] + rt_direct[rt_pixel] * (rt_direct_albedo[rt_pixel] + g_diffuse[g_pixel] / PI) + rt_indirect[rt_pixel] * (g_diffuse[g_pixel] / PI);
+return g_emission[g_pixel] + rt_direct[rt_pixel] * (g_diffuse[g_pixel]) + rt_indirect[rt_pixel] * (g_diffuse[g_pixel]);
 }
