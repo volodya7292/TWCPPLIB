@@ -317,13 +317,13 @@ float3 get_indirect_ggx_color(float3 V, float3 L, float3 N, float NdotV, float3 
 	float3 F = schlick_fresnel(specColor, LdotH);
 
 	// Determine if the color is valid (if invalid, we likely have a NaN or Inf)
-	return (NdotV * NdotL * LdotH <= 0.0f) ? 0 : (F * G * LdotH / max(0.001f, NdotH));
+	return (NdotV * NdotL * LdotH <= 0.0f) ? 0 : (F * G * LdotH / max(1e-3f, NdotH));
 }
 
 float probability_to_sample_diffuse(float3 diffuse, float3 specular) {
-	float lumDiffuse = max(0.01f, luminance(diffuse));
-	float lumSpecular = max(0.01f, luminance(specular));
-	return lumDiffuse / (lumDiffuse + lumSpecular);
+	float lumDiffuse = luminance(diffuse);
+	float lumSpecular = luminance(specular);
+	return lumDiffuse / max(1e-3f, lumDiffuse + lumSpecular);
 }
 
 float3 rand_ggx_sample_dir(float roughness, float3 normal, float3 inVec) {
@@ -345,4 +345,15 @@ float3 rand_ggx_sample_dir(float roughness, float3 normal, float3 inVec) {
 
 	// Convert this into a ray direction by computing the reflection direction
 	return normalize(2.f * dot(inVec, H) * H - inVec);
+}
+
+uint4 pack_f2_16(float4 v0, float4 v1) {
+	// 1.0 -> 65535
+	return (f32tof16(v1) << 16) | f32tof16(v0);
+}
+
+void unpack_f2_16(uint4 packed, out float4 v0, out float4 v1) {
+	// 65535 -> 1.0
+	v0 = f16tof32(packed & 0x0000FFFF);
+	v1 = f16tof32((packed >> 16) & 0x0000FFFF);
 }

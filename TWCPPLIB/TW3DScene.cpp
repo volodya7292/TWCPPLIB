@@ -99,7 +99,8 @@ void TW3DScene::Update(float DeltaTime) {
 			ls.position = TWT::float4(light->GetPosition(), 1);
 			ls.color = TWT::float4(light->GetColor(), 1);
 			ls.info = light->MakeInfo();
-			ls.info.y += vertex_buffers[light->GetTriangleVertexBuffer()] / 3;
+			if (light->Type == TW3D_LIGHT_SOURCE_TRIANGLE)
+				ls.info.y += vertex_buffers[light->GetTriangleVertexBuffer()] / 3;
 
 			lsb->UpdateElement(&ls, i);
 		}

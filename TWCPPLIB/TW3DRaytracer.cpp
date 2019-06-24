@@ -43,9 +43,8 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 
 			// Ray tracing output resources
 			TW3DRPTexture(RT_DIRECT_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("rt_direct"s), true),
-			TW3DRPTexture(RT_DIRECT_ALBEDO_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("rt_direct_albedo"s), true),
 			TW3DRPTexture(RT_INDIRECT_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("rt_indirect"s), true),
-			TW3DRPTexture(RT_INDIRECT_ALBEDO_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("rt_indirect_albedo"s), true),
+			//TW3DRPTexture(RT_G_DATA_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("rt_g_data"s), true),
 
 			// Scene data
 			TW3DRPConstantBuffer(RT_CAMERA_CB, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("camera"s)),
@@ -95,6 +94,7 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 			TW3DRPTexture(SVGFWF_DETAIL_SUM_INDIRECT, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_detail_sum_indirect"s), true),
 			TW3DRPTexture(SVGFWF_DIRECT_OUT, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_direct_out"s), true),
 			TW3DRPTexture(SVGFWF_INDIRECT_OUT, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_indirect_out"s), true),
+			TW3DRPTexture(SVGFWF_INDIRECT_FINAL_OUT, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_indirect_final_out"s), true),
 			TW3DRPTexture(SVGFWF_COMPACT_DATA, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("g_compact_data"s)),
 			TW3DRPConstants(SVGFWF_INPUT_DATA, D3D12_SHADER_VISIBILITY_ALL, svgf_wf_s->GetRegister("input_data"s), 4)
 		}
@@ -109,7 +109,7 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 
 
 	direct_tex = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
-	indirect_tex = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
+	indirect_tex = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32UInt, true); // RGBA32UInt
 	direct_albedo_tex = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
 	indirect_albedo_tex = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
 	direct_tex->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
@@ -117,8 +117,8 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 	direct_albedo_tex->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 	indirect_albedo_tex->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 
-	direct_out = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float);
-	indirect_out = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float);
+	direct_out = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
+	indirect_out = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
 	direct_out->InitialState = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 	indirect_out->InitialState = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 	direct_out->Resize(direct_out->GetSize());
@@ -148,7 +148,7 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 		//svgf_swap_fb[i]->AddRenderTarget(0, TWT::RGBA32Float, TWT::float4(0));
 		//svgf_swap_fb[i]->AddRenderTarget(1, TWT::RGBA32Float, TWT::float4(0));
 		svgf_swap_direct[i] = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
-		svgf_swap_indirect[i] = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
+		svgf_swap_indirect[i] = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32UInt, true); // RGBA32UInt
 		svgf_swap_direct[i]->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 		svgf_swap_indirect[i]->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 		svgf_swap_direct[i]->Resize(svgf_swap_direct[i]->GetSize());
@@ -160,7 +160,7 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 	//svgf_filtered_fb->AddRenderTarget(1, TWT::RGBA32Float, TWT::float4(0));
 
 	svgf_filtered_direct = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
-	svgf_filtered_indirect = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
+	svgf_filtered_indirect = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32UInt, true); // RGBA32UInt
 	svgf_filtered_direct->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 	svgf_filtered_indirect->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 	svgf_filtered_direct->Resize(svgf_filtered_direct->GetSize());
@@ -273,9 +273,9 @@ void TW3DRaytracer::TraceRays(TW3DGraphicsCommandList* CL,
 	CL->BindTexture(RT_NORMAL_TEXTURE, NormalTexArr);
 
 	CL->BindTexture(RT_DIRECT_TEXTURE, direct_tex, true);
-	CL->BindTexture(RT_DIRECT_ALBEDO_TEXTURE, direct_albedo_tex, true);
+	//CL->BindTexture(RT_DIRECT_ALBEDO_TEXTURE, direct_albedo_tex, true);
 	CL->BindTexture(RT_INDIRECT_TEXTURE, indirect_tex, true);
-	CL->BindTexture(RT_INDIRECT_ALBEDO_TEXTURE, indirect_albedo_tex, true);
+	//CL->BindTexture(RT_INDIRECT_ALBEDO_TEXTURE, indirect_albedo_tex, true);
 
 	CL->BindConstantBuffer(RT_CAMERA_CB, Scene->Camera->GetConstantBuffer());
 	CL->BindUIntConstant(RT_INPUT_CONST, 0, 0);
@@ -317,10 +317,10 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 	//CL->DrawQuad();
 	CL->Dispatch(ceil(TWT::float2(size) / 8.0f));
 
-	/*CL->ResourceBarriers({
-		TW3DTransitionBarrier(svgf_mo_vec_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET),
-		TW3DTransitionBarrier(svgf_prev_compact_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET)
-	});*/
+
+	CL->ResourceBarriers({
+		TW3DUAVBarrier(),
+	});
 
 
 	// SVGF Wavelet filtering
@@ -343,6 +343,7 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 		CL->ResourceBarriers({
 			TW3DTransitionBarrier(svgf_swap_direct[1], D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 			TW3DTransitionBarrier(svgf_swap_indirect[1], D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+			TW3DTransitionBarrier(indirect_out, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
 		});
 
 		CL->BindTexture(SVGFWF_DIRECT, svgf_swap_direct[1]);
@@ -353,12 +354,14 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 
 		CL->BindTexture(SVGFWF_DIRECT_OUT, svgf_swap_direct[0], true);
 		CL->BindTexture(SVGFWF_INDIRECT_OUT, svgf_swap_indirect[0], true);
+		CL->BindTexture(SVGFWF_INDIRECT_FINAL_OUT, indirect_out, true);
 
 		CL->Dispatch(ceil(TWT::float2(size) / 8.0f));
-		//CL->BindFramebuffer(svgf_swap_fb[0]);
-		//CL->DrawQuad();
+
 
 		CL->ResourceBarriers({
+			TW3DUAVBarrier(),
+			TW3DTransitionBarrier(indirect_out, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 			TW3DTransitionBarrier(svgf_filtered_direct, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST),
 			TW3DTransitionBarrier(svgf_filtered_indirect, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST),
 			TW3DTransitionBarrier(svgf_swap_direct[1], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
@@ -391,19 +394,19 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 		TW3DTransitionBarrier(svgf_swap_direct[0], D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE),
 		TW3DTransitionBarrier(svgf_swap_indirect[0], D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE),
 		TW3DTransitionBarrier(direct_out, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST),
-		TW3DTransitionBarrier(indirect_out, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST)
+		//TW3DTransitionBarrier(indirect_out, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST)
 	});
 
 	std::swap(svgf_compact_rt, svgf_prev_compact_rt);
 
 	CL->CopyTextureRegion(direct_out, svgf_swap_direct[0]);
-	CL->CopyTextureRegion(indirect_out, svgf_swap_indirect[0]);
+	//CL->CopyTextureRegion(indirect_out, svgf_swap_indirect[0]);
 
 	CL->ResourceBarriers({
 		TW3DTransitionBarrier(svgf_swap_direct[0], D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
 		TW3DTransitionBarrier(svgf_swap_indirect[0], D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
 		TW3DTransitionBarrier(direct_out, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
-		TW3DTransitionBarrier(indirect_out, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+		//TW3DTransitionBarrier(indirect_out, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 		TW3DTransitionBarrier(svgf_filtered_direct, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
 		TW3DTransitionBarrier(svgf_filtered_indirect, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
 	});

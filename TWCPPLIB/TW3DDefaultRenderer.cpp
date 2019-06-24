@@ -42,9 +42,9 @@ void TW3DDefaultRenderer::CreateBlitResources() {
 			TW3DRPTexture(0, D3D12_SHADER_VISIBILITY_PIXEL, 0), // GBuffer diffuse
 			TW3DRPTexture(1, D3D12_SHADER_VISIBILITY_PIXEL, 1), // GBuffer emission
 			TW3DRPTexture(2, D3D12_SHADER_VISIBILITY_PIXEL, 2), // RT direct
-			TW3DRPTexture(3, D3D12_SHADER_VISIBILITY_PIXEL, 3), // RT direct albedo
-			TW3DRPTexture(4, D3D12_SHADER_VISIBILITY_PIXEL, 4), // RT indirect
-			TW3DRPTexture(5, D3D12_SHADER_VISIBILITY_PIXEL, 5), // RT indirect albedo
+			//TW3DRPTexture(3, D3D12_SHADER_VISIBILITY_PIXEL, 3), // RT direct albedo
+			TW3DRPTexture(3, D3D12_SHADER_VISIBILITY_PIXEL, 4), // RT indirect
+			//TW3DRPTexture(5, D3D12_SHADER_VISIBILITY_PIXEL, 5), // RT indirect albedo
 		},
 		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) },
 		true, true, false, false
@@ -151,6 +151,7 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 
 	//diffuse_texarr->Upload2D(L"D:/OptimizedRT_converged.jpg", 0);
 	diffuse_texarr->Upload2D(L"D:/emission.png", 0);
+	diffuse_texarr->Upload2D(L"D:/emission.png", 1);
 	emission_texarr->Upload2D(L"D:/emission.png", 1);
 	//texture->Upload2D(L"D:/тест2.png", 1);
 	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");
@@ -181,9 +182,11 @@ void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarg
 	cl->ResourceBarriers({
 		TW3DTransitionBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET),
 		TW3DTransitionBarrier(ray_tracer->direct_tex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
-		TW3DTransitionBarrier(ray_tracer->direct_albedo_tex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
+		//TW3DTransitionBarrier(ray_tracer->direct_albedo_tex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
 		TW3DTransitionBarrier(ray_tracer->indirect_tex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
-		TW3DTransitionBarrier(ray_tracer->indirect_albedo_tex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
+		//TW3DTransitionBarrier(ray_tracer->indirect_albedo_tex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
+		TW3DTransitionBarrier(ray_tracer->direct_out, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
+		TW3DTransitionBarrier(ray_tracer->indirect_out, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
 	});
 
 	cl->SetPipelineState(blit_ps);
@@ -191,9 +194,9 @@ void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarg
 	cl->BindTexture(0, g_diffuse);
 	cl->BindTexture(1, g_emission);
 	cl->BindTexture(2, ray_tracer->direct_out);
-	cl->BindTexture(3, ray_tracer->direct_albedo_tex);
-	cl->BindTexture(4, ray_tracer->indirect_out);
-	cl->BindTexture(5, ray_tracer->indirect_albedo_tex);
+	//cl->BindTexture(3, ray_tracer->direct_albedo_tex);
+	cl->BindTexture(3, ray_tracer->indirect_out);
+	//cl->BindTexture(5, ray_tracer->indirect_albedo_tex);
 	cl->ClearRTV(ColorOutput, TWT::float4(0, 0, 0, 1));
 	cl->ClearDSVDepth(Depth);
 	cl->SetViewport(&viewport);
@@ -202,9 +205,11 @@ void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarg
 
 	cl->ResourceBarriers({
 		TW3DTransitionBarrier(ray_tracer->direct_tex, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
-		TW3DTransitionBarrier(ray_tracer->direct_albedo_tex, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
+		//TW3DTransitionBarrier(ray_tracer->direct_albedo_tex, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
 		TW3DTransitionBarrier(ray_tracer->indirect_tex, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
-		TW3DTransitionBarrier(ray_tracer->indirect_albedo_tex, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
+		//TW3DTransitionBarrier(ray_tracer->indirect_albedo_tex, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
+		TW3DTransitionBarrier(ray_tracer->direct_out, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+		TW3DTransitionBarrier(ray_tracer->indirect_out, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 		TW3DTransitionBarrier(ColorOutput, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT)
 	});
 }
@@ -266,6 +271,7 @@ void TW3DDefaultRenderer::RecordBeforeExecution() {
 
 	// Trace rays
 	// -------------------------------------------------------------------------------------------------------------------------
+
 	rt_cl->Reset();
 	rt_cl->BindResources(ResourceManager);
 

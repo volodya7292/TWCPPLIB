@@ -4,9 +4,9 @@ Texture2D<float4> g_diffuse : register(t0);
 Texture2D<float4> g_emission : register(t1);
 
 Texture2D<float4> rt_direct : register(t2);
-Texture2D<float4> rt_direct_albedo : register(t3);
+//Texture2D<float4> rt_direct_albedo : register(t3);
 Texture2D<float4> rt_indirect : register(t4);
-Texture2D<float4> rt_indirect_albedo : register(t5);
+//Texture2D<float4> rt_indirect_albedo : register(t5);
 
 sampler sam : register(s0);
 

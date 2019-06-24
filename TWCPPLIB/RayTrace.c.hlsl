@@ -38,9 +38,8 @@ Texture2D<float4> g_specular;
 
 // Output image
 RWTexture2D<float4> rt_direct;
-RWTexture2D<float4> rt_direct_albedo;
-RWTexture2D<float4> rt_indirect;
-RWTexture2D<float4> rt_indirect_albedo;
+RWTexture2D<uint4> rt_indirect;
+//RWTexture2D<float4> rt_g_data;
 
 // Camera
 ConstantBuffer<Camera> camera;
@@ -214,13 +213,14 @@ inline float3 trace_indirect_ray(in Ray ray) {
 	//Intersection shadow = trace_ray(ray);
 	const float shadowMult = trace_shadow_ray(to_light, light_info.ray_length);
 
-	return emission.xyz + LdotN * shadowMult * light_info.color * (diffuse.xyz) / PI;
+	return emission.xyz + LdotN * shadowMult * light_info.color * (diffuse.xyz / PI);
 	//return diffuse.xyz;
 }
 
 inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float roughness, in float2 rt_pixel_pos) {
 
-	float4 direct, direct_albedo, indirect, indirect_albedo;
+	float4 direct, direct_albedo, indirect_albedo;
+	uint4 indirect;
 
 	const float3 to_camera = normalize(camera.pos.xyz - pos);
 
@@ -244,7 +244,7 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 
 		// Compute direct color.  Split into light and albedo terms for our SVGF filter
 		float3 directColor = shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
-		directColor = (directColor + (PI / max(5e-3f, diffuse)) * directColor * ggxTerm);
+		//directColor = (directColor + (PI / max(5e-3f, diffuse)) * directColor * ggxTerm);
 		const float3 directAlbedo = 0;//ggxTerm;//diffuse / PI;
 
 		const bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
@@ -278,19 +278,24 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 		ggxTerm = NdotL * get_indirect_ggx_color(to_camera, bounceDir, normal, NdotV, specular, roughness);
 
 		// Split into an incoming light and "indirect albedo" term to help filter illumination despite sampling 2 different lobes
-		const float3 difFinal = 1.0f / probDiffuse;                    // Has been divided by difTerm.  Multiplied back post-SVGF
+		const float3 difFinal = 1.0f / max(5e-3f, probDiffuse);                    // Has been divided by difTerm.  Multiplied back post-SVGF
 		const float3 ggxFinal = ggxTerm / (difTerm * (1.0f - probDiffuse));    // Has been divided by difTerm.  Multiplied back post-SVGF
-		const float3 shadeColor = bounceColor * (chooseDiffuse ? difFinal : ggxFinal);
+		const float3 shadeColorDiff = bounceColor * difFinal;
+		const float3 shadeColorSpec = bounceColor * ggxFinal;
 
-		const bool colorsNan = any(isnan(shadeColor));
-		indirect = float4(colorsNan ? float3(0, 0, 0) : shadeColor, 1.0f);
+		const bool colorsNan = any(isnan(shadeColorDiff)) || any(isnan(shadeColorSpec));
+		const float4 indirect_f_diff = float4(colorsNan ? float3(0, 0, 0) : shadeColorDiff, 1.0f);
+		const float4 indirect_f_spec = float4(colorsNan ? float3(0, 0, 0) : shadeColorSpec, 1.0f);
+
+		indirect = chooseDiffuse ? pack_f2_16(indirect_f_diff, 0) : pack_f2_16(0, indirect_f_spec);
+
 		indirect_albedo = float4(difTerm, 1.0f);
 	}
 
 	rt_direct[rt_pixel_pos] = direct;
-	rt_direct_albedo[rt_pixel_pos] = direct_albedo;
+	//rt_direct_albedo[rt_pixel_pos] = direct_albedo;
 	rt_indirect[rt_pixel_pos] = indirect;
-	rt_indirect_albedo[rt_pixel_pos] = indirect_albedo;
+	//rt_indirect_albedo[rt_pixel_pos] = indirect_albedo;
 }
 
 uint2 select_g_pixel(uint2 g_center_p, uint2 kernel) {
@@ -326,13 +331,13 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	float4 pos = g_position[g_pixel];//.SampleLevel(sam, tex_coord, 0);
 	float4 normal, diffuse, specular, emission;
 
-	if (pos.w == 1) { // Not a background pixel
+	if (pos.w == 1 && (input.def_scene_light_count > 0 || input.large_scene_light_count > 0)) { // Not a background pixel
 		normal = g_normal[g_pixel];
 		diffuse = g_diffuse[g_pixel];
 		specular = g_specular[g_pixel];
 		//emission = g_emission[g_pixel];
 
-		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 1, clamp(specular.a, 0, 1), rt_pixel);
+		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 1, clamp(specular.a + 0, 0, 1), rt_pixel);
 
 	} else { // Background pixel
 		rt_direct[rt_pixel] = float4(0, 0, 0, 1);

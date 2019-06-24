@@ -151,16 +151,18 @@ int main() {
 	cube->VMInstance.Transform.SetIdentity();
 
 	scene->Camera->FOVY = 45;
-	scene->Camera->Position.z = 3;
+	//scene->Camera->SetRotation(TWT::float3(0, -90, 0))
+	//scene->Camera.
+	//scene->Camera->Position.z = 3;
 
 	light = new TW3DLightSource();
-	//light->SetSphereRadius(2);
-	//light->SetPosition(TWT::float3(5, 8, 5));
 	light->SetTriangleId(8, cube->VMInstance.VertexMesh->VertexBuffers[0]);
+	//light->SetSphereRadius(0.2);
+	//light->SetPosition(TWT::float3(5, 8, 5));
 
 	light2 = new TW3DLightSource();
-	//light2->SetSphereRadius(2);
 	light2->SetTriangleId(9, cube->VMInstance.VertexMesh->VertexBuffers[0]);
+	//light2->SetSphereRadius(0.1);
 	//light2->SetPosition(TWT::float3(5, -10, 5));
 
 	scene->AddLightSource(light);

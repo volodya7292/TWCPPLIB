@@ -6,7 +6,7 @@ struct VS_OUTPUT {
 	linear float3     world_pos : WorldPosition;
 	float2            tex_coord : TexCoord;
 	uint            material_id : MaterialId;
-	linear float3        normal : ObjectNormal;
+	//linear float3        normal : ObjectNormal;
 	linear float3  world_normal : WorldNormal;
 	linear float3       tangent : Tangent;
 };
@@ -38,9 +38,11 @@ VS_OUTPUT main(Vertex input, uint vertex_id : SV_VertexID) {
 	output.clip_pos = mul(camera.proj_view, float4(output.world_pos, 1));
 	output.tex_coord = input.tex_coord.xy;
 	output.material_id = uint(input.tex_coord.z);
-	output.normal = input.normal;
+	//output.normal = input.normal;
 	output.world_normal = mul(float4(input.normal, 1), model).xyz;
 	output.tangent = mul(float4(input.tangent, 1), model).xyz;
+
+	output.world_normal = dot(output.world_normal, normalize(camera.pos.xyz - output.world_pos)) >= 0 ? output.world_normal : -output.world_normal;
 
 	output.prev_clip_pos = mul(prev_camera.proj_view, mul(prev_model, float4(input.pos, 1)));
 

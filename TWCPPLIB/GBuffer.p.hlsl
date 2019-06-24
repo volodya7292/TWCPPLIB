@@ -14,7 +14,7 @@ struct VS_OUTPUT {
 	linear float3     world_pos : WorldPosition;
 	float2            tex_coord : TexCoord;
 	uint            material_id : MaterialId;
-	linear float3        normal : ObjectNormal;
+	//linear float3        normal : ObjectNormal;
 	linear float3  world_normal : WorldNormal;
 	linear float3       tangent : Tangent;
 };
@@ -61,7 +61,7 @@ PS_OUTPUT main(VS_OUTPUT input) {
 
 
 	normal = input.world_normal;
-	normal = (dot(normal, normalize(camera.pos.xyz - input.world_pos.xyz)) >= 0) ? normal : -normal;
+	//normal = (dot(normal, normalize(camera.pos.xyz - input.world_pos.xyz)) >= 0) ? normal : -normal;
 
 
 	//if (hasNormMap == true) {
@@ -122,7 +122,7 @@ PS_OUTPUT main(VS_OUTPUT input) {
 	output.svgfMoVec = svgfMotionVecOut;
 
 	// A compacted buffer containing discretizied normal, depth, depth derivative
-	output.svgfCompact = float4(asfloat(dir_to_oct(input.world_normal)), linearZ, maxChangeZ, output.specular.a);
+	output.svgfCompact = float4(asfloat(dir_to_oct(normal)), linearZ, maxChangeZ, output.specular.a);
 
 
 

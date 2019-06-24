@@ -32,7 +32,7 @@ private:
 
 	float sphere_radius = 1.0f;
 	float intensity = 1.0f;
-	TWT::float3 position;
+	TWT::float3 position = TWT::float3(0);
 	TWT::float3 color = TWT::float3(1);
 
 	friend class TW3DScene;

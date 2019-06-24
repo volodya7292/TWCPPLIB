@@ -2,14 +2,14 @@
 #include "SVGFCommon.hlsli"
 
 Texture2D<float4> g_direct;
-Texture2D<float4> g_indirect;
+Texture2D<uint4> g_indirect;
 Texture2D<float4> g_filt_direct;
-Texture2D<float4> g_filt_indirect;
+Texture2D<uint4> g_filt_indirect;
 Texture2D<float4> g_motion;
 Texture2D<float4> g_compact_data;
 Texture2D<float4> g_prev_compact_data;
 RWTexture2D<float4> g_direct_out;
-RWTexture2D<float4> g_indirect_out;
+RWTexture2D<uint4> g_indirect_out;
 
 //struct PS_OUTPUT {
 //	float4 direct         : SV_Target0;
@@ -46,15 +46,22 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	float3 normalP;
 	float2 zP;
 	fetch_normal_and_linear_z(g_compact_data, g_pixel, normalP, zP);
-	float3 prev_normalP;
-	float2 prev_zP;
-	fetch_normal_and_linear_z(g_prev_compact_data, g_pixel_prev, prev_normalP, prev_zP);
+
+	float3 prev_normalP = 0;
+	float2 prev_zP = 0;
+	if (less(g_pixel_prev, G_SIZE) && greater_equals(g_pixel_prev, 0))
+		fetch_normal_and_linear_z(g_prev_compact_data, g_pixel_prev, prev_normalP, prev_zP);
+
+	
 
 
 	const float4 direct = g_direct[rt_pixel];
-	const float4 indirect = g_indirect[rt_pixel];
+	float4 indirect0, indirect1;
+	unpack_f2_16(g_indirect[rt_pixel], indirect0, indirect1);
+
 	const float4 prev_direct = g_filt_direct[rt_pixel_prev];
-	const float4 prev_indirect = g_filt_indirect[rt_pixel_prev];
+	float4 prev_indirect0, prev_indirect1;
+	unpack_f2_16(g_filt_indirect[rt_pixel_prev], prev_indirect0, prev_indirect1);
 
 
 
@@ -76,5 +83,5 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	const float alpha = 0.95f * weight(normalP, prev_normalP, zP.x, prev_zP.x, zP.y, length(rt_pixel - rt_pixel_prev));
 
 	g_direct_out[rt_pixel] = lerp(direct, prev_direct, alpha);
-	g_indirect_out[rt_pixel] = lerp(indirect, prev_indirect, alpha);
+	g_indirect_out[rt_pixel] = pack_f2_16(lerp(indirect0, prev_indirect0, alpha), lerp(indirect1, prev_indirect1, alpha));
 }

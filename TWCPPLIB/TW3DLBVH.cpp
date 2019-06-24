@@ -66,7 +66,7 @@ void TW3DLBVH::BuildFromTriangles(TW3DBuffer* GVB, TWT::uint GVBOffset, TW3DGrap
 		cl->CopyBufferRegion(node_buffer, 0, bounding_box_buffer, 0, sizeof(TWT::Bounds));
 
 		cl->ResourceBarriers({
-			TW3DUAVBarrier(),
+			//TW3DUAVBarrier(),
 			//TW3DTransitionBarrier(bounding_box_buffer, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 			//TW3DTransitionBarrier(node_buffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE)
 		});
