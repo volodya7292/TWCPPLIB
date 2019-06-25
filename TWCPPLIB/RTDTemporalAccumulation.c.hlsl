@@ -20,14 +20,14 @@ inline float weight(float3 normalCenter, float3 normalP, float depthCenter, floa
 
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
-	uint2 RT_SIZE;
+	int2 RT_SIZE;
 	g_direct.GetDimensions(RT_SIZE.x, RT_SIZE.y);
 
-	uint2 G_SIZE;
+	int2 G_SIZE;
 	g_compact_data.GetDimensions(G_SIZE.x, G_SIZE.y);
 
 	const int2 rt_pixel = DTid.xy;
-	if (greater_equals_any(rt_pixel, RT_SIZE))
+	if (any(rt_pixel >= RT_SIZE))
 		return;
 
 	const float2 G_SCALE = G_SIZE / float2(RT_SIZE);
@@ -47,7 +47,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	float3 normalP = 0;
 	float2 depthP = 0;
-	if (greater_equals(rt_pixel_prev, 0) && less(rt_pixel_prev, RT_SIZE)) {
+	if (all(rt_pixel_prev >= 0) && all(rt_pixel_prev < RT_SIZE)) {
 		fetch_normal_and_linear_z(g_prev_compact_data, g_pixel_prev, normalP, depthP);
 		sample_w = 1;
 	}

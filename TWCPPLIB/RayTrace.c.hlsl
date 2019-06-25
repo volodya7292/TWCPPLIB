@@ -215,7 +215,7 @@ inline void trace_indirect_ray(in Ray ray, out float4 color, out float4 albedo) 
 
 	color = LdotN * shadowMult;
 	albedo = float4(light_info.color, 1) * (diffuse / PI);
-	if (greater(emission.xyz, 0)) {
+	if (all(emission.xyz > 0)) {
 		color += 1;
 		albedo += (emission - albedo) / color;
 	}
@@ -318,18 +318,19 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	rt_direct.GetDimensions(RT_SIZE.x, RT_SIZE.y);
 	g_position.GetDimensions(G_SIZE.x, G_SIZE.y);
 
-	const float2 G_SCALE = G_SIZE / float2(RT_SIZE);
-
+	const uint2 rt_pixel = DTid.xy;
+	if (any(rt_pixel >= RT_SIZE))
+		return;
 
 	rand_init(DTid.x + DTid.y * RT_SIZE.x, renderer.info.z, 16);
 
-	const uint2 g_pixel = select_g_pixel(DTid.xy * G_SCALE, G_SCALE);
-	const uint2 rt_pixel = DTid.xy;
+	const float2 G_SCALE = G_SIZE / float2(RT_SIZE);
+	const uint2 g_pixel = DTid.xy * G_SCALE + G_SCALE / 2;
 
-	//const float2 tex_coord = (float2(DTid.xy) * G_SCALE + G_SCALE / 2.0f) / float2(G_SIZE);
-
-	float4 pos = g_position[g_pixel];//.SampleLevel(sam, tex_coord, 0);
+	float4 pos = g_position[g_pixel];
 	float4 normal, diffuse, specular, emission;
+
+
 
 	if (pos.w == 1 && (input.def_scene_light_count > 0 || input.large_scene_light_count > 0)) { // Not a background pixel
 		normal = g_normal[g_pixel];

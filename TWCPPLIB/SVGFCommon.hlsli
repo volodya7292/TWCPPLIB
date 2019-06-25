@@ -1,19 +1,3 @@
-inline bool less(in int2 v0, in int2 v) {
-	return v0.x < v.x && v0.y < v.y;
-}
-
-inline bool less_any(in int2 v0, in int v) {
-	return v0.x < v || v0.y < v;
-}
-
-inline bool greater_equals(in int2 v0, in int2 v) {
-	return v0.x >= v.x && v0.y >= v.y;
-}
-
-inline bool greater_equals_any(in int2 v0, in int2 v) {
-	return v0.x >= v.x || v0.y >= v.y;
-}
-
 // A simple utility to convert a float to a 2-component octohedral representation packed into one uint
 uint dir_to_oct(float3 normal) {
 	float2 p = normal.xy * (1.0 / dot(abs(normal), 1.0.xxx));

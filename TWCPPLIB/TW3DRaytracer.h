@@ -19,7 +19,7 @@ public:
 	void DenoiseResult(TW3DGraphicsCommandList* CL);
 
 	TW3DRenderTarget *svgf_mo_vec_rt, *svgf_compact_rt, *svgf_prev_compact_rt;
-	TW3DTexture *direct_tex, *indirect_tex, *direct_albedo_tex, *indirect_albedo_tex, *direct_out, *indirect_out;
+	TW3DTexture *direct_in, *indirect_in, *direct_out, *indirect_out;
 
 private:
 	enum RootSignatureParamsRT {
@@ -70,6 +70,7 @@ private:
 		SVGFWF_INDIRECT,
 		SVGFWF_DIRECT_OUT,
 		SVGFWF_INDIRECT_OUT,
+		SVGFWF_DIRECT_FINAL_OUT,
 		SVGFWF_INDIRECT_FINAL_OUT,
 		SVGFWF_PREV_DIRECT,
 		SVGFWF_PREV_INDIRECT,
@@ -87,4 +88,6 @@ private:
 	TW3DTexture *temporal_history;
 	TW3DTexture *detail_sum_direct, *detail_sum_indirect;
 	TW3DTexture *svgf_swap_direct[2], *svgf_swap_indirect[2], *svgf_filtered_direct, *svgf_filtered_indirect;
+
+	const TWT::uint SPATIAL_FILTER_MAX_ITERATIONS = 5;
 };

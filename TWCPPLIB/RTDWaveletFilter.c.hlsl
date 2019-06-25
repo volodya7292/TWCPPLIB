@@ -15,9 +15,10 @@ RWTexture2D<float4> g_detail_sum_direct;
 RWTexture2D<float4> g_detail_sum_indirect;
 RWTexture2D<float4> g_direct_out;
 RWTexture2D<uint4> g_indirect_out;
+RWTexture2D<float4> g_direct_final_out;
 RWTexture2D<float4> g_indirect_final_out;
 
-ConstantBuffer<InputData> input_data;
+ConstantBuffer<InputData> input;
 
 inline float2 weight(float3 normal, float3 prev_normal,
 					float depth, float prev_depth, float depth_max_change,
@@ -39,17 +40,25 @@ inline float2 weight(float3 normal, float3 prev_normal,
 
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
-	uint2 RT_SIZE;
+	int2 RT_SIZE;
 	g_direct.GetDimensions(RT_SIZE.x, RT_SIZE.y);
-	uint2 G_SIZE;
+	int2 G_SIZE;
 	g_compact_data.GetDimensions(G_SIZE.x, G_SIZE.y);
 
 	float2 G_SCALE = G_SIZE / float2(RT_SIZE);
 
-	int2 rt_pixel = DTid.xy;
-	int2 g_pixel = rt_pixel * G_SCALE;
+	int2 rt_pixel, g_pixel;
+	bool same_pixel = true;
+	if (input.iteration == input.max_iterations - 1) {
+		rt_pixel = DTid.xy / G_SCALE;
+		g_pixel = DTid.xy;
+		same_pixel = all(g_pixel == rt_pixel * G_SCALE + G_SCALE / 2);
+	} else {
+		rt_pixel = DTid.xy;
+		g_pixel = DTid.xy * G_SCALE + G_SCALE / 2;
+	}
 
-	if (greater_equals_any(g_pixel, G_SIZE))
+	if (any(g_pixel >= G_SIZE))
 		return;
 
 	const float kernelWeights[3] = { 1.0, 2.0 / 3.0, 1.0 / 6.0 };
@@ -66,6 +75,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	float  rCenter;
 	fetch_normal_and_linear_z(g_compact_data, g_pixel, normalCenter, zCenter, rCenter);
 
+
 	float4 m1_direct = sumDirect;
 	float4 m1_indirect0 = sumIndirect0;
 	float4 m1_indirect1 = sumIndirect1;
@@ -74,17 +84,17 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	float4 m2_indirect1 = sqr(sumIndirect1);
 	float  m_count = 1;
 
-	uint iteration_mul = 1 << input_data.iteration;
+	uint iteration_mul = 1 << input.iteration;
 
 	// 5x5
 	for (int yy = -2; yy <= 2; yy++) {
 		for (int xx = -2; xx <= 2; xx++) {
 			const int2 p = rt_pixel + float2(xx, yy) * iteration_mul;
 
-			if ((xx != 0 || yy != 0) && greater_equals(p, 0) && less(p, RT_SIZE)) {
+			if ((xx != 0 || yy != 0) && all(p >= 0) && all(p < RT_SIZE)) {
 				const float kernel = kernelWeights[abs(xx)] * kernelWeights[abs(yy)];
 
-				const float4 directP   = g_direct[p];
+				const float4 directP = g_direct[p];
 				float4 indirectP0, indirectP1;
 				unpack_f2_16(g_indirect[p], indirectP0, indirectP1);
 
@@ -138,14 +148,19 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	float4 coof_indirect0 = detail_indir0 + clamp(sn_indirect0 - sn_prev_indir0, -sigma_indirect0 * gamma, sigma_indirect0 * gamma);
 	float4 coof_indirect1 = detail_indir1 + clamp(sn_indirect1 - sn_prev_indir1, -sigma_indirect1 * gamma, sigma_indirect1 * gamma);
 
-	g_detail_sum_direct[rt_pixel] = coof_direct;
-	g_detail_sum_indirect[rt_pixel] = pack_f2_16(coof_indirect0, coof_indirect1);
+	if (same_pixel) {
+		g_detail_sum_direct[rt_pixel] = coof_direct;
+		g_detail_sum_indirect[rt_pixel] = pack_f2_16(coof_indirect0, coof_indirect1);
+	}
 
-	if (input_data.iteration == input_data.max_iterations - 1) {
-		g_direct_out[rt_pixel] = sn_direct - coof_direct;
-		g_indirect_out[rt_pixel] = pack_f2_16(sn_indirect0 - coof_indirect0, sn_indirect1 - coof_indirect1);
-		g_indirect_final_out[rt_pixel] = (sn_indirect0 - coof_indirect0) * (sn_indirect1 - coof_indirect1);
-	} else {
+	if (input.iteration == input.max_iterations - 1) {
+		if (same_pixel) {
+			g_direct_out[rt_pixel] = sn_direct - coof_direct;
+			g_indirect_out[rt_pixel] = pack_f2_16(sn_indirect0 - coof_indirect0, sn_indirect1 - coof_indirect1);
+		}
+		g_direct_final_out[g_pixel] = sn_direct - coof_direct;
+		g_indirect_final_out[g_pixel] = (sn_indirect0 - coof_indirect0) * (sn_indirect1 - coof_indirect1);
+	} else if (same_pixel) {
 		g_direct_out[rt_pixel] = sn_direct;
 		g_indirect_out[rt_pixel] = pack_f2_16(sn_indirect0, sn_indirect1);
 	}

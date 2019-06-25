@@ -22,5 +22,5 @@ float4 main(VS_QUAD input) : SV_TARGET
 
 	float4 diffuse = max(5e-3f, g_diffuse[g_pixel] / PI);
 
-	return g_emission[g_pixel] + (rt_direct[rt_pixel] + rt_indirect[rt_pixel]) * diffuse;
+	return g_emission[g_pixel] + (rt_direct[g_pixel] + rt_indirect[g_pixel]) * diffuse;
 }

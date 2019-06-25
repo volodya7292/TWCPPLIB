@@ -38,7 +38,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 			pMax = bbr.pMax.xyz;
 		}
 
-		if (not_equals(pMin, -FLT_MAX) && not_equals(pMax, FLT_MAX)) {
+		if (all(pMin != -FLT_MAX) && all(pMax != FLT_MAX)) {
 			nodes[leaf_parent].bounds.pMin = float4(pMin, 0);
 			nodes[leaf_parent].bounds.pMax = float4(pMax, 0);
 
