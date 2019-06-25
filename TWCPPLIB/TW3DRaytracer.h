@@ -56,7 +56,8 @@ private:
 		SVGFTA_FILTERED_INDIRECT,
 		SVGFTA_MOTION,
 		SVGFTA_COMPACT_DATA,
-		SVGFTA_PREV_COMPACT_DATA
+		SVGFTA_PREV_COMPACT_DATA,
+		SVGFTA_HISTORY,
 	};
 	/*enum RootSignatureParamsSVGFEV {
 		SVGFEV_DIRECT,
@@ -84,6 +85,7 @@ private:
 	TW3DShader *sq_s, *rt_s, *svgf_ta_s, *svgf_wf_s;
 	TW3DComputePipelineState *rt_ps, *svgf_ta_ps, *svgf_wf_ps;
 
+	TW3DTexture *temporal_history;
 	TW3DTexture *detail_sum_direct, *detail_sum_indirect;
 	TW3DTexture *svgf_swap_direct[2], *svgf_swap_indirect[2], *svgf_filtered_direct, *svgf_filtered_indirect;
 	//TW3DRenderTarget* svgf_prev_linear_z_rt;

@@ -21,6 +21,7 @@ namespace TWT {
 	const static DXGI_FORMAT RG32Float = DXGI_FORMAT_R32G32_FLOAT;
 	const static DXGI_FORMAT RGBA32Float = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	const static DXGI_FORMAT RGBA32UInt = DXGI_FORMAT_R32G32B32A32_UINT;
+	const static DXGI_FORMAT R32UInt = DXGI_FORMAT_R32_UINT;
 
 	struct DefaultVertex {
 		DefaultVertex(float x, float y, float z, float u, float v, float nx, float ny, float nz) :

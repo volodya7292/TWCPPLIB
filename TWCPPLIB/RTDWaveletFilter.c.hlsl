@@ -47,7 +47,7 @@ inline float2 weight(float3 normal, float3 prev_normal,
 
 	return float2(
 		w_z * w_n,
-		w_z * w_n * w_d
+		w_z * w_n * w_d + 0.1f
     );
 }
 
@@ -80,9 +80,11 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	fetch_normal_and_linear_z(g_compact_data, g_pixel, normalCenter, zCenter, rCenter);
 
 	float4 m1_direct = sumDirect;
-	float4 m1_indirect = sumIndirect0 + sumIndirect1;
+	float4 m1_indirect0 = sumIndirect0;
+	float4 m1_indirect1 = sumIndirect1;
 	float4 m2_direct = sqr(sumDirect);
-	float4 m2_indirect = sqr(m1_indirect);
+	float4 m2_indirect0 = sqr(sumIndirect0);
+	float4 m2_indirect1 = sqr(sumIndirect1);
 	float  m_count = 1;
 
 	uint iteration_mul = 1 << input_data.iteration;
@@ -109,7 +111,6 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 					normalP, normalCenter,
 					zP.x, zCenter.x, zCenter.y,
 					rCenter, rP,
-					//lumDirectCenter, lumDirectP, lumIndirectCenter, lumIndirectP,
 					length(float2(xx, yy)));
 
 				sumW   += kernel * w;
@@ -117,12 +118,12 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 				sumIndirect0 += kernel * w.x * indirectP0;
 				sumIndirect1 += kernel * w.y * indirectP1;
 
-				const float4 indir = indirectP0 + indirectP1;
-
 				m1_direct += directP;
-				m1_indirect += indir;
+				m1_indirect0 += indirectP0;
+				m1_indirect1 += indirectP1;
 				m2_direct += sqr(directP);
-				m2_indirect += sqr(indir);
+				m2_indirect0 += sqr(indirectP0);
+				m2_indirect1 += sqr(indirectP1);
 				m_count++;
 			}
 		}
@@ -131,22 +132,29 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	const float4 sn_direct   = sumDirect / sumW.x;
 	const float4 sn_indirect0 = sumIndirect0 / sumW.x;
 	const float4 sn_indirect1 = sumIndirect1 / sumW.y;
-	const float4 sn_indirect = sn_indirect0 + sn_indirect1;
+	const float4 sn_indirect = sn_indirect0 * sn_indirect1;
 
 	const float4 sigma_direct   = sqrt(m2_direct / m_count - sqr(m1_direct / m_count));
-	const float4 sigma_indirect = sqrt(m2_indirect / m_count - sqr(m1_indirect / m_count));
-	const float  gamma          = 0.05f;
+	const float4 sigma_indirect0 = sqrt(m2_indirect0 / m_count - sqr(m1_indirect0 / m_count));
+	const float4 sigma_indirect1 = sqrt(m2_indirect1 / m_count - sqr(m1_indirect1 / m_count));
+	const float  gamma          = 0.05;
+
+	float4 sn_prev_indir0, sn_prev_indir1;
+	unpack_f2_16(g_prev_indirect[rt_pixel], sn_prev_indir0, sn_prev_indir1);
+	float4 detail_indir0, detail_indir1;
+	unpack_f2_16(g_detail_sum_indirect[rt_pixel], detail_indir0, detail_indir1);
 
 	float4 coof_direct = g_detail_sum_direct[rt_pixel] + clamp(sn_direct - g_prev_direct[rt_pixel], -sigma_direct * gamma, sigma_direct * gamma);
-	float4 coof_indirect = g_detail_sum_indirect[rt_pixel] + clamp(sn_indirect - g_prev_indirect[rt_pixel], -sigma_indirect * gamma, sigma_indirect * gamma);
+	float4 coof_indirect0 = detail_indir0 + clamp(sn_indirect0 - sn_prev_indir0, -sigma_indirect0 * gamma, sigma_indirect0 * gamma);
+	float4 coof_indirect1 = detail_indir1 + clamp(sn_indirect1 - sn_prev_indir1, -sigma_indirect1 * gamma, sigma_indirect1 * gamma);
 
 	g_detail_sum_direct[rt_pixel] = coof_direct;
-	g_detail_sum_indirect[rt_pixel] = coof_indirect;
+	g_detail_sum_indirect[rt_pixel] = pack_f2_16(coof_indirect0, coof_indirect1);
 
 	if (input_data.iteration == input_data.max_iterations - 1) {
-		g_direct_out[rt_pixel] = sn_direct;
-		g_indirect_out[rt_pixel] = pack_f2_16(sn_indirect0, sn_indirect1);// - coof_indirect;
-		g_indirect_final_out[rt_pixel] = sn_indirect;
+		g_direct_out[rt_pixel] = sn_direct - coof_direct;
+		g_indirect_out[rt_pixel] = pack_f2_16(sn_indirect0 - coof_indirect0, sn_indirect1 - coof_indirect1);
+		g_indirect_final_out[rt_pixel] = (sn_indirect0 - coof_indirect0) * (sn_indirect1 - coof_indirect1);
 	} else {
 		g_direct_out[rt_pixel] = sn_direct;
 		g_indirect_out[rt_pixel] = pack_f2_16(sn_indirect0, sn_indirect1);

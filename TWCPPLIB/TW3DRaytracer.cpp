@@ -71,6 +71,7 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 			TW3DRPTexture(SVGFTA_PREV_COMPACT_DATA, D3D12_SHADER_VISIBILITY_ALL, svgf_ta_s->GetRegister("g_prev_compact_data"s)),
 			TW3DRPTexture(SVGFTA_DIRECT_OUT, D3D12_SHADER_VISIBILITY_ALL, svgf_ta_s->GetRegister("g_direct_out"s), true),
 			TW3DRPTexture(SVGFTA_INDIRECT_OUT, D3D12_SHADER_VISIBILITY_ALL, svgf_ta_s->GetRegister("g_indirect_out"s), true),
+			TW3DRPTexture(SVGFTA_HISTORY, D3D12_SHADER_VISIBILITY_ALL, svgf_ta_s->GetRegister("g_history"s), true),
 		}
 	);
 
@@ -124,6 +125,9 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 	direct_out->Resize(direct_out->GetSize());
 	indirect_out->Resize(direct_out->GetSize());
 
+	temporal_history = ResourceManager->CreateTexture2D(RTSize, TWT::R32UInt, true);
+	temporal_history->InitialState = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+	temporal_history->Resize(temporal_history->GetSize());
 
 	//svgf_linear_z_rt = ResourceManager->CreateRenderTarget(GSize, TWT::RGBA32Float);
 	svgf_mo_vec_rt = ResourceManager->CreateRenderTarget(GSize, TWT::RGBA16Float);
@@ -201,6 +205,8 @@ TW3DRaytracer::~TW3DRaytracer() {
 
 	//delete svgf_prev_linear_z_rt;
 
+	delete temporal_history;
+
 	delete detail_sum_direct;
 	delete detail_sum_indirect;
 
@@ -241,6 +247,8 @@ void TW3DRaytracer::Resize(TWT::uint2 GSize, TWT::uint2 RTSize) {
 		svgf_swap_direct[i]->Resize(RTSize);
 		svgf_swap_indirect[i]->Resize(RTSize);
 	}
+
+	temporal_history->Resize(RTSize);
 
 	//svgf_filtered_fb->Resize(GSize);
 	svgf_filtered_direct->Resize(RTSize);
@@ -312,6 +320,7 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 	CL->BindTexture(SVGFTA_PREV_COMPACT_DATA, svgf_prev_compact_rt);
 	CL->BindTexture(SVGFTA_DIRECT_OUT, svgf_swap_direct[1], true);
 	CL->BindTexture(SVGFTA_INDIRECT_OUT, svgf_swap_indirect[1], true);
+	CL->BindTexture(SVGFTA_HISTORY, temporal_history, true);
 
 	//CL->BindFramebuffer(svgf_swap_fb[1]);
 	//CL->DrawQuad();

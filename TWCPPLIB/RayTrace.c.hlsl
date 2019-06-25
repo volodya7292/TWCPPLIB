@@ -189,7 +189,7 @@ inline bool trace_shadow_ray(in Ray ray, in float light_ray_length) {
 	}
 }
 
-inline float3 trace_indirect_ray(in Ray ray) {
+inline void trace_indirect_ray(in Ray ray, out float4 color, out float4 albedo) {
 	TriangleIntersection inter;
 	inter.init(INTERSECTION_FLAG_TEXCOORD | INTERSECTION_FLAG_NORMAL);
 
@@ -207,19 +207,25 @@ inline float3 trace_indirect_ray(in Ray ray) {
 
 	// Compute our lambertion term (L dot N)
 	//vec3 toLight = normalize(inter.point - ray.origin);
-	const float LdotN = saturate(dot(inter.Normal * normal, to_light.dir));
+	const float LdotN = saturate(dot(inter.Normal * clamp(normal, 0.999, 1), to_light.dir));
 
 	// Shoot our shadow ray.
 	//Intersection shadow = trace_ray(ray);
 	const float shadowMult = trace_shadow_ray(to_light, light_info.ray_length);
 
-	return emission.xyz + LdotN * shadowMult * light_info.color * (diffuse.xyz / PI);
+	color = LdotN * shadowMult;
+	albedo = float4(light_info.color, 1) * (diffuse / PI);
+	if (greater(emission.xyz, 0)) {
+		color += 1;
+		albedo += (emission - albedo) / color;
+	}
+
 	//return diffuse.xyz;
 }
 
 inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float roughness, in float2 rt_pixel_pos) {
 
-	float4 direct, direct_albedo, indirect_albedo;
+	float4 direct;
 	uint4 indirect;
 
 	const float3 to_camera = normalize(camera.pos.xyz - pos);
@@ -244,12 +250,12 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 
 		// Compute direct color.  Split into light and albedo terms for our SVGF filter
 		float3 directColor = shadowMult * light_info.color * NdotL;//(normal + 1.0f) / 2.0f;//shadowMult * NdotL;
-		//directColor = (directColor + (PI / max(5e-3f, diffuse)) * directColor * ggxTerm);
-		const float3 directAlbedo = 0;//ggxTerm;//diffuse / PI;
+		directColor = (directColor + (PI / max(5e-3f, diffuse)) * directColor * ggxTerm);
+		//const float3 directAlbedo = 0;//ggxTerm;//diffuse / PI;
 
-		const bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
+		const bool colorsNan = any(isnan(directColor));// || any(isnan(directAlbedo));
 		direct = float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
-		direct_albedo = float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
+		//direct_albedo = float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
 	}
 
 	// Indirect
@@ -270,7 +276,8 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 		Ray iRay;
 		iRay.origin = pos;
 		iRay.dir = bounceDir;
-		const float3 bounceColor = trace_indirect_ray(iRay);
+		float4 bounceColor, bounceAlbedo;
+		trace_indirect_ray(iRay, bounceColor, bounceAlbedo);
 
 		// Compute diffuse, ggx shading terms
 		NdotL = saturate(dot(normal, bounceDir));
@@ -279,17 +286,16 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 
 		// Split into an incoming light and "indirect albedo" term to help filter illumination despite sampling 2 different lobes
 		const float3 difFinal = 1.0f / max(5e-3f, probDiffuse);                    // Has been divided by difTerm.  Multiplied back post-SVGF
-		const float3 ggxFinal = ggxTerm / (difTerm * (1.0f - probDiffuse));    // Has been divided by difTerm.  Multiplied back post-SVGF
-		const float3 shadeColorDiff = bounceColor * difFinal;
-		const float3 shadeColorSpec = bounceColor * ggxFinal;
+		const float3 ggxFinal = ggxTerm / (difTerm * (1.0f - max(5e-3f, probDiffuse)));    // Has been divided by difTerm.  Multiplied back post-SVGF
+		//const float3 shadeColorDiff = bounceColor * difFinal;
+		//const float3 shadeColorSpec = bounceColor * ggxFinal;
 
-		const bool colorsNan = any(isnan(shadeColorDiff)) || any(isnan(shadeColorSpec));
-		const float4 indirect_f_diff = float4(colorsNan ? float3(0, 0, 0) : shadeColorDiff, 1.0f);
-		const float4 indirect_f_spec = float4(colorsNan ? float3(0, 0, 0) : shadeColorSpec, 1.0f);
+		const float4 indirect_f_diff = float4(difFinal, 1.0f);
+		const float4 indirect_f_spec = float4(any(isnan(ggxFinal)) ? float3(0, 0, 0) : ggxFinal, 1.0f);
 
-		indirect = chooseDiffuse ? pack_f2_16(indirect_f_diff, 0) : pack_f2_16(0, indirect_f_spec);
+		indirect = pack_f2_16((chooseDiffuse ? indirect_f_diff : indirect_f_spec) * bounceColor, bounceAlbedo);
 
-		indirect_albedo = float4(difTerm, 1.0f);
+		//indirect_albedo = float4(difTerm, 1.0f);
 	}
 
 	rt_direct[rt_pixel_pos] = direct;
@@ -337,7 +343,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		specular = g_specular[g_pixel];
 		//emission = g_emission[g_pixel];
 
-		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 1, clamp(specular.a + 0, 0, 1), rt_pixel);
+		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 1, clamp(specular.a + 1, 0, 1), rt_pixel);
 
 	} else { // Background pixel
 		rt_direct[rt_pixel] = float4(0, 0, 0, 1);
