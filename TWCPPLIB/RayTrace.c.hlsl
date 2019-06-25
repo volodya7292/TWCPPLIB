@@ -287,21 +287,15 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 		// Split into an incoming light and "indirect albedo" term to help filter illumination despite sampling 2 different lobes
 		const float3 difFinal = 1.0f / max(5e-3f, probDiffuse);                    // Has been divided by difTerm.  Multiplied back post-SVGF
 		const float3 ggxFinal = ggxTerm / (difTerm * (1.0f - max(5e-3f, probDiffuse)));    // Has been divided by difTerm.  Multiplied back post-SVGF
-		//const float3 shadeColorDiff = bounceColor * difFinal;
-		//const float3 shadeColorSpec = bounceColor * ggxFinal;
 
 		const float4 indirect_f_diff = float4(difFinal, 1.0f);
 		const float4 indirect_f_spec = float4(any(isnan(ggxFinal)) ? float3(0, 0, 0) : ggxFinal, 1.0f);
 
 		indirect = pack_f2_16((chooseDiffuse ? indirect_f_diff : indirect_f_spec) * bounceColor, bounceAlbedo);
-
-		//indirect_albedo = float4(difTerm, 1.0f);
 	}
 
 	rt_direct[rt_pixel_pos] = direct;
-	//rt_direct_albedo[rt_pixel_pos] = direct_albedo;
 	rt_indirect[rt_pixel_pos] = indirect;
-	//rt_indirect_albedo[rt_pixel_pos] = indirect_albedo;
 }
 
 uint2 select_g_pixel(uint2 g_center_p, uint2 kernel) {
@@ -343,7 +337,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		specular = g_specular[g_pixel];
 		//emission = g_emission[g_pixel];
 
-		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 1, clamp(specular.a + 1, 0, 1), rt_pixel);
+		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0, clamp(specular.a + 0, 0, 1), rt_pixel);
 
 	} else { // Background pixel
 		rt_direct[rt_pixel] = float4(0, 0, 0, 1);

@@ -57,7 +57,6 @@ private:
 		SVGFTA_MOTION,
 		SVGFTA_COMPACT_DATA,
 		SVGFTA_PREV_COMPACT_DATA,
-		SVGFTA_HISTORY,
 	};
 	/*enum RootSignatureParamsSVGFEV {
 		SVGFEV_DIRECT,
@@ -88,7 +87,4 @@ private:
 	TW3DTexture *temporal_history;
 	TW3DTexture *detail_sum_direct, *detail_sum_indirect;
 	TW3DTexture *svgf_swap_direct[2], *svgf_swap_indirect[2], *svgf_filtered_direct, *svgf_filtered_indirect;
-	//TW3DRenderTarget* svgf_prev_linear_z_rt;
-	//TW3DFramebuffer *svgf_swap_fb[2], *svgf_filtered_fb;    // direct | indirect
-	//TW3DFramebuffer *svgf_ta_curr_fb, *svgf_ta_prev_fb;     // direct | indirect | moments | history length
 };

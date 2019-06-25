@@ -149,9 +149,9 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	normal_texarr = ResourceManager->CreateTextureArray2D(TWT::uint2(400, 400), material_count, TWT::RGBA32Float);
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] Texture resources initialized."s);
 
-	//diffuse_texarr->Upload2D(L"D:/OptimizedRT_converged.jpg", 0);
-	diffuse_texarr->Upload2D(L"D:/emission.png", 0);
-	diffuse_texarr->Upload2D(L"D:/emission.png", 1);
+	diffuse_texarr->Upload2D(L"D:/OptimizedRT_converged.jpg", 0);
+	//diffuse_texarr->Upload2D(L"D:/emission.png", 0);
+	//diffuse_texarr->Upload2D(L"D:/emission.png", 1);
 	emission_texarr->Upload2D(L"D:/emission.png", 1);
 	//texture->Upload2D(L"D:/тест2.png", 1);
 	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");

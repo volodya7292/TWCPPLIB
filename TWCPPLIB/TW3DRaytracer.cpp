@@ -71,7 +71,6 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 			TW3DRPTexture(SVGFTA_PREV_COMPACT_DATA, D3D12_SHADER_VISIBILITY_ALL, svgf_ta_s->GetRegister("g_prev_compact_data"s)),
 			TW3DRPTexture(SVGFTA_DIRECT_OUT, D3D12_SHADER_VISIBILITY_ALL, svgf_ta_s->GetRegister("g_direct_out"s), true),
 			TW3DRPTexture(SVGFTA_INDIRECT_OUT, D3D12_SHADER_VISIBILITY_ALL, svgf_ta_s->GetRegister("g_indirect_out"s), true),
-			TW3DRPTexture(SVGFTA_HISTORY, D3D12_SHADER_VISIBILITY_ALL, svgf_ta_s->GetRegister("g_history"s), true),
 		}
 	);
 
@@ -320,7 +319,6 @@ void TW3DRaytracer::DenoiseResult(TW3DGraphicsCommandList* CL) {
 	CL->BindTexture(SVGFTA_PREV_COMPACT_DATA, svgf_prev_compact_rt);
 	CL->BindTexture(SVGFTA_DIRECT_OUT, svgf_swap_direct[1], true);
 	CL->BindTexture(SVGFTA_INDIRECT_OUT, svgf_swap_indirect[1], true);
-	CL->BindTexture(SVGFTA_HISTORY, temporal_history, true);
 
 	//CL->BindFramebuffer(svgf_swap_fb[1]);
 	//CL->DrawQuad();
