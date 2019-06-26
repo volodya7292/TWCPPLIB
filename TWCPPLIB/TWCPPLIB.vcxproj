@@ -185,6 +185,7 @@
     <ClInclude Include="TW3DModules.h" />
     <ClInclude Include="TW3DRaytracer.h" />
     <ClInclude Include="TW3DShader.h" />
+    <ClInclude Include="TW3DShaderInput.h" />
     <ClInclude Include="TW3DShaders.h" />
     <ClInclude Include="TW3DSphere.h" />
     <ClInclude Include="TW3DTexture.h" />
@@ -200,7 +201,7 @@
     <ClInclude Include="TW3DRenderer.h" />
     <ClInclude Include="TW3DResource.h" />
     <ClInclude Include="TW3DCommandQueue.h" />
-    <ClInclude Include="TW3DGraphicsCommandList.h" />
+    <ClInclude Include="TW3DCommandList.h" />
     <ClInclude Include="TW3DDescriptorHeap.h" />
     <ClInclude Include="TW3DDevice.h" />
     <ClInclude Include="TW3DEngine.h" />
@@ -243,6 +244,7 @@
     <ClCompile Include="TW3DModules.cpp" />
     <ClCompile Include="TW3DRaytracer.cpp" />
     <ClCompile Include="TW3DShader.cpp" />
+    <ClCompile Include="TW3DShaderInput.cpp" />
     <ClCompile Include="TW3DShaders.cpp" />
     <ClCompile Include="TW3DSphere.cpp" />
     <ClCompile Include="TW3DTexture.cpp" />
@@ -258,7 +260,7 @@
     <ClCompile Include="TW3DRenderer.cpp" />
     <ClCompile Include="TW3DResource.cpp" />
     <ClCompile Include="TW3DCommandQueue.cpp" />
-    <ClCompile Include="TW3DGraphicsCommandList.cpp" />
+    <ClCompile Include="TW3DCommandList.cpp" />
     <ClCompile Include="TW3DDescriptorHeap.cpp" />
     <ClCompile Include="TW3DDevice.cpp" />
     <ClCompile Include="TW3DEngine.cpp" />

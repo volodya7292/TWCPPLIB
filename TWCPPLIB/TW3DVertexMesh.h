@@ -12,7 +12,7 @@ public:
 	TWT::uint GetTriangleCount();
 	TW3DLBVH* GetLBVH();
 
-	void UpdateLBVH(TW3DBuffer* GVB, TWT::uint GVBOffset, TW3DGraphicsCommandList* CommandList = nullptr);
+	void UpdateLBVH(TW3DBuffer* GVB, TWT::uint GVBOffset, TW3DCommandList* CommandList = nullptr);
 
 	std::vector<TW3DVertexBuffer*> VertexBuffers;
 

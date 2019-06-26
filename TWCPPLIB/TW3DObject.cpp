@@ -32,6 +32,6 @@ void TW3DObject::Update() {
 	}
 }
 
-void TW3DObject::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::uint ModelCBRootParameterIndex) {
+void TW3DObject::RecordDraw(TW3DCommandList* CommandList, TWT::uint ModelCBRootParameterIndex) {
 	CommandList->BindConstantBuffer(ModelCBRootParameterIndex, ConstantBuffer);
 }

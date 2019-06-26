@@ -11,12 +11,12 @@ public:
 	void Resize(TWT::uint2 GSize, TWT::uint2 RTSize);
 
 	// CL : Compute command list
-	void TraceRays(TW3DGraphicsCommandList* CL,
+	void TraceRays(TW3DCommandList* CL,
 		TW3DRenderTarget* GPosition, TW3DRenderTarget* GDiffuse, TW3DRenderTarget* GSpecular, TW3DRenderTarget* GNormal, TW3DRenderTarget* GEmission, TW3DTexture* GDepth,
 		TW3DTexture* DiffuseTexArr, TW3DTexture* EmissionTexArr, TW3DTexture* NormalTexArr, TW3DConstantBuffer* RendererInfoCB,
 		TW3DScene* Scene, TW3DScene* LargeScaleScene = nullptr);
 	// CL : Compute command list
-	void DenoiseResult(TW3DGraphicsCommandList* CL);
+	void DenoiseResult(TW3DCommandList* CL);
 
 	TW3DRenderTarget *svgf_mo_vec_rt, *svgf_compact_rt, *svgf_prev_compact_rt;
 	TW3DTexture *direct_in, *indirect_in, *direct_out, *indirect_out;

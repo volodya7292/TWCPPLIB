@@ -53,11 +53,11 @@ void TW3DResource::Create(D3D12_RESOURCE_DESC const& ResourceDescription) {
 	Create();
 }
 
-void TW3DResource::Map(TWT::uint SubResourceIndex, D3D12_RANGE* ReadRange, void** Data) {
+void TW3DResource::Map(TWT::uint SubResourceIndex, const D3D12_RANGE* ReadRange, void** Data) {
 	TWU::SuccessAssert(resource->Map(SubResourceIndex, ReadRange, Data), "TW3DResource::Map"s);
 }
 
-void TW3DResource::Unmap(TWT::uint SubResourceIndex, D3D12_RANGE* WrittenRange) {
+void TW3DResource::Unmap(TWT::uint SubResourceIndex, const D3D12_RANGE* WrittenRange) {
 	resource->Unmap(SubResourceIndex, WrittenRange);
 }
 

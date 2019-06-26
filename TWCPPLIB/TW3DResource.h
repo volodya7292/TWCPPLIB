@@ -20,8 +20,8 @@ public:
 
 	void Create();
 	void Create(D3D12_RESOURCE_DESC const& ResourceDescription);
-	void Map(TWT::uint SubResourceIndex, D3D12_RANGE* ReadRange, void** Data);
-	void Unmap(TWT::uint SubResourceIndex, D3D12_RANGE* WrittenRange);
+	void Map(TWT::uint SubResourceIndex, const D3D12_RANGE* ReadRange, void** Data);
+	void Unmap(TWT::uint SubResourceIndex, const D3D12_RANGE* WrittenRange);
 	void Read(void* Out, TWT::uint ByteOffset, TWT::uint ByteCount);
 
 	static TW3DResource* CreateStaging(TW3DDevice* Device, TWT::uint64 Size);

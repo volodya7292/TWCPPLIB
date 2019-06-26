@@ -20,12 +20,12 @@ private:
 	void CreateGBufferResources();
 	void CreateRTResources();
 
-	void BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarget* ColorOutput, TW3DTexture* Depth);
+	void BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* ColorOutput, TW3DTexture* Depth);
 	void RenderRecordGBuffer();
 
-	TW3DGraphicsCommandList* g_cl = nullptr;    // GBuffer CL
-	TW3DGraphicsCommandList* rt_cl = nullptr;   // Ray tracing CL
-	TW3DGraphicsCommandList* gd_cl = nullptr;   // Ray tracing denoiser CL
+	TW3DCommandList* g_cl = nullptr;    // GBuffer CL
+	TW3DCommandList* rt_cl = nullptr;   // Ray tracing CL
+	TW3DCommandList* gd_cl = nullptr;   // Ray tracing denoiser CL
 
 	// Renderer resources
 	// --------------------------------------------------------------------- 

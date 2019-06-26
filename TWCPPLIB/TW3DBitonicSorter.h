@@ -6,7 +6,7 @@ public:
 	TW3DBitonicSorter(TW3DResourceManager* ResourceManager);
 	~TW3DBitonicSorter();
 
-	void RecordSort(TW3DGraphicsCommandList* CommandList, TW3DBuffer* SortBuffer, TWT::uint ElementCount, bool SortAscending, bool IsPartiallyPreSorted);
+	void RecordSort(TW3DCommandList* CommandList, TW3DBuffer* SortBuffer, TWT::uint ElementCount, bool SortAscending, bool IsPartiallyPreSorted);
 
 private:
 	enum RootSignatureParams {

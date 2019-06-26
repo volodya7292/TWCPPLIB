@@ -39,7 +39,7 @@ TW3DScene::~TW3DScene() {
 	delete collision_world;
 }
 
-void TW3DScene::Bind(TW3DGraphicsCommandList* CommandList, TWT::uint GVBRPI, TWT::uint SceneRTNBRPI, TWT::uint GNBRPI, TWT::uint LSBRPI) {
+void TW3DScene::Bind(TW3DCommandList* CommandList, TWT::uint GVBRPI, TWT::uint SceneRTNBRPI, TWT::uint GNBRPI, TWT::uint LSBRPI) {
 	CommandList->BindBuffer(GVBRPI, gvb);
 	CommandList->BindBuffer(SceneRTNBRPI, LBVH->GetNodeBuffer());
 	CommandList->BindBuffer(GNBRPI, gnb);

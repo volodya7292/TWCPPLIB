@@ -23,23 +23,23 @@ public:
 	TW3DTexture* CreateTexture2D(const TWT::WString& Filename);
 	TW3DTexture* CreateTexture2D(TWT::uint2 Size, DXGI_FORMAT Format, bool UAV = false);
 	TW3DTexture* CreateTextureArray2D(TWT::uint2 Size, TWT::uint Depth, DXGI_FORMAT Format, bool UAV = false);
-	TW3DGraphicsCommandList* CreateDirectCommandList();
-	TW3DGraphicsCommandList* CreateBundleCommandList();
-	TW3DGraphicsCommandList* CreateComputeCommandList();
-	TW3DGraphicsCommandList* CreateCopyCommandList();
-	TW3DGraphicsCommandList* GetTemporaryDirectCommandList();
-	TW3DGraphicsCommandList* GetTemporaryComputeCommandList();
-	TW3DGraphicsCommandList* GetTemporaryCopyCommandList();
-	TW3DCommandQueue* GetCommandListCommandQueue(TW3DGraphicsCommandList* CommandList);
+	TW3DCommandList* CreateDirectCommandList();
+	TW3DCommandList* CreateBundleCommandList();
+	TW3DCommandList* CreateComputeCommandList();
+	TW3DCommandList* CreateCopyCommandList();
+	TW3DCommandList* GetTemporaryDirectCommandList();
+	TW3DCommandList* GetTemporaryComputeCommandList();
+	TW3DCommandList* GetTemporaryCopyCommandList();
+	TW3DCommandQueue* GetCommandListCommandQueue(TW3DCommandList* CommandList);
 
 	void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 
-	bool IsCommandListRunning(TW3DGraphicsCommandList* CommandList);
-	void FlushCommandList(TW3DGraphicsCommandList* CommandList);
+	bool IsCommandListRunning(TW3DCommandList* CommandList);
+	void FlushCommandList(TW3DCommandList* CommandList);
 	void FlushCommandLists();
-	void ExecuteCommandList(TW3DGraphicsCommandList* CommandList);
+	void ExecuteCommandList(TW3DCommandList* CommandList);
 	// Command lists must be of the same type
-	void ExecuteCommandLists(const std::vector<TW3DGraphicsCommandList*>& CommandLists);
+	void ExecuteCommandLists(const std::vector<TW3DCommandList*>& CommandLists);
 
 	TW3DDevice* GetDevice();
 	TW3DDescriptorHeap* GetSVDescriptorHeap();
@@ -48,9 +48,9 @@ public:
 private:
 	TW3DDevice* device;
 	TW3DTempGCL* temp_gcl;
-	TW3DGraphicsCommandList* temp_direct_cl;
-	TW3DGraphicsCommandList* temp_compute_cl;
-	TW3DGraphicsCommandList* temp_copy_cl;
+	TW3DCommandList* temp_direct_cl;
+	TW3DCommandList* temp_compute_cl;
+	TW3DCommandList* temp_copy_cl;
 	TW3DDescriptorHeap* rtv_descriptor_heap;
 	TW3DDescriptorHeap* dsv_descriptor_heap;
 	TW3DDescriptorHeap* srv_descriptor_heap;

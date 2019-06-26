@@ -1,5 +1,6 @@
 #pragma once
 #include "TWTypes.h"
+#include "TW3DRootSignature.h"
 
 class TW3DShader {
 public:
@@ -8,12 +9,14 @@ public:
 	~TW3DShader();
 
 	D3D12_SHADER_BYTECODE GetByteCode();
-
 	TWT::uint GetRegister(TWT::String const& InputVariableName);
 
 private:
+	void init_reflection();
+
+	TWT::String name;
 	ID3D12ShaderReflection* reflection;
 	D3D12_SHADER_BYTECODE bytecode;
+	D3D12_SHADER_DESC desc;
 	bool release_bytecode_data = true;
 };
-

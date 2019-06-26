@@ -6,7 +6,7 @@ public:
 	TW3DTempGCL(TW3DDevice* Device);
 	~TW3DTempGCL();
 
-	TW3DGraphicsCommandList* Get();
+	TW3DCommandList* Get();
 
 	void UpdateSubresources(ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate, D3D12_SUBRESOURCE_DATA* SrcData,
 		TWT::uint SubresourcesCount = 1, TWT::uint64 IntermediateOffset = 0, TWT::uint FirstSubresource = 0);
@@ -18,5 +18,5 @@ public:
 
 private:
 	TW3DCommandQueue* CommandQueue;
-	TW3DGraphicsCommandList* CommandList;
+	TW3DCommandList* CommandList;
 };

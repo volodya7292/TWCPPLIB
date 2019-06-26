@@ -129,9 +129,6 @@
     <ClInclude Include="TW3DFactory.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DGraphicsCommandList.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DRootSignature.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
@@ -231,6 +228,12 @@
     <ClInclude Include="TW3DBlitter.h">
       <Filter>Header Files\TW3DEngine\TW3DModule</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DShaderInput.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DCommandList.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -282,9 +285,6 @@
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
     <ClCompile Include="TW3DFactory.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DGraphicsCommandList.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
     <ClCompile Include="TW3DRootSignature.cpp">
@@ -385,6 +385,12 @@
     </ClCompile>
     <ClCompile Include="TW3DBlitter.cpp">
       <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DShaderInput.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DCommandList.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -4,7 +4,7 @@
 
 TW3DTempGCL::TW3DTempGCL(TW3DDevice* Device) {
 	CommandQueue = new TW3DCommandQueue(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
-	CommandList = new TW3DGraphicsCommandList(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	CommandList = new TW3DCommandList(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 }
 
 TW3DTempGCL::~TW3DTempGCL() {
@@ -12,7 +12,7 @@ TW3DTempGCL::~TW3DTempGCL() {
 	delete CommandQueue;
 }
 
-TW3DGraphicsCommandList* TW3DTempGCL::Get() {
+TW3DCommandList* TW3DTempGCL::Get() {
 	return CommandList;
 }
 

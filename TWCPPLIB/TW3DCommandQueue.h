@@ -1,6 +1,6 @@
 #pragma once
 #include "TW3DDevice.h"
-#include "TW3DGraphicsCommandList.h"
+#include "TW3DCommandList.h"
 
 class TW3DCommandQueue {
 public:
@@ -9,11 +9,11 @@ public:
 
 	ID3D12CommandQueue* Get();
 
-	bool IsCommandListRunning(TW3DGraphicsCommandList* CommandList);
-	void FlushCommandList(TW3DGraphicsCommandList* CommandList);
+	bool IsCommandListRunning(TW3DCommandList* CommandList);
+	void FlushCommandList(TW3DCommandList* CommandList);
 	void FlushCommands();
-	void ExecuteCommandList(TW3DGraphicsCommandList* CommandList);
-	void ExecuteCommandLists(const std::vector<TW3DGraphicsCommandList*>& CommandLists);
+	void ExecuteCommandList(TW3DCommandList* CommandList);
+	void ExecuteCommandLists(const std::vector<TW3DCommandList*>& CommandLists);
 
 	static TW3DCommandQueue* CreateDirect(TW3DDevice* Device);
 	static TW3DCommandQueue* CreateCompute(TW3DDevice* Device);

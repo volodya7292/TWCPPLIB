@@ -8,7 +8,7 @@ public:
 	TW3DScene(TW3DResourceManager* ResourceManager);
 	~TW3DScene();
 
-	void Bind(TW3DGraphicsCommandList* CommandList, TWT::uint GVBRPI, TWT::uint SceneRTNBRPI, TWT::uint GNBRPI, TWT::uint LSBRPI);
+	void Bind(TW3DCommandList* CommandList, TWT::uint GVBRPI, TWT::uint SceneRTNBRPI, TWT::uint GNBRPI, TWT::uint LSBRPI);
 	void AddObject(TW3DObject* Object);
 	void AddLightSource(TW3DLightSource* LightSource);
 	void Update(float DeltaTime);

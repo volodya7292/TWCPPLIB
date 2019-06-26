@@ -20,7 +20,7 @@ namespace TWU {
 
 	D3D12_DESCRIPTOR_RANGE DXDescriptorRange(TWT::uint Register, D3D12_DESCRIPTOR_RANGE_TYPE Type);
 
-	// Implementation of UpdateSubresources from d3dx12.h. Used in TW3DGraphicsCommandList.
+	// Implementation of UpdateSubresources from d3dx12.h. Used in TW3DCommandList.
 	void UpdateSubresourcesImp(ID3D12GraphicsCommandList* commandList, ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate,
 		D3D12_SUBRESOURCE_DATA* SrcData, TWT::uint SubresourcesCount, TWT::uint64 IntermediateOffset, TWT::uint FirstSubresource);
 

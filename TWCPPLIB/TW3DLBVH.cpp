@@ -28,8 +28,8 @@ TW3DBuffer* TW3DLBVH::GetNodeBuffer() {
 	return node_buffer;
 }
 
-void TW3DLBVH::BuildFromTriangles(TW3DBuffer* GVB, TWT::uint GVBOffset, TW3DGraphicsCommandList* CommandList) {
-	TW3DGraphicsCommandList* cl;
+void TW3DLBVH::BuildFromTriangles(TW3DBuffer* GVB, TWT::uint GVBOffset, TW3DCommandList* CommandList) {
+	TW3DCommandList* cl;
 	if (CommandList)
 		cl = CommandList;
 	else
@@ -141,7 +141,7 @@ void TW3DLBVH::BuildFromTriangles(TW3DBuffer* GVB, TWT::uint GVBOffset, TW3DGrap
 	}
 }
 
-void TW3DLBVH::BuildFromLBVHs(TW3DBuffer* GNB, TW3DBuffer* SceneMeshInstancesBuffer, TW3DGraphicsCommandList* CommandList) {
+void TW3DLBVH::BuildFromLBVHs(TW3DBuffer* GNB, TW3DBuffer* SceneMeshInstancesBuffer, TW3DCommandList* CommandList) {
 	TWT::uint gnboffset_count = SceneMeshInstancesBuffer->GetElementCount();
 	bool partially_presorted = true;
 
@@ -162,7 +162,7 @@ void TW3DLBVH::BuildFromLBVHs(TW3DBuffer* GNB, TW3DBuffer* SceneMeshInstancesBuf
 	//gnboffset_buffer->UpdateData(MeshLBVHInstances.data(), gnboffset_count);
 
 
-	TW3DGraphicsCommandList* cl;
+	TW3DCommandList* cl;
 	if (CommandList)
 		cl = CommandList;
 	else

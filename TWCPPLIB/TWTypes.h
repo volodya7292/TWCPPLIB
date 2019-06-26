@@ -38,7 +38,7 @@ namespace TWT {
 
 		String& operator  = (String const& t) = default;
 		String& operator += (String const& t);
-		bool operator==(String const& other) const;
+		bool    operator == (String const& other) const;
 
 	private:
 		std::string data;
@@ -65,7 +65,7 @@ namespace TWT {
 
 		WString& operator  = (WString const& Str) = default;
 		WString& operator += (WString const& Str);
-		bool operator==(WString const& other) const;
+		bool     operator == (WString const& other) const;
 
 	private:
 		std::wstring data;
@@ -126,4 +126,4 @@ namespace std {
 			return hash_fn(str.GetData());
 		}
 	};
-}
+}  // namespace std

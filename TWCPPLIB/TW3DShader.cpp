@@ -10,7 +10,9 @@
 //#include "dxc/DXIL/DxilUtil.h"
 
 
-TW3DShader::TW3DShader(TWT::String const& Filename) {
+TW3DShader::TW3DShader(TWT::String const& Filename) :
+	name(Filename) {
+
 	TWT::uint size;
 	TWT::byte* data = TWU::ReadFileBytes(Filename, size);
 	bytecode.BytecodeLength = size;
@@ -37,14 +39,16 @@ TW3DShader::TW3DShader(TWT::String const& Filename) {
 
 
 
-	TWU::SuccessAssert(D3DReflect(data, size, IID_PPV_ARGS(&reflection)), "Reflect shader failed: "s + Filename);
+	init_reflection();
 }
 
-TW3DShader::TW3DShader(D3D12_SHADER_BYTECODE const& ByteCode, TWT::String const& ShaderName) {
+TW3DShader::TW3DShader(D3D12_SHADER_BYTECODE const& ByteCode, TWT::String const& ShaderName) :
+	name(ShaderName) {
+
 	release_bytecode_data = false;
 	bytecode = ByteCode;
 
-	TWU::SuccessAssert(D3DReflect(ByteCode.pShaderBytecode, ByteCode.BytecodeLength, IID_PPV_ARGS(&reflection)), "Reflect shader failed: "s + ShaderName);
+	init_reflection();
 }
 
 TW3DShader::~TW3DShader() {
@@ -60,8 +64,22 @@ D3D12_SHADER_BYTECODE TW3DShader::GetByteCode() {
 
 TWT::uint TW3DShader::GetRegister(TWT::String const& InputVariableName) {
 	D3D12_SHADER_INPUT_BIND_DESC desc;
+	
+	ID3D11ShaderReflectionConstantBuffer* d;
+	
+
+		
+
 	TWU::SuccessAssert(reflection->GetResourceBindingDescByName(InputVariableName.ToCharArray(), &desc),
 		"TW3DShader::GetRegister, GetResourceBindingDescByName \'"s + InputVariableName + "\'"s);
 
+	if (InputVariableName == "input"s)
+		TWU::CPrintln(desc.Type);
+
 	return desc.BindPoint;
+}
+
+void TW3DShader::init_reflection() {
+	TWU::SuccessAssert(D3DReflect(bytecode.pShaderBytecode, bytecode.BytecodeLength, IID_PPV_ARGS(&reflection)), "Reflect shader failed: "s + name);
+	TWU::SuccessAssert(reflection->GetDesc(&desc), "Failed to get shader reflection desc: "s + name);	
 }

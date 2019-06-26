@@ -83,40 +83,40 @@ TW3DTexture* TW3DResourceManager::CreateTextureArray2D(TWT::uint2 Size, TWT::uin
 	return texture;
 }
 
-TW3DGraphicsCommandList* TW3DResourceManager::CreateDirectCommandList() {
-	return TW3DGraphicsCommandList::CreateDirect(device);
+TW3DCommandList* TW3DResourceManager::CreateDirectCommandList() {
+	return TW3DCommandList::CreateDirect(device);
 }
 
-TW3DGraphicsCommandList* TW3DResourceManager::CreateBundleCommandList() {
-	return TW3DGraphicsCommandList::CreateBundle(device);
+TW3DCommandList* TW3DResourceManager::CreateBundleCommandList() {
+	return TW3DCommandList::CreateBundle(device);
 }
 
-TW3DGraphicsCommandList* TW3DResourceManager::CreateComputeCommandList() {
-	return TW3DGraphicsCommandList::CreateCompute(device);
+TW3DCommandList* TW3DResourceManager::CreateComputeCommandList() {
+	return TW3DCommandList::CreateCompute(device);
 }
 
-TW3DGraphicsCommandList* TW3DResourceManager::CreateCopyCommandList() {
-	return TW3DGraphicsCommandList::CreateCopy(device);
+TW3DCommandList* TW3DResourceManager::CreateCopyCommandList() {
+	return TW3DCommandList::CreateCopy(device);
 }
 
-TW3DGraphicsCommandList* TW3DResourceManager::GetTemporaryDirectCommandList() {
+TW3DCommandList* TW3DResourceManager::GetTemporaryDirectCommandList() {
 	temp_direct_cl->Reset();
 	temp_direct_cl->BindResources(this);
 	return temp_direct_cl;
 }
 
-TW3DGraphicsCommandList* TW3DResourceManager::GetTemporaryComputeCommandList() {
+TW3DCommandList* TW3DResourceManager::GetTemporaryComputeCommandList() {
 	temp_compute_cl->Reset();
 	temp_compute_cl->BindResources(this);
 	return temp_compute_cl;
 }
 
-TW3DGraphicsCommandList* TW3DResourceManager::GetTemporaryCopyCommandList() {
+TW3DCommandList* TW3DResourceManager::GetTemporaryCopyCommandList() {
 	temp_copy_cl->Reset();
 	return temp_copy_cl;
 }
 
-TW3DCommandQueue* TW3DResourceManager::GetCommandListCommandQueue(TW3DGraphicsCommandList* CommandList) {
+TW3DCommandQueue* TW3DResourceManager::GetCommandListCommandQueue(TW3DCommandList* CommandList) {
 	switch (CommandList->GetType()) {
 	case D3D12_COMMAND_LIST_TYPE_COMPUTE:
 		return compute_command_queue;
@@ -133,11 +133,11 @@ void TW3DResourceManager::ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE
 	temp_gcl->Execute();
 }
 
-bool TW3DResourceManager::IsCommandListRunning(TW3DGraphicsCommandList* CommandList) {
+bool TW3DResourceManager::IsCommandListRunning(TW3DCommandList* CommandList) {
 	return GetCommandListCommandQueue(CommandList)->IsCommandListRunning(CommandList);
 }
 
-void TW3DResourceManager::FlushCommandList(TW3DGraphicsCommandList* CommandList) {
+void TW3DResourceManager::FlushCommandList(TW3DCommandList* CommandList) {
 	GetCommandListCommandQueue(CommandList)->FlushCommandList(CommandList);
 }
 
@@ -148,11 +148,11 @@ void TW3DResourceManager::FlushCommandLists() {
 	
 }
 
-void TW3DResourceManager::ExecuteCommandList(TW3DGraphicsCommandList* CommandList) {
+void TW3DResourceManager::ExecuteCommandList(TW3DCommandList* CommandList) {
 	GetCommandListCommandQueue(CommandList)->ExecuteCommandList(CommandList);
 }
 
-void TW3DResourceManager::ExecuteCommandLists(const std::vector<TW3DGraphicsCommandList*>& CommandLists) {
+void TW3DResourceManager::ExecuteCommandLists(const std::vector<TW3DCommandList*>& CommandLists) {
 	GetCommandListCommandQueue(CommandLists[0])->ExecuteCommandLists(CommandLists);
 }
 

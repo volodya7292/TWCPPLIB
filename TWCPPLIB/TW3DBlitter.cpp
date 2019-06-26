@@ -24,7 +24,7 @@ TW3DBlitter::~TW3DBlitter() {
 	delete ps;
 }
 
-void TW3DBlitter::Blit(TW3DGraphicsCommandList* CL, TW3DRenderTarget* RenderTarget, TW3DTexture* Texture) {
+void TW3DBlitter::Blit(TW3DCommandList* CL, TW3DRenderTarget* RenderTarget, TW3DTexture* Texture) {
 	CL->SetPipelineState(ps);
 	CL->SetViewportScissor(RenderTarget->GetSize());
 	CL->BindTexture(0, Texture);
@@ -32,7 +32,7 @@ void TW3DBlitter::Blit(TW3DGraphicsCommandList* CL, TW3DRenderTarget* RenderTarg
 	CL->DrawQuad();
 }
 
-void TW3DBlitter::Blit(TW3DGraphicsCommandList* CL, TW3DRenderTarget* SrcRenderTarget, TW3DRenderTarget* DstRenderTarget) {
+void TW3DBlitter::Blit(TW3DCommandList* CL, TW3DRenderTarget* SrcRenderTarget, TW3DRenderTarget* DstRenderTarget) {
 	CL->ResourceBarrier(SrcRenderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
 	CL->ResourceBarrier(DstRenderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST);
 	CL->CopyTextureRegion(DstRenderTarget, SrcRenderTarget);

@@ -28,11 +28,11 @@ ID3D12CommandQueue* TW3DCommandQueue::Get() {
 	return command_queue;
 }
 
-bool TW3DCommandQueue::IsCommandListRunning(TW3DGraphicsCommandList* CommandList) {
+bool TW3DCommandQueue::IsCommandListRunning(TW3DCommandList* CommandList) {
 	return fence->GetCompletedValue() < CommandList->SignalValue;
 }
 
-void TW3DCommandQueue::FlushCommandList(TW3DGraphicsCommandList* CommandList) {
+void TW3DCommandQueue::FlushCommandList(TW3DCommandList* CommandList) {
 	if (fence->GetCompletedValue() < CommandList->SignalValue) {
 		HANDLE fence_event = nullptr;
 		TWU::SuccessAssert(fence->SetEventOnCompletion(CommandList->SignalValue, fence_event), "TW3DCommandQueue::FlushCommandList "s + CommandList->SignalValue);
@@ -50,7 +50,7 @@ void TW3DCommandQueue::FlushCommands() {
 	}
 }
 
-void TW3DCommandQueue::ExecuteCommandList(TW3DGraphicsCommandList* CommandList) {
+void TW3DCommandQueue::ExecuteCommandList(TW3DCommandList* CommandList) {
 	FlushCommands();
 	CommandList->SignalValue = ++fence_flush_value;
 
@@ -59,7 +59,7 @@ void TW3DCommandQueue::ExecuteCommandList(TW3DGraphicsCommandList* CommandList) 
 	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value), "TW3DCommandQueue::ExecuteCommandList"s);
 }
 
-void TW3DCommandQueue::ExecuteCommandLists(const std::vector<TW3DGraphicsCommandList*>& CommandLists) {
+void TW3DCommandQueue::ExecuteCommandLists(const std::vector<TW3DCommandList*>& CommandLists) {
 	FlushCommands();
 	fence_flush_value++;
 

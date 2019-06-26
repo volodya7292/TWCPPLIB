@@ -10,7 +10,7 @@ void TW3DGeometry::Update() {
 	TW3DObject::Update();
 }
 
-void TW3DGeometry::RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::uint ModelCBRootParameterIndex) {
+void TW3DGeometry::RecordDraw(TW3DCommandList* CommandList, TWT::uint ModelCBRootParameterIndex) {
 	TW3DObject::RecordDraw(CommandList, ModelCBRootParameterIndex);
 }
 

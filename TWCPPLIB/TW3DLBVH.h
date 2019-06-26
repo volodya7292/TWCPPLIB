@@ -37,8 +37,8 @@ public:
 	TWT::uint GetNodeCount();
 	TW3DBuffer* GetNodeBuffer();
 
-	void BuildFromTriangles(TW3DBuffer* GVB, TWT::uint GVBOffset, TW3DGraphicsCommandList* CommandList = nullptr);
-	void BuildFromLBVHs(TW3DBuffer* GNB, TW3DBuffer* SceneMeshInstancesBuffer, TW3DGraphicsCommandList* CommandList);
+	void BuildFromTriangles(TW3DBuffer* GVB, TWT::uint GVBOffset, TW3DCommandList* CommandList = nullptr);
+	void BuildFromLBVHs(TW3DBuffer* GNB, TW3DBuffer* SceneMeshInstancesBuffer, TW3DCommandList* CommandList);
 
 private:
 	TW3DResourceManager* resource_manager;

@@ -1,6 +1,6 @@
 #pragma once
 #include "TW3DSwapChain.h"
-#include "TW3DGraphicsCommandList.h"
+#include "TW3DCommandList.h"
 #include "TW3DScene.h"
 
 class TW3DRenderer {
@@ -26,7 +26,7 @@ protected:
 	TWT::uint Width = 0;
 	TWT::uint Height = 0;
 
-	std::vector<TW3DGraphicsCommandList*> command_lists;
-	TW3DGraphicsCommandList *record_cl = nullptr, *execute_cl = nullptr;
+	std::vector<TW3DCommandList*> command_lists;
+	TW3DCommandList *record_cl = nullptr, *execute_cl = nullptr;
 	TWT::uint current_record_index = 0;
 };

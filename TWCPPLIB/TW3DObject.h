@@ -9,7 +9,7 @@ public:
 	virtual ~TW3DObject();
 
 	virtual void Update();
-	virtual void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::uint ModelCBRootParameterIndex);
+	virtual void RecordDraw(TW3DCommandList* CommandList, TWT::uint ModelCBRootParameterIndex);
 
 	virtual std::vector<TW3DVertexMeshInstance>& GetVertexMeshInstances() = 0;
 

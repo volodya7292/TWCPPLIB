@@ -7,9 +7,9 @@ public:
 	~TW3DBlitter();
 
 	// CL : Graphics command list
-	void Blit(TW3DGraphicsCommandList* CL, TW3DRenderTarget* RenderTarget, TW3DTexture* Texture);
+	void Blit(TW3DCommandList* CL, TW3DRenderTarget* RenderTarget, TW3DTexture* Texture);
 	// CL : Graphics command list
-	void Blit(TW3DGraphicsCommandList* CL, TW3DRenderTarget* SrcRenderTarget, TW3DRenderTarget* DstRenderTarget);
+	void Blit(TW3DCommandList* CL, TW3DRenderTarget* SrcRenderTarget, TW3DRenderTarget* DstRenderTarget);
 
 private:
 	TW3DGraphicsPipelineState* ps;

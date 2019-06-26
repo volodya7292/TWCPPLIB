@@ -7,7 +7,7 @@ public:
 	~TW3DGeometry() override = default;
 
 	void Update() override;
-	void RecordDraw(TW3DGraphicsCommandList* CommandList, TWT::uint ModelCBRootParameterIndex) override;
+	void RecordDraw(TW3DCommandList* CommandList, TWT::uint ModelCBRootParameterIndex) override;
 
 	std::vector<TW3DVertexMeshInstance>& GetVertexMeshInstances() override;
 

@@ -178,7 +178,7 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	ray_tracer->Resize(TWT::uint2(Width, Height), rt_size);
 }
 
-void TW3DDefaultRenderer::BlitOutput(TW3DGraphicsCommandList* cl, TW3DRenderTarget* ColorOutput, TW3DTexture* Depth) {
+void TW3DDefaultRenderer::BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* ColorOutput, TW3DTexture* Depth) {
 	cl->ResourceBarriers({
 		TW3DTransitionBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET),
 		TW3DTransitionBarrier(ray_tracer->direct_in, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
