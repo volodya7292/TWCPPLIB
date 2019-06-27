@@ -51,6 +51,9 @@ void TW3DCommandQueue::FlushCommands() {
 }
 
 void TW3DCommandQueue::ExecuteCommandList(TW3DCommandList* CommandList) {
+	if (CommandList->IsEmpty())
+		return;
+
 	FlushCommands();
 	CommandList->SignalValue = ++fence_flush_value;
 

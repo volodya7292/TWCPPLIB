@@ -4,7 +4,7 @@
 
 class TW3DRenderTarget : public TW3DResource {
 public:
-	TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap);
+	TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TW3DDescriptorHeap* SRVDescriptorHeap);
 	TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TW3DDescriptorHeap* SRVDescriptorHeap, DXGI_FORMAT Format, TWT::float4 ClearValue = TWT::float4(-1));
 	~TW3DRenderTarget() final;
 

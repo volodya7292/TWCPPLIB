@@ -1,10 +1,11 @@
 #include "pch.h"
 #include "TW3DRenderTarget.h"
 
-TW3DRenderTarget::TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* rtv_descriptor_heap) :
-	TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT)), rtv_descriptor_heap(rtv_descriptor_heap)
+TW3DRenderTarget::TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* rtv_descriptor_heap, TW3DDescriptorHeap* srv_descriptor_heap) :
+	TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT)), rtv_descriptor_heap(rtv_descriptor_heap), srv_descriptor_heap(srv_descriptor_heap)
 {
 	RTVIndex = rtv_descriptor_heap->Allocate();
+	SRVIndex = srv_descriptor_heap->Allocate();
 }
 
 TW3DRenderTarget::TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* rtv_descriptor_heap, TW3DDescriptorHeap* srv_descriptor_heap, DXGI_FORMAT Format, TWT::float4 ClearValue) :
@@ -36,6 +37,15 @@ D3D12_GPU_DESCRIPTOR_HANDLE TW3DRenderTarget::GetGPUSRVHandle() {
 
 void TW3DRenderTarget::Create(ID3D12Resource* Buffer) {
 	resource = Buffer;
+	desc = Buffer->GetDesc();
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvdesc = {};
+	srvdesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvdesc.Format = desc.Format;
+	srvdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvdesc.Texture2D.MipLevels = 1;
+
+	device->CreateShaderResourceView(resource, &srvdesc, srv_descriptor_heap->GetCPUHandle(SRVIndex));
 	device->CreateRenderTargetView(resource, GetCPURTVHandle());
 }
 

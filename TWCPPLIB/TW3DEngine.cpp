@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TW3DEngine.h"
-#include "TW3DDevice.h"
 #include "TW3DSwapChain.h"
+#include "TW3DSCFrame.h"
 #include "TW3DShaders.h"
 #include "TW3DModules.h"
 #include "TW3DPrimitives.h"
@@ -19,7 +19,7 @@ static TW3D::CharHandler          on_char;
 static std::vector<bool> KeysDown(1024);
 
 static const TWT::uint engine_thread_count = 2;
-
+static const TWT::uint cl_record_thread_count = TW3DSwapChain::BufferCount;
 static std::vector<std::thread>    threads;
 static std::mutex                  resize_mutex;
 
@@ -28,21 +28,22 @@ static TW3DResourceManager*    resource_manager;
 
 static TWT::uint      width, height;
 static TWT::String    title;
-static bool      fullscreen = false;
+static bool           fullscreen = false;
 static TWT::uint      additional_thread_count;
 
-static bool      initialized = false, running, minimized = false;
-static HWND           hwnd;
+static bool    initialized = false, running, minimized = false;
+static HWND    hwnd;
 
-static TWT::uint      current_frame_index;
+static TWT::uint    current_frame_index;
 
 static TW3DFactory*      factory;
 static TW3DAdapter*      adapter;
 static TW3DDevice*       device;
 static TW3DSwapChain*    swapChain;
 
-static std::vector<TW3DRenderTarget*>    renderTargets(TW3DSwapChain::BufferCount);
-static TW3DTexture*                 depthStencil;
+static std::vector<TW3DSCFrame*>    frames(TW3DSwapChain::BufferCount);
+//static std::vector<TW3DRenderTarget*> renderTargets(TW3DSwapChain::BufferCount);
+//static TW3DTexture*                 depthStencil;
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -146,11 +147,8 @@ void init_dx12() {
 	logger->LogInfo("DirectX Stage 5 initialized");
 
 	for (int i = 0; i < TW3DSwapChain::BufferCount; i++)
-		renderTargets[i] = resource_manager->CreateRenderTarget(swapChain->GetBuffer(i));
+		frames[i] = new TW3DSCFrame(resource_manager, swapChain->GetBuffer(i));
 	logger->LogInfo("DirectX Stage 6 initialized");
-
-	depthStencil = resource_manager->CreateDepthStencilTexture(TWT::uint2(width, height));
-	logger->LogInfo("DirectX Stage 7 initialized");
 
 	current_frame_index = swapChain->GetCurrentBufferIndex();
 	logger->LogInfo("DirectX Stage 8 initialized");
@@ -224,20 +222,16 @@ void update() {
 }
 
 void render() {
-	renderer->RecordBeforeExecution();
-	renderer->Execute(swapChain->GetCurrentBufferIndex());
+	//renderer->RecordBeforeExecution();
+	renderer->Execute(frames[swapChain->GetCurrentBufferIndex()]);
 	swapChain->Present();
 }
 
 TWT::uint thread_tick(TWT::uint thread_id, TWT::uint thread_count) {
-	if (thread_id == 0) { // Command list record
-		synchronized(resize_mutex) {
-			for (size_t i = 0; i < TW3DSwapChain::BufferCount; i++)
-				renderer->Record(i, renderTargets[i], depthStencil);
-			renderer->AdjustRecordIndex();
-		}
+	if (thread_id < cl_record_thread_count) { // Command list record
+		frames[thread_id]->RecordCommandLists();
 		return 30;
-	} else if (thread_id == 1) {
+	} else if (thread_id == cl_record_thread_count + 1) {
 		HRESULT remove_reason = device->GetRemoveReason();
 		if (FAILED(remove_reason)) {
 			logger->LogError("Device removed: "s + TWU::HResultToWString(remove_reason).Multibyte());
@@ -263,16 +257,18 @@ void on_resize() {
 		width = std::max(clientRect.right - clientRect.left, 1L);
 		height = std::max(clientRect.bottom - clientRect.top, 1L);
 
-		for (UINT n = 0; n < TW3DSwapChain::BufferCount; n++)
-			renderTargets[n]->Release();
-		depthStencil->Release();
+		for (UINT i = 0; i < TW3DSwapChain::BufferCount; i++) {
+			frames[i]->RenderTarget->Release();
+			frames[i]->ClearCommandLists();
+		}
 
 		swapChain->Resize(width, height);
 		current_frame_index = swapChain->GetCurrentBufferIndex();
 
-		for (UINT n = 0; n < TW3DSwapChain::BufferCount; n++)
-			renderTargets[n]->Create(swapChain->GetBuffer(n));
-		depthStencil->CreateDepthStencil(TWT::uint2(width, height));
+		for (UINT i = 0; i < TW3DSwapChain::BufferCount; i++) {
+			frames[i]->RenderTarget->Create(swapChain->GetBuffer(i));
+			renderer->InitializeFrame(frames[i]);
+		}
 
 		logger->LogInfo("[on_resize] Render target resized to "s + width + "x"s + height);
 
@@ -291,7 +287,7 @@ void main_loop() {
 
 	running = true;
 
-	TWT::uint total_thread_count = engine_thread_count + additional_thread_count;
+	TWT::uint total_thread_count = engine_thread_count + cl_record_thread_count + additional_thread_count;
 	for (size_t i = 0; i < total_thread_count; i++) {
 		std::thread thread([i, total_thread_count]() {
 			while (running) {
@@ -329,16 +325,16 @@ void main_loop() {
 }
 
 void cleanup() {
-	if (swapChain->GetFullscreen())
-		swapChain->SetFullscreen(false);
+	if (swapChain->GetFullScreen())
+		swapChain->SetFullScreen(false);
 
 	delete factory;
 	delete adapter;
 	delete device;
 	delete swapChain;
-	delete depthStencil;
+	
 	for (int i = 0; i < TW3DSwapChain::BufferCount; ++i)
-		delete renderTargets[i];
+		delete frames[i];
 
 	TW3DPrimitives::Release();
 	TW3DShaders::Release();
@@ -413,7 +409,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			minimized = false;
 
 		if (swapChain) {
-			bool govno = swapChain->GetFullscreen();
+			bool govno = swapChain->GetFullScreen();
 			if (fullscreen != govno) {
 				fullscreen = govno;
 				on_resize();
@@ -459,7 +455,7 @@ bool TW3D::GetFullScreen() {
 void TW3D::SetFullScreen(bool FullScreen) {
 	if (fullscreen != FullScreen) {
 		fullscreen = FullScreen;
-		swapChain->SetFullscreen(fullscreen);
+		swapChain->SetFullScreen(fullscreen);
 		logger->LogInfo("Fullscreen: "s + (fullscreen ? "On"s : "Off"s));
 		on_resize();
 	}
@@ -517,6 +513,8 @@ void TW3D::SetWindowTitle(const TWT::String& WindowTitle) {
 void TW3D::SetRenderer(TW3DRenderer* Renderer) {
 	renderer = Renderer;
 	renderer->Initialize(resource_manager, swapChain, width, height);
+	for (int i = 0; i < TW3DSwapChain::BufferCount; i++)
+		renderer->InitializeFrame(frames[i]);
 	logger->LogInfo("[SetRenderer] Renderer initialized. Resizing renderer to "s + width + "x"s + height);
 	renderer->Resize(width, height);
 	logger->LogInfo("[SetRenderer] Renderer resized."s);

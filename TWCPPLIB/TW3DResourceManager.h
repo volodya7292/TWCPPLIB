@@ -8,6 +8,13 @@
 #include "TW3DCommandQueue.h"
 #include "TW3DTypes.h"
 
+enum TW3DCommandListType {
+	TW3D_CL_DIRECT,
+	TW3D_CL_COMPUTE,
+	TW3D_CL_COPY,
+	TW3D_CL_BUNDLE,
+};
+
 class TW3DResourceManager {
 public:
 	TW3DResourceManager(TW3DDevice* Device);
@@ -23,14 +30,13 @@ public:
 	TW3DTexture* CreateTexture2D(const TWT::WString& Filename);
 	TW3DTexture* CreateTexture2D(TWT::uint2 Size, DXGI_FORMAT Format, bool UAV = false);
 	TW3DTexture* CreateTextureArray2D(TWT::uint2 Size, TWT::uint Depth, DXGI_FORMAT Format, bool UAV = false);
-	TW3DCommandList* CreateDirectCommandList();
-	TW3DCommandList* CreateBundleCommandList();
-	TW3DCommandList* CreateComputeCommandList();
-	TW3DCommandList* CreateCopyCommandList();
+	TW3DCommandList* CreateCommandList(TW3DCommandListType Type);
 	TW3DCommandList* GetTemporaryDirectCommandList();
 	TW3DCommandList* GetTemporaryComputeCommandList();
 	TW3DCommandList* GetTemporaryCopyCommandList();
 	TW3DCommandQueue* GetCommandListCommandQueue(TW3DCommandList* CommandList);
+
+	TW3DCommandList* RequestCommandList(TWT::String const& Name, TW3DCommandListType Type);
 
 	void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 
@@ -58,4 +64,6 @@ private:
 	TW3DCommandQueue* direct_command_queue;
 	TW3DCommandQueue* compute_command_queue;
 	TW3DCommandQueue* copy_command_queue;
+
+	std::unordered_map<TWT::String, TW3DCommandList*> command_lists;
 };

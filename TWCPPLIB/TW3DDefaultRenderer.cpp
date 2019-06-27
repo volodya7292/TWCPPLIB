@@ -15,9 +15,9 @@ TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete gbuffer_ps;
 	delete blit_ps;
 
-	delete rt_cl;
-	delete g_cl;
-	delete gd_cl;
+	//delete rt_cl;
+	//delete g_cl;
+	//delete gd_cl;
 
 	delete info_cb;
 
@@ -121,13 +121,47 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 	g_emission = ResourceManager->CreateRenderTarget(TWT::uint2(Width, Height), TWT::RGBA8Unorm);
 	g_depth = ResourceManager->CreateDepthStencilTexture(TWT::uint2(Width, Height));
 
-	g_cl = ResourceManager->CreateDirectCommandList();
-	gd_cl = ResourceManager->CreateDirectCommandList();
+	//g_cl = ResourceManager->CreateDirectCommandList();
+	//gd_cl = ResourceManager->CreateDirectCommandList();
 }
 
 void TW3DDefaultRenderer::CreateRTResources() {
-	rt_cl = ResourceManager->CreateComputeCommandList();
+	//rt_cl = ResourceManager->CreateCommandList(TW3D_CL_COMPUTE);
 	ray_tracer = new TW3DRaytracer(ResourceManager, TWT::uint2(Width, Height), TWT::uint2(Width, Height));
+}
+
+void TW3DDefaultRenderer::record_g_buffer(TW3DCommandList* cl) {
+	cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	cl->SetPipelineState(gbuffer_ps);
+
+	cl->ResourceBarrier(ray_tracer->svgf_mo_vec_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	cl->ResourceBarrier(ray_tracer->svgf_compact_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	cl->ResourceBarrier(ray_tracer->svgf_prev_compact_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+	cl->SetRenderTargets({ g_position, g_normal, g_diffuse, g_specular, g_emission, ray_tracer->svgf_mo_vec_rt, ray_tracer->svgf_compact_rt }, g_depth);
+	cl->ClearRTV(ray_tracer->svgf_compact_rt);
+	cl->ClearRTV(g_emission);
+	cl->ClearRTV(g_position);
+	cl->ClearRTV(g_diffuse);
+	cl->ClearDSVDepth(g_depth);
+	cl->SetViewport(&viewport);
+	cl->SetScissor(&scissor);
+
+	cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, Scene->Camera);
+	cl->BindCameraPrevCBV(GBUFFER_VERTEX_PREV_CAMERA_CB, Scene->Camera);
+	cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, Scene->Camera);
+	cl->BindConstantBuffer(GBUFFER_PIXEL_RENDERER_CB, info_cb);
+	cl->BindTexture(GBUFFER_PIXEL_DIFFUSE_TEXTURE, diffuse_texarr);
+	cl->BindTexture(GBUFFER_PIXEL_SPECULAR_TEXTURE, specular_texarr);
+	cl->BindTexture(GBUFFER_PIXEL_EMISSION_TEXTURE, emission_texarr);
+	cl->BindTexture(GBUFFER_PIXEL_NORMAL_TEXTURE, normal_texarr);
+
+	for (TW3DObject* object : Scene->Objects)
+		cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
+
+	cl->ResourceBarrier(ray_tracer->svgf_mo_vec_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	cl->ResourceBarrier(ray_tracer->svgf_compact_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	cl->ResourceBarrier(ray_tracer->svgf_prev_compact_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
 
 void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height) {
@@ -157,6 +191,25 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	//texture = ResourceManager->CreateTexture2D(L"D:/тест.png");
 }
 
+
+void TW3DDefaultRenderer::InitializeFrame(TW3DSCFrame* Frame) {
+	Frame->RequestCommandList("GBuffer"s, TW3D_CL_DIRECT, [&](TW3DCommandList* CommandList) { record_g_buffer(CommandList); });
+
+	auto rt_cl = Frame->RequestCommandList("RayTrace"s, TW3D_CL_COMPUTE);
+	rt_cl->Reset();
+	rt_cl->BindResources(ResourceManager);
+	ray_tracer->TraceRays(rt_cl, g_position, g_diffuse, g_specular, g_normal, g_emission, g_depth, diffuse_texarr, emission_texarr, normal_texarr, info_cb, Scene, LargeScaleScene);
+	ray_tracer->DenoiseResult(rt_cl);
+	rt_cl->Close();
+
+
+	auto blit_cl = Frame->RequestCommandList("Blit"s, TW3D_CL_DIRECT);
+	blit_cl->Reset();
+	blit_cl->BindResources(ResourceManager);
+	BlitOutput(blit_cl, Frame->RenderTarget);
+	blit_cl->Close();
+}
+
 void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	TW3DRenderer::Resize(Width, Height);
 
@@ -178,7 +231,7 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	ray_tracer->Resize(TWT::uint2(Width, Height), rt_size);
 }
 
-void TW3DDefaultRenderer::BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* ColorOutput, TW3DTexture* Depth) {
+void TW3DDefaultRenderer::BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* ColorOutput) {
 	cl->ResourceBarriers({
 		TW3DTransitionBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET),
 		TW3DTransitionBarrier(ray_tracer->direct_in, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
@@ -190,7 +243,7 @@ void TW3DDefaultRenderer::BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* Colo
 	});
 
 	cl->SetPipelineState(blit_ps);
-	cl->SetRenderTarget(ColorOutput, Depth);
+	cl->SetRenderTarget(ColorOutput);
 	cl->BindTexture(0, g_diffuse);
 	cl->BindTexture(1, g_emission);
 	cl->BindTexture(2, ray_tracer->direct_out);
@@ -198,7 +251,6 @@ void TW3DDefaultRenderer::BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* Colo
 	cl->BindTexture(3, ray_tracer->indirect_out);
 	//cl->BindTexture(5, ray_tracer->indirect_albedo_tex);
 	cl->ClearRTV(ColorOutput, TWT::float4(0, 0, 0, 1));
-	cl->ClearDSVDepth(Depth);
 	cl->SetViewport(&viewport);
 	cl->SetScissor(&scissor);
 	cl->DrawQuad();
@@ -214,97 +266,92 @@ void TW3DDefaultRenderer::BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* Colo
 	});
 }
 
-void TW3DDefaultRenderer::RenderRecordGBuffer() {
-	g_cl->Reset();
-	g_cl->BindResources(ResourceManager);
-	g_cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+void TW3DDefaultRenderer::Record(TW3DSCFrame* Frame) {
+	//record_cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	g_cl->SetPipelineState(gbuffer_ps);
+	//record_cl->SetPipelineState(gbuffer_ps);
 
-	g_cl->ResourceBarrier(ray_tracer->svgf_mo_vec_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	g_cl->ResourceBarrier(ray_tracer->svgf_compact_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	g_cl->ResourceBarrier(ray_tracer->svgf_prev_compact_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	//record_cl->ResourceBarrier(ray_tracer->svgf_mo_vec_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	//record_cl->ResourceBarrier(ray_tracer->svgf_compact_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	//record_cl->ResourceBarrier(ray_tracer->svgf_prev_compact_rt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-	g_cl->SetRenderTargets({ g_position, g_normal, g_diffuse, g_specular, g_emission, ray_tracer->svgf_mo_vec_rt, ray_tracer->svgf_compact_rt }, g_depth);
-	g_cl->ClearRTV(ray_tracer->svgf_compact_rt);
-	g_cl->ClearRTV(g_emission);
-	g_cl->ClearRTV(g_position);
-	g_cl->ClearRTV(g_diffuse);
-	g_cl->ClearDSVDepth(g_depth);
-	g_cl->SetViewport(&viewport);
-	g_cl->SetScissor(&scissor);
+	//record_cl->SetRenderTargets({ g_position, g_normal, g_diffuse, g_specular, g_emission, ray_tracer->svgf_mo_vec_rt, ray_tracer->svgf_compact_rt }, g_depth);
+	//record_cl->ClearRTV(ray_tracer->svgf_compact_rt);
+	//record_cl->ClearRTV(g_emission);
+	//record_cl->ClearRTV(g_position);
+	//record_cl->ClearRTV(g_diffuse);
+	//record_cl->ClearDSVDepth(g_depth);
+	//record_cl->SetViewport(&viewport);
+	//record_cl->SetScissor(&scissor);
 
-	g_cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, Scene->Camera);
-	g_cl->BindCameraPrevCBV(GBUFFER_VERTEX_PREV_CAMERA_CB, Scene->Camera);
-	g_cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, Scene->Camera);
-	g_cl->BindConstantBuffer(GBUFFER_PIXEL_RENDERER_CB, info_cb);
-	g_cl->BindTexture(GBUFFER_PIXEL_DIFFUSE_TEXTURE, diffuse_texarr);
-	g_cl->BindTexture(GBUFFER_PIXEL_SPECULAR_TEXTURE, specular_texarr);
-	g_cl->BindTexture(GBUFFER_PIXEL_EMISSION_TEXTURE, emission_texarr);
-	g_cl->BindTexture(GBUFFER_PIXEL_NORMAL_TEXTURE, normal_texarr);
+	//record_cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, Scene->Camera);
+	//record_cl->BindCameraPrevCBV(GBUFFER_VERTEX_PREV_CAMERA_CB, Scene->Camera);
+	//record_cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, Scene->Camera);
+	//record_cl->BindConstantBuffer(GBUFFER_PIXEL_RENDERER_CB, info_cb);
+	//record_cl->BindTexture(GBUFFER_PIXEL_DIFFUSE_TEXTURE, diffuse_texarr);
+	//record_cl->BindTexture(GBUFFER_PIXEL_SPECULAR_TEXTURE, specular_texarr);
+	//record_cl->BindTexture(GBUFFER_PIXEL_EMISSION_TEXTURE, emission_texarr);
+	//record_cl->BindTexture(GBUFFER_PIXEL_NORMAL_TEXTURE, normal_texarr);
 
-	for (TW3DObject* object : Scene->Objects)
-		g_cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
+	//for (TW3DObject* object : Scene->Objects)
+	//	record_cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
 
-	g_cl->ResourceBarrier(ray_tracer->svgf_mo_vec_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-	g_cl->ResourceBarrier(ray_tracer->svgf_compact_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-	g_cl->ResourceBarrier(ray_tracer->svgf_prev_compact_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	//record_cl->ResourceBarrier(ray_tracer->svgf_mo_vec_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	//record_cl->ResourceBarrier(ray_tracer->svgf_compact_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	//record_cl->ResourceBarrier(ray_tracer->svgf_prev_compact_rt, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
-	g_cl->Close();
+	////g_cl->Close();
 
-	ResourceManager->ExecuteCommandList(g_cl);
-	ResourceManager->FlushCommandList(g_cl);
+	////BlitOutput(record_cl, ColorOutput, DepthStencilOutput);
+	//record_cl->Close();
 }
 
-void TW3DDefaultRenderer::Record(TWT::uint BackBufferIndex, TW3DRenderTarget* ColorOutput, TW3DTexture* DepthStencilOutput) {
-	TW3DRenderer::Record(BackBufferIndex, ColorOutput, DepthStencilOutput);
-
-	
-	record_cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	BlitOutput(record_cl, ColorOutput, DepthStencilOutput);
-	record_cl->Close();
-}
-
-void TW3DDefaultRenderer::RecordBeforeExecution() {
-	Scene->RecordBeforeExecution();
-
-	// Trace rays
-	// -------------------------------------------------------------------------------------------------------------------------
-
-	rt_cl->Reset();
-	rt_cl->BindResources(ResourceManager);
-
-	ray_tracer->TraceRays(rt_cl, g_position, g_diffuse, g_specular, g_normal, g_emission, g_depth, diffuse_texarr, emission_texarr, normal_texarr, info_cb, Scene, LargeScaleScene);
-
-	ray_tracer->DenoiseResult(rt_cl);
-
-	rt_cl->Close();
-
-	/*gd_cl->Reset();
-	gd_cl->BindResources(ResourceManager);
-
-	ray_tracer->DenoiseResult(gd_cl);
-
-	gd_cl->Close();*/
-}
+//void TW3DDefaultRenderer::RecordBeforeExecution() {
+//	Scene->RecordBeforeExecution();
+//
+//	TW3DSCFrame* d;
+//	
+//
+//	// Trace rays
+//	// -------------------------------------------------------------------------------------------------------------------------
+//
+//	rt_cl->Reset();
+//	rt_cl->BindResources(ResourceManager);
+//
+//	ray_tracer->TraceRays(rt_cl, g_position, g_diffuse, g_specular, g_normal, g_emission, g_depth, diffuse_texarr, emission_texarr, normal_texarr, info_cb, Scene, LargeScaleScene);
+//
+//	ray_tracer->DenoiseResult(rt_cl);
+//
+//	rt_cl->Close();
+//
+//	/*gd_cl->Reset();
+//	gd_cl->BindResources(ResourceManager);
+//
+//	ray_tracer->DenoiseResult(gd_cl);
+//
+//	gd_cl->Close();*/
+//}
 
 void TW3DDefaultRenderer::Update(float DeltaTime) {
 	Scene->Update(DeltaTime);
 	info_cb->Update(&info);
 }
 
-void TW3DDefaultRenderer::Execute(TWT::uint BackBufferIndex) {
-	TW3DRenderer::Execute(BackBufferIndex);
+void TW3DDefaultRenderer::Execute(TW3DSCFrame* Frame) {
+	Scene->RecordBeforeExecution();
 
-	RenderRecordGBuffer();
+	//Frame->ExecuteCommandList("GBuffer"s);
+	//Frame->ExecuteCommandList("RayTrace"s);
+	Frame->ExecuteCommandList("Blit"s);
 
-	ResourceManager->ExecuteCommandList(rt_cl);
-	ResourceManager->FlushCommandList(rt_cl);
+	//ResourceManager->ExecuteCommandList(execute_cl);
+
+	//ResourceManager->ExecuteCommandList(rt_cl);
+	//ResourceManager->FlushCommandList(rt_cl);
 	//ResourceManager->ExecuteCommandList(gd_cl);
 	//ResourceManager->FlushCommandList(gd_cl);
 
-	ResourceManager->ExecuteCommandList(execute_cl);
+	
 
 	// Adjust frame count
 	info.info.z++;

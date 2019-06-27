@@ -1,6 +1,5 @@
 #pragma once
 #include "TWTypes.h"
-#include "TW3DRootSignature.h"
 
 class TW3DShader {
 public:

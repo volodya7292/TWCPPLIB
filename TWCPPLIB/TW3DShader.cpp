@@ -52,7 +52,7 @@ TW3DShader::TW3DShader(D3D12_SHADER_BYTECODE const& ByteCode, TWT::String const&
 }
 
 TW3DShader::~TW3DShader() {
-	//TWU::DXSafeRelease(reflection);
+	TWU::DXSafeRelease(reflection);
 
 	if (release_bytecode_data)
 		delete[] (TWT::byte*)bytecode.pShaderBytecode;
@@ -65,16 +65,8 @@ D3D12_SHADER_BYTECODE TW3DShader::GetByteCode() {
 TWT::uint TW3DShader::GetRegister(TWT::String const& InputVariableName) {
 	D3D12_SHADER_INPUT_BIND_DESC desc;
 	
-	ID3D11ShaderReflectionConstantBuffer* d;
-	
-
-		
-
 	TWU::SuccessAssert(reflection->GetResourceBindingDescByName(InputVariableName.ToCharArray(), &desc),
 		"TW3DShader::GetRegister, GetResourceBindingDescByName \'"s + InputVariableName + "\'"s);
-
-	if (InputVariableName == "input"s)
-		TWU::CPrintln(desc.Type);
 
 	return desc.BindPoint;
 }

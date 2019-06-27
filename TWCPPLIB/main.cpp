@@ -181,5 +181,20 @@ int main() {
 
 	TW3D::Start();
 
+	struct CustomCompare {
+		bool operator()(const int& v0, const int& v1) {
+			return v0 < v1;
+		}
+	};
+
+	std::priority_queue<int, std::vector<int>, CustomCompare> cl_queue;
+	cl_queue.push(5);
+	cl_queue.push(0);
+	cl_queue.push(1);
+	while (!cl_queue.empty()) {
+		TWU::CPrintln(cl_queue.top());
+		cl_queue.pop();
+	}
+
 	return 0;
 }

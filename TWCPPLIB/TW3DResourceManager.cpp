@@ -12,12 +12,15 @@ TW3DResourceManager::TW3DResourceManager(TW3DDevice* Device) :
 	direct_command_queue = TW3DCommandQueue::CreateDirect(device);
 	compute_command_queue = TW3DCommandQueue::CreateCompute(device);
 	copy_command_queue = TW3DCommandQueue::CreateCopy(device);
-	temp_direct_cl = CreateDirectCommandList();
-	temp_compute_cl = CreateComputeCommandList();
-	temp_copy_cl = CreateCopyCommandList();
+	temp_direct_cl = CreateCommandList(TW3D_CL_DIRECT);
+	temp_compute_cl = CreateCommandList(TW3D_CL_COMPUTE);
+	temp_copy_cl = CreateCommandList(TW3D_CL_COPY);
 }
 
 TW3DResourceManager::~TW3DResourceManager() {
+	for (auto [name, cl] : command_lists)
+		delete cl;
+
 	delete temp_gcl;
 	delete temp_direct_cl;
 	delete temp_compute_cl;
@@ -36,7 +39,7 @@ TW3DFramebuffer* TW3DResourceManager::CreateFramebuffer(TWT::uint2 Size) {
 }
 
 TW3DRenderTarget* TW3DResourceManager::CreateRenderTarget(ID3D12Resource* Buffer) {
-	auto* rtv = new TW3DRenderTarget(device, rtv_descriptor_heap);
+	auto* rtv = new TW3DRenderTarget(device, rtv_descriptor_heap, srv_descriptor_heap);
 	rtv->Create(Buffer);
 	return rtv;
 }
@@ -83,20 +86,17 @@ TW3DTexture* TW3DResourceManager::CreateTextureArray2D(TWT::uint2 Size, TWT::uin
 	return texture;
 }
 
-TW3DCommandList* TW3DResourceManager::CreateDirectCommandList() {
-	return TW3DCommandList::CreateDirect(device);
-}
-
-TW3DCommandList* TW3DResourceManager::CreateBundleCommandList() {
-	return TW3DCommandList::CreateBundle(device);
-}
-
-TW3DCommandList* TW3DResourceManager::CreateComputeCommandList() {
-	return TW3DCommandList::CreateCompute(device);
-}
-
-TW3DCommandList* TW3DResourceManager::CreateCopyCommandList() {
-	return TW3DCommandList::CreateCopy(device);
+TW3DCommandList* TW3DResourceManager::CreateCommandList(TW3DCommandListType Type) {
+	switch (Type) {
+	case TW3D_CL_DIRECT:
+		return TW3DCommandList::CreateDirect(device);
+	case TW3D_CL_COMPUTE:
+		return TW3DCommandList::CreateCompute(device);
+	case TW3D_CL_COPY:
+		return TW3DCommandList::CreateCopy(device);
+	case TW3D_CL_BUNDLE:
+		return TW3DCommandList::CreateBundle(device);
+	}
 }
 
 TW3DCommandList* TW3DResourceManager::GetTemporaryDirectCommandList() {
@@ -127,6 +127,15 @@ TW3DCommandQueue* TW3DResourceManager::GetCommandListCommandQueue(TW3DCommandLis
 	}
 }
 
+TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type) {
+	auto cl = command_lists[Name];
+
+	if (!cl)
+		cl = CreateCommandList(Type);
+
+	return cl;
+}
+
 void TW3DResourceManager::ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {
 	temp_gcl->Reset();
 	temp_gcl->ResourceBarrier(Resource->Get(), StateBefore, StateAfter);
@@ -144,8 +153,7 @@ void TW3DResourceManager::FlushCommandList(TW3DCommandList* CommandList) {
 void TW3DResourceManager::FlushCommandLists() {
 	copy_command_queue->FlushCommands();
 	compute_command_queue->FlushCommands();
-	direct_command_queue->FlushCommands();
-	
+	direct_command_queue->FlushCommands();	
 }
 
 void TW3DResourceManager::ExecuteCommandList(TW3DCommandList* CommandList) {

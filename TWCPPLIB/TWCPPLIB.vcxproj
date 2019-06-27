@@ -184,8 +184,8 @@
     <ClInclude Include="TW3DLightSource.h" />
     <ClInclude Include="TW3DModules.h" />
     <ClInclude Include="TW3DRaytracer.h" />
+    <ClInclude Include="TW3DSCFrame.h" />
     <ClInclude Include="TW3DShader.h" />
-    <ClInclude Include="TW3DShaderInput.h" />
     <ClInclude Include="TW3DShaders.h" />
     <ClInclude Include="TW3DSphere.h" />
     <ClInclude Include="TW3DTexture.h" />
@@ -243,8 +243,8 @@
     <ClCompile Include="TW3DLightSource.cpp" />
     <ClCompile Include="TW3DModules.cpp" />
     <ClCompile Include="TW3DRaytracer.cpp" />
+    <ClCompile Include="TW3DSCFrame.cpp" />
     <ClCompile Include="TW3DShader.cpp" />
-    <ClCompile Include="TW3DShaderInput.cpp" />
     <ClCompile Include="TW3DShaders.cpp" />
     <ClCompile Include="TW3DSphere.cpp" />
     <ClCompile Include="TW3DTexture.cpp" />

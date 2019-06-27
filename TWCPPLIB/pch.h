@@ -17,6 +17,7 @@
 #include <vector>
 #include <string>
 #include <random>
+#include <queue>
 #include <mutex>
 #include <array>
 #include <map>
