@@ -34,7 +34,7 @@ namespace TWT {
 		const char* ToCharArray() const;
 		const TWT::uint64 GetSize() const;
 		const bool IsEmpty() const;
-		WString Wide();
+		WString Wide() const;
 
 		String& operator  = (String const& t) = default;
 		String& operator += (String const& t);
@@ -61,7 +61,7 @@ namespace TWT {
 		const TWT::wchar* ToWCharArray() const;
 		const uint64 GetSize() const;
 		const bool IsEmpty() const;
-		String Multibyte();
+		String Multibyte() const;
 
 		WString& operator  = (WString const& Str) = default;
 		WString& operator += (WString const& Str);

@@ -1,5 +1,5 @@
 #pragma once
-#include "TWTypes.h"
+#include "TWUtils.h"
 
 namespace TW {
 	class TWLogger {
@@ -13,7 +13,7 @@ namespace TW {
 		void LogError(const TWT::String& Data);
 
 	private:
-		std::mutex sync_mutex;
+		std::mutex sync_obj;
 		const bool file_based;
 		const TWT::String filename;
 		const TWT::String logname;

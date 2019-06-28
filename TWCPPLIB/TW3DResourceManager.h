@@ -12,7 +12,7 @@ enum TW3DCommandListType {
 	TW3D_CL_DIRECT,
 	TW3D_CL_COMPUTE,
 	TW3D_CL_COPY,
-	TW3D_CL_BUNDLE,
+	TW3D_CL_BUNDLE
 };
 
 class TW3DResourceManager {
@@ -36,7 +36,24 @@ public:
 	TW3DCommandList* GetTemporaryCopyCommandList();
 	TW3DCommandQueue* GetCommandListCommandQueue(TW3DCommandList* CommandList);
 
-	TW3DCommandList* RequestCommandList(TWT::String const& Name, TW3DCommandListType Type);
+	TW3DCommandList*    RequestCommandList(TWT::String const& Name, TW3DCommandListType Type);
+	TW3DRenderTarget*   RequestRenderTarget(TWT::String const& Name, ID3D12Resource* Buffer);
+	TW3DRenderTarget*   RequestRenderTarget(TWT::String const& Name, TWT::uint2 Size, DXGI_FORMAT Format, TWT::float4 ClearValue = TWT::float4(-1));
+	TW3DTexture*        RequestTexture2D(TWT::String const& Name, TWT::uint2 Size, DXGI_FORMAT Format, bool UAV = false);
+	TW3DTexture*        RequestTexture2D(TWT::String const& Name, const TWT::WString& Filename);
+	TW3DTexture*        RequestTextureArray2D(TWT::String const& Name, TWT::uint2 Size, TWT::uint Depth, DXGI_FORMAT Format, bool UAV = false);
+	TW3DTexture*        RequestDepthStencilTexture(TWT::String const& Name, TWT::uint2 Size);
+	TW3DBuffer*         RequestBuffer(TWT::String const& Name, TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV = false);
+	TW3DVertexBuffer*   RequestVertexBuffer(TWT::String const& Name, TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex), bool OptimizeForUpdating = false);
+	TW3DConstantBuffer* RequestConstantBuffer(TWT::String const& Name, TWT::uint ElementCount, TWT::uint ElementSizeInBytes);
+	TW3DFramebuffer*    RequestFramebuffer(TWT::String const& Name, TWT::uint2 Size);
+
+	void ReleaseCommandList(TWT::String const& Name);
+	void ReleaseRenderTarget(TWT::String const& Name);
+	void ReleaseTexture(TWT::String const& Name);
+	void ReleaseBuffer(TWT::String const& Name);
+	void ReleaseVertexBuffer(TWT::String const& Name);
+	void ReleaseConstantBuffer(TWT::String const& Name);
 
 	void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 
@@ -65,5 +82,11 @@ private:
 	TW3DCommandQueue* compute_command_queue;
 	TW3DCommandQueue* copy_command_queue;
 
-	std::unordered_map<TWT::String, TW3DCommandList*> command_lists;
+	std::unordered_map<TWT::String, TW3DCommandList*>       command_lists;
+	std::unordered_map<TWT::String, TW3DRenderTarget*>      render_targets;
+	std::unordered_map<TWT::String, TW3DTexture*>           textures;
+	std::unordered_map<TWT::String, TW3DBuffer*>            buffers;
+	std::unordered_map<TWT::String, TW3DVertexBuffer*>      vertex_buffers;
+	std::unordered_map<TWT::String, TW3DConstantBuffer*>    constant_buffers;
+	std::unordered_map<TWT::String, TW3DFramebuffer*>       framebuffers;
 };

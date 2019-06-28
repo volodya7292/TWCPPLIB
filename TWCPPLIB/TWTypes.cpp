@@ -26,7 +26,7 @@ const bool TWT::String::IsEmpty() const {
 	return GetSize() == 0;
 }
 
-TWT::WString TWT::String::Wide() {
+TWT::WString TWT::String::Wide() const {
 	if (data.empty()) return std::wstring();
 	int size_needed = MultiByteToWideChar(CP_UTF8, 0, &data[0], (int)data.size(), NULL, 0);
 	std::wstring wstrTo(size_needed, 0);
@@ -88,7 +88,7 @@ const bool TWT::WString::IsEmpty() const {
 	return GetSize() == 0;
 }
 
-TWT::String TWT::WString::Multibyte() {
+TWT::String TWT::WString::Multibyte() const {
 
 	if (data.empty()) return new char[1];
 	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &data[0], (int)data.size(), NULL, 0, NULL, NULL);

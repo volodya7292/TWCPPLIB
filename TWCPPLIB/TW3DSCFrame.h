@@ -6,21 +6,29 @@ class TW3DSCFrame {
 private:
 	using CLRecorder = std::function<void(TW3DCommandList* CommandList)>;
 
-	struct QueueCommandList {
+	struct CommandList {
 		TW3DCommandList* command_list[2];
 		CLRecorder recorder;
 		TWT::uint priority = 0;
 		bool swap = false;
 	};
 
+	struct QueueCommandList {
+		TWT::String name;
+		TWT::uint priority = 0;
+	};
+
 public:
-	TW3DSCFrame(TW3DResourceManager* ResourceManager, ID3D12Resource* RenderTargetBuffer);
+	TW3DSCFrame(TW3DResourceManager* ResourceManager, TWT::uint Index, ID3D12Resource* RenderTargetBuffer);
 	~TW3DSCFrame();
+
+	void Release();
 
 	TW3DCommandList* RequestCommandList(TWT::String const& Name, TW3DCommandListType Type = TW3D_CL_DIRECT); // Create/Get static command list
 	void RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, CLRecorder Recorder, TWT::uint RecordPriority = 0); // Create dynamic command list
-	void SwapCommandList(TWT::String const& Name);
-	void ExecuteCommandList(TWT::String const& Name);
+	void FlushCommandList(TWT::String const& Name);
+	void PerformSwap();
+	void ExecuteCommandList(TWT::String const& Name, bool FlushBeforeExecution = false, bool FlushAfterExecution = false);
 	void RequestCommandListRecord(TWT::String const& Name);
 	void RecordCommandLists(); // Executed by dedicated threads
 	void ClearCommandLists();
@@ -35,8 +43,9 @@ private:
 	};
 
 	TW3DResourceManager* resource_manager;
-	std::unordered_map<TWT::String, QueueCommandList> command_lists; // [0] - record, [1] - execute
+	TWT::uint index;
+	std::unordered_map<TWT::String, CommandList> command_lists; // [0] - record, [1] - execute
 	std::priority_queue<QueueCommandList, std::vector<QueueCommandList>, QueueCommandListCompare> cl_queue;
-	std::mutex cl_queue_mutex;
+	std::mutex cl_queue_sync;
 };
 

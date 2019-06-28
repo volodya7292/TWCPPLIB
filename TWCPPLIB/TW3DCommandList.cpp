@@ -267,21 +267,6 @@ bool TW3DCommandList::IsEmpty() {
 	return empty;
 }
 
-TW3DCommandList* TW3DCommandList::CreateDirect(TW3DDevice* device) {
-	return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_DIRECT);
-}
-
-TW3DCommandList* TW3DCommandList::CreateBundle(TW3DDevice* device) {
-	return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_BUNDLE);
-}
-
-TW3DCommandList* TW3DCommandList::CreateCompute(TW3DDevice* device) {
-	return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
-}
-
-TW3DCommandList* TW3DCommandList::CreateCopy(TW3DDevice* device) {
-	return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_COPY);
-}
 
 D3D12_RESOURCE_BARRIER TW3DUAVBarrier(TW3DResource* Resource) {
 	D3D12_RESOURCE_BARRIER barrier = {};

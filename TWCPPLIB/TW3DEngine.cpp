@@ -21,7 +21,7 @@ static std::vector<bool> KeysDown(1024);
 static const TWT::uint engine_thread_count = 2;
 static const TWT::uint cl_record_thread_count = TW3DSwapChain::BufferCount;
 static std::vector<std::thread>    threads;
-static std::mutex                  resize_mutex;
+static std::mutex                  resize_sync;
 
 static TW3DRenderer*           renderer;
 static TW3DResourceManager*    resource_manager;
@@ -33,8 +33,6 @@ static TWT::uint      additional_thread_count;
 
 static bool    initialized = false, running, minimized = false;
 static HWND    hwnd;
-
-static TWT::uint    current_frame_index;
 
 static TW3DFactory*      factory;
 static TW3DAdapter*      adapter;
@@ -147,10 +145,9 @@ void init_dx12() {
 	logger->LogInfo("DirectX Stage 5 initialized");
 
 	for (int i = 0; i < TW3DSwapChain::BufferCount; i++)
-		frames[i] = new TW3DSCFrame(resource_manager, swapChain->GetBuffer(i));
+		frames[i] = new TW3DSCFrame(resource_manager, i, swapChain->GetBuffer(i));
 	logger->LogInfo("DirectX Stage 6 initialized");
 
-	current_frame_index = swapChain->GetCurrentBufferIndex();
 	logger->LogInfo("DirectX Stage 8 initialized");
 	TW3DPrimitives::Initialize(resource_manager);
 	TW3DShaders::Initialize(resource_manager);
@@ -169,7 +166,7 @@ void init_dx12() {
 	device->GetFeatureData(D3D12_FEATURE_D3D12_OPTIONS4, &opt4, sizeof(opt4));
 	D3D12_FEATURE_DATA_D3D12_OPTIONS5 opt5 = {};
 	device->GetFeatureData(D3D12_FEATURE_D3D12_OPTIONS5, &opt5, sizeof(opt5));
-	
+
 
 	logger->LogInfo("DirectX initialized.");
 	logger->LogInfo("----------------------------------------------------------------------------------");
@@ -223,7 +220,9 @@ void update() {
 
 void render() {
 	//renderer->RecordBeforeExecution();
-	renderer->Execute(frames[swapChain->GetCurrentBufferIndex()]);
+	synchronized(resize_sync)
+		renderer->Execute(frames[swapChain->GetCurrentBufferIndex()]);
+
 	swapChain->Present();
 }
 
@@ -251,30 +250,27 @@ void on_resize() {
 
 	logger->LogInfo("[on_resize] Resizing started."s);
 
-	synchronized(resize_mutex) {
+	synchronized(resize_sync) {
 		RECT clientRect = {};
 		GetClientRect(hwnd, &clientRect);
 		width = std::max(clientRect.right - clientRect.left, 1L);
 		height = std::max(clientRect.bottom - clientRect.top, 1L);
 
-		for (UINT i = 0; i < TW3DSwapChain::BufferCount; i++) {
-			frames[i]->RenderTarget->Release();
-			frames[i]->ClearCommandLists();
-		}
+		for (UINT i = 0; i < TW3DSwapChain::BufferCount; i++)
+			frames[i]->Release();
 
 		swapChain->Resize(width, height);
-		current_frame_index = swapChain->GetCurrentBufferIndex();
-
-		for (UINT i = 0; i < TW3DSwapChain::BufferCount; i++) {
-			frames[i]->RenderTarget->Create(swapChain->GetBuffer(i));
-			renderer->InitializeFrame(frames[i]);
-		}
 
 		logger->LogInfo("[on_resize] Render target resized to "s + width + "x"s + height);
 
 		if (renderer) {
 			renderer->Resize(width, height);
 			logger->LogInfo("[on_resize] Renderer resized to "s + width + "x"s + height);
+		}
+
+		for (UINT i = 0; i < TW3DSwapChain::BufferCount; i++) {
+			frames[i]->RenderTarget->Create(swapChain->GetBuffer(i));
+			renderer->InitializeFrame(frames[i]);
 		}
 	}
 
@@ -294,7 +290,7 @@ void main_loop() {
 				TWT::uint millis = thread_tick(static_cast<TWT::uint>(i), total_thread_count);
 				Sleep(millis);
 			}
-			});
+		});
 		threads.push_back(std::move(thread));
 	}
 	logger->LogInfo("Threads initialized."s);
@@ -332,7 +328,7 @@ void cleanup() {
 	delete adapter;
 	delete device;
 	delete swapChain;
-	
+
 	for (int i = 0; i < TW3DSwapChain::BufferCount; ++i)
 		delete frames[i];
 
@@ -513,10 +509,10 @@ void TW3D::SetWindowTitle(const TWT::String& WindowTitle) {
 void TW3D::SetRenderer(TW3DRenderer* Renderer) {
 	renderer = Renderer;
 	renderer->Initialize(resource_manager, swapChain, width, height);
-	for (int i = 0; i < TW3DSwapChain::BufferCount; i++)
-		renderer->InitializeFrame(frames[i]);
 	logger->LogInfo("[SetRenderer] Renderer initialized. Resizing renderer to "s + width + "x"s + height);
 	renderer->Resize(width, height);
+	for (int i = 0; i < TW3DSwapChain::BufferCount; i++)
+		renderer->InitializeFrame(frames[i]);
 	logger->LogInfo("[SetRenderer] Renderer resized."s);
 }
 

@@ -75,11 +75,6 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 	);
 
 	svgf_ta_ps = new TW3DComputePipelineState(rs);
-	//svgf_ta_ps->SetRTVFormat(0, TWT::RGBA32Float);
-	//svgf_ta_ps->SetRTVFormat(1, TWT::RGBA32Float);
-	//svgf_ta_ps->SetRTVFormat(2, TWT::RGBA32Float);
-	//svgf_ta_ps->SetRTVFormat(3, TWT::R16Float);
-	//svgf_ta_ps->SetVertexShader(sq_s);
 	svgf_ta_ps->SetShader(svgf_ta_s);
 	svgf_ta_ps->Create(device);
 
@@ -102,9 +97,6 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 	);
 
 	svgf_wf_ps = new TW3DComputePipelineState(rs);
-	//svgf_wf_ps->SetRTVFormat(0, TWT::RGBA32Float);
-	//svgf_wf_ps->SetRTVFormat(1, TWT::RGBA32Float);
-	//svgf_wf_ps->SetVertexShader(sq_s);
 	svgf_wf_ps->SetShader(svgf_wf_s);
 	svgf_wf_ps->Create(device);
 
@@ -113,6 +105,8 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 	indirect_in = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32UInt, true); // RGBA32UInt
 	direct_in->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 	indirect_in->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	direct_in->Resize(direct_in->GetSize());
+	indirect_in->Resize(direct_in->GetSize());
 
 	direct_out = ResourceManager->CreateTexture2D(GSize, TWT::RGBA32Float, true);
 	indirect_out = ResourceManager->CreateTexture2D(GSize, TWT::RGBA32Float, true);
@@ -136,7 +130,6 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 	svgf_compact_rt->Resize(svgf_compact_rt->GetSize());
 	svgf_prev_compact_rt->Resize(svgf_prev_compact_rt->GetSize());
 
-	//svgf_prev_linear_z_rt = ResourceManager->CreateRenderTarget(GSize, TWT::RGBA32Float);
 
 	detail_sum_direct = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
 	detail_sum_direct->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
@@ -144,9 +137,6 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 	detail_sum_indirect->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 
 	for (TWT::uint i = 0; i < 2; i++) {
-		//svgf_swap_fb[i] = ResourceManager->CreateFramebuffer(GSize);
-		//svgf_swap_fb[i]->AddRenderTarget(0, TWT::RGBA32Float, TWT::float4(0));
-		//svgf_swap_fb[i]->AddRenderTarget(1, TWT::RGBA32Float, TWT::float4(0));
 		svgf_swap_direct[i] = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
 		svgf_swap_indirect[i] = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32UInt, true); // RGBA32UInt
 		svgf_swap_direct[i]->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
@@ -155,27 +145,12 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 		svgf_swap_indirect[i]->Resize(svgf_swap_indirect[i]->GetSize());
 	}
 
-	//svgf_filtered_fb = ResourceManager->CreateFramebuffer(GSize);
-	//svgf_filtered_fb->AddRenderTarget(0, TWT::RGBA32Float, TWT::float4(0));
-	//svgf_filtered_fb->AddRenderTarget(1, TWT::RGBA32Float, TWT::float4(0));
-
 	svgf_filtered_direct = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
 	svgf_filtered_indirect = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32UInt, true); // RGBA32UInt
 	svgf_filtered_direct->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 	svgf_filtered_indirect->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 	svgf_filtered_direct->Resize(svgf_filtered_direct->GetSize());
 	svgf_filtered_indirect->Resize(svgf_filtered_indirect->GetSize());
-	/*svgf_ta_curr_fb = ResourceManager->CreateFramebuffer(RTSize);
-	svgf_ta_curr_fb->AddRenderTarget(0, TWT::RGBA32Float);
-	svgf_ta_curr_fb->AddRenderTarget(1, TWT::RGBA32Float);
-	svgf_ta_curr_fb->AddRenderTarget(2, TWT::RGBA32Float);
-	svgf_ta_curr_fb->AddRenderTarget(3, TWT::R16Float);
-
-	svgf_ta_prev_fb = ResourceManager->CreateFramebuffer(RTSize);
-	svgf_ta_prev_fb->AddRenderTarget(0, TWT::RGBA32Float);
-	svgf_ta_prev_fb->AddRenderTarget(1, TWT::RGBA32Float);
-	svgf_ta_prev_fb->AddRenderTarget(2, TWT::RGBA32Float);
-	svgf_ta_prev_fb->AddRenderTarget(3, TWT::R16Float);*/
 }
 
 TW3DRaytracer::~TW3DRaytracer() {
@@ -192,12 +167,9 @@ TW3DRaytracer::~TW3DRaytracer() {
 	delete direct_out;
 	delete indirect_out;
 
-	//delete svgf_linear_z_rt;
 	delete svgf_mo_vec_rt;
 	delete svgf_compact_rt;
 	delete svgf_prev_compact_rt;
-
-	//delete svgf_prev_linear_z_rt;
 
 	delete temporal_history;
 
@@ -210,11 +182,8 @@ TW3DRaytracer::~TW3DRaytracer() {
 		delete svgf_swap_indirect[i];
 	}
 
-	//delete svgf_filtered_fb;
 	delete svgf_filtered_direct;
 	delete svgf_filtered_indirect;
-	//delete svgf_ta_curr_fb;
-	//delete svgf_ta_prev_fb;
 }
 
 void TW3DRaytracer::Resize(TWT::uint2 GSize, TWT::uint2 RTSize) {
@@ -292,7 +261,7 @@ void TW3DRaytracer::TraceRays(TW3DCommandList* CL,
 void TW3DRaytracer::DenoiseResult(TW3DCommandList* CL) {
 
 	// SVGF Temporal Accululation
-    // -----------------------------------------------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 
 	CL->SetPipelineState(svgf_ta_ps);
 
@@ -326,7 +295,6 @@ void TW3DRaytracer::DenoiseResult(TW3DCommandList* CL) {
 	CL->BindTexture(SVGFWF_DETAIL_SUM_DIRECT, detail_sum_direct, true);
 	CL->BindTexture(SVGFWF_DETAIL_SUM_INDIRECT, detail_sum_indirect, true);
 	CL->BindTexture(SVGFWF_COMPACT_DATA, svgf_compact_rt);
-	CL->BindUIntConstant(SVGFWF_INPUT_DATA, SPATIAL_FILTER_MAX_ITERATIONS, 1);
 
 	for (TWT::uint i = 0; i < SPATIAL_FILTER_MAX_ITERATIONS; i++) {
 		CL->ResourceBarriers({
@@ -338,6 +306,7 @@ void TW3DRaytracer::DenoiseResult(TW3DCommandList* CL) {
 		CL->BindTexture(SVGFWF_DIRECT, svgf_swap_direct[1]);
 		CL->BindTexture(SVGFWF_INDIRECT, svgf_swap_indirect[1]);
 		CL->BindUIntConstant(SVGFWF_INPUT_DATA, i, 0);
+		CL->BindUIntConstant(SVGFWF_INPUT_DATA, SPATIAL_FILTER_MAX_ITERATIONS, 1);
 
 		CL->BindTexture(SVGFWF_DIRECT_OUT, svgf_swap_direct[0], true);
 		CL->BindTexture(SVGFWF_INDIRECT_OUT, svgf_swap_indirect[0], true);

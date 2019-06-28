@@ -22,7 +22,7 @@ void TW::TWLogger::Log(char LogType, const TWT::String& Data) {
 
 	TWT::String nlogname = !logname.IsEmpty() ? "["s + logname + "]"s : ""s;
 
-	synchronized(sync_mutex) {
+	synchronized(sync_obj) {
 		if (file_based) {
 			std::ofstream file(filename.GetData(), std::ios_base::out | std::ios_base::app);
 			file << ("["s + time_buffer + "] "s + nlogname + " ["s + LogType + "] "s + Data) << '\n';

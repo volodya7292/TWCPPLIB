@@ -45,33 +45,30 @@ namespace TWU {
 
 // ------------------------------------------------------------------------------------------------------------------------------
 // ----------------------------------------------------- Synchronized macro -----------------------------------------------------
-class Lock {
+class SyncObj {
 public:
-	//the default constructor
-	Lock(std::mutex& mutex) : m_mutex(mutex), m_locked(true) {
+	SyncObj(std::mutex &mutex) : m_mutex(mutex), m_locked(true) {
 		mutex.lock();
 	}
 
-	//the destructor
-	~Lock() {
+	~SyncObj() {
 		m_mutex.unlock();
 	}
 
-	//report the state of locking when used as a boolean
-	operator bool() const {
+	operator bool () const {
 		return m_locked;
 	}
 
-	//unlock
-	void set_unlock() {
+	void unlock() {
 		m_locked = false;
 	}
 
 private:
-	std::mutex& m_mutex;
+	std::mutex &m_mutex;
 	bool m_locked;
 };
-#define synchronized(M)  for(Lock M##_lock = M; M##_lock; M##_lock.set_unlock())
+
+#define synchronized(M)  for(SyncObj M##_lock = M; M##_lock; M##_lock.unlock())
 // ----------------------------------------------------- Synchronized macro -----------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------
 

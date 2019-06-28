@@ -8,12 +8,11 @@ public:
 	TW3DRenderer() = default;
 	virtual ~TW3DRenderer() = 0;
 	virtual void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height);
-	virtual void InitializeFrame(TW3DSCFrame* Frame);
+	virtual void InitializeFrame(TW3DSCFrame* Frame) = 0;
 	virtual void Resize(TWT::uint Width, TWT::uint Height);
-	virtual void Record(TW3DSCFrame* Frame) = 0;
 	// Per frame
 	virtual void Update(float DeltaTime) = 0;
-	virtual void Execute(TW3DSCFrame* Frame) = 0;
+	virtual void Execute(TW3DSCFrame* Frame);
 
 	TW3DScene* Scene = nullptr;
 

@@ -33,8 +33,13 @@ namespace TWU {
 
 	// Safely release DirectX resources
 	template<typename T>
-	void DXSafeRelease(T* t){
+	void DXSafeRelease(T* t) {
 		t->Release();
+	}
+
+	template<typename T>
+	void DXSetName(T* t, TWT::String const& Name) {
+		t->SetName(Name.Wide().ToWCharArray());
 	}
 
 	// Check for successful result

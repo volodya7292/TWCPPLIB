@@ -79,11 +79,6 @@ public:
 	void Close();
 	bool IsEmpty();
 
-	static TW3DCommandList* CreateDirect(TW3DDevice* device);
-	static TW3DCommandList* CreateBundle(TW3DDevice* device);
-	static TW3DCommandList* CreateCompute(TW3DDevice* device);
-	static TW3DCommandList* CreateCopy(TW3DDevice* device);
-
 	TWT::uint64 SignalValue = 0;
 
 private:

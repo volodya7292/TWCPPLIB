@@ -14,12 +14,13 @@ void TW3DRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChai
 	Device = ResourceManager->GetDevice();
 }
 
-void TW3DRenderer::InitializeFrame(TW3DSCFrame* Frame) {
-}
-
 void TW3DRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	this->Width = Width;
 	this->Height = Height;
 	Scene->Camera->Width = Width;
 	Scene->Camera->Height = Height;
+}
+
+void TW3DRenderer::Execute(TW3DSCFrame* Frame) {
+	Frame->PerformSwap();
 }

@@ -12,19 +12,28 @@ TW3DResourceManager::TW3DResourceManager(TW3DDevice* Device) :
 	direct_command_queue = TW3DCommandQueue::CreateDirect(device);
 	compute_command_queue = TW3DCommandQueue::CreateCompute(device);
 	copy_command_queue = TW3DCommandQueue::CreateCopy(device);
-	temp_direct_cl = CreateCommandList(TW3D_CL_DIRECT);
-	temp_compute_cl = CreateCommandList(TW3D_CL_COMPUTE);
-	temp_copy_cl = CreateCommandList(TW3D_CL_COPY);
+	temp_direct_cl = RequestCommandList("_RM_TEMP_DIRECT"s, TW3D_CL_DIRECT);
+	temp_compute_cl = RequestCommandList("_RM_TEMP_COMPUTE"s, TW3D_CL_COMPUTE);
+	temp_copy_cl = RequestCommandList("_RM_TEMP_COPY"s, TW3D_CL_COPY);
 }
 
 TW3DResourceManager::~TW3DResourceManager() {
 	for (auto [name, cl] : command_lists)
 		delete cl;
+	for (auto [name, rt] : render_targets)
+		delete rt;
+	for (auto [name, tex] : textures)
+		delete tex;
+	for (auto [name, buf] : buffers)
+		delete buf;
+	for (auto [name, v_buf] : vertex_buffers)
+		delete v_buf;
+	for (auto [name, c_buf] : constant_buffers)
+		delete c_buf;
+	for (auto [name, f_buf] : framebuffers)
+		delete f_buf;
 
 	delete temp_gcl;
-	delete temp_direct_cl;
-	delete temp_compute_cl;
-	delete temp_copy_cl;
 	delete rtv_descriptor_heap;
 	delete dsv_descriptor_heap;
 	delete srv_descriptor_heap;
@@ -89,13 +98,13 @@ TW3DTexture* TW3DResourceManager::CreateTextureArray2D(TWT::uint2 Size, TWT::uin
 TW3DCommandList* TW3DResourceManager::CreateCommandList(TW3DCommandListType Type) {
 	switch (Type) {
 	case TW3D_CL_DIRECT:
-		return TW3DCommandList::CreateDirect(device);
+		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	case TW3D_CL_COMPUTE:
-		return TW3DCommandList::CreateCompute(device);
+		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
 	case TW3D_CL_COPY:
-		return TW3DCommandList::CreateCopy(device);
+		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_COPY);
 	case TW3D_CL_BUNDLE:
-		return TW3DCommandList::CreateBundle(device);
+		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_BUNDLE);
 	}
 }
 
@@ -128,12 +137,152 @@ TW3DCommandQueue* TW3DResourceManager::GetCommandListCommandQueue(TW3DCommandLis
 }
 
 TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type) {
-	auto cl = command_lists[Name];
+	auto& cl = command_lists[Name];
 
-	if (!cl)
+	if (!cl) {
 		cl = CreateCommandList(Type);
+		TWU::DXSetName(cl->Get(), Name);
+	}
 
 	return cl;
+}
+
+TW3DRenderTarget* TW3DResourceManager::RequestRenderTarget(TWT::String const& Name, ID3D12Resource* Buffer) {
+	auto& rt = render_targets[Name];
+
+	if (!rt) {
+		rt = CreateRenderTarget(Buffer);
+		TWU::DXSetName(rt->Get(), Name);
+	}
+
+	return rt;
+}
+
+TW3DRenderTarget* TW3DResourceManager::RequestRenderTarget(TWT::String const& Name, TWT::uint2 Size, DXGI_FORMAT Format, TWT::float4 ClearValue) {
+	auto& rt = render_targets[Name];
+
+	if (!rt) {
+		rt = CreateRenderTarget(Size, Format, ClearValue);
+		TWU::DXSetName(rt->Get(), Name);
+	}
+
+	return rt;
+}
+
+TW3DTexture* TW3DResourceManager::RequestTexture2D(TWT::String const& Name, TWT::uint2 Size, DXGI_FORMAT Format, bool UAV) {
+	auto& texture = textures[Name];
+
+	if (!texture) {
+		texture = CreateTexture2D(Size, Format, UAV);
+		TWU::DXSetName(texture->Get(), Name);
+	}
+
+	return texture;
+}
+
+TW3DTexture* TW3DResourceManager::RequestTexture2D(TWT::String const& Name, const TWT::WString& Filename) {
+	auto& texture = textures[Name];
+
+	if (!texture) {
+		texture = TW3DTexture::Create2D(device, temp_gcl, srv_descriptor_heap, Filename);
+		TWU::DXSetName(texture->Get(), Name);
+	}
+
+	return texture;
+}
+
+TW3DTexture* TW3DResourceManager::RequestTextureArray2D(TWT::String const& Name, TWT::uint2 Size, TWT::uint Depth, DXGI_FORMAT Format, bool UAV) {
+	auto& texture = textures[Name];
+
+	if (!texture) {
+		texture = CreateTextureArray2D(Size, Depth, Format, UAV);
+		TWU::DXSetName(texture->Get(), Name);
+	}
+
+	return texture;
+}
+
+TW3DTexture* TW3DResourceManager::RequestDepthStencilTexture(TWT::String const& Name, TWT::uint2 Size) {
+	auto& texture = textures[Name];
+
+	if (!texture) {
+		texture = CreateDepthStencilTexture(Size);
+		TWU::DXSetName(texture->Get(), Name);
+	}
+
+	return texture;
+}
+
+TW3DBuffer* TW3DResourceManager::RequestBuffer(TWT::String const& Name, TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV) {
+	auto& buffer = buffers[Name];
+
+	if (!buffer) {
+		buffer = CreateBuffer(ElementCount, ElementSizeInBytes, UAV);
+		TWU::DXSetName(buffer->Get(), Name);
+	}
+
+	return buffer;
+}
+
+TW3DVertexBuffer* TW3DResourceManager::RequestVertexBuffer(TWT::String const& Name, TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes, bool OptimizeForUpdating) {
+	auto& buffer = vertex_buffers[Name];
+
+	if (!buffer) {
+		buffer = CreateVertexBuffer(VertexCount, SingleVertexSizeInBytes, OptimizeForUpdating);
+		TWU::DXSetName(buffer->Get(), Name);
+	}
+
+	return buffer;
+}
+
+TW3DConstantBuffer* TW3DResourceManager::RequestConstantBuffer(TWT::String const& Name, TWT::uint ElementCount, TWT::uint ElementSizeInBytes) {
+	auto& buffer = constant_buffers[Name];
+
+	if (!buffer) {
+		buffer = CreateConstantBuffer(ElementCount, ElementSizeInBytes);
+		TWU::DXSetName(buffer->Get(), Name);
+	}
+
+	return buffer;
+}
+
+TW3DFramebuffer* TW3DResourceManager::RequestFramebuffer(TWT::String const& Name, TWT::uint2 Size) {
+	auto& buffer = framebuffers[Name];
+
+	if (!buffer)
+		buffer = new TW3DFramebuffer(this, Size);
+
+	return buffer;
+}
+
+void TW3DResourceManager::ReleaseCommandList(TWT::String const& Name) {
+	delete command_lists.at(Name);
+	command_lists.erase(Name);
+}
+
+void TW3DResourceManager::ReleaseRenderTarget(TWT::String const& Name) {
+	delete render_targets.at(Name);
+	render_targets.erase(Name);
+}
+
+void TW3DResourceManager::ReleaseTexture(TWT::String const& Name) {
+	delete textures.at(Name);
+	textures.erase(Name);
+}
+
+void TW3DResourceManager::ReleaseBuffer(TWT::String const& Name) {
+	delete buffers.at(Name);
+	buffers.erase(Name);
+}
+
+void TW3DResourceManager::ReleaseVertexBuffer(TWT::String const& Name) {
+	delete vertex_buffers.at(Name);
+	vertex_buffers.erase(Name);
+}
+
+void TW3DResourceManager::ReleaseConstantBuffer(TWT::String const& Name) {
+	delete constant_buffers.at(Name);
+	constant_buffers.erase(Name);
 }
 
 void TW3DResourceManager::ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {

@@ -9,7 +9,6 @@ public:
 	void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height) final;
 	void InitializeFrame(TW3DSCFrame* Frame) final;
 	void Resize(TWT::uint Width, TWT::uint Height) final;
-	void Record(TW3DSCFrame* Frame) final;
 	void Update(float DeltaTime) final;
 	void Execute(TW3DSCFrame* Frame) final;
 
@@ -23,10 +22,6 @@ private:
 	void record_g_buffer(TW3DCommandList* cl);
 
 	void BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* ColorOutput);
-
-	//TW3DCommandList* g_cl = nullptr;    // GBuffer CL
-	//TW3DCommandList* rt_cl = nullptr;   // Ray tracing CL
-	//TW3DCommandList* gd_cl = nullptr;   // Ray tracing denoiser CL
 
 	// Renderer resources
 	// --------------------------------------------------------------------- 
