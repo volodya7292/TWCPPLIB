@@ -119,42 +119,24 @@ struct Bounds {
 	float4 pMin;
 	float4 pMax;
 
-	inline static float gamma(int n) {
-		return (n * MachineEpsilon) / (1 - n * MachineEpsilon);
-	}
+	bool intersect(Ray ray) {
+		//distan = FLT_MAX;
 
-	inline float4 i(int i) {
-		return (i == 0) ? pMin : pMax;
-	}
+		const float3 invD = rcp(ray.dir);
+		const float3 t0s = (pMin.xyz - ray.origin) * invD;
+		const float3 t1s = (pMax.xyz - ray.origin) * invD;
 
-	bool intersect(in Ray ray, out float distan) {
-		float t0 = 0, t1 = FLT_MAX;
-		distan = FLT_MAX;
-		for (int i = 0; i < 3; ++i) {
-			// Update interval for _i_th bounding box slab
-			const float invRayDir = 1 / ray.dir[i];
-			float tNear = (pMin[i] - ray.origin[i]) * invRayDir;
-			float tFar = (pMax[i] - ray.origin[i]) * invRayDir;
+		const float3 tsmaller = min(t0s, t1s);
+		const float3 tbigger  = max(t0s, t1s);
 
-			// Update parametric interval from slab intersection $t$ values
-			if (tNear > tFar) {
-				const float temp = tFar;
-				tFar = tNear;
-				tNear = temp;
-			}
+		//const float tmin = max(RAY_TMIN, max(tsmaller[0], max(tsmaller[1], tsmaller[2])));
+		//const float tmax = min(RAY_TMAX, min(tbigger[0], min(tbigger[1], tbigger[2])));
+		const float tmin = max(tsmaller[0], max(tsmaller[1], tsmaller[2]));
+		const float tmax = min(tbigger[0], min(tbigger[1], tbigger[2]));
 
-			// Update _tFar_ to ensure robust ray--bounds intersection
-			tFar *= 1 + 2 * gamma(3);
-			t0 = tNear > t0 ? tNear : t0;
-			t1 = tFar < t1 ? tFar : t1;
-			if (t0 > t1) return false;
-		}
-
-		distan = 0;
-		if (t0 < distan) distan = t0;
-		if (t1 < distan) distan = t1;
-		//if (hitt1) *hitt1 = t1;
-		return true;
+		//if (tmin < distan) distan = t0;
+		//if (tmax < distan) distan = t1;
+		return (tmin < tmax);
 	}
 };
 

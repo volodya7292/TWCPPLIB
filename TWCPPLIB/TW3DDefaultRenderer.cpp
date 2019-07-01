@@ -13,48 +13,8 @@
 
 TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 	delete gbuffer_ps;
-	delete blit_ps;
-
-	//delete rt_cl;
-	//delete g_cl;
-	//delete gd_cl;
 
 	delete ray_tracer;
-}
-
-void TW3DDefaultRenderer::CreateBlitResources() {
-	TW3DRootSignature* root_signature = new TW3DRootSignature(Device,
-		{
-			TW3DRPTexture(0, D3D12_SHADER_VISIBILITY_PIXEL, 0), // GBuffer diffuse
-			TW3DRPTexture(1, D3D12_SHADER_VISIBILITY_PIXEL, 1), // GBuffer emission
-			TW3DRPTexture(2, D3D12_SHADER_VISIBILITY_PIXEL, 2), // RT direct
-			//TW3DRPTexture(3, D3D12_SHADER_VISIBILITY_PIXEL, 3), // RT direct albedo
-			TW3DRPTexture(3, D3D12_SHADER_VISIBILITY_PIXEL, 4), // RT indirect
-			//TW3DRPTexture(5, D3D12_SHADER_VISIBILITY_PIXEL, 5), // RT indirect albedo
-		},
-		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) },
-		true, true, false, false
-	);
-
-	D3D12_RASTERIZER_DESC rastDesc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	rastDesc.CullMode = D3D12_CULL_MODE_NONE;
-
-	D3D12_DEPTH_STENCIL_DESC depthDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	depthDesc.DepthEnable = false;
-
-	D3D12_BLEND_DESC blendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-
-	blit_ps = new TW3DGraphicsPipelineState(
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
-		SwapChain->GetDescription().SampleDesc,
-		rastDesc,
-		depthDesc,
-		blendDesc,
-		root_signature);
-	blit_ps->SetRTVFormat(0, TWT::RGBA8Unorm);
-	blit_ps->SetVertexShader(new TW3DShader(TW3DCompiledShader(ScreenQuad_VertexByteCode), "ScreenQuad"s));
-	blit_ps->SetPixelShader(new TW3DShader(TW3DCompiledShader(FinalPassBlit_PixelByteCode), "BlitPixel"s));
-	blit_ps->Create(Device);
 }
 
 void TW3DDefaultRenderer::CreateGBufferResources() {
@@ -113,7 +73,6 @@ void TW3DDefaultRenderer::CreateRTResources() {
 }
 
 void TW3DDefaultRenderer::record_g_buffer_objects(TW3DCommandList* cl) {
-	//cl->SetPipelineState(gbuffer_ps);
 	cl->SetRootSignatureFrom(gbuffer_ps);
 	cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -126,7 +85,6 @@ void TW3DDefaultRenderer::record_g_buffer(TW3DSCFrame* frame, TW3DCommandList* c
 	cl->BindResources(ResourceManager);
 	
 
-	//cl->SetPipelineState(gbuffer_ps);
 	cl->SetRootSignatureFrom(gbuffer_ps);
 	cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -167,8 +125,6 @@ void TW3DDefaultRenderer::record_g_buffer(TW3DSCFrame* frame, TW3DCommandList* c
 void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height) {
 	TW3DRenderer::Initialize(ResourceManager, SwapChain, Width, Height);
 	TWU::TW3DLogInfo("TW3DRenderer initialized."s);
-	CreateBlitResources();
-	TWU::TW3DLogInfo("[TW3DDefaultRenderer] BlitResources initialized."s);
 	CreateGBufferResources();
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] GBufferResources initialized."s);
 	CreateRTResources();
@@ -197,11 +153,8 @@ void TW3DDefaultRenderer::InitializeFrame(TW3DSCFrame* Frame) {
 
 	auto g_cl = Frame->RequestCommandList("GBuffer"s, TW3D_CL_DIRECT, gbuffer_ps);
 
-	auto blit_cl = Frame->RequestCommandList("Blit"s, TW3D_CL_DIRECT, blit_ps);
-	blit_cl->Reset();
-	blit_cl->BindResources(ResourceManager);
+	auto blit_cl = Frame->RequestCommandList("Blit"s, TW3D_CL_DIRECT);
 	BlitOutput(blit_cl, Frame->RenderTarget);
-	blit_cl->Close();
 }
 
 void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
@@ -226,8 +179,8 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 }
 
 void TW3DDefaultRenderer::BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* ColorOutput) {
-	cl->SetRootSignatureFrom(blit_ps);
-
+	cl->Reset();
+	cl->BindResources(ResourceManager);
 
 	cl->ResourceBarriers({
 	    TW3DTransitionBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST),
@@ -241,37 +194,7 @@ void TW3DDefaultRenderer::BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* Colo
 		TW3DTransitionBarrier(ray_tracer->Output, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
 	});
 
-	//cl->ResourceBarriers({
-	//	TW3DTransitionBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET),
-	//	TW3DTransitionBarrier(ray_tracer->direct_in, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
-	//	//TW3DTransitionBarrier(ray_tracer->direct_albedo_tex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
-	//	TW3DTransitionBarrier(ray_tracer->indirect_in, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
-	//	//TW3DTransitionBarrier(ray_tracer->indirect_albedo_tex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
-	//	TW3DTransitionBarrier(ray_tracer->direct_out, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
-	//	TW3DTransitionBarrier(ray_tracer->indirect_out, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
-	//});
-
-	//cl->SetRenderTarget(ColorOutput);
-	//cl->BindTexture(0, g_diffuse);
-	//cl->BindTexture(1, g_emission);
-	//cl->BindTexture(2, ray_tracer->direct_out);
-	////cl->BindTexture(3, ray_tracer->direct_albedo_tex);
-	//cl->BindTexture(3, ray_tracer->indirect_out);
-	////cl->BindTexture(5, ray_tracer->indirect_albedo_tex);
-	//cl->ClearRTV(ColorOutput, TWT::float4(0, 0, 0, 1));
-	//cl->SetViewport(&viewport);
-	//cl->SetScissor(&scissor);
-	//cl->DrawQuad();
-
-	//cl->ResourceBarriers({
-	//	TW3DTransitionBarrier(ray_tracer->direct_in, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
-	//	//TW3DTransitionBarrier(ray_tracer->direct_albedo_tex, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
-	//	TW3DTransitionBarrier(ray_tracer->indirect_in, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
-	//	//TW3DTransitionBarrier(ray_tracer->indirect_albedo_tex, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
-	//	TW3DTransitionBarrier(ray_tracer->direct_out, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
-	//	TW3DTransitionBarrier(ray_tracer->indirect_out, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
-	//	TW3DTransitionBarrier(ColorOutput, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT)
-	//});
+	cl->Close();
 }
 
 void TW3DDefaultRenderer::Update(float DeltaTime) {

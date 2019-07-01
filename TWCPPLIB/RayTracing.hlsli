@@ -137,7 +137,7 @@ void triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tr
 void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offset, in GVB gvb, in Ray ray, inout TriangleIntersection tri_inter) {
 	TriangleIntersection mininter = tri_inter, tempinter = tri_inter;
 
-	float distance = 0;
+	//float distance = 0;
 
 
 	uint stackIndex = 0;
@@ -147,8 +147,8 @@ void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 	uint vo = vertex_offset / 3;
 
 
-	float d2 = 0;
-	bool found = rtas[node].bounds.intersect(ray, d2);
+	//float d2 = 0;
+	bool found = rtas[node].bounds.intersect(ray);
 
 	elementIndex = rtas[node].element_index;
 
@@ -158,18 +158,20 @@ void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 	} else if (elementIndex != -1) {
 		tempinter.TriangleId = vo + elementIndex;
 		triangle_intersection(ray, gvb, tempinter);
+
 		if (tempinter.Intersected)
 			mininter = tempinter;
 	}
 
 	bool lintersection, rintersection, traverseL, traverseR;
 
+	[loop]
 	while (node != -1) {
 		lintersection = rintersection = traverseL = traverseR = false;
 
 		childL = node_offset + rtas[node].left_child;
 		if (childL != -1) {
-			lintersection = rtas[childL].bounds.intersect(ray, distance);
+			lintersection = rtas[childL].bounds.intersect(ray);
 
 			if (lintersection) {
 				elementIndex = rtas[childL].element_index;
@@ -177,6 +179,7 @@ void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 				if (elementIndex != -1) {
 					tempinter.TriangleId = vo + elementIndex;
 					triangle_intersection(ray, gvb, tempinter);
+
 					if (tempinter.Intersected && tempinter.Distance < mininter.Distance)
 						mininter = tempinter;
 				} else {
@@ -187,7 +190,7 @@ void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 
 		childR = node_offset + rtas[node].right_child;
 		if (childR != -1) {
-			rintersection = rtas[childR].bounds.intersect(ray, distance);
+			rintersection = rtas[childR].bounds.intersect(ray);
 
 			if (rintersection) {
 				elementIndex = rtas[childR].element_index;
@@ -195,6 +198,7 @@ void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 				if (elementIndex != -1) {
 					tempinter.TriangleId = vo + elementIndex;
 					triangle_intersection(ray, gvb, tempinter);
+
 					if (tempinter.Intersected && tempinter.Distance < mininter.Distance)
 						mininter = tempinter;
 				} else {
@@ -207,6 +211,7 @@ void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 			node = g_stack_nodes[--stackIndex]; // pop
 		} else {
 			node = (traverseL) ? childL : childR;
+
 			if (traverseL && traverseR)
 				g_stack_nodes[stackIndex++] = childR; // push
 		}
@@ -228,7 +233,7 @@ void check_scene_rtas_intersection(in RTNB gnb, in GVB gvb, in Ray ray, in uint 
 void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray ray, inout TriangleIntersection TriInter) {
 	ray.origin += ray.dir * RT_BIAS;
 
-	float bounds_distance = FLT_MAX;
+	//float bounds_distance = FLT_MAX;
 	TriInter.Distance = FLT_MAX;
 	TriangleIntersection mininter = TriInter, tempinter = TriInter;
 
@@ -237,8 +242,8 @@ void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray ray, inout Tri
 
 	uint childL, childR, nodeOffset, node = 0;
 
-	float d2 = 0;
-	bool found = SceneAS[node].bounds.intersect(ray, d2);
+	//float d2 = 0;
+	bool found = SceneAS[node].bounds.intersect(ray);
 
 	if (!found) {
 		TriInter = mininter;
@@ -247,18 +252,20 @@ void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray ray, inout Tri
 
 	bool lintersection, rintersection, traverseL, traverseR;
 
+	[loop]
 	while (node != -1) {
 		lintersection = rintersection = traverseL = traverseR = false;
 
 		childL = SceneAS[node].left_child;
 		if (childL != -1) {
-			lintersection = SceneAS[childL].bounds.intersect(ray, bounds_distance);
+			lintersection = SceneAS[childL].bounds.intersect(ray);
 
 			if (lintersection) {
 				nodeOffset = SceneAS[childL].instance.node_offset;
 
 				if (nodeOffset != -1) {
 					check_scene_rtas_intersection(GNB, GVB, ray, SceneAS[childL].instance.vertex_offset, nodeOffset, SceneAS[childL].instance.transform_inverse, tempinter);
+
 					if (tempinter.Distance < mininter.Distance) {
 						mininter = tempinter;
 						last_mesh_transform = SceneAS[childL].instance.transform;
@@ -271,13 +278,14 @@ void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray ray, inout Tri
 
 		childR = SceneAS[node].right_child;
 		if (childR != -1) {
-			rintersection = SceneAS[childR].bounds.intersect(ray, bounds_distance);
+			rintersection = SceneAS[childR].bounds.intersect(ray);
 
 			if (rintersection) {
 				nodeOffset = SceneAS[childR].instance.node_offset;
 
 				if (nodeOffset != -1) {
 					check_scene_rtas_intersection(GNB, GVB, ray, SceneAS[childR].instance.vertex_offset, nodeOffset, SceneAS[childR].instance.transform_inverse, tempinter);
+
 					if (tempinter.Distance < mininter.Distance) {
 						mininter = tempinter;
 						last_mesh_transform = SceneAS[childR].instance.transform;
@@ -292,6 +300,7 @@ void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray ray, inout Tri
 			node = g_stack_nodes2[--stackIndex]; // pop
 		} else {
 			node = (traverseL) ? childL : childR;
+
 			if (traverseL && traverseR)
 				g_stack_nodes2[stackIndex++] = childR; // push
 		}
@@ -300,6 +309,7 @@ void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray ray, inout Tri
 	if (mininter.Intersected) {
 		if (mininter.Flags & INTERSECTION_FLAG_NORMAL)
 			mininter.Normal = mul(last_mesh_transform, float4(mininter.Normal, 0)).xyz;
+
 		mininter.Point = mul(last_mesh_transform, float4(mininter.Point, 1)).xyz;
 	}
 

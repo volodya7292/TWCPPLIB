@@ -15,7 +15,6 @@ public:
 	TW3DScene* LargeScaleScene = nullptr;
 
 private:
-	void CreateBlitResources();
 	void CreateGBufferResources();
 	void CreateRTResources();
 
@@ -53,9 +52,6 @@ private:
 	TW3DRaytracer* ray_tracer;
 	float rt_scale = 0.25f;
 
-	// Blit output
-	// --------------------------------------------------------------------- 
-	TW3DGraphicsPipelineState *blit_ps = nullptr;
 
 	D3D12_VIEWPORT viewport = D3D12_VIEWPORT();
 	D3D12_RECT scissor = D3D12_RECT();
