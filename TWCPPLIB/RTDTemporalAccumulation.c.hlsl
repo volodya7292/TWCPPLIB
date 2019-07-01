@@ -1,11 +1,11 @@
 #include "HLSLHelper.hlsli"
-#include "SVGFCommon.hlsli"
+#include "RTDCommon.hlsli"
 
 Texture2D<float4> g_direct;
 Texture2D<uint4> g_indirect;
 Texture2D<float4> g_filt_direct;
 Texture2D<uint4> g_filt_indirect;
-Texture2D<float4> g_motion;
+Texture2D<float2> g_motion;
 Texture2D<float4> g_compact_data;
 Texture2D<float4> g_prev_compact_data;
 RWTexture2D<float4> g_direct_out;
@@ -33,7 +33,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	const float2 G_SCALE = G_SIZE / float2(RT_SIZE);
 	const int2 g_pixel = rt_pixel * G_SCALE + G_SCALE / 2;
 
-	const float4 motion = g_motion[g_pixel];
+	const float2 motion = g_motion[g_pixel];
 	const int2 rt_pixel_prev = int2(rt_pixel + motion.xy * float2(RT_SIZE) + float2(0.5f, 0.5f));
 	const int2 g_pixel_prev = rt_pixel_prev * G_SCALE + G_SCALE / 2.0f;
 

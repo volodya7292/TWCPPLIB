@@ -20,23 +20,28 @@ public:
 	TW3DResourceManager(TW3DDevice* Device);
 	~TW3DResourceManager();
 
-	TW3DFramebuffer* CreateFramebuffer(TWT::uint2 Size);
-	TW3DRenderTarget* CreateRenderTarget(ID3D12Resource* Buffer);
-	TW3DRenderTarget* CreateRenderTarget(TWT::uint2 Size, DXGI_FORMAT Format, TWT::float4 ClearValue = TWT::float4(-1));
-	TW3DBuffer* CreateBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV = false);
-	TW3DVertexBuffer* CreateVertexBuffer(TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex), bool OptimizeForUpdating = false);
+	TW3DFramebuffer*    CreateFramebuffer(TWT::uint2 Size);
+	TW3DRenderTarget*   CreateRenderTarget(ID3D12Resource* Buffer);
+	TW3DRenderTarget*   CreateRenderTarget(TWT::uint2 Size, DXGI_FORMAT Format, TWT::float4 ClearValue = TWT::float4(-1));
+	TW3DBuffer*         CreateBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV = false);
+	TW3DVertexBuffer*   CreateVertexBuffer(TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex), bool OptimizeForUpdating = false);
 	TW3DConstantBuffer* CreateConstantBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes);
-	TW3DTexture* CreateDepthStencilTexture(TWT::uint2 Size);
-	TW3DTexture* CreateTexture2D(const TWT::WString& Filename);
-	TW3DTexture* CreateTexture2D(TWT::uint2 Size, DXGI_FORMAT Format, bool UAV = false);
-	TW3DTexture* CreateTextureArray2D(TWT::uint2 Size, TWT::uint Depth, DXGI_FORMAT Format, bool UAV = false);
-	TW3DCommandList* CreateCommandList(TW3DCommandListType Type);
-	TW3DCommandList* GetTemporaryDirectCommandList();
-	TW3DCommandList* GetTemporaryComputeCommandList();
-	TW3DCommandList* GetTemporaryCopyCommandList();
+	TW3DTexture*        CreateDepthStencilTexture(TWT::uint2 Size);
+	TW3DTexture*        CreateTexture2D(const TWT::WString& Filename);
+	TW3DTexture*        CreateTexture2D(TWT::uint2 Size, DXGI_FORMAT Format, bool UAV = false);
+	TW3DTexture*        CreateTextureArray2D(TWT::uint2 Size, TWT::uint Depth, DXGI_FORMAT Format, bool UAV = false);
+	TW3DCommandList*    CreateCommandList(TW3DCommandListType Type);
+	TW3DCommandList*    CreateCommandList(TW3DCommandListType Type, TW3DGraphicsPipelineState* InitialState);
+	TW3DCommandList*    CreateCommandList(TW3DCommandListType Type, TW3DComputePipelineState* InitialState);
+
+	TW3DCommandList*  GetTemporaryDirectCommandList();
+	TW3DCommandList*  GetTemporaryComputeCommandList();
+	TW3DCommandList*  GetTemporaryCopyCommandList();
 	TW3DCommandQueue* GetCommandListCommandQueue(TW3DCommandList* CommandList);
 
 	TW3DCommandList*    RequestCommandList(TWT::String const& Name, TW3DCommandListType Type);
+	TW3DCommandList*    RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipelineState* InitialState);
+	TW3DCommandList*    RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipelineState* InitialState);
 	TW3DRenderTarget*   RequestRenderTarget(TWT::String const& Name, ID3D12Resource* Buffer);
 	TW3DRenderTarget*   RequestRenderTarget(TWT::String const& Name, TWT::uint2 Size, DXGI_FORMAT Format, TWT::float4 ClearValue = TWT::float4(-1));
 	TW3DTexture*        RequestTexture2D(TWT::String const& Name, TWT::uint2 Size, DXGI_FORMAT Format, bool UAV = false);
@@ -54,6 +59,7 @@ public:
 	void ReleaseBuffer(TWT::String const& Name);
 	void ReleaseVertexBuffer(TWT::String const& Name);
 	void ReleaseConstantBuffer(TWT::String const& Name);
+	void ReleaseFramebuffer(TWT::String const& Name);
 
 	void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 

@@ -463,6 +463,9 @@
     <FxCompile Include="RTDTemporalAccumulation.c.hlsl">
       <Filter>Resource Files\Shaders\SVGF</Filter>
     </FxCompile>
+    <FxCompile Include="Tonemap.c.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSLHelper.hlsli">
@@ -477,7 +480,7 @@
     <None Include="RayTracing.hlsli">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="SVGFCommon.hlsli">
+    <None Include="RTDCommon.hlsli">
       <Filter>Resource Files\Shaders\SVGF</Filter>
     </None>
   </ItemGroup>

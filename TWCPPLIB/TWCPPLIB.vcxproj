@@ -119,6 +119,7 @@
       <AllResourcesBound>true</AllResourcesBound>
       <VariableName>ShaderByteCode</VariableName>
       <HeaderFileOutput>CompiledShaders/Shader.c.h</HeaderFileOutput>
+      <AdditionalOptions>/O3 /Ges /Gis %(AdditionalOptions)</AdditionalOptions>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -166,7 +167,7 @@
     </FxCompile>
     <FxCompile>
       <AllResourcesBound>true</AllResourcesBound>
-      <AdditionalOptions>/O3 /Ges /Gis</AdditionalOptions>
+      <AdditionalOptions>/O3 /Ges /Gis %(AdditionalOptions)</AdditionalOptions>
       <VariableName>ShaderByteCode</VariableName>
       <HeaderFileOutput>CompiledShaders/Shader.c.h</HeaderFileOutput>
     </FxCompile>
@@ -520,6 +521,22 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
     </FxCompile>
+    <FxCompile Include="Tonemap.c.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Tonemap_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompiledShaders/Tonemap.c.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Tonemap_ByteCode</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompiledShaders/Tonemap.c.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+    </FxCompile>
     <FxCompile Include="UpdateLBVHNodeBounds.c.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
@@ -685,7 +702,7 @@
     <None Include="HLSLHelper.hlsli" />
     <None Include="RayTracing.hlsli" />
     <None Include="RTDefaultLightModel.hlsli" />
-    <None Include="SVGFCommon.hlsli" />
+    <None Include="RTDCommon.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

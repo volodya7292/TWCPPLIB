@@ -10,7 +10,7 @@ TW3DSwapChain::TW3DSwapChain(TW3DFactory* Factory, TW3DCommandQueue* CommandQueu
 	desc = {};
 	desc.Width = Width;
 	desc.Height = Height;
-	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	desc.Stereo = false;
 	desc.Scaling = DXGI_SCALING_STRETCH;
 	desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;

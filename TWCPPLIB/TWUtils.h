@@ -15,10 +15,10 @@ namespace TWU {
 	TWT::WString HResultToWString(HRESULT Result);
 
 	void FileExistsAssert(TWT::String const& filename);
-	void FileExistsAssert(TWT::WString filename);
+	void FileExistsAssert(TWT::WString const& filename);
 
 	// Read entire file into byte array
-	TWT::byte* ReadFileBytes(TWT::String filename, TWT::uint& size);
+	TWT::byte* ReadFileBytes(TWT::String const& filename, TWT::uint& size);
 
 	tm GetTime();
 	double GetTimeSeconds();

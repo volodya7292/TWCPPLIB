@@ -3,12 +3,33 @@
 #include "TW3DResourceManager.h"
 #include "TW3DObject.h"
 #include "TW3DPerspectiveCamera.h"
+#include "TW3DGraphicsPipelineState.h"
 
 TW3DCommandList::TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type) :
-	type(Type)
-{
+	type(Type) {
+
 	Device->CreateCommandAllocator(Type, &command_allocator);
-	Device->CreateGraphicsCommandList(Type, command_allocator, &command_list);
+	Device->CreateGraphicsCommandList(Type, command_allocator, nullptr, &command_list);
+	command_list->SetName(L"TW3DCommandList");
+	command_allocator->SetName(L"TW3D ID3D12CommandAllocator");
+	command_list->Close();
+}
+
+TW3DCommandList::TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type, TW3DGraphicsPipelineState* InitialState) :
+	type(Type), initial_pipeline_state(InitialState->Get()) {
+
+	Device->CreateCommandAllocator(Type, &command_allocator);
+	Device->CreateGraphicsCommandList(Type, command_allocator, InitialState->Get(), &command_list);
+	command_list->SetName(L"TW3DCommandList");
+	command_allocator->SetName(L"TW3D ID3D12CommandAllocator");
+	command_list->Close();
+}
+
+TW3DCommandList::TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type, TW3DComputePipelineState* InitialState) :
+	type(Type), initial_pipeline_state(InitialState->Get()) {
+
+	Device->CreateCommandAllocator(Type, &command_allocator);
+	Device->CreateGraphicsCommandList(Type, command_allocator, InitialState->Get(), &command_list);
 	command_list->SetName(L"TW3DCommandList");
 	command_allocator->SetName(L"TW3D ID3D12CommandAllocator");
 	command_list->Close();
@@ -63,12 +84,12 @@ void TW3DCommandList::CopyTextureRegion(TW3DResource* DstTexture, TW3DResource* 
 
 void TW3DCommandList::SetPipelineState(TW3DGraphicsPipelineState* PipelineState) {
 	command_list->SetPipelineState(PipelineState->Get());
-	SetRootSignature(PipelineState->RootSignature);
+	SetRootSignatureFrom(PipelineState);
 }
 
 void TW3DCommandList::SetPipelineState(TW3DComputePipelineState* PipelineState) {
 	command_list->SetPipelineState(PipelineState->Get());
-	SetRootSignature(PipelineState->RootSignature);
+	SetRootSignatureFrom(PipelineState);
 }
 
 void TW3DCommandList::SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DTexture* DSV) {
@@ -101,6 +122,14 @@ void TW3DCommandList::SetRootSignature(TW3DRootSignature* RootSignature) {
 		command_list->SetComputeRootSignature(RootSignature->Get());
 	else
 		command_list->SetGraphicsRootSignature(RootSignature->Get());
+}
+
+void TW3DCommandList::SetRootSignatureFrom(TW3DGraphicsPipelineState* PipelineState) {
+	command_list->SetGraphicsRootSignature(PipelineState->RootSignature->Get());
+}
+
+void TW3DCommandList::SetRootSignatureFrom(TW3DComputePipelineState* PipelineState) {
+	command_list->SetComputeRootSignature(PipelineState->RootSignature->Get());
 }
 
 void TW3DCommandList::SetDescriptorHeap(TW3DDescriptorHeap* heap) {
@@ -188,9 +217,12 @@ void TW3DCommandList::Dispatch(TWT::uint2 ThreadGroupCountXY, TWT::uint ThreadGr
 }
 
 void TW3DCommandList::ExecuteIndirect(ID3D12CommandSignature* CommandSignature, TWT::uint MaxCommandCount, ID3D12Resource* ArgumentBuffer,
-	TWT::uint64 ArgumentBufferOffset, ID3D12Resource* CountBuffer, TWT::uint64 CountBufferOffset)
-{
+	TWT::uint64 ArgumentBufferOffset, ID3D12Resource* CountBuffer, TWT::uint64 CountBufferOffset) {
 	command_list->ExecuteIndirect(CommandSignature, MaxCommandCount, ArgumentBuffer, ArgumentBufferOffset, CountBuffer, CountBufferOffset);
+}
+
+void TW3DCommandList::ExecuteBundle(TW3DCommandList* CommandList) {
+	command_list->ExecuteBundle(CommandList->Get());
 }
 
 void TW3DCommandList::DrawQuad() {
@@ -254,8 +286,9 @@ void TW3DCommandList::DrawObject(TW3DObject* object, TWT::uint ModelCBRootParame
 
 void TW3DCommandList::Reset() {
 	empty = true;
+	
 	TWU::SuccessAssert(command_allocator->Reset(), "TW3DCommandList::Reset, command_allocator->Reset"s);
-	TWU::SuccessAssert(command_list->Reset(command_allocator, nullptr), "TW3DCommandList::Reset, command_list->Reset"s);
+	TWU::SuccessAssert(command_list->Reset(command_allocator, initial_pipeline_state), "TW3DCommandList::Reset, command_list->Reset"s);
 }
 
 void TW3DCommandList::Close() {

@@ -1,5 +1,5 @@
 #include "HLSLHelper.hlsli"
-#include "SVGFCommon.hlsli"
+#include "RTDCommon.hlsli"
 
 struct InputData {
 	uint iteration;
@@ -15,8 +15,10 @@ RWTexture2D<float4> g_detail_sum_direct;
 RWTexture2D<float4> g_detail_sum_indirect;
 RWTexture2D<float4> g_direct_out;
 RWTexture2D<uint4> g_indirect_out;
-RWTexture2D<float4> g_direct_final_out;
-RWTexture2D<float4> g_indirect_final_out;
+
+Texture2D<float4> g_diffuse;
+Texture2D<float4> g_emission;
+RWTexture2D<float4> g_final_out;
 
 ConstantBuffer<InputData> input;
 
@@ -129,14 +131,14 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		}
 	}
 
-	const float4 sn_direct   = sumDirect / sumW.x;
-	const float4 sn_indirect0 = sumIndirect0 / sumW.x;
-	const float4 sn_indirect1 = sumIndirect1 / sumW.y;
-	const float4 sn_indirect = sn_indirect0 * sn_indirect1;
+	const float3 sn_direct   = sumDirect.rgb / sumW.x;
+	const float3 sn_indirect0 = sumIndirect0.rgb / sumW.x;
+	const float3 sn_indirect1 = sumIndirect1.rgb / sumW.y;
+	const float3 sn_indirect = sn_indirect0.rgb * sn_indirect1.rgb;
 
-	const float4 sigma_direct   = sqrt(m2_direct / m_count - sqr(m1_direct / m_count));
-	const float4 sigma_indirect0 = sqrt(m2_indirect0 / m_count - sqr(m1_indirect0 / m_count));
-	const float4 sigma_indirect1 = sqrt(m2_indirect1 / m_count - sqr(m1_indirect1 / m_count));
+	const float3 sigma_direct   = sqrt(m2_direct.rgb / m_count - sqr(m1_direct.rgb / m_count));
+	const float3 sigma_indirect0 = sqrt(m2_indirect0.rgb / m_count - sqr(m1_indirect0.rgb / m_count));
+	const float3 sigma_indirect1 = sqrt(m2_indirect1.rgb / m_count - sqr(m1_indirect1.rgb / m_count));
 	const float  gamma          = 0.05f;
 
 	float4 sn_prev_indir0, sn_prev_indir1;
@@ -144,24 +146,26 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	float4 detail_indir0, detail_indir1;
 	unpack_f2_16(g_detail_sum_indirect[rt_pixel], detail_indir0, detail_indir1);
 
-	float4 coof_direct = g_detail_sum_direct[rt_pixel] + clamp(sn_direct - g_prev_direct[rt_pixel], -sigma_direct * gamma, sigma_direct * gamma);
-	float4 coof_indirect0 = detail_indir0 + clamp(sn_indirect0 - sn_prev_indir0, -sigma_indirect0 * gamma, sigma_indirect0 * gamma);
-	float4 coof_indirect1 = detail_indir1 + clamp(sn_indirect1 - sn_prev_indir1, -sigma_indirect1 * gamma, sigma_indirect1 * gamma);
+	float3 coof_direct = g_detail_sum_direct[rt_pixel].rgb + clamp(sn_direct - g_prev_direct[rt_pixel].rgb, -sigma_direct * gamma, sigma_direct * gamma);
+	float3 coof_indirect0 = detail_indir0.rgb + clamp(sn_indirect0 - sn_prev_indir0.rgb, -sigma_indirect0 * gamma, sigma_indirect0 * gamma);
+	float3 coof_indirect1 = detail_indir1.rgb + clamp(sn_indirect1 - sn_prev_indir1.rgb, -sigma_indirect1 * gamma, sigma_indirect1 * gamma);
 
 	if (same_pixel) {
-		g_detail_sum_direct[rt_pixel] = coof_direct;
-		g_detail_sum_indirect[rt_pixel] = pack_f2_16(coof_indirect0, coof_indirect1);
+		g_detail_sum_direct[rt_pixel] = float4(coof_direct, 1);
+		g_detail_sum_indirect[rt_pixel] = pack_f2_16(float4(coof_indirect0, 1), float4(coof_indirect1, 1));
 	}
 
 	if (input.iteration == input.max_iterations - 1) {
+		float4 dir_out = float4(sn_direct - coof_direct, 1);
+		
 		if (same_pixel) {
-			g_direct_out[rt_pixel] = sn_direct - coof_direct;
-			g_indirect_out[rt_pixel] = pack_f2_16(sn_indirect0 - coof_indirect0, sn_indirect1 - coof_indirect1);
+			g_direct_out[rt_pixel] = dir_out;
+			g_indirect_out[rt_pixel] = pack_f2_16(float4(sn_indirect0 - coof_indirect0, 1), float4(sn_indirect1 - coof_indirect1, 1));
 		}
-		g_direct_final_out[g_pixel] = sn_direct - coof_direct;
-		g_indirect_final_out[g_pixel] = (sn_indirect0 - coof_indirect0) * (sn_indirect1 - coof_indirect1);
+
+		g_final_out[g_pixel] = g_emission[g_pixel] + (dir_out + float4((sn_indirect0 - coof_indirect0) * (sn_indirect1 - coof_indirect1), 1)) * max(5e-3f, g_diffuse[g_pixel] / PI);
 	} else if (same_pixel) {
-		g_direct_out[rt_pixel] = sn_direct;
-		g_indirect_out[rt_pixel] = pack_f2_16(sn_indirect0, sn_indirect1);
+		g_direct_out[rt_pixel] = float4(sn_direct, 1);
+		g_indirect_out[rt_pixel] = pack_f2_16(float4(sn_indirect0, 1), float4(sn_indirect1, 1));
 	}
 }

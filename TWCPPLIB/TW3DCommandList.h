@@ -14,10 +14,14 @@ class TW3DResourceManager;
 class TW3DDescriptorHeap;
 class TW3DObject;
 class TW3DPerspectiveCamera;
+class TW3DGraphicsPipelineState;
+class TW3DComputePipelineState;
 
 class TW3DCommandList {
 public:
 	TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type);
+	TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type, TW3DGraphicsPipelineState* InitialState);
+	TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type, TW3DComputePipelineState* InitialState);
 	~TW3DCommandList();
 
 	ID3D12GraphicsCommandList* Get();
@@ -42,6 +46,8 @@ public:
 	void ClearRTV(TW3DRenderTarget* RenderTarget, TWT::float4 Color);
 	void ClearDSVDepth(TW3DTexture* Texture);
 	void SetRootSignature(TW3DRootSignature* RootSignature);
+	void SetRootSignatureFrom(TW3DGraphicsPipelineState* PipelineState);
+	void SetRootSignatureFrom(TW3DComputePipelineState* PipelineState);
 	void SetDescriptorHeap(TW3DDescriptorHeap* heap);
 	void SetDescriptorHeaps(std::vector<TW3DDescriptorHeap*> heaps);
 	void SetRootDescriptorTable(TWT::uint RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor);
@@ -58,6 +64,7 @@ public:
 	void Dispatch(TWT::uint2 ThreadGroupCountXY = TWT::uint2(1), TWT::uint ThreadGroupCountZ = 1);
 	void ExecuteIndirect(ID3D12CommandSignature* CommandSignature, TWT::uint MaxCommandCount, ID3D12Resource* ArgumentBuffer,
 		TWT::uint64 ArgumentBufferOffset, ID3D12Resource* CountBuffer, TWT::uint64 CountBufferOffset);
+	void ExecuteBundle(TW3DCommandList* CommandList);
 
 
 	void DrawQuad();
@@ -84,6 +91,8 @@ public:
 private:
 	ID3D12GraphicsCommandList* command_list;
 	ID3D12CommandAllocator* command_allocator;
+
+	ID3D12PipelineState* initial_pipeline_state = nullptr;
 
 	bool empty = true;
 

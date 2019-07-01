@@ -1,5 +1,5 @@
 #include "HLSLHelper.hlsli"
-#include "SVGFCommon.hlsli"
+#include "RTDCommon.hlsli"
 
 Texture2DArray<float4> diffuse_tex : register(t0);
 Texture2DArray<float4> specular_tex : register(t1);
@@ -25,7 +25,7 @@ struct PS_OUTPUT {
 	float4 diffuse     : SV_Target2;    // .rgb diffuse material color, .a pixel opacity/transparency
 	float4 specular    : SV_Target3;    // .rgb Falcor's specular representation, .a specular roughness
 	float4 emission    : SV_Target4;    // .rgb emission material color
-	float4 svgfMoVec   : SV_Target5;    // SVGF-specific buffer containing motion vector and fwidth of pos & normal
+	float2 svgfMoVec   : SV_Target5;    // SVGF-specific buffer containing motion vector and fwidth of pos & normal
 	float4 svgfCompact : SV_Target6;    // SVGF-specific buffer containing duplicate data that allows reducing memory traffic in some passes
 	float  depth    : SV_Depth;
 };
@@ -107,9 +107,9 @@ PS_OUTPUT main(VS_OUTPUT input) {
 
 
 	// The 'motion vector' buffer
-	float2 svgfMotionVec = calcMotionVector(input.prev_clip_pos, input.clip_pos.xy / float2(renderer.info.x, renderer.info.y)) + float2(rand_next(), -rand_next()) / float2(renderer.info.x, renderer.info.y);
-	float2 posNormFWidth = float2(length(fwidth(input.world_pos)), length(fwidth(normal)));
-	float4 svgfMotionVecOut = float4(svgfMotionVec, posNormFWidth);
+	float2 svgfMotionVecOut = calcMotionVector(input.prev_clip_pos, input.clip_pos.xy / float2(renderer.info.x, renderer.info.y)) + float2(rand_next(), -rand_next()) / float2(renderer.info.x, renderer.info.y);
+	//float2 posNormFWidth = float2(length(fwidth(input.world_pos)), length(fwidth(normal)));
+	//float4 svgfMotionVecOut = float4(svgfMotionVec, posNormFWidth);
 
 
 

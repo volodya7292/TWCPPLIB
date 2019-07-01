@@ -109,7 +109,7 @@ void TW3DScene::Update(float DeltaTime) {
 	collision_world->update(DeltaTime);
 }
 
-void TW3DScene::RecordBeforeExecution() {
+void TW3DScene::BeforeExecution() {
 	// Update vertex & meshes buffers
 	// -------------------------------------------------------------------------------------------------------------------------
 	if (vertex_buffers_changed) {

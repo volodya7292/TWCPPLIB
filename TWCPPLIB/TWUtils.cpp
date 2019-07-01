@@ -13,14 +13,14 @@ void TWU::FileExistsAssert(TWT::String const& filename) {
 		throw std::runtime_error("File "s + filename + " not good(not exists)!"s);
 }
 
-void TWU::FileExistsAssert(TWT::WString filename) {
+void TWU::FileExistsAssert(TWT::WString const& filename) {
 	std::wifstream file(filename.GetData());
 
 	if (!file.good())
 		throw std::runtime_error("File "s + filename.Multibyte() + " not good(not exists)!"s);
 }
 
-TWT::byte* TWU::ReadFileBytes(TWT::String filename, TWT::uint& size) {
+TWT::byte* TWU::ReadFileBytes(TWT::String const& filename, TWT::uint& size) {
 	TWU::FileExistsAssert(filename.Wide());
 
 	std::ifstream file(filename.GetData(), std::ios::ate | std::ios::binary);

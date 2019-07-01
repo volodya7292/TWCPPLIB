@@ -36,8 +36,8 @@ void TW3DDevice::CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE type, ID3D12Comm
 	TWU::SuccessAssert(device->CreateCommandAllocator(type, IID_PPV_ARGS(commandAllocator)), "TW3DDevice::CreateCommandAllocator"s);
 }
 
-void TW3DDevice::CreateGraphicsCommandList(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator* commandAllocator, ID3D12GraphicsCommandList** commandList) {
-	TWU::SuccessAssert(device->CreateCommandList(0, type, commandAllocator, nullptr, IID_PPV_ARGS(commandList)), "TW3DDevice::CreateGraphicsCommandList"s);
+void TW3DDevice::CreateGraphicsCommandList(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator* commandAllocator, ID3D12PipelineState* InitialState, ID3D12GraphicsCommandList** commandList) {
+	TWU::SuccessAssert(device->CreateCommandList(0, type, commandAllocator, InitialState, IID_PPV_ARGS(commandList)), "TW3DDevice::CreateGraphicsCommandList"s);
 }
 
 void TW3DDevice::CreateFence(TWT::uint64 initialValue, D3D12_FENCE_FLAGS flags, ID3D12Fence** fence) {

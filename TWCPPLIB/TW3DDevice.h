@@ -15,7 +15,7 @@ public:
 	void CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC* desc, ID3D12CommandQueue** commandQueue);
 	void CreateDescriptorHeap(const D3D12_DESCRIPTOR_HEAP_DESC* desc, ID3D12DescriptorHeap** descriptorHeap);
 	void CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator** commandAllocator);
-	void CreateGraphicsCommandList(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator* commandAllocator, ID3D12GraphicsCommandList** commandList);
+	void CreateGraphicsCommandList(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator* commandAllocator, ID3D12PipelineState* InitialState, ID3D12GraphicsCommandList** commandList);
 	void CreateFence(TWT::uint64 initialValue, D3D12_FENCE_FLAGS flags, ID3D12Fence** fence);
 	void CreateRootSignature(ID3DBlob* signature, ID3D12RootSignature** rootSignature);
 	void CreateCommandSignature(const D3D12_COMMAND_SIGNATURE_DESC *Desc, ID3D12RootSignature* RootSignature, ID3D12CommandSignature** CommandSignature);

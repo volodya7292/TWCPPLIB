@@ -13,7 +13,7 @@ private:
 		GenericConstants,
 		ShaderSpecificConstants,
 		OutputUAV,
-		IndexBufferUAV,
+		//IndexBufferUAV,
 		NumParameters
 	};
 

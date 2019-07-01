@@ -12,7 +12,7 @@ public:
 	void AddObject(TW3DObject* Object);
 	void AddLightSource(TW3DLightSource* LightSource);
 	void Update(float DeltaTime);
-	void RecordBeforeExecution();
+	void BeforeExecution();
 
 	TW3DPerspectiveCamera* Camera;
 	std::vector<TW3DObject*> Objects;

@@ -106,6 +106,38 @@ TW3DCommandList* TW3DResourceManager::CreateCommandList(TW3DCommandListType Type
 	case TW3D_CL_BUNDLE:
 		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_BUNDLE);
 	}
+
+	return nullptr;
+}
+
+TW3DCommandList* TW3DResourceManager::CreateCommandList(TW3DCommandListType Type, TW3DGraphicsPipelineState* InitialState) {
+	switch (Type) {
+	case TW3D_CL_DIRECT:
+		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_DIRECT, InitialState);
+	case TW3D_CL_COMPUTE:
+		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_COMPUTE, InitialState);
+	case TW3D_CL_COPY:
+		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_COPY, InitialState);
+	case TW3D_CL_BUNDLE:
+		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_BUNDLE, InitialState);
+	}
+
+	return nullptr;
+}
+
+TW3DCommandList* TW3DResourceManager::CreateCommandList(TW3DCommandListType Type, TW3DComputePipelineState* InitialState) {
+	switch (Type) {
+	case TW3D_CL_DIRECT:
+		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_DIRECT, InitialState);
+	case TW3D_CL_COMPUTE:
+		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_COMPUTE, InitialState);
+	case TW3D_CL_COPY:
+		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_COPY, InitialState);
+	case TW3D_CL_BUNDLE:
+		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_BUNDLE, InitialState);
+	}
+
+	return nullptr;
 }
 
 TW3DCommandList* TW3DResourceManager::GetTemporaryDirectCommandList() {
@@ -141,6 +173,28 @@ TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name
 
 	if (!cl) {
 		cl = CreateCommandList(Type);
+		TWU::DXSetName(cl->Get(), Name);
+	}
+
+	return cl;
+}
+
+TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipelineState* InitialState) {
+	auto& cl = command_lists[Name];
+
+	if (!cl) {
+		cl = CreateCommandList(Type, InitialState);
+		TWU::DXSetName(cl->Get(), Name);
+	}
+
+	return cl;
+}
+
+TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipelineState* InitialState) {
+	auto& cl = command_lists[Name];
+
+	if (!cl) {
+		cl = CreateCommandList(Type, InitialState);
 		TWU::DXSetName(cl->Get(), Name);
 	}
 
@@ -283,6 +337,11 @@ void TW3DResourceManager::ReleaseVertexBuffer(TWT::String const& Name) {
 void TW3DResourceManager::ReleaseConstantBuffer(TWT::String const& Name) {
 	delete constant_buffers.at(Name);
 	constant_buffers.erase(Name);
+}
+
+void TW3DResourceManager::ReleaseFramebuffer(TWT::String const& Name) {
+	delete framebuffers.at(Name);
+	framebuffers.erase(Name);
 }
 
 void TW3DResourceManager::ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {

@@ -43,6 +43,7 @@ void TW3DCommandQueue::FlushCommandList(TW3DCommandList* CommandList) {
 void TW3DCommandQueue::FlushCommands() {
 	fence_flush_value++;
 	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value), "TW3DCommandQueue::FlushCommands, command_queue->Signal "s + fence_flush_value);
+
 	if (fence->GetCompletedValue() < fence_flush_value) {
 		HANDLE fence_event = nullptr;
 		TWU::SuccessAssert(fence->SetEventOnCompletion(fence_flush_value, fence_event), "TW3DCommandQueue::FlushCommands, fence->SetEventOnCompletion "s + fence_flush_value);
@@ -54,7 +55,6 @@ void TW3DCommandQueue::ExecuteCommandList(TW3DCommandList* CommandList) {
 	if (CommandList->IsEmpty())
 		return;
 
-	FlushCommands();
 	CommandList->SignalValue = ++fence_flush_value;
 
 	ID3D12CommandList* native_list = CommandList->Get();
@@ -63,7 +63,6 @@ void TW3DCommandQueue::ExecuteCommandList(TW3DCommandList* CommandList) {
 }
 
 void TW3DCommandQueue::ExecuteCommandLists(const std::vector<TW3DCommandList*>& CommandLists) {
-	FlushCommands();
 	fence_flush_value++;
 
 	std::vector<ID3D12CommandList*> nativeLists(CommandLists.size());

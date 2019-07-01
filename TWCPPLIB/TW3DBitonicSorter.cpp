@@ -18,7 +18,7 @@ TW3DBitonicSorter::TW3DBitonicSorter(TW3DResourceManager* ResourceManager) {
 			TW3DRPConstants(GenericConstants, D3D12_SHADER_VISIBILITY_ALL, 1, 2),
 			TW3DRPConstants(ShaderSpecificConstants, D3D12_SHADER_VISIBILITY_ALL, 0, 2),
 			TW3DRPBuffer(OutputUAV, D3D12_SHADER_VISIBILITY_ALL, 0, true),
-			TW3DRPBuffer(IndexBufferUAV, D3D12_SHADER_VISIBILITY_ALL, 1, true),
+			//TW3DRPBuffer(IndexBufferUAV, D3D12_SHADER_VISIBILITY_ALL, 1, true),
 		},
 		false, false, true, false
 	);
@@ -92,7 +92,7 @@ void TW3DBitonicSorter::RecordSort(TW3DCommandList* CommandList, TW3DBuffer* Sor
 
 	CommandList->BindUIntConstant(ShaderSpecificConstants, MaxIterations, 0);
 	CommandList->BindBuffer(OutputUAV, m_pDispatchArgs, true);
-	CommandList->BindBuffer(IndexBufferUAV, SortBuffer, true);
+	//CommandList->BindBuffer(IndexBufferUAV, SortBuffer, true);
 	CommandList->Dispatch(1, 1, 1);
 
 	// Pre-Sort the buffer up to k = 2048.  This also pads the list with invalid indices

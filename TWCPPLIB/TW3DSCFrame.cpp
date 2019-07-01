@@ -17,11 +17,35 @@ void TW3DSCFrame::Release() {
 	RenderTarget->Release();
 }
 
+TW3DCommandList* TW3DSCFrame::GetCommandList(TWT::String const& Name) {
+	auto& cl = command_lists[Name];
+
+	return cl.recorder ? cl.command_list[1] : cl.command_list[0];
+}
+
 TW3DCommandList* TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type) {
 	auto& cl = command_lists[Name];
 
 	if (!cl.command_list[0])
 		cl.command_list[0] = resource_manager->CreateCommandList(Type);
+
+	return cl.command_list[0];
+}
+
+TW3DCommandList* TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipelineState* InitialState) {
+	auto& cl = command_lists[Name];
+
+	if (!cl.command_list[0])
+		cl.command_list[0] = resource_manager->CreateCommandList(Type, InitialState);
+
+	return cl.command_list[0];
+}
+
+TW3DCommandList* TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipelineState* InitialState) {
+	auto& cl = command_lists[Name];
+
+	if (!cl.command_list[0])
+		cl.command_list[0] = resource_manager->CreateCommandList(Type, InitialState);
 
 	return cl.command_list[0];
 }
@@ -37,6 +61,38 @@ void TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListTyp
 
 		synchronized(cl_queue_sync) {
 			QueueCommandList qcl = {Name, cl.priority};
+			cl_queue.emplace(qcl);
+		}
+	}
+}
+
+void TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipelineState* InitialState, CLRecorder Recorder, TWT::uint RecordPriority) {
+	auto& cl = command_lists[Name];
+
+	if (!cl.command_list[0]) {
+		cl.command_list[0] = resource_manager->CreateCommandList(Type, InitialState);
+		cl.command_list[1] = resource_manager->CreateCommandList(Type, InitialState);
+		cl.recorder = Recorder;
+		cl.priority = RecordPriority;
+
+		synchronized(cl_queue_sync) {
+			QueueCommandList qcl = { Name, cl.priority };
+			cl_queue.emplace(qcl);
+		}
+	}
+}
+
+void TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipelineState* InitialState, CLRecorder Recorder, TWT::uint RecordPriority) {
+	auto& cl = command_lists[Name];
+
+	if (!cl.command_list[0]) {
+		cl.command_list[0] = resource_manager->CreateCommandList(Type, InitialState);
+		cl.command_list[1] = resource_manager->CreateCommandList(Type, InitialState);
+		cl.recorder = Recorder;
+		cl.priority = RecordPriority;
+
+		synchronized(cl_queue_sync) {
+			QueueCommandList qcl = { Name, cl.priority };
 			cl_queue.emplace(qcl);
 		}
 	}
@@ -116,10 +172,10 @@ void TW3DSCFrame::RecordCommandLists() {
 	CommandList& cl = command_lists[qcl.name];
 
 	resource_manager->FlushCommandList(cl.command_list[0]);
-
+	
 	cl.command_list[0]->Reset();
 	cl.command_list[0]->BindResources(resource_manager);
-	cl.recorder(cl.command_list[0]);
+	cl.recorder(this, cl.command_list[0]);
 	cl.command_list[0]->Close();
 
 	cl.swap = true;

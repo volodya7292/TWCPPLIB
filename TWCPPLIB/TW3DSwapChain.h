@@ -2,7 +2,7 @@
 #include "TW3DFactory.h"
 #include "TW3DCommandQueue.h"
 
-class TW3DSwapChain {
+class TW3DSwapChain { //-V802
 public:
 	TW3DSwapChain(TW3DFactory* Factory, TW3DCommandQueue* CommandQueue, HWND HWND, TWT::uint Width, TWT::uint Height, bool VSync);
 	~TW3DSwapChain();
