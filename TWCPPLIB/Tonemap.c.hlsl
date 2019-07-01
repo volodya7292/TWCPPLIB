@@ -2,6 +2,15 @@
 
 RWTexture2D<float4> g_texture;
 
+float3 ToneMapACESFilmic(float3 x) {
+	float a = 2.51f;
+	float b = 0.03f;
+	float c = 2.43f;
+	float d = 0.59f;
+	float e = 0.14f;
+	return saturate((x*(a*x+b))/(x*(c*x+d)+e));
+}
+
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
 	uint2 G_SIZE;
@@ -12,7 +21,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		return;
 
 	float4 c_in = g_texture[g_pixel];
-	float4 c_out = c_in / (c_in + 0.25);
+	float3 c_out = ToneMapACESFilmic(c_in.rgb);
 
-	g_texture[g_pixel] = c_out;
+	g_texture[g_pixel] = float4(c_out, c_in.a);
 }

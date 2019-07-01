@@ -15,7 +15,7 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 	rt_s = new TW3DShader(TW3DCompiledShader(RayTrace_ByteCode), "RayTrace");
 	svgf_ta_s = new TW3DShader(TW3DCompiledShader(RTDTemporalAccumulation_ByteCode), "SVGFTemporalAccumulation");
 	svgf_wf_s = new TW3DShader(TW3DCompiledShader(RTDWaveletFilter_ByteCode), "SVGFWaveletFilter");
-
+	tmo_s = new TW3DShader(TW3DCompiledShader(Tonemap_ByteCode), "Tonemap");
 
 	auto rs = new TW3DRootSignature(device,
 		{
@@ -103,6 +103,17 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 	svgf_wf_ps->Create(device);
 
 
+	rs = new TW3DRootSignature(device, 
+		{
+			TW3DRPTexture(TMO_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, tmo_s->GetRegister("g_texture"s), true),
+		}
+	);
+
+	tmo_ps = new TW3DComputePipelineState(rs);
+	tmo_ps->SetShader(tmo_s);
+	tmo_ps->Create(device);
+
+
 	direct_in = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32Float, true);
 	indirect_in = ResourceManager->CreateTexture2D(RTSize, TWT::RGBA32UInt, true); // RGBA32UInt
 	direct_in->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
@@ -149,6 +160,8 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 	svgf_filtered_indirect->InitialState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 	svgf_filtered_direct->Resize(svgf_filtered_direct->GetSize());
 	svgf_filtered_indirect->Resize(svgf_filtered_indirect->GetSize());
+
+
 }
 
 TW3DRaytracer::~TW3DRaytracer() {
@@ -156,9 +169,12 @@ TW3DRaytracer::~TW3DRaytracer() {
 	delete rt_s;
 	delete svgf_ta_s;
 	delete svgf_wf_s;
+	delete tmo_s;
+
 	delete rt_ps;
 	delete svgf_ta_ps;
 	delete svgf_wf_ps;
+	delete tmo_ps;
 
 	delete direct_in;
 	delete indirect_in;

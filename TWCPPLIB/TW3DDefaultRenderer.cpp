@@ -183,7 +183,7 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	normal_texarr = ResourceManager->RequestTextureArray2D("normal_arr"s, TWT::uint2(400, 400), material_count, TWT::RGBA32Float);
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] Texture resources initialized."s);
 
-	diffuse_texarr->Upload2D(L"D:/OptimizedRT_converged.jpg", 0);
+	diffuse_texarr->Upload2D(L"D:/OptimizedRT_converged.png", 0);
 	//diffuse_texarr->Upload2D(L"D:/emission.png", 0);
 	//diffuse_texarr->Upload2D(L"D:/emission.png", 1);
 	emission_texarr->Upload2D(L"D:/emission.png", 1);
@@ -293,6 +293,7 @@ void TW3DDefaultRenderer::Execute(TW3DSCFrame* Frame) {
 	rt_cl->Reset();
 	rt_cl->BindResources(ResourceManager);
 	ray_tracer->Render(rt_cl, g_position, g_diffuse, g_specular, g_normal, g_emission, g_depth, diffuse_texarr, emission_texarr, normal_texarr, info_cb, Scene, LargeScaleScene);
+	ray_tracer->Tonemap(rt_cl);
 	rt_cl->Close();
 
 	Frame->ExecuteCommandList("RayTrace"s, false, true);

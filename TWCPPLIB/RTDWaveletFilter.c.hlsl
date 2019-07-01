@@ -51,10 +51,12 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	int2 rt_pixel, g_pixel;
 	bool same_pixel = true;
+	int radius = 2;
 	if (input.iteration == input.max_iterations - 1) {
 		rt_pixel = DTid.xy / G_SCALE;
 		g_pixel = DTid.xy;
 		same_pixel = all(g_pixel == rt_pixel * G_SCALE + G_SCALE / 2);
+		radius = 1;
 	} else {
 		rt_pixel = DTid.xy;
 		g_pixel = DTid.xy * G_SCALE + G_SCALE / 2;
@@ -88,9 +90,9 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	uint iteration_mul = 1 << input.iteration;
 
-	// 5x5
-	for (int yy = -2; yy <= 2; yy++) {
-		for (int xx = -2; xx <= 2; xx++) {
+	// 5x5)
+	for (int yy = -radius; yy <= radius; yy++) {
+		for (int xx = -radius; xx <= radius; xx++) {
 			const int2 p = rt_pixel + float2(xx, yy) * iteration_mul;
 
 			if ((xx != 0 || yy != 0) && all(p >= 0) && all(p < RT_SIZE)) {

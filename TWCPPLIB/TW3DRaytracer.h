@@ -81,7 +81,7 @@ private:
 
 	TWT::uint2 size;
 
-	TW3DShader *sq_s, *rt_s, *svgf_ta_s, *svgf_wf_s, *tmp_s;
+	TW3DShader *sq_s, *rt_s, *svgf_ta_s, *svgf_wf_s, *tmo_s;
 	TW3DComputePipelineState *rt_ps, *svgf_ta_ps, *svgf_wf_ps, *tmo_ps;
 
 	TW3DTexture *temporal_history;
