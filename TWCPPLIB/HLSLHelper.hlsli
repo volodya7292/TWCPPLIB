@@ -123,11 +123,11 @@ struct Bounds {
 		//distan = FLT_MAX;
 
 		const float3 invD = rcp(ray.dir);
-		const float3 t0s = (pMin.xyz - ray.origin) * invD;
-		const float3 t1s = (pMax.xyz - ray.origin) * invD;
+		const float3 t0 = (pMin.xyz - ray.origin) * invD;
+		const float3 t1 = (pMax.xyz - ray.origin) * invD;
 
-		const float3 tsmaller = min(t0s, t1s);
-		const float3 tbigger  = max(t0s, t1s);
+		const float3 tsmaller = min(t0, t1);
+		const float3 tbigger  = max(t0, t1);
 
 		//const float tmin = max(RAY_TMIN, max(tsmaller[0], max(tsmaller[1], tsmaller[2])));
 		//const float tmax = min(RAY_TMAX, min(tbigger[0], min(tbigger[1], tbigger[2])));
