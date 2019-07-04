@@ -110,6 +110,8 @@ void TW3DScene::Update(float DeltaTime) {
 }
 
 void TW3DScene::BeforeExecution() {
+	TWT::uint object_count = Objects.size();
+
 	// Update vertex & meshes buffers
 	// -------------------------------------------------------------------------------------------------------------------------
 	if (vertex_buffers_changed) {
@@ -136,8 +138,8 @@ void TW3DScene::BeforeExecution() {
 	}
 
 	mesh_instances.clear();
-	mesh_instances.resize(Objects.size());
-	for (size_t i = 0; i < Objects.size(); i++) {
+	mesh_instances.resize(object_count);
+	for (size_t i = 0; i < object_count; i++) {
 		const auto& object = Objects[i];
 
 		for (auto& vminst : object->GetVertexMeshInstances()) {
@@ -158,12 +160,12 @@ void TW3DScene::BeforeExecution() {
 		}
 	}
 
-	if (!instance_buffer || instance_buffer->GetElementCount() != Objects.size()) {
-		instance_buffer = resource_manager->CreateBuffer(Objects.size(), sizeof(SceneLBVHInstance), true);
+	if ((!instance_buffer || instance_buffer->GetElementCount() != object_count) && object_count > 0) {
+		instance_buffer = resource_manager->CreateBuffer(object_count, sizeof(SceneLBVHInstance), true);
 		resource_manager->ResourceBarrier(instance_buffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 	}
-	if (objects_changed)
-		instance_buffer->Update(mesh_instances.data(), Objects.size());
+	if (objects_changed && object_count > 0)
+		instance_buffer->Update(mesh_instances.data(), object_count);
 
 
 	auto cl = resource_manager->GetTemporaryComputeCommandList();

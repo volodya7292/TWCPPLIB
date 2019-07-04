@@ -12,6 +12,8 @@ TW3DDescriptorHeap::TW3DDescriptorHeap(TW3DDevice* Device, D3D12_DESCRIPTOR_HEAP
 	desc.Flags = Flags;
 
 	Device->CreateDescriptorHeap(&desc, &descriptor_heap);
+	Device->MakeResident(descriptor_heap);
+
 	descriptor_heap->SetName(L"TW3DDescriptorHeap");
 }
 

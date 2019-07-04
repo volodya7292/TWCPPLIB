@@ -82,6 +82,22 @@ void TW3DDevice::CreateUnorderedAccessView(ID3D12Resource* resource, const D3D12
 	device->CreateUnorderedAccessView(resource, nullptr, desc, dest_descriptor);
 }
 
+void TW3DDevice::MakeResident(ID3D12Pageable* Object) {
+	TWU::SuccessAssert(device->MakeResident(1, &Object), "TW3DDevice::MakeResident Single"s);
+}
+
+void TW3DDevice::MakeResident(std::vector<ID3D12Pageable*> const& Objects) {
+	TWU::SuccessAssert(device->MakeResident(Objects.size(), Objects.data()), "TW3DDevice::MakeResident : "s + Objects.size());
+}
+
+void TW3DDevice::Evict(ID3D12Pageable* Object) {
+	TWU::SuccessAssert(device->Evict(1, &Object), "TW3DDevice::Evict Single"s);
+}
+
+void TW3DDevice::Evict(std::vector<ID3D12Pageable*> const& Objects) {
+	TWU::SuccessAssert(device->Evict(Objects.size(), Objects.data()), "TW3DDevice::Evict : "s + Objects.size());
+}
+
 TWT::uint64 TW3DDevice::GetCopyableFootprints(const D3D12_RESOURCE_DESC* resourceDesc, TWT::uint subResCount) {
 	TWT::uint64 totalBytes;
 	device->GetCopyableFootprints(resourceDesc, 0, subResCount, 0, nullptr, nullptr, nullptr, &totalBytes);

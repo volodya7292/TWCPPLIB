@@ -13,6 +13,8 @@ void TW3DObject::Update() {
 	for (auto& vminst : GetVertexMeshInstances()) {
 		vminst.RigidBody->setIsAllowedToSleep(true);
 
+		cb_data.prev_model = cb_data.model;
+
 		if (!vminst.RigidBody->isSleeping()) {
 			if (vminst.Transform.Updated)
 				vminst.RigidBody->setTransform(vminst.Transform.GetPhysicalTransform());
@@ -22,9 +24,6 @@ void TW3DObject::Update() {
 			vminst.Changed = true;
 			vminst.Transform.Updated = false;
 
-
-			cb_data.prev_model = cb_data.model;
-			cb_data.prev_model_reduced = cb_data.model_reduced;
 			cb_data.model = vminst.Transform.GetModelMatrix();
 
 			ConstantBuffer->Update(&cb_data, 0);

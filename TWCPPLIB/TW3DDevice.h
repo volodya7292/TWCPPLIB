@@ -29,6 +29,11 @@ public:
 	void CreateShaderResourceView(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* desc, D3D12_CPU_DESCRIPTOR_HANDLE destDescriptor);
 	void CreateUnorderedAccessView(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* desc, D3D12_CPU_DESCRIPTOR_HANDLE dest_descriptor);
 
+	void MakeResident(ID3D12Pageable* Object);
+	void MakeResident(std::vector<ID3D12Pageable*> const& Objects);
+	void Evict(ID3D12Pageable* Object);
+	void Evict(std::vector<ID3D12Pageable*> const& Objects);
+
 	TWT::uint GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE heapType);
 	TWT::uint64 GetCopyableFootprints(const D3D12_RESOURCE_DESC* resourceDesc, TWT::uint subResCount);
 

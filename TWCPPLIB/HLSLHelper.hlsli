@@ -41,54 +41,6 @@ inline float3 translation(in float4x4 m) {
 	return float3(m[0][3], m[1][3], m[2][3]);
 }
 
-//inline bool equals(in float2 v0, in float2 v1) {
-//	return v0.x == v1.x && v0.y == v1.y;
-//}
-//
-//inline bool equals(in float3 v0, in float v) {
-//	return v0.x == v && v0.y == v && v0.z == v;
-//}
-//
-//inline bool equals(in float4 v0, in float4 v1) {
-//	return v0.x == v1.x && v0.y == v1.y && v0.z == v1.z && v0.w == v1.w;
-//}
-
-//inline bool not_equals(in float3 v0, in float v) {
-//	return v0.x != v && v0.y != v && v0.z != v;
-//}
-
-//inline bool less(in float3 v0, in float v) {
-//	return v0.x < v && v0.y < v && v0.z < v;
-//}
-//
-//inline bool less(in float3 v0, in float3 v1) {
-//	return v0.x < v1.x && v0.y < v1.y && v0.z < v1.z;
-//}
-//
-//inline bool less(in int2 v0, in int2 v) {
-//	return v0.x < v.x && v0.y < v.y;
-//}
-//
-//inline bool less_any(in int2 v0, in int v) {
-//	return v0.x < v || v0.y < v;
-//}
-//
-//inline bool greater(in float3 v0, in float v1) {
-//	return v0.x > v1 && v0.y > v1 && v0.z > v1;
-//}
-//
-//inline bool greater(in float3 v0, in float3 v1) {
-//	return v0.x > v1.x && v0.y > v1.y && v0.z > v1.z;
-//}
-//
-//inline bool greater_equals(in int2 v0, in int2 v) {
-//	return v0.x >= v.x && v0.y >= v.y;
-//}
-//
-//inline bool greater_equals_any(in int2 v0, in int2 v) {
-//	return v0.x >= v.x || v0.y >= v.y;
-//}
-
 inline float depth_linearize(float d, float zNear, float zFar) {
 	return zNear * zFar / (zFar + d * (zNear - zFar));
 }
@@ -102,9 +54,18 @@ struct VS_QUAD {
 	float2 tex_coord: TEXCOORD;
 };
 
+struct Material {
+	uint4 texture_ids0; // .x - diffuse, .y - specular, .z - normal
+	uint4 texture_ids1; // .x - diffuse, .y - specular, .z - normal
+	float blend_factor; // texture lerp blend factor
+	// if texture_id == -1 then the parameters below are used
+	float4 diffuse;
+	float4 specular; // .a - roughness
+};
+
 struct Vertex {
 	float3          pos : POSITION;
-	float3    tex_coord : TEXCOORD; // .z - material ID
+	float3    tex_coord : TEXCOORD; // .z - material id
 	float3       normal : NORMAL;
 	float3      tangent : TANGENT;
 	float3    bitangent : BITANGENT;
@@ -174,7 +135,6 @@ struct Camera {
 	float4x4 proj;
 	float4x4 view;
 	float4x4 proj_view;
-	float4x4 prev_proj_view;
 	float4 info; // .x - FOVy in radians, .y - scale factor (large objects are scaled down)
 };
 
@@ -186,6 +146,7 @@ typedef StructuredBuffer<SceneLBVHNode> RTScene;
 typedef StructuredBuffer<LBVHNode>      RTNB;   // Ray Tracing Node Buffer
 typedef StructuredBuffer<Vertex>        GVB;    // Global Vertex Buffer
 typedef StructuredBuffer<LightSource>   LSB;    // Light Source Buffer
+typedef StructuredBuffer<Material>      MaterialBuffer;
 
 
 // -----------------------------------------------------------------------------------------------------------------------------------------

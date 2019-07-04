@@ -13,25 +13,30 @@ struct VS_OUTPUT {
 
 struct VertexMeshInstance {
 	float4x4 model;
-	float4x4 model_reduced;
 	float4x4 prev_model;
-	float4x4 prev_model_reduced;
 };
 
 ConstantBuffer<Camera> camera : register(b0);
 ConstantBuffer<Camera> prev_camera : register(b1);
 ConstantBuffer<VertexMeshInstance> vertex_mesh : register(b2);
 
+void reduce_model(inout float4x4 model, float reduce_scale) {
+	float3 to_mesh = translation(model) - camera.pos.xyz;
+	float3 mesh_pos_new = camera.pos.xyz + normalize(to_mesh) * (length(to_mesh) * reduce_scale);
+
+	model = translate(scale(model, reduce_scale), mesh_pos_new);
+}
+
 VS_OUTPUT main(Vertex input, uint vertex_id : SV_VertexID) {
 	VS_OUTPUT output;
 
-	float4x4 model, prev_model;
-	if (camera.info.y == 1.0f) {
-		model = vertex_mesh.model;
-		prev_model = vertex_mesh.model;
-	} else {
-		model = vertex_mesh.model_reduced;
-		prev_model = vertex_mesh.model_reduced;
+	float4x4 model = vertex_mesh.model;
+	float4x4 prev_model = vertex_mesh.prev_model;
+
+	float reduce_scale = camera.info.y;
+	if (reduce_scale != 1.0f) {
+		reduce_model(model, reduce_scale);
+		reduce_model(prev_model, reduce_scale);
 	}
 	
 	output.world_pos = mul(model, float4(input.pos, 1)).xyz;

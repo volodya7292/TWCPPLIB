@@ -164,11 +164,11 @@ void TW3DCommandList::BindFloatConstant(TWT::uint RootParameterIndex, float Data
 	BindUIntConstant(RootParameterIndex, *(TWT::uint*)&Data, DestOffsetIn32BitValues);
 }
 
-void TW3DCommandList::BindUIntConstants(TWT::uint RootParameterIndex, TWT::uint Num32BitValuesToSet, const void* Data, TWT::uint DestOffsetIn32BitValues) {
+void TW3DCommandList::BindUIntConstants(TWT::uint RootParameterIndex, std::vector<TWT::uint> const& Num32BitValues, TWT::uint DestOffsetIn32BitValues) {
 	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
-		command_list->SetComputeRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, Data, DestOffsetIn32BitValues);
+		command_list->SetComputeRoot32BitConstants(RootParameterIndex, Num32BitValues.size(), Num32BitValues.data(), DestOffsetIn32BitValues);
 	else
-		command_list->SetGraphicsRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, Data, DestOffsetIn32BitValues);
+		command_list->SetGraphicsRoot32BitConstants(RootParameterIndex, Num32BitValues.size(), Num32BitValues.data(), DestOffsetIn32BitValues);
 }
 
 void TW3DCommandList::SetViewport(const D3D12_VIEWPORT* viewport) {

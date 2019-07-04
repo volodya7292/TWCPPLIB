@@ -1,5 +1,6 @@
 #include "HLSLHelper.hlsli"
 #include "RTDCommon.hlsli"
+#include "GBufferCommon.hlsli"
 
 Texture2DArray<float4> diffuse_tex : register(t0);
 Texture2DArray<float4> specular_tex : register(t1);
@@ -84,12 +85,14 @@ PS_OUTPUT main(VS_OUTPUT input) {
 	//	input.normal = normalize(mul(normalMap, texSpace));
 	//}
 
-	output.position = float4(input.world_pos.xyz, 1.0f);
+	bool large_scale = camera.info.y != 1.0f;
+
+	output.position = float4(input.world_pos.xyz, POSITION_FLAG_POS_EXIST | (large_scale ? POSITION_FLAG_LARGE_SCALE : 0));
 	output.normal = float4(normal, 0);
 	output.diffuse = diffuse_tex.Sample(sam, tex_coord);
 	output.specular = specular_tex.Sample(sam, tex_coord);
 	output.emission = emission_tex.Sample(sam, tex_coord);
-	output.depth = depth_delinearize(depth_linearize(input.clip_pos.z, 0.1, 1000) / camera.info.y, 0.1, 1000);
+	output.depth = distance(input.world_pos.xyz, camera.pos.xyz) / 65535.0f / (large_scale ? camera.info.y : 1);//distance(input.world_pos.xyz, camera.pos.xyz) ;//depth_delinearize(depth_linearize(input.clip_pos.z, 0.1, 1000) / camera.info.y, 0.1, 1000);
 
 
 

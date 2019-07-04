@@ -15,7 +15,7 @@ TW3DPerspectiveCamera::~TW3DPerspectiveCamera() {
 }
 
 TWT::float4x4 TW3DPerspectiveCamera::GetProjectionMatrix() {
-	return TWT::Perspective(TWT::Radians(FOVY), static_cast<float>(Width) / Height, ZNear, ZFar);
+	return TWT::InfinitePerspective(TWT::Radians(FOVY), static_cast<float>(Width) / Height);
 }
 
 TWT::float4x4 TW3DPerspectiveCamera::GetViewMatrix() {
@@ -49,6 +49,20 @@ void TW3DPerspectiveCamera::Move(float to_back, float left_right) {
 	TWT::float3 d = TWT::float3(sin(TWT::Radians(-rotation.y)), 0, cos(TWT::Radians(-rotation.y)));
 	Position -= d * to_back;
 	Position -= TWT::Normalize(TWT::Cross(d, TWT::float3(0, 1, 0))) * left_right;
+}
+
+void TW3DPerspectiveCamera::SetSceneScale(float Scale) {
+	cb.info.y = Scale;
+}
+
+void TW3DPerspectiveCamera::LoadData(TW3DPerspectiveCamera* Camera) {
+	Width = Camera->Width;
+	Height = Camera->Height;
+	FOVY = Camera->FOVY;
+	ZNear = Camera->ZNear;
+	ZFar = Camera->ZFar;
+	Position = Camera->Position;
+	rotation = Camera->rotation;
 }
 
 void TW3DPerspectiveCamera::UpdateConstantBuffer() {

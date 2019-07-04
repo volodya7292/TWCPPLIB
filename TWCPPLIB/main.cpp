@@ -9,8 +9,8 @@ static const float mouseSensitivity = 0.05f;
 static bool movement_capture = true;
 
 TW3DDefaultRenderer* defaultRenderer;
-TW3DScene* scene;
-TW3DLightSource *light, *light2;
+TW3DScene *scene, *large_scene;
+TW3DLightSource light, light2;
 
 TW3DCube* cube, *cube2;
 
@@ -75,7 +75,11 @@ void on_update() {
 	
 	//cube2->VMInstances[0].Transform.SetPosition(TWT::float3(0.8f, 0, 0));
 	//cube2->VMInstances[0].Transform.AdjustRotation(TWT::float3(0.02f));
+	scene->Camera->SetSceneScale(1);
+	large_scene->Camera->LoadData(scene->Camera);
+
 	scene->Camera->UpdateConstantBuffer();
+	large_scene->Camera->UpdateConstantBuffer();
 }
 
 TWT::uint on_thread_tick(TWT::uint ThreadID, TWT::uint ThreadCount) {
@@ -91,6 +95,7 @@ void on_cleanup() {
 	delete cube;
 	delete cube2;
 	delete scene;
+	delete large_scene;
 	delete defaultRenderer;
 }
 
@@ -129,6 +134,8 @@ int main() {
 	TW3DResourceManager* RM = TW3D::GetResourceManager();
 
 	scene = new TW3DScene(RM);
+	large_scene = new TW3DScene(RM);
+	large_scene->Camera->SetSceneScale(1);
 	cube = new TW3DCube(RM);
 	cube2 = new TW3DCube(RM);
 
@@ -137,9 +144,9 @@ int main() {
 	cube2->VMInstance.VertexMesh = TW3DPrimitives::GetPyramid4VertexMesh();
 	cube2->VMInstance.Transform.SetPosition(TWT::float3(0.0f, 5, 0));
 	cube2->VMInstance.Transform.SetRotation(TWT::double3(0, 0, 180));
-	scene->AddObject(cube2);
-	cube2->VMInstance.RigidBody->setType(rp3d::BodyType::DYNAMIC);
-	cube2->VMInstance.RigidBody->enableGravity(true);
+	large_scene->AddObject(cube2);
+	cube2->VMInstance.RigidBody->setType(rp3d::BodyType::STATIC);
+	cube2->VMInstance.RigidBody->enableGravity(false);
 	cube2->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);
 
 	cube->VMInstance.Transform.SetPosition(TWT::float3(0.0f, 0, 0));
@@ -148,28 +155,29 @@ int main() {
 	cube->VMInstance.RigidBody->enableGravity(false);
 	cube->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);
 	//cube->VMInstance.RigidBody->setTransform(PhysicalTransform(cube->VMInstance.Transform));
-	cube->VMInstance.Transform.SetIdentity();
+	//cube->VMInstance.Transform.SetIdentity();
 
 	scene->Camera->FOVY = 45;
 	//scene->Camera->SetRotation(TWT::float3(0, -90, 0))
 	//scene->Camera.
 	//scene->Camera->Position.z = 3;
 
-	light = new TW3DLightSource();
-	light->SetTriangleId(8, cube->VMInstance.VertexMesh->VertexBuffers[0]);
+	light.SetTriangleId(8, cube->VMInstance.VertexMesh->VertexBuffers[0]);
 	//light->SetSphereRadius(0.2);
 	//light->SetPosition(TWT::float3(5, 8, 5));
 
-	light2 = new TW3DLightSource();
-	light2->SetTriangleId(9, cube->VMInstance.VertexMesh->VertexBuffers[0]);
+	light2.SetTriangleId(9, cube->VMInstance.VertexMesh->VertexBuffers[0]);
+
 	//light2->SetSphereRadius(0.1);
 	//light2->SetPosition(TWT::float3(5, -10, 5));
 
-	scene->AddLightSource(light);
-	scene->AddLightSource(light2);
+	scene->AddLightSource(&light);
+	scene->AddLightSource(&light2);
+	//scene->AddLightSource(light3);
 
 	defaultRenderer = new TW3DDefaultRenderer();
 	defaultRenderer->Scene = scene;
+	defaultRenderer->LargeScaleScene = large_scene;
 
 	TW3D::SetRenderer(defaultRenderer);
 
@@ -180,21 +188,6 @@ int main() {
 	TW3D::SetOnCharEvent(on_char);
 
 	TW3D::Start();
-
-	struct CustomCompare {
-		bool operator()(const int& v0, const int& v1) {
-			return v0 < v1;
-		}
-	};
-
-	std::priority_queue<int, std::vector<int>, CustomCompare> cl_queue;
-	cl_queue.push(5);
-	cl_queue.push(0);
-	cl_queue.push(1);
-	while (!cl_queue.empty()) {
-		TWU::CPrintln(cl_queue.top());
-		cl_queue.pop();
-	}
 
 	return 0;
 }

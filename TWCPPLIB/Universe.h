@@ -7,10 +7,10 @@
 	AVG. DISTANCE BETWEEN GALAXIES = 2,814 billion kM
 */
 
-class Universe3D : public TW3DObject {
+class Universe : public TW3DObject {
 public:
-	Universe3D(TW3DResourceManager* ResourceManager);
-	~Universe3D() override;
+	Universe(TW3DResourceManager* ResourceManager);
+	~Universe() override;
 
 private:
 	// Position: Universe relative position

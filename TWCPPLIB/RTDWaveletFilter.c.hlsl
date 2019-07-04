@@ -51,12 +51,10 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	int2 rt_pixel, g_pixel;
 	bool same_pixel = true;
-	int radius = 2;
 	if (input.iteration == input.max_iterations - 1) {
 		rt_pixel = DTid.xy / G_SCALE;
 		g_pixel = DTid.xy;
 		same_pixel = all(g_pixel == rt_pixel * G_SCALE + G_SCALE / 2);
-		radius = 1;
 	} else {
 		rt_pixel = DTid.xy;
 		g_pixel = DTid.xy * G_SCALE + G_SCALE / 2;
@@ -67,7 +65,6 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	const float kernelWeights[3] = { 1.0, 2.0 / 3.0, 1.0 / 6.0 };
 
-	//float  sumWDirect = 1.0;
 	float2 sumW = 1.0;
 	float4 sumDirect = g_direct[rt_pixel];
 	float4 sumIndirect0, sumIndirect1;
@@ -90,10 +87,10 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 
 	uint iteration_mul = 1 << input.iteration;
 
-	// 5x5)
-	for (int yy = -radius; yy <= radius; yy++) {
-		for (int xx = -radius; xx <= radius; xx++) {
-			const int2 p = rt_pixel + float2(xx, yy) * iteration_mul;
+	// 3x3
+	for (int yy = -1; yy <= 1; yy++) {
+		for (int xx = -1; xx <= 1; xx++) {
+			const int2 p = rt_pixel + float2(xx, yy) * iteration_mul * 2;
 
 			if ((xx != 0 || yy != 0) && all(p >= 0) && all(p < RT_SIZE)) {
 				const float kernel = kernelWeights[abs(xx)] * kernelWeights[abs(yy)];
@@ -106,7 +103,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 				float3 normalP;
 				float2 zP;
 				float rP;
-				fetch_normal_and_linear_z(g_compact_data, p * G_SCALE, normalP, zP, rP);
+				fetch_normal_and_linear_z(g_compact_data, p * G_SCALE + G_SCALE / 2, normalP, zP, rP);
 
 
 				// compute the edge-stopping functions
@@ -114,7 +111,6 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 					normalP, normalCenter,
 					zP.x, zCenter.x, zCenter.y,
 					rCenter, rP,
-					//centerLum, pLum,
 					length(float2(xx, yy) * iteration_mul));
 
 				sumW   += kernel * w;

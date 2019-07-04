@@ -46,6 +46,8 @@ void TW3DResource::Create() {
 
 	if (staging)
 		staging->Create(CD3DX12_RESOURCE_DESC::Buffer(device->GetCopyableFootprints(&desc, 1)));
+
+	device->MakeResident(resource);
 }
 
 void TW3DResource::Create(D3D12_RESOURCE_DESC const& ResourceDescription) {

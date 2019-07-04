@@ -33,7 +33,7 @@ TW3DRaytracer::TW3DRaytracer(TW3DResourceManager* ResourceManager, TWT::uint2 GS
 			TW3DRPTexture(RT_DIFFUSE_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("diffuse_tex"s)),
 			//TW3DRPTexture(RT_SPECULAR_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("specular_tex"s)),
 			TW3DRPTexture(RT_EMISSION_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("emission_tex"s)),
-			TW3DRPTexture(RT_NORMAL_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("normal_tex"s)),
+			//TW3DRPTexture(RT_NORMAL_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("normal_tex"s)),
 
 			// GBuffer
 			TW3DRPTexture(RT_G_POSITION_TEXTURE, D3D12_SHADER_VISIBILITY_ALL, rt_s->GetRegister("g_position"s)),
@@ -224,7 +224,7 @@ void TW3DRaytracer::Resize(TWT::uint2 GSize, TWT::uint2 RTSize) {
 
 void TW3DRaytracer::Render(TW3DCommandList* CL,
 		TW3DRenderTarget* GPosition, TW3DRenderTarget* GDiffuse, TW3DRenderTarget* GSpecular, TW3DRenderTarget* GNormal, TW3DRenderTarget* GEmission, TW3DTexture* GDepth,
-		TW3DTexture* DiffuseTexArr, TW3DTexture* EmissionTexArr, TW3DTexture* NormalTexArr, TW3DConstantBuffer* RendererInfoCB,
+		TW3DTexture* DiffuseTexArr, TW3DTexture* EmissionTexArr, TW3DConstantBuffer* RendererInfoCB,
 		TW3DScene* Scene, TW3DScene* LargeScaleScene) {
 
 	g_diffuse = GDiffuse;
@@ -233,8 +233,14 @@ void TW3DRaytracer::Render(TW3DCommandList* CL,
 	CL->SetPipelineState(rt_ps);
 	Scene->Bind(CL, RT_GVB_BUFFER, RT_SCENE_BUFFER, RT_GNB_BUFFER, RT_LSB_BUFFER);
 
-	if (LargeScaleScene)
+	bool use_two_scenes = false;
+	if (LargeScaleScene) {
 		LargeScaleScene->Bind(CL, RT_L_GVB_BUFFER, RT_L_SCENE_BUFFER, RT_L_GNB_BUFFER, RT_L_LSB_BUFFER);
+		CL->BindConstantBuffer(RT_CAMERA_CB, LargeScaleScene->Camera->GetConstantBuffer());
+		use_two_scenes = true;
+	} else {
+		CL->BindConstantBuffer(RT_CAMERA_CB, Scene->Camera->GetConstantBuffer());
+	}
 
 	CL->BindTexture(RT_G_POSITION_TEXTURE, GPosition);
 	CL->BindTexture(RT_G_DIFFUSE_TEXTURE, GDiffuse);
@@ -245,19 +251,19 @@ void TW3DRaytracer::Render(TW3DCommandList* CL,
 	CL->BindTexture(RT_DIFFUSE_TEXTURE, DiffuseTexArr);
 	//CL->BindTexture(RT_SPECULAR_TEXTURE, specular_texarr);
 	CL->BindTexture(RT_EMISSION_TEXTURE, EmissionTexArr);
-	CL->BindTexture(RT_NORMAL_TEXTURE, NormalTexArr);
+	//CL->BindTexture(RT_NORMAL_TEXTURE, NormalTexArr);
 
 	CL->BindTexture(RT_DIRECT_TEXTURE, direct_in, true);
 	CL->BindTexture(RT_INDIRECT_TEXTURE, indirect_in, true);
 
-	CL->BindConstantBuffer(RT_CAMERA_CB, Scene->Camera->GetConstantBuffer());
-	CL->BindUIntConstant(RT_INPUT_CONST, 0, 0);
-	CL->BindUIntConstant(RT_INPUT_CONST, Scene->LightSources.size(), 1);
-
-	if (LargeScaleScene)
-		CL->BindUIntConstant(RT_INPUT_CONST, LargeScaleScene->LightSources.size(), 2);
-
 	CL->BindConstantBuffer(RT_RENDERERINFO_CB, RendererInfoCB);
+	
+	CL->BindUIntConstants(RT_INPUT_CONST, {
+		use_two_scenes,
+		static_cast<TWT::uint>(Scene->LightSources.size()),
+		LargeScaleScene ? static_cast<TWT::uint>(LargeScaleScene->LightSources.size()) : 0
+	}, 0);
+
 	CL->Dispatch(ceil(TWT::float2(size) / 8.0f));
 	CL->ResourceBarriers({
 		TW3DUAVBarrier(direct_in),

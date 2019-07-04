@@ -119,7 +119,8 @@
       <AllResourcesBound>true</AllResourcesBound>
       <VariableName>ShaderByteCode</VariableName>
       <HeaderFileOutput>CompiledShaders/Shader.c.h</HeaderFileOutput>
-      <AdditionalOptions>/O3 /Ges /Gis %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>
+      </AdditionalOptions>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -222,7 +223,7 @@
     <ClInclude Include="TWPerlinNoise.h" />
     <ClInclude Include="TWTypes.h" />
     <ClInclude Include="TWUtils.h" />
-    <ClInclude Include="Universe3D.h" />
+    <ClInclude Include="Universe.h" />
     <ClInclude Include="UniverseObject.h" />
   </ItemGroup>
   <ItemGroup>
@@ -281,7 +282,7 @@
     <ClCompile Include="TWPerlinNoise.cpp" />
     <ClCompile Include="TWTypes.cpp" />
     <ClCompile Include="TWUtils.cpp" />
-    <ClCompile Include="Universe3D.cpp" />
+    <ClCompile Include="Universe.cpp" />
     <ClCompile Include="UniverseObject.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -656,8 +657,6 @@
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompiledShaders/RayTrace.c.h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </AdditionalOptions>
     </FxCompile>
     <FxCompile Include="ScreenQuad.v.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
@@ -698,6 +697,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="BitonicSortCommon.hlsli" />
+    <None Include="GBufferCommon.hlsli" />
     <None Include="HLSLHelper.hlsli" />
     <None Include="RayTracing.hlsli" />
     <None Include="RTDefaultLightModel.hlsli" />

@@ -13,7 +13,7 @@ public:
 	// CL : Compute command list
 	void Render(TW3DCommandList* CL,
 		TW3DRenderTarget* GPosition, TW3DRenderTarget* GDiffuse, TW3DRenderTarget* GSpecular, TW3DRenderTarget* GNormal, TW3DRenderTarget* GEmission, TW3DTexture* GDepth,
-		TW3DTexture* DiffuseTexArr, TW3DTexture* EmissionTexArr, TW3DTexture* NormalTexArr, TW3DConstantBuffer* RendererInfoCB,
+		TW3DTexture* DiffuseTexArr, TW3DTexture* EmissionTexArr, TW3DConstantBuffer* RendererInfoCB,
 		TW3DScene* Scene, TW3DScene* LargeScaleScene = nullptr);
 	void Tonemap(TW3DCommandList* CL);
 
@@ -34,7 +34,7 @@ private:
 		RT_DIFFUSE_TEXTURE,
 		//RT_SPECULAR_TEXTURE,
 		RT_EMISSION_TEXTURE,
-		RT_NORMAL_TEXTURE,
+		//RT_NORMAL_TEXTURE,
 		RT_G_POSITION_TEXTURE,
 		RT_G_NORMAL_TEXTURE,
 		RT_G_DIFFUSE_TEXTURE,

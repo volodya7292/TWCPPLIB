@@ -40,15 +40,12 @@ namespace TWT {
 		float4x4 proj;
 		float4x4 view;
 		float4x4 proj_view;
-		float4x4 prev_proj_view;
 		float4 info = float4(1.0f, 1.0f, 0, 0); // .x - FOVy in radians, .y - scale factor (large objects are scaled down)
 	};
 
 	struct DefaultModelCB {
 		float4x4 model;
-		float4x4 model_reduced;
 		float4x4 prev_model;
-		float4x4 prev_model_reduced;
 	};
 
 	struct DefaultRendererInfoCB {
@@ -128,5 +125,20 @@ namespace TWT {
 	template<typename T>
 	inline glm::mat<4, 4, T> Perspective(T Fovy, T Aspect, T ZNear, T ZFar) {
 		return glm::perspective(Fovy, Aspect, ZNear, ZFar);
+	}
+
+	template<typename T>
+	inline glm::mat<4, 4, T> InfinitePerspective(T Fovy, T Aspect) {
+		assert(abs(Aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+		T const tanHalfFovy = tan(Fovy / static_cast<T>(2));
+
+		glm::mat<4, 4, T> Result(static_cast<T>(0));
+		Result[0][0] = static_cast<T>(1) / (Aspect * tanHalfFovy);
+		Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+		Result[2][2] = -1;
+		Result[2][3] = -static_cast<T>(1);
+		Result[3][2] = static_cast<T>(0);
+		return Result;
 	}
 }  // namespace TWT

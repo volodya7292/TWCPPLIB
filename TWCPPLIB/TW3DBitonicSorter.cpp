@@ -84,29 +84,22 @@ void TW3DBitonicSorter::RecordSort(TW3DCommandList* CommandList, TW3DBuffer* Sor
 		UINT NullIndex;
 		UINT ListCount;
 	};
-	InputConstants constants { SortAscending ? 0xffffffff : 0, ElementCount };
-	CommandList->BindUIntConstants(GenericConstants, 2, &constants, 0); // Bugs may occur: put this line after each SetPipelineState
+
+	CommandList->BindUIntConstants(GenericConstants, { SortAscending ? 0xffffffff : 0, ElementCount }, 0); // Bugs may occur: put this line after each SetPipelineState
 
 
 	//CommandList->ResourceBarrier(m_pDispatchArgs, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 	CommandList->BindUIntConstant(ShaderSpecificConstants, MaxIterations, 0);
 	CommandList->BindBuffer(OutputUAV, m_pDispatchArgs, true);
-	//CommandList->BindBuffer(IndexBufferUAV, SortBuffer, true);
 	CommandList->Dispatch(1, 1, 1);
 
-	// Pre-Sort the buffer up to k = 2048.  This also pads the list with invalid indices
-	// that will drift to the end of the sorted list.
-	//CommandList->ResourceBarrier(m_pDispatchArgs, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-
-	//CommandList->BindUAVBuffer(OutputUAV, SortKeyBuffer);
 
 	auto uavBarrier = TW3DUAVBarrier();
 	if (!IsPartiallyPreSorted) {
 		CommandList->SetPipelineState(m_pBitonicPreSortCS);
 		
 		CommandList->BindBuffer(OutputUAV, SortBuffer, true);
-		//CommandList->BindUAVBuffer(IndexBufferUAV, IndexBuffer);
 
 		CommandList->ExecuteIndirect(m_pCommandSignature, 1, m_pDispatchArgs->Get(), 0, nullptr, 0);
 		CommandList->ResourceBarrier(uavBarrier);
@@ -114,22 +107,12 @@ void TW3DBitonicSorter::RecordSort(TW3DCommandList* CommandList, TW3DBuffer* Sor
 
 	uint32_t IndirectArgsOffset = cIndirectArgStride;
 
-	// We have already pre-sorted up through k = 2048 when first writing our list, so
-	// we continue sorting with k = 4096.  For unnecessarily large values of k, these
-	// indirect dispatches will be skipped over with thread counts of 0.
-
 	for (uint32_t k = 4096; k <= AlignedNumElements; k *= 2) {
 		CommandList->SetPipelineState(m_pBitonicOuterSortCS);
 		CommandList->BindBuffer(OutputUAV, SortBuffer, true);
-		//CommandList->BindUAVBuffer(IndexBufferUAV, IndexBuffer);
 
 		for (uint32_t j = k / 2; j >= 2048; j /= 2) {
-			struct OuterSortConstants {
-				UINT k;
-				UINT j;
-			} constants2 { k, j };
-
-			CommandList->BindUIntConstants(ShaderSpecificConstants, 2, &constants2, 0);
+			CommandList->BindUIntConstants(ShaderSpecificConstants, { k, j }, 0);
 			CommandList->ExecuteIndirect(m_pCommandSignature, 1, m_pDispatchArgs->Get(), IndirectArgsOffset, nullptr, 0);
 			CommandList->ResourceBarrier(uavBarrier);
 			IndirectArgsOffset += cIndirectArgStride;
@@ -137,7 +120,6 @@ void TW3DBitonicSorter::RecordSort(TW3DCommandList* CommandList, TW3DBuffer* Sor
 
 		CommandList->SetPipelineState(m_pBitonicInnerSortCS);
 		CommandList->BindBuffer(OutputUAV, SortBuffer, true);
-		//CommandList->BindUAVBuffer(IndexBufferUAV, IndexBuffer);
 		CommandList->ExecuteIndirect(m_pCommandSignature, 1, m_pDispatchArgs->Get(), IndirectArgsOffset, nullptr, 0);
 		CommandList->ResourceBarrier(uavBarrier);
 		IndirectArgsOffset += cIndirectArgStride;

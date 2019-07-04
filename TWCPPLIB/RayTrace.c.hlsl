@@ -1,4 +1,5 @@
 #include "RayTracing.hlsli"
+#include "GBufferCommon.hlsli"
 
 #define COS_45DEG 0.7071067811
 
@@ -27,7 +28,7 @@ LSB       l_lsb;
 Texture2DArray<float4> diffuse_tex;
 //Texture2DArray<float4> specular_tex;
 Texture2DArray<float4> emission_tex;
-Texture2DArray<float4> normal_tex;
+//Texture2DArray<float4> normal_tex;
 
 // GBuffer resources
 Texture2D<float4> g_position;
@@ -55,11 +56,11 @@ struct LightInfo {
 };
 
 
-inline void load_texture_data(float3 tex_coord, out float4 diffuse, out float4 emission, out float3 normal) {
+inline void load_texture_data(float3 tex_coord, out float4 diffuse, out float4 emission) {
 	diffuse = diffuse_tex.SampleLevel(sam, tex_coord, 0);
 	//specular = specular_tex.SampleLevel(sam, tex_coord, 0);
 	emission = emission_tex.SampleLevel(sam, tex_coord, 0);
-	normal = normal_tex.SampleLevel(sam, tex_coord, 0).xyz;
+	//normal = normal_tex.SampleLevel(sam, tex_coord, 0).xyz;
 }
 
 inline float3 to_large_scene_scale(float3 p) {
@@ -72,16 +73,16 @@ inline float3 to_default_scene_scale(float3 p) {
 	return camera.pos.xyz + normalize(to_p) * (length(to_p) / camera.info.y); // camera.info.y - scale factor for large objects
 }
 
-inline void TraceRay(in Ray ray, inout TriangleIntersection TriInter) {
+inline void TraceRay(Ray ray, inout TriangleIntersection TriInter) {
 	TraceRay(scene, gnb, gvb, ray, TriInter);
 
-	if (input.use_two_scenes == 1u) {
+	if (input.use_two_scenes) {
 		ray.origin = to_large_scene_scale(ray.origin);
 
 		TriangleIntersection inter = TriInter;
 		TraceRay(l_scene, l_gnb, l_gvb, ray, inter);
 
-		if (inter.Distance < TriInter.Distance) {
+		if (inter.Distance / camera.info.y < TriInter.Distance) {
 			inter.Point = to_default_scene_scale(inter.Point);
 			//inter.Distance = distance(ray.origin, inter.Point);
 			TriInter = inter;
@@ -100,7 +101,7 @@ Ray primary_ray(uint2 screen_size, float2 screen_pixel_pos) {
 	return ray;
 }
 
-inline void def_scene_rand_triangle_light_dir(inout Ray ray, in uint triangle_id, out float ray_length) {
+inline void def_scene_rand_triangle_light_dir(inout Ray ray, uint triangle_id, out float ray_length) {
 	const float r0 = sqrt(rand_next());
 	const float r1 = rand_next();
 
@@ -113,7 +114,7 @@ inline void def_scene_rand_triangle_light_dir(inout Ray ray, in uint triangle_id
 	ray.dir = normalize(tpos - ray.origin);
 }
 
-inline void def_scene_rand_sphere_light_dir(inout Ray ray, in LightSource sphere_light, out float ray_length) {
+inline void def_scene_rand_sphere_light_dir(inout Ray ray, LightSource sphere_light, out float ray_length) {
 	// Calculate sphere disk radius
 	//float ray_dist = distance(ray.origin, sphere_info.x);
 	//float disk_r = distance(ray_dist - sphere_info.y, sqrt(sqr(ray_dist) - sqr(sphere_info.y))) * COS_45DEG;
@@ -126,7 +127,7 @@ inline void def_scene_rand_sphere_light_dir(inout Ray ray, in LightSource sphere
 }
 
 
-inline void large_scene_rand_triangle_light_dir(inout Ray ray, in uint triangle_id, out float ray_length) {
+inline void large_scene_rand_triangle_light_dir(inout Ray ray, uint triangle_id, out float ray_length) {
 	const float r0 = sqrt(rand_next());
 	const float r1 = rand_next();
 
@@ -140,7 +141,7 @@ inline void large_scene_rand_triangle_light_dir(inout Ray ray, in uint triangle_
 	ray.dir = normalize(tpos - ro);
 }
 
-inline void large_scene_rand_sphere_light_dir(inout Ray ray, in LightSource sphere_light, out float ray_length) {
+inline void large_scene_rand_sphere_light_dir(inout Ray ray, LightSource sphere_light, out float ray_length) {
 	const float3 ro = to_large_scene_scale(ray.origin);
 	const float3 spos = sphere_light.pos.xyz + (rand_cos_hemisphere_dir(normalize(ro - sphere_light.pos.xyz)) * sphere_light.info.z);
 	ray_length = distance(ro, spos);
@@ -155,7 +156,7 @@ inline void rand_light_dir(inout Ray ray, out LightInfo light_info) {
 	light_info.ray_length = 0;
 	ray.dir = 0;
 
-	if (rand_next_bool() && input.use_two_scenes) {
+	if (rand_next_bool() && input.use_two_scenes && input.large_scene_light_count > 0) {
 		light_index = min(uint(rand_next() * input.large_scene_light_count), input.large_scene_light_count - 1);
 		light = l_lsb[light_index];
 
@@ -177,7 +178,7 @@ inline void rand_light_dir(inout Ray ray, out LightInfo light_info) {
 }
 
 // 1 - light visible, 0 - light invisible
-inline bool trace_shadow_ray(in Ray ray, in float light_ray_length) {
+inline bool trace_shadow_ray(Ray ray, float light_ray_length) {
 	TriangleIntersection inter;
 	inter.init(0);
 
@@ -189,7 +190,7 @@ inline bool trace_shadow_ray(in Ray ray, in float light_ray_length) {
 	}
 }
 
-inline void trace_indirect_ray(in Ray ray, out float4 color, out float4 albedo) {
+inline void trace_indirect_ray(Ray ray, out float4 color, out float4 albedo) {
 	TriangleIntersection inter;
 	inter.init(INTERSECTION_FLAG_TEXCOORD | INTERSECTION_FLAG_NORMAL);
 
@@ -202,15 +203,12 @@ inline void trace_indirect_ray(in Ray ray, out float4 color, out float4 albedo) 
 	rand_light_dir(to_light, light_info);
 
 	float4 diffuse, emission;
-	float3 normal;
-	load_texture_data(inter.TexCoord, diffuse, emission, normal);
+	load_texture_data(inter.TexCoord, diffuse, emission);
 
 	// Compute our lambertion term (L dot N)
-	//vec3 toLight = normalize(inter.point - ray.origin);
-	const float LdotN = saturate(dot(inter.Normal * clamp(normal, 0.999, 1), to_light.dir));
+	const float LdotN = saturate(dot(inter.Normal, to_light.dir));
 
 	// Shoot our shadow ray.
-	//Intersection shadow = trace_ray(ray);
 	const float shadowMult = trace_shadow_ray(to_light, light_info.ray_length);
 
 	color = LdotN * shadowMult;
@@ -219,11 +217,9 @@ inline void trace_indirect_ray(in Ray ray, out float4 color, out float4 albedo) 
 		color += 1;
 		albedo += (emission - albedo) / color;
 	}
-
-	//return diffuse.xyz;
 }
 
-inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in float3 specular, in float roughness, in float2 rt_pixel_pos) {
+inline void sample_color(float3 pos, float3 normal, float3 diffuse, float3 specular, float roughness, float2 rt_pixel_pos) {
 
 	float4 direct;
 	uint4 indirect;
@@ -298,20 +294,6 @@ inline void sample_color(in float3 pos, in float3 normal, in float3 diffuse, in 
 	rt_indirect[rt_pixel_pos] = indirect;
 }
 
-uint2 select_g_pixel(uint2 g_center_p, uint2 kernel) {
-	if (g_position[g_center_p].w == 1)
-		return g_center_p;
-
-	for (uint x = 0; x < kernel.x; x++)
-		for (uint y = 0; y < kernel.y; y++) {
-			uint2 pixel = g_center_p + uint2(x, y);
-			if (g_position[pixel].w == 1)
-				return pixel;
-		}
-
-	return g_center_p;
-}
-
 [numthreads(THREAD_GROUP_WIDTH, THREAD_GROUP_HEIGHT, 1)]
 void main(uint3 DTid : SV_DispatchThreadID) {
 	uint2 RT_SIZE, G_SIZE;
@@ -330,13 +312,13 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 	float4 pos = g_position[g_pixel];
 	float4 normal, diffuse, specular, emission;
 
+	if (uint(pos.w) & POSITION_FLAG_LARGE_SCALE)
+		pos.xyz = to_default_scene_scale(pos.xyz);
 
-
-	if (pos.w == 1 && (input.def_scene_light_count > 0 || input.large_scene_light_count > 0)) { // Not a background pixel
+	if (uint(pos.w) & POSITION_FLAG_POS_EXIST && (input.def_scene_light_count > 0 || input.large_scene_light_count > 0)) { // Not a background pixel
 		normal = g_normal[g_pixel];
 		diffuse = g_diffuse[g_pixel];
 		specular = g_specular[g_pixel];
-		//emission = g_emission[g_pixel];
 
 		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0, clamp(specular.a + 0, 0, 1), rt_pixel);
 

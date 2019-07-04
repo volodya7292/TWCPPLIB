@@ -76,8 +76,21 @@ void TW3DDefaultRenderer::record_g_buffer_objects(TW3DCommandList* cl) {
 	cl->SetRootSignatureFrom(gbuffer_ps);
 	cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+	cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, Scene->Camera);
+	cl->BindCameraPrevCBV(GBUFFER_VERTEX_PREV_CAMERA_CB, Scene->Camera);
+	cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, Scene->Camera);
+
 	for (TW3DObject* object : Scene->Objects)
 		cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
+
+	if (LargeScaleScene) {
+		cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, LargeScaleScene->Camera);
+		cl->BindCameraPrevCBV(GBUFFER_VERTEX_PREV_CAMERA_CB, LargeScaleScene->Camera);
+		cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, LargeScaleScene->Camera);
+
+		for (TW3DObject* object : LargeScaleScene->Objects)
+			cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
+	}
 }
 
 void TW3DDefaultRenderer::record_g_buffer(TW3DSCFrame* frame, TW3DCommandList* cl) {
@@ -107,9 +120,6 @@ void TW3DDefaultRenderer::record_g_buffer(TW3DSCFrame* frame, TW3DCommandList* c
 	cl->BindTexture(GBUFFER_PIXEL_EMISSION_TEXTURE, emission_texarr);
 	cl->BindTexture(GBUFFER_PIXEL_NORMAL_TEXTURE, normal_texarr);
 
-	cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, Scene->Camera);
-	cl->BindCameraPrevCBV(GBUFFER_VERTEX_PREV_CAMERA_CB, Scene->Camera);
-	cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, Scene->Camera);
 	cl->BindConstantBuffer(GBUFFER_PIXEL_RENDERER_CB, info_cb);
 
 	cl->ExecuteBundle(frame->GetCommandList("GBufferObjects"s));
@@ -199,6 +209,8 @@ void TW3DDefaultRenderer::BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* Colo
 
 void TW3DDefaultRenderer::Update(float DeltaTime) {
 	Scene->Update(DeltaTime);
+	if (LargeScaleScene)
+		LargeScaleScene->Update(DeltaTime);
 	info_cb->Update(&info);
 }
 
@@ -206,6 +218,9 @@ void TW3DDefaultRenderer::Execute(TW3DSCFrame* Frame) {
 	TW3DRenderer::Execute(Frame);
 
 	Scene->BeforeExecution();
+	if (LargeScaleScene)
+		LargeScaleScene->BeforeExecution();
+	
 
 	auto g_cl = Frame->GetCommandList("GBuffer");
 	record_g_buffer(Frame, g_cl);
@@ -215,7 +230,7 @@ void TW3DDefaultRenderer::Execute(TW3DSCFrame* Frame) {
 	auto rt_cl = Frame->RequestCommandList("RayTrace"s, TW3D_CL_COMPUTE);
 	rt_cl->Reset();
 	rt_cl->BindResources(ResourceManager);
-	ray_tracer->Render(rt_cl, g_position, g_diffuse, g_specular, g_normal, g_emission, g_depth, diffuse_texarr, emission_texarr, normal_texarr, info_cb, Scene, LargeScaleScene);
+	ray_tracer->Render(rt_cl, g_position, g_diffuse, g_specular, g_normal, g_emission, g_depth, diffuse_texarr, emission_texarr, info_cb, Scene, LargeScaleScene);
 	ray_tracer->Tonemap(rt_cl);
 	rt_cl->Close();
 

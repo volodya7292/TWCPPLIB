@@ -29,7 +29,7 @@ struct TriangleIntersection {
 	}
 };
 
-void triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tri_inter) {
+void triangle_intersection(Ray ray, GVB gvb, inout TriangleIntersection tri_inter) {
 	const float3 v0 = gvb[tri_inter.TriangleId * 3].pos;
 	const float3 v1 = gvb[tri_inter.TriangleId * 3 + 1].pos;
 	const float3 v2 = gvb[tri_inter.TriangleId * 3 + 2].pos;
@@ -71,70 +71,9 @@ void triangle_intersection(in Ray ray, in GVB gvb, inout TriangleIntersection tr
 			}
 		}
 	}
-
-
-	//tri_inter.Point = float3(0, 0, 0);
-	//tri_inter.Distance = 65535;
-
-
-	//uint zIndex = max_dim(ray.dir);
-	//uint3 k;
-	//k.x = (zIndex + 1) % 3;
-	//k.y = (zIndex + 2) % 3;
-	//k.z = zIndex;
-	//if (ray.dir[k.z] < 0.0f) {
-	//	int sw = k.y;
-	//	k.y = k.x;
-	//	k.x = sw;
-	//}
-
-	//float3 shear;
-	//shear.x = ray.dir[k.x] / ray.dir[k.z];
-	//shear.y = ray.dir[k.y] / ray.dir[k.z];
-	//shear.z = 1.0f / ray.dir[k.z];
-
-	//float3 A = Swizzle(v0 - ray.origin, k);
-	//float3 B = Swizzle(v1 - ray.origin, k);
-	//float3 C = Swizzle(v2 - ray.origin, k);
-
-	//A.x = A.x - shear.x * A.z;
-	//A.y = A.y - shear.y * A.z;		
-	//B.x = B.x - shear.x * B.z;
-	//B.y = B.y - shear.y * B.z;
-	//C.x = C.x - shear.x * C.z;
-	//C.y = C.y - shear.y * C.z;
-
-	//float U = C.x * B.y - C.y * B.x;
-	//float V = A.x * C.y - A.y * C.x;
-	//float W = B.x * A.y - B.y * A.x;
-
-	//float det = U + V + W;
-	//if ((U < 0.0f || V < 0.0f || W < 0.0f) && (U > 0.0f || V > 0.0f || W > 0.0f)) {
-	//	return false;
-	//}
-
-	//if (det == 0.0f) return false;
-	//A.z = shear.z * A.z;
-	//B.z = shear.z * B.z;
-	//C.z = shear.z * C.z;
-	//const float T = U * A.z + V * B.z + W * C.z;
-
-	//float signCorrectedT = abs(T);
-	//if (IsPositive(T) != IsPositive(det))
-	//	signCorrectedT = -signCorrectedT;
-	//if (signCorrectedT < 0.0f)
-	//	return false;
-
-	//float rcpDet = 1.0f / det;
-	//float hitT = T * rcpDet;
-	//float3 interPoint = ray.origin + ray.dir * hitT;
-	////vec3 n = dot(normal, normalize(ray.origin - interPoint)) >= 0 ? normal : normal * vec3(-1);
-
-	//tri_inter.Point = interPoint;
-	//tri_inter.Distance = distance(ray.origin, interPoint);
 }
 
-void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offset, in GVB gvb, in Ray ray, inout TriangleIntersection tri_inter) {
+void mesh_rtas_trace_ray(RTNB rtas, uint vertex_offset, uint node_offset, GVB gvb, Ray ray, inout TriangleIntersection tri_inter) {
 	TriangleIntersection mininter = tri_inter, tempinter = tri_inter;
 
 	//float distance = 0;
@@ -220,8 +159,8 @@ void mesh_rtas_trace_ray(in RTNB rtas, in uint vertex_offset, in uint node_offse
 	tri_inter = mininter;
 }
 
-void check_scene_rtas_intersection(in RTNB gnb, in GVB gvb, in Ray ray, in uint rtas_vertex_index,
-	in uint rtas_node_index, in float4x4 inverse_transform, inout TriangleIntersection tri_inter) {
+void check_scene_rtas_intersection(RTNB gnb, GVB gvb, Ray ray, uint rtas_vertex_index,
+	uint rtas_node_index, float4x4 inverse_transform, inout TriangleIntersection tri_inter) {
 
 	Ray nRay;
 	nRay.origin = mul(inverse_transform, float4(ray.origin, 1)).xyz;
@@ -230,7 +169,7 @@ void check_scene_rtas_intersection(in RTNB gnb, in GVB gvb, in Ray ray, in uint 
 	mesh_rtas_trace_ray(gnb, rtas_vertex_index, rtas_node_index, gvb, nRay, tri_inter);
 }
 
-void TraceRay(in RTScene SceneAS, in RTNB GNB, in GVB GVB, in Ray ray, inout TriangleIntersection TriInter) {
+void TraceRay(RTScene SceneAS, RTNB GNB, GVB GVB, Ray ray, inout TriangleIntersection TriInter) {
 	ray.origin += ray.dir * RT_BIAS;
 
 	//float bounds_distance = FLT_MAX;

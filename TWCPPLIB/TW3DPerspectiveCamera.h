@@ -18,6 +18,8 @@ public:
 
 	void SetRotation(TWT::float3 Rotation);
 	void Move(float to_back, float left_right);
+	void SetSceneScale(float Scale);
+	void LoadData(TW3DPerspectiveCamera* Camera);
 	void UpdateConstantBuffer();
 	TW3DConstantBuffer* GetConstantBuffer();
 	TW3DConstantBuffer* GetPreviousConstantBuffer();
