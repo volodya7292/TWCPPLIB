@@ -251,7 +251,6 @@ inline void sample_color(float3 pos, float3 normal, float3 diffuse, float3 specu
 
 		const bool colorsNan = any(isnan(directColor));// || any(isnan(directAlbedo));
 		direct = float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
-		//direct_albedo = float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
 	}
 
 	// Indirect
@@ -262,11 +261,10 @@ inline void sample_color(float3 pos, float3 normal, float3 diffuse, float3 specu
 
 		float3 bounceDir;
 		
-		if (chooseDiffuse) {   // Randomly select to bounce in our diffuse lobe
+		if (chooseDiffuse)   // Randomly select to bounce in our diffuse lobe
 			bounceDir = rand_cos_hemisphere_dir(normal);
-		} else {   // Randomly select to bounce in our GGX lobe
+		else   // Randomly select to bounce in our GGX lobe
 			bounceDir = rand_ggx_sample_dir(roughness, normal, to_camera);
-		}
 
 		// Shoot our indirect color ray
 		Ray iRay;
@@ -320,7 +318,7 @@ void main(uint3 DTid : SV_DispatchThreadID) {
 		diffuse = g_diffuse[g_pixel];
 		specular = g_specular[g_pixel];
 
-		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0, clamp(specular.a + 0, 0, 1), rt_pixel);
+		sample_color(pos.xyz, normal.xyz, diffuse.rgb, 0, specular.a + 1, rt_pixel);
 
 	} else { // Background pixel
 		rt_direct[rt_pixel] = float4(0, 0, 0, 1);

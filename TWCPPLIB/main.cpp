@@ -3,6 +3,9 @@
 #include "TW3DCube.h"
 #include "TW3DDefaultRenderer.h"
 
+using namespace TWT;
+
+
 static const float movement_speed = 2.0f;
 static const float mouseSensitivity = 0.05f;
 
@@ -122,8 +125,50 @@ void on_char(TWT::wchar Symbol) {
 	//TWU::CPrintln(Symbol);
 }
 
+struct Ray {
+	float3 origin, dir;
+};
+
+struct Bounds2 {
+	float3 pMin;
+	float3 pMax;
+
+	bool intersect(Ray ray) {
+		//distan = FLT_MAX;
+
+		const float3 invD = 1.0f / ray.dir;
+		const float3 t0 = (pMin - ray.origin) * invD;
+		const float3 t1 = (pMax - ray.origin) * invD;
+
+		const float3 tsmaller = min(t0, t1);
+		const float3 tbigger  = max(t0, t1);
+
+		//const float tmin = max(RAY_TMIN, max(tsmaller[0], max(tsmaller[1], tsmaller[2])));
+		//const float tmax = min(RAY_TMAX, min(tbigger[0], min(tbigger[1], tbigger[2])));
+		const float tmin = Max(tsmaller[0], Max(tsmaller[1], tsmaller[2]));
+		const float tmax = Min(tbigger[0], Min(tbigger[1], tbigger[2]));
+
+		//if (tmin < distan) distan = t0;
+		//if (tmax < distan) distan = t1;
+		return tmax >= tmin;
+	}
+};
+
 #include "TW3DPrimitives.h"
 int main() {
+	Bounds2 b;
+	b.pMin = float3(-0.5f);
+	b.pMax = float3(0.5f);
+
+	Ray r;
+	r.origin = float3(0, 0, 0);
+	r.dir = float3(0, 1, 0);
+
+	bool inter = b.intersect(r);
+	TWU::CPrintln("INTERS: "s + inter);
+
+
+
 	TW3D::InitializeInfo info = {};
 	info.AdditionalThreadCount = 1;
 	info.LogFilename = "Log.log"s;
@@ -144,9 +189,9 @@ int main() {
 	cube2->VMInstance.VertexMesh = TW3DPrimitives::GetPyramid4VertexMesh();
 	cube2->VMInstance.Transform.SetPosition(TWT::float3(0.0f, 5, 0));
 	cube2->VMInstance.Transform.SetRotation(TWT::double3(0, 0, 180));
-	large_scene->AddObject(cube2);
-	cube2->VMInstance.RigidBody->setType(rp3d::BodyType::STATIC);
-	cube2->VMInstance.RigidBody->enableGravity(false);
+	scene->AddObject(cube2);
+	cube2->VMInstance.RigidBody->setType(rp3d::BodyType::DYNAMIC);
+	cube2->VMInstance.RigidBody->enableGravity(true);
 	cube2->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);
 
 	cube->VMInstance.Transform.SetPosition(TWT::float3(0.0f, 0, 0));
@@ -168,16 +213,15 @@ int main() {
 
 	light2.SetTriangleId(9, cube->VMInstance.VertexMesh->VertexBuffers[0]);
 
-	//light2->SetSphereRadius(0.1);
-	//light2->SetPosition(TWT::float3(5, -10, 5));
+	//light2.SetSphereRadius(0.1);
+	//light2.SetPosition(TWT::float3(0, -10, 0));
 
 	scene->AddLightSource(&light);
 	scene->AddLightSource(&light2);
-	//scene->AddLightSource(light3);
 
 	defaultRenderer = new TW3DDefaultRenderer();
 	defaultRenderer->Scene = scene;
-	defaultRenderer->LargeScaleScene = large_scene;
+	//defaultRenderer->LargeScaleScene = large_scene;
 
 	TW3D::SetRenderer(defaultRenderer);
 

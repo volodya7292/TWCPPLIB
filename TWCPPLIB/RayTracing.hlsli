@@ -6,7 +6,8 @@ static float4x4 last_mesh_transform;
 
 #define RT_BIAS    1e-4f
 
-#define   INTERSECTION_FLAG_NORMAL    1 << 0
+#define INTERSECTION_FLAG_NONE        0
+#define INTERSECTION_FLAG_NORMAL      1 << 0
 #define INTERSECTION_FLAG_TEXCOORD    1 << 1
 
 struct TriangleIntersection {

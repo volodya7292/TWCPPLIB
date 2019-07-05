@@ -24,7 +24,7 @@ void reduce_model(inout float4x4 model, float reduce_scale) {
 	float3 to_mesh = translation(model) - camera.pos.xyz;
 	float3 mesh_pos_new = camera.pos.xyz + normalize(to_mesh) * (length(to_mesh) * reduce_scale);
 
-	model = translate(scale(model, reduce_scale), mesh_pos_new);
+	model = translate(model, mesh_pos_new);
 }
 
 VS_OUTPUT main(Vertex input, uint vertex_id : SV_VertexID) {

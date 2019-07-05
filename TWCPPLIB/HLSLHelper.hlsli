@@ -97,7 +97,7 @@ struct Bounds {
 
 		//if (tmin < distan) distan = t0;
 		//if (tmax < distan) distan = t1;
-		return (tmin < tmax);
+		return (tmax >= tmin);
 	}
 };
 
