@@ -1,10 +1,10 @@
 #include "pch.h"
-#include "TW3DGraphicsPipelineState.h"
+#include "TW3DGraphicsPipeline.h"
 
-TW3DGraphicsPipelineState::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, DXGI_SAMPLE_DESC Sampledesc, D3D12_RASTERIZER_DESC RasterizerState,
-	D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, TW3DRootSignature* RootSignature) :
-	RootSignature(RootSignature)
-{
+TW3DGraphicsPipeline::TW3DGraphicsPipeline(TW3DRootSignature* RootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, DXGI_SAMPLE_DESC Sampledesc,
+	D3D12_RASTERIZER_DESC RasterizerState, D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState) :
+	RootSignature(RootSignature) {
+
 	desc.PrimitiveTopologyType = PrimitiveTopologyType;
 	desc.SampleDesc = Sampledesc;
 	desc.RasterizerState = RasterizerState;
@@ -16,54 +16,46 @@ TW3DGraphicsPipelineState::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TY
 	desc.SampleMask = 0xffffffff;
 }
 
-TW3DGraphicsPipelineState::TW3DGraphicsPipelineState(TW3DRootSignature* RootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType) :
-	TW3DGraphicsPipelineState(PrimitiveTopologyType, {1, 0}, CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
-		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT), CD3DX12_BLEND_DESC(D3D12_DEFAULT), RootSignature)
-{
+TW3DGraphicsPipeline::TW3DGraphicsPipeline(TW3DRootSignature* RootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType) :
+	TW3DGraphicsPipeline(RootSignature, PrimitiveTopologyType, { 1, 0 }, CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT), CD3DX12_BLEND_DESC(D3D12_DEFAULT)) {
 	desc.DepthStencilState.DepthEnable = false;
 	desc.DepthStencilState.StencilEnable = false;
 	desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 }
 
-TW3DGraphicsPipelineState::~TW3DGraphicsPipelineState() {
-	TWU::DXSafeRelease(pipeline_state);
-	if (RootSignature->DestroyOnPipelineDestroy)
-		delete RootSignature;
+TW3DGraphicsPipeline::~TW3DGraphicsPipeline() {
+	TWU::DXSafeRelease(Native);
 }
 
-ID3D12PipelineState* TW3DGraphicsPipelineState::Get() {
-	return pipeline_state;
-}
-
-void TW3DGraphicsPipelineState::SetVertexShader(TW3DShader* Shader) {
+void TW3DGraphicsPipeline::SetVertexShader(TW3DShader* Shader) {
 	desc.VS = Shader->GetByteCode();
 }
 
-void TW3DGraphicsPipelineState::SetGeometryShader(TW3DShader* Shader) {
+void TW3DGraphicsPipeline::SetGeometryShader(TW3DShader* Shader) {
 	desc.GS = Shader->GetByteCode();
 }
 
-void TW3DGraphicsPipelineState::SetPixelShader(TW3DShader* Shader) {
+void TW3DGraphicsPipeline::SetPixelShader(TW3DShader* Shader) {
 	desc.PS = Shader->GetByteCode();
 }
 
-void TW3DGraphicsPipelineState::SetRTVFormat(TWT::uint Index, DXGI_FORMAT Format) {
+void TW3DGraphicsPipeline::SetRTVFormat(TWT::uint Index, DXGI_FORMAT Format) {
 	desc.RTVFormats[Index] = Format;
 	desc.NumRenderTargets = Index + 1;
 }
 
-void TW3DGraphicsPipelineState::SetDSVFormat(DXGI_FORMAT Format) {
+void TW3DGraphicsPipeline::SetDSVFormat(DXGI_FORMAT Format) {
 	desc.DSVFormat = Format;
 }
 
-void TW3DGraphicsPipelineState::SetInputLayout(const std::vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout) {
+void TW3DGraphicsPipeline::SetInputLayout(const std::vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout) {
 	desc.InputLayout.NumElements = static_cast<UINT>(InputLayout.size());
 	desc.InputLayout.pInputElementDescs = InputLayout.data();
 }
 
-void TW3DGraphicsPipelineState::Create(TW3DDevice* Device) {
-	Device->CreateGraphicsPipelineState(&desc, &pipeline_state);
-	pipeline_state->SetName(L"TW3DGraphicsPipelineState");
+void TW3DGraphicsPipeline::Create(TW3DDevice* Device) {
+	Device->CreateGraphicsPipelineState(&desc, &Native);
 }
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> CreateInputLayout(const std::vector<TW3DInputLayoutElement>& Elements) {

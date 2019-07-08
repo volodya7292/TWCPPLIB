@@ -182,7 +182,7 @@
     <ClInclude Include="TW3DBuffer.h" />
     <ClInclude Include="TW3DCommandBuffer.h" />
     <ClInclude Include="TW3DCommandSignature.h" />
-    <ClInclude Include="TW3DComputePipelineState.h" />
+    <ClInclude Include="TW3DComputePipeline.h" />
     <ClInclude Include="TW3DFramebuffer.h" />
     <ClInclude Include="TW3DLightSource.h" />
     <ClInclude Include="TW3DModules.h" />
@@ -198,7 +198,7 @@
     <ClInclude Include="TW3DDefaultRenderer.h" />
     <ClInclude Include="TW3DGeometry.h" />
     <ClInclude Include="TW3DObject.h" />
-    <ClInclude Include="TW3DGraphicsPipelineState.h" />
+    <ClInclude Include="TW3DGraphicsPipeline.h" />
     <ClInclude Include="TW3DPrimitives.h" />
     <ClInclude Include="TW3DRenderer.h" />
     <ClInclude Include="TW3DResource.h" />
@@ -239,7 +239,7 @@
     <ClCompile Include="TW3DBuffer.cpp" />
     <ClCompile Include="TW3DCommandBuffer.cpp" />
     <ClCompile Include="TW3DCommandSignature.cpp" />
-    <ClCompile Include="TW3DComputePipelineState.cpp" />
+    <ClCompile Include="TW3DComputePipeline.cpp" />
     <ClCompile Include="TW3DFramebuffer.cpp" />
     <ClCompile Include="TW3DLightSource.cpp" />
     <ClCompile Include="TW3DModules.cpp" />
@@ -255,7 +255,7 @@
     <ClCompile Include="TW3DDefaultRenderer.cpp" />
     <ClCompile Include="TW3DGeometry.cpp" />
     <ClCompile Include="TW3DObject.cpp" />
-    <ClCompile Include="TW3DGraphicsPipelineState.cpp" />
+    <ClCompile Include="TW3DGraphicsPipeline.cpp" />
     <ClCompile Include="TW3DPrimitives.cpp" />
     <ClCompile Include="TW3DRenderer.cpp" />
     <ClCompile Include="TW3DResource.cpp" />

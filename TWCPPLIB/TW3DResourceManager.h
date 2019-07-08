@@ -35,8 +35,8 @@ public:
 	TW3DTexture*        CreateTexture2D(TWT::uint2 Size, DXGI_FORMAT Format, bool UAV = false);
 	TW3DTexture*        CreateTextureArray2D(TWT::uint2 Size, TWT::uint Depth, DXGI_FORMAT Format, bool UAV = false);
 	TW3DCommandList*    CreateCommandList(TW3DCommandListType Type);
-	TW3DCommandList*    CreateCommandList(TW3DCommandListType Type, TW3DGraphicsPipelineState* InitialState);
-	TW3DCommandList*    CreateCommandList(TW3DCommandListType Type, TW3DComputePipelineState* InitialState);
+	TW3DCommandList*    CreateCommandList(TW3DCommandListType Type, TW3DGraphicsPipeline* InitialState);
+	TW3DCommandList*    CreateCommandList(TW3DCommandListType Type, TW3DComputePipeline* InitialState);
 
 	TW3DCommandList*  GetTemporaryDirectCommandList();
 	TW3DCommandList*  GetTemporaryComputeCommandList();
@@ -49,8 +49,8 @@ public:
 		std::vector<D3D12_STATIC_SAMPLER_DESC> StaticSamplers, bool VS = true, bool PS = true, bool GS = false, bool IA = true);
 	TW3DCommandSignature* RequestCommandSignature(TWT::String const& Name, TW3DRootSignature* RootSignature, std::vector<TW3DCSCommandArgument> const& CommandArguments);
 	TW3DCommandList*      RequestCommandList(TWT::String const& Name, TW3DCommandListType Type);
-	TW3DCommandList*      RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipelineState* InitialState);
-	TW3DCommandList*      RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipelineState* InitialState);
+	TW3DCommandList*      RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipeline* InitialState);
+	TW3DCommandList*      RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipeline* InitialState);
 	TW3DRenderTarget*     RequestRenderTarget(TWT::String const& Name, ID3D12Resource* Buffer);
 	TW3DRenderTarget*     RequestRenderTarget(TWT::String const& Name, TWT::uint2 Size, DXGI_FORMAT Format, TWT::float4 ClearValue = TWT::float4(-1));
 	TW3DRenderTarget*     RequestRenderTargetCube(TWT::String const& Name, TWT::uint Size, DXGI_FORMAT Format, TWT::float4 ClearValue = TWT::float4(-1));
@@ -64,7 +64,12 @@ public:
 	TW3DConstantBuffer*   RequestConstantBuffer(TWT::String const& Name, TWT::uint ElementCount, TWT::uint ElementSizeInBytes);
 	TW3DCommandBuffer*    RequestCommandBuffer(TWT::String const& Name, TW3DCommandSignature* CommandSignature, TWT::uint MaxCommandCount, TWT::uint SingleCommandByteSize);
 	TW3DFramebuffer*      RequestFramebuffer(TWT::String const& Name, TWT::uint2 Size);
-
+	TW3DGraphicsPipeline* RequestGraphicsPipeline(TWT::String const& Name, TW3DRootSignature* RootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType,
+		DXGI_SAMPLE_DESC SampleDesc, D3D12_RASTERIZER_DESC RasterizerState, D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState,
+		std::vector<DXGI_FORMAT> const& OutputFormats, TW3DShader* VertexShader, TW3DShader* GeometryShader, TW3DShader* PixelShader, std::vector<D3D12_INPUT_ELEMENT_DESC> const& InputLayout);
+	TW3DGraphicsPipeline* RequestGraphicsPipeline(TWT::String const& Name, TW3DRootSignature* RootSignature,
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	TW3DComputePipeline*  RequestComputePipeline(TWT::String const& Name, TW3DRootSignature* RootSignature, TW3DShader* ComputeShader);
 
 
 	void ReleaseResource(TW3DResource* Resource);
@@ -116,4 +121,6 @@ private:
 	std::unordered_map<TWT::String, TW3DConstantBuffer*>      constant_buffers;
 	std::unordered_map<TWT::String, TW3DCommandBuffer*>       command_buffers;
 	std::unordered_map<TWT::String, TW3DFramebuffer*>         framebuffers;
+	std::unordered_map<TWT::String, TW3DGraphicsPipeline*>    graphics_pipelines;
+	std::unordered_map<TWT::String, TW3DComputePipeline*>     compute_pipelines;
 };

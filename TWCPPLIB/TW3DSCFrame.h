@@ -27,15 +27,15 @@ public:
 	// Create/Get static command list
 	TW3DCommandList* GetCommandList(TWT::String const& Name);
 	TW3DCommandList* RequestCommandList(TWT::String const& Name, TW3DCommandListType Type);
-	TW3DCommandList* RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipelineState* InitialState);
-	TW3DCommandList* RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipelineState* InitialState);
+	TW3DCommandList* RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipeline* InitialState);
+	TW3DCommandList* RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipeline* InitialState);
 
 	// Create dynamic command list
 	void RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, CLRecorder Recorder, TWT::uint RecordPriority = 0);
 	void RequestCommandList(TWT::String const& Name, TW3DCommandListType Type,
-		TW3DGraphicsPipelineState* InitialState, CLRecorder Recorder, TWT::uint RecordPriority = 0); // Create dynamic command list
+		TW3DGraphicsPipeline* InitialState, CLRecorder Recorder, TWT::uint RecordPriority = 0); // Create dynamic command list
 	void RequestCommandList(TWT::String const& Name, TW3DCommandListType Type,
-		TW3DComputePipelineState* InitialState, CLRecorder Recorder, TWT::uint RecordPriority = 0); // Create dynamic command list
+		TW3DComputePipeline* InitialState, CLRecorder Recorder, TWT::uint RecordPriority = 0); // Create dynamic command list
 
 	void FlushCommandList(TWT::String const& Name);
 	void PerformSwap();

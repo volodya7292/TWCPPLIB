@@ -12,14 +12,12 @@ enum TW3DInputLayoutElement {
 	TW3D_ILE_BITANGENT,
 };
 
-class TW3DGraphicsPipelineState {
+class TW3DGraphicsPipeline {
 public:
-	TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, DXGI_SAMPLE_DESC SampleDesc, D3D12_RASTERIZER_DESC RasterizerState,
-		D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState, TW3DRootSignature* RootSignature);
-	TW3DGraphicsPipelineState(TW3DRootSignature* RootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	~TW3DGraphicsPipelineState();
-
-	ID3D12PipelineState* Get();
+	TW3DGraphicsPipeline(TW3DRootSignature* RootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType, DXGI_SAMPLE_DESC SampleDesc,
+		D3D12_RASTERIZER_DESC RasterizerState, D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState);
+	TW3DGraphicsPipeline(TW3DRootSignature* RootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	~TW3DGraphicsPipeline();
 
 	void SetVertexShader(TW3DShader* Shader);
 	void SetGeometryShader(TW3DShader* Shader);
@@ -30,11 +28,11 @@ public:
 
 	void Create(TW3DDevice* Device);
 
+	ID3D12PipelineState* Native = nullptr;
 	TW3DRootSignature* RootSignature;
 
 private:
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC           desc = {};
-	ID3D12PipelineState*               pipeline_state = nullptr;
 };
 
 

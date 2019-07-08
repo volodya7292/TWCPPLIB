@@ -1,6 +1,6 @@
 #pragma once
-#include "TW3DGraphicsPipelineState.h"
-#include "TW3DComputePipelineState.h"
+#include "TW3DGraphicsPipeline.h"
+#include "TW3DComputePipeline.h"
 #include "TW3DRootSignature.h"
 
 class TW3DResource;
@@ -15,14 +15,12 @@ class TW3DResourceManager;
 class TW3DDescriptorHeap;
 class TW3DObject;
 class TW3DPerspectiveCamera;
-class TW3DGraphicsPipelineState;
-class TW3DComputePipelineState;
 
 class TW3DCommandList {
 public:
 	TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type);
-	TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type, TW3DGraphicsPipelineState* InitialState);
-	TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type, TW3DComputePipelineState* InitialState);
+	TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type, TW3DGraphicsPipeline* InitialState);
+	TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type, TW3DComputePipeline* InitialState);
 	~TW3DCommandList();
 
 	D3D12_COMMAND_LIST_TYPE GetType();
@@ -38,16 +36,16 @@ public:
 	void ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 	void CopyBufferRegion(TW3DResource* DstBuffer, TWT::uint64 DstOffset, TW3DResource* SrcBuffer, TWT::uint64 SrcOffset, TWT::uint64 ByteCount);
 	void CopyTextureRegion(TW3DResource* DstTexture, TW3DResource* SrcTexture);
-	void SetPipelineState(TW3DGraphicsPipelineState* PipelineState);
-	void SetPipelineState(TW3DComputePipelineState* PipelineState);
+	void SetPipelineState(TW3DGraphicsPipeline* GraphicsPipeline);
+	void SetPipelineState(TW3DComputePipeline* ComputePipeline);
 	void SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DTexture* DSV = nullptr);
 	void SetRenderTargets(const std::vector<TW3DRenderTarget*>& RTVs, TW3DTexture* DSV = nullptr);
 	void ClearRTV(TW3DRenderTarget* RenderTarget);
 	void ClearRTV(TW3DRenderTarget* RenderTarget, TWT::float4 Color);
 	void ClearDSVDepth(TW3DTexture* Texture);
 	void SetRootSignature(TW3DRootSignature* RootSignature);
-	void SetRootSignatureFrom(TW3DGraphicsPipelineState* PipelineState);
-	void SetRootSignatureFrom(TW3DComputePipelineState* PipelineState);
+	void SetRootSignatureFrom(TW3DGraphicsPipeline* GraphicsPipeline);
+	void SetRootSignatureFrom(TW3DComputePipeline* ComputePipeline);
 	void SetDescriptorHeap(TW3DDescriptorHeap* heap);
 	void SetDescriptorHeaps(std::vector<TW3DDescriptorHeap*> heaps);
 	void SetRootDescriptorTable(TWT::uint RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor);

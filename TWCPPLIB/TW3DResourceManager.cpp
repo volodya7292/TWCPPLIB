@@ -39,6 +39,10 @@ TW3DResourceManager::~TW3DResourceManager() {
 		delete c_buf;
 	for (auto [name, f_buf] : framebuffers)
 		delete f_buf;
+	for (auto [name, gp] : graphics_pipelines)
+		delete gp;
+	for (auto [name, cp] : compute_pipelines)
+		delete cp;
 
 	delete temp_gcl;
 	delete rtv_descriptor_heap;
@@ -135,7 +139,7 @@ TW3DCommandList* TW3DResourceManager::CreateCommandList(TW3DCommandListType Type
 	return nullptr;
 }
 
-TW3DCommandList* TW3DResourceManager::CreateCommandList(TW3DCommandListType Type, TW3DGraphicsPipelineState* InitialState) {
+TW3DCommandList* TW3DResourceManager::CreateCommandList(TW3DCommandListType Type, TW3DGraphicsPipeline* InitialState) {
 	switch (Type) {
 	case TW3D_CL_DIRECT:
 		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_DIRECT, InitialState);
@@ -150,7 +154,7 @@ TW3DCommandList* TW3DResourceManager::CreateCommandList(TW3DCommandListType Type
 	return nullptr;
 }
 
-TW3DCommandList* TW3DResourceManager::CreateCommandList(TW3DCommandListType Type, TW3DComputePipelineState* InitialState) {
+TW3DCommandList* TW3DResourceManager::CreateCommandList(TW3DCommandListType Type, TW3DComputePipeline* InitialState) {
 	switch (Type) {
 	case TW3D_CL_DIRECT:
 		return new TW3DCommandList(device, D3D12_COMMAND_LIST_TYPE_DIRECT, InitialState);
@@ -249,7 +253,7 @@ TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name
 	return cl;
 }
 
-TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipelineState* InitialState) {
+TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipeline* InitialState) {
 	auto& cl = command_lists[Name];
 
 	if (!cl) {
@@ -260,7 +264,7 @@ TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name
 	return cl;
 }
 
-TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipelineState* InitialState) {
+TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipeline* InitialState) {
 	auto& cl = command_lists[Name];
 
 	if (!cl) {
@@ -409,6 +413,53 @@ TW3DFramebuffer* TW3DResourceManager::RequestFramebuffer(TWT::String const& Name
 		buffer = CreateFramebuffer(Size);
 
 	return buffer;
+}
+
+TW3DGraphicsPipeline* TW3DResourceManager::RequestGraphicsPipeline(TWT::String const& Name, TW3DRootSignature* RootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType,
+	DXGI_SAMPLE_DESC SampleDesc, D3D12_RASTERIZER_DESC RasterizerState, D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState,
+	std::vector<DXGI_FORMAT> const& OutputFormats, TW3DShader* VertexShader, TW3DShader* GeometryShader, TW3DShader* PixelShader, std::vector<D3D12_INPUT_ELEMENT_DESC> const& InputLayout) {
+
+	auto& gp = graphics_pipelines[Name];
+
+	if (!gp) {
+		gp = new TW3DGraphicsPipeline(RootSignature, PrimitiveTopologyType, SampleDesc, RasterizerState, DepthStencilState, BlendState);
+		gp->SetInputLayout(InputLayout);
+		gp->SetVertexShader(VertexShader);
+		gp->SetGeometryShader(GeometryShader);
+		gp->SetPixelShader(PixelShader);
+		for (TWT::uint i = 0; i < OutputFormats.size(); i++)
+			gp->SetRTVFormat(i, OutputFormats[i]);
+		gp->Create(device);
+
+		TWU::DXSetName(gp->Native, Name);
+	}
+
+	return gp;
+}
+
+TW3DGraphicsPipeline* TW3DResourceManager::RequestGraphicsPipeline(TWT::String const& Name, TW3DRootSignature* RootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType) {
+	auto& gp = graphics_pipelines[Name];
+
+	if (!gp) {
+		gp = new TW3DGraphicsPipeline(RootSignature, PrimitiveTopologyType);
+		TWU::DXSetName(gp->Native, Name);
+	}
+
+	return gp;
+}
+
+TW3DComputePipeline* TW3DResourceManager::RequestComputePipeline(TWT::String const& Name, TW3DRootSignature* RootSignature, TW3DShader* ComputeShader) {
+	auto& cp = compute_pipelines[Name];
+
+	if (!cp) {
+		cp = new TW3DComputePipeline(RootSignature);
+		cp->SetShader(ComputeShader);
+		cp->Create(device);
+
+		TWU::DXSetName(cp->Native, Name);
+	}
+
+	return cp;
 }
 
 void TW3DResourceManager::ReleaseResource(TW3DResource* Resource) {

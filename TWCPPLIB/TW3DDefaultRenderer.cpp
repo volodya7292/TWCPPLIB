@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "TW3DDefaultRenderer.h"
 #include "TW3DSwapChain.h"
-#include "TW3DGraphicsPipelineState.h"
 
 #ifdef _DEBUG
 #include "CompiledShaders/Debug/GBuffer.v.h"
@@ -17,15 +16,15 @@
 
 
 TW3DDefaultRenderer::~TW3DDefaultRenderer() {
-	delete gbuffer_ps;
+
 }
 
 void TW3DDefaultRenderer::CreateGBufferResources() {
-	g_vertex_s = new TW3DShader(TW3DCompiledShader(GBuffer_VertexByteCode), "GBufferVertex"s);
-	g_geom_s = new TW3DShader(TW3DCompiledShader(GBuffer_GeometryByteCode), "GBufferGeometry"s);
-	g_pixel_s = new TW3DShader(TW3DCompiledShader(GBuffer_PixelByteCode), "GBufferPixel"s);
+	g_vertex_s = ResourceManager->RequestShader("GBufferVertex"s, TW3DCompiledShader(GBuffer_VertexByteCode));
+	g_geom_s = ResourceManager->RequestShader("GBufferGeometry"s, TW3DCompiledShader(GBuffer_GeometryByteCode));
+	g_pixel_s = ResourceManager->RequestShader("GBufferPixel"s, TW3DCompiledShader(GBuffer_PixelByteCode));
 
-	TW3DRootSignature* root_signature = new TW3DRootSignature(Device,
+	TW3DRootSignature* root_signature = ResourceManager->RequestRootSignature("gbuffer_sign"s,
 		{
 			TW3DRPConstantBuffer(GBUFFER_VERTEX_CAMERA_CB, D3D12_SHADER_VISIBILITY_VERTEX, g_vertex_s->GetRegister("camera"s)),
 			//TW3DRPConstantBuffer(GBUFFER_VERTEX_PREV_CAMERA_CB, D3D12_SHADER_VISIBILITY_VERTEX, g_vertex_s->GetRegister("prev_camera"s)),
@@ -42,8 +41,8 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 		},
 		{ TW3DStaticSampler(D3D12_SHADER_VISIBILITY_PIXEL, 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0) },
 		true, true, true
-	);
-	
+		);
+
 	std::vector<D3D12_INPUT_ELEMENT_DESC> input_layout = CreateInputLayout({ TW3D_ILE_POSITION, TW3D_ILE_TEXCOORD_3D, TW3D_ILE_NORMAL, TW3D_ILE_TANGENT });
 
 	D3D12_RASTERIZER_DESC rastDesc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -52,23 +51,15 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 	D3D12_DEPTH_STENCIL_DESC depthDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	D3D12_BLEND_DESC blendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 
-	gbuffer_ps = new TW3DGraphicsPipelineState(
+	gbuffer_ps = ResourceManager->RequestGraphicsPipeline("GBufferPipeline"s,
+		root_signature,
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
 		SwapChain->GetDescription().SampleDesc,
 		rastDesc,
 		depthDesc,
 		blendDesc,
-		root_signature);
-	gbuffer_ps->SetRTVFormat(0, TWT::RGBA32Float);
-	gbuffer_ps->SetRTVFormat(1, TWT::RGBA16Float);
-	gbuffer_ps->SetRTVFormat(2, TWT::RGBA8Unorm);
-	gbuffer_ps->SetRTVFormat(3, TWT::RGBA8Unorm);
-	gbuffer_ps->SetRTVFormat(4, TWT::RGBA8Unorm);
-	gbuffer_ps->SetVertexShader(g_vertex_s);
-	gbuffer_ps->SetGeometryShader(g_geom_s);
-	gbuffer_ps->SetPixelShader(g_pixel_s);
-	gbuffer_ps->SetInputLayout(input_layout);
-	gbuffer_ps->Create(Device);
+		{ TWT::RGBA32Float, TWT::RGBA16Float, TWT::RGBA8Unorm, TWT::RGBA8Unorm, TWT::RGBA8Unorm }, g_vertex_s, g_geom_s, g_pixel_s, input_layout
+	);
 
 	g_position = ResourceManager->RequestRenderTargetCube("g_position"s, Width, TWT::RGBA32Float, TWT::float4(0));
 	g_normal = ResourceManager->RequestRenderTargetCube("g_normal"s, Width, TWT::RGBA16Float);
@@ -78,13 +69,13 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 	g_depth = ResourceManager->RequestDepthStencilCubeTexture("g_depth_tex"s, Width, D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE, D3D12_DSV_FLAG_READ_ONLY_DEPTH);
 
 	//objs_cmd_buffer = ResourceManager->RequestCommandBuffer(""s, )
-	
+
 	material_buffer = ResourceManager->RequestBuffer("material_buffer"s, 8192, sizeof(TWT::DefaultMaterial));
 	cb_camera_matrices = ResourceManager->RequestConstantBuffer("cb_camera_matrices"s, 1, sizeof(CameraCubeMatrices));
 }
 
 void TW3DDefaultRenderer::CreateRTResources() {
-	
+
 }
 
 void TW3DDefaultRenderer::record_g_buffer_objects(TW3DCommandList* cl) {
@@ -111,7 +102,7 @@ void TW3DDefaultRenderer::record_g_buffer_objects(TW3DCommandList* cl) {
 void TW3DDefaultRenderer::record_g_buffer(TW3DSCFrame* frame, TW3DCommandList* cl) {
 	cl->Reset();
 	cl->BindResources(ResourceManager);
-	
+
 
 	cl->SetRootSignatureFrom(gbuffer_ps);
 	cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -198,7 +189,7 @@ void TW3DDefaultRenderer::BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* Colo
 	cl->BindResources(ResourceManager);
 
 	cl->ResourceBarriers({
-	    TW3DTransitionBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST),
+		TW3DTransitionBarrier(ColorOutput, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST),
 	});
 
 	//cl->CopyTextureRegion(ColorOutput, ray_tracer->Output);
@@ -224,7 +215,7 @@ void TW3DDefaultRenderer::Execute(TW3DSCFrame* Frame) {
 	Scene->BeforeExecution();
 	if (LargeScaleScene)
 		LargeScaleScene->BeforeExecution();
-	
+
 
 	auto g_cl = Frame->GetCommandList("GBuffer");
 	record_g_buffer(Frame, g_cl);
@@ -234,7 +225,7 @@ void TW3DDefaultRenderer::Execute(TW3DSCFrame* Frame) {
 	Frame->ExecuteCommandList("RayTrace"s, false, true);
 	Frame->ExecuteCommandList("Blit"s, false, true);
 
-	
+
 
 	// Adjust frame count
 	info.info.z++;

@@ -32,7 +32,7 @@ TW3DCommandList* TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCo
 	return cl.command_list[0];
 }
 
-TW3DCommandList* TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipelineState* InitialState) {
+TW3DCommandList* TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipeline* InitialState) {
 	auto& cl = command_lists[Name];
 
 	if (!cl.command_list[0])
@@ -41,7 +41,7 @@ TW3DCommandList* TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCo
 	return cl.command_list[0];
 }
 
-TW3DCommandList* TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipelineState* InitialState) {
+TW3DCommandList* TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipeline* InitialState) {
 	auto& cl = command_lists[Name];
 
 	if (!cl.command_list[0])
@@ -66,7 +66,7 @@ void TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListTyp
 	}
 }
 
-void TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipelineState* InitialState, CLRecorder Recorder, TWT::uint RecordPriority) {
+void TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipeline* InitialState, CLRecorder Recorder, TWT::uint RecordPriority) {
 	auto& cl = command_lists[Name];
 
 	if (!cl.command_list[0]) {
@@ -82,7 +82,7 @@ void TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListTyp
 	}
 }
 
-void TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipelineState* InitialState, CLRecorder Recorder, TWT::uint RecordPriority) {
+void TW3DSCFrame::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipeline* InitialState, CLRecorder Recorder, TWT::uint RecordPriority) {
 	auto& cl = command_lists[Name];
 
 	if (!cl.command_list[0]) {

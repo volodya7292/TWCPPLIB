@@ -51,7 +51,7 @@ private:
 		TWT::float4x4 proj_view[6];
 	};
 
-	TW3DGraphicsPipelineState *gbuffer_ps = nullptr;
+	TW3DGraphicsPipeline *gbuffer_ps = nullptr;
 	TW3DRenderTarget *g_position, *g_normal, *g_diffuse, *g_specular, *g_emission;
 	TW3DTexture* g_depth;
 

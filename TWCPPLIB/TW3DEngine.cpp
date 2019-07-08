@@ -332,7 +332,6 @@ void cleanup() {
 		delete frames[i];
 
 	TW3DPrimitives::Release();
-	TW3DShaders::Release();
 	TW3DModules::Release();
 
 	if (on_cleanup)

@@ -12,8 +12,7 @@ namespace TW3DShaders {
 	};
 
 	void Initialize(TW3DResourceManager* ResourceManager);
-	void Release();
 
-	TW3DComputePipelineState* GetComputeShader(TWT::uint Id);
-	TW3DGraphicsPipelineState* GetGraphicsShader(TWT::uint Id);
+	TW3DComputePipeline* GetComputeShader(TWT::uint Id);
+	TW3DGraphicsPipeline* GetGraphicsShader(TWT::uint Id);
 }  // namespace TW3DShaders

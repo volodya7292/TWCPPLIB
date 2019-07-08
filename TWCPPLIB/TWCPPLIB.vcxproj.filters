@@ -141,12 +141,6 @@
     <ClInclude Include="TW3DCommandQueue.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DGraphicsPipelineState.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DComputePipelineState.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DModules.h">
       <Filter>Header Files\TW3DEngine\TW3DModule</Filter>
     </ClInclude>
@@ -231,6 +225,12 @@
     <ClInclude Include="TW3DVertexBuffer.h">
       <Filter>Header Files\TW3DEngine\TW3DResource\Basic</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DComputePipeline.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DGraphicsPipeline.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -288,12 +288,6 @@
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
     <ClCompile Include="TW3DTempGCL.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DGraphicsPipelineState.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DComputePipelineState.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
     <ClCompile Include="TW3DModules.cpp">
@@ -382,6 +376,12 @@
     </ClCompile>
     <ClCompile Include="TW3DVertexBuffer.cpp">
       <Filter>Source Files\TW3DEngine\TW3DResource\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DComputePipeline.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DGraphicsPipeline.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

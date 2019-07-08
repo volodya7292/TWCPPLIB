@@ -3,7 +3,7 @@
 #include "TW3DResourceManager.h"
 #include "TW3DObject.h"
 #include "TW3DPerspectiveCamera.h"
-#include "TW3DGraphicsPipelineState.h"
+#include "TW3DGraphicsPipeline.h"
 #include "TW3DCommandBuffer.h"
 
 TW3DCommandList::TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type) :
@@ -16,21 +16,21 @@ TW3DCommandList::TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Typ
 	Native->Close();
 }
 
-TW3DCommandList::TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type, TW3DGraphicsPipelineState* InitialState) :
-	type(Type), initial_pipeline_state(InitialState->Get()) {
+TW3DCommandList::TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type, TW3DGraphicsPipeline* InitialState) :
+	type(Type), initial_pipeline_state(InitialState->Native) {
 
 	Device->CreateCommandAllocator(Type, &command_allocator);
-	Device->CreateGraphicsCommandList(Type, command_allocator, InitialState->Get(), &Native);
+	Device->CreateGraphicsCommandList(Type, command_allocator, InitialState->Native, &Native);
 	Native->SetName(L"TW3DCommandList");
 	command_allocator->SetName(L"TW3D ID3D12CommandAllocator");
 	Native->Close();
 }
 
-TW3DCommandList::TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type, TW3DComputePipelineState* InitialState) :
-	type(Type), initial_pipeline_state(InitialState->Get()) {
+TW3DCommandList::TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type, TW3DComputePipeline* InitialState) :
+	type(Type), initial_pipeline_state(InitialState->Native) {
 
 	Device->CreateCommandAllocator(Type, &command_allocator);
-	Device->CreateGraphicsCommandList(Type, command_allocator, InitialState->Get(), &Native);
+	Device->CreateGraphicsCommandList(Type, command_allocator, InitialState->Native, &Native);
 	Native->SetName(L"TW3DCommandList");
 	command_allocator->SetName(L"TW3D ID3D12CommandAllocator");
 	Native->Close();
@@ -79,14 +79,14 @@ void TW3DCommandList::CopyTextureRegion(TW3DResource* DstTexture, TW3DResource* 
 	Native->CopyTextureRegion(&CD3DX12_TEXTURE_COPY_LOCATION(DstTexture->Native), 0, 0, 0, &CD3DX12_TEXTURE_COPY_LOCATION(SrcTexture->Native), nullptr);
 }
 
-void TW3DCommandList::SetPipelineState(TW3DGraphicsPipelineState* PipelineState) {
-	Native->SetPipelineState(PipelineState->Get());
-	SetRootSignatureFrom(PipelineState);
+void TW3DCommandList::SetPipelineState(TW3DGraphicsPipeline* GraphicsPipeline) {
+	Native->SetPipelineState(GraphicsPipeline->Native);
+	SetRootSignatureFrom(GraphicsPipeline);
 }
 
-void TW3DCommandList::SetPipelineState(TW3DComputePipelineState* PipelineState) {
-	Native->SetPipelineState(PipelineState->Get());
-	SetRootSignatureFrom(PipelineState);
+void TW3DCommandList::SetPipelineState(TW3DComputePipeline* ComputePipeline) {
+	Native->SetPipelineState(ComputePipeline->Native);
+	SetRootSignatureFrom(ComputePipeline);
 }
 
 void TW3DCommandList::SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DTexture* DSV) {
@@ -121,12 +121,12 @@ void TW3DCommandList::SetRootSignature(TW3DRootSignature* RootSignature) {
 		Native->SetGraphicsRootSignature(RootSignature->Native);
 }
 
-void TW3DCommandList::SetRootSignatureFrom(TW3DGraphicsPipelineState* PipelineState) {
-	Native->SetGraphicsRootSignature(PipelineState->RootSignature->Native);
+void TW3DCommandList::SetRootSignatureFrom(TW3DGraphicsPipeline* GraphicsPipeline) {
+	Native->SetGraphicsRootSignature(GraphicsPipeline->RootSignature->Native);
 }
 
-void TW3DCommandList::SetRootSignatureFrom(TW3DComputePipelineState* PipelineState) {
-	Native->SetComputeRootSignature(PipelineState->RootSignature->Native);
+void TW3DCommandList::SetRootSignatureFrom(TW3DComputePipeline* ComputePipeline) {
+	Native->SetComputeRootSignature(ComputePipeline->RootSignature->Native);
 }
 
 void TW3DCommandList::SetDescriptorHeap(TW3DDescriptorHeap* heap) {

@@ -14,8 +14,6 @@ public:
 		bool VS = true, bool PS = true, bool GS = false, bool IA = true);
 	~TW3DRootSignature();
 
-	bool DestroyOnPipelineDestroy = true;
-
 	ID3D12RootSignature* Native;
 };
 
