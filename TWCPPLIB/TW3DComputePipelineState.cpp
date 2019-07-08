@@ -4,7 +4,7 @@
 TW3DComputePipelineState::TW3DComputePipelineState(TW3DRootSignature* RootSignature) :
 	RootSignature(RootSignature)
 {
-	desc.pRootSignature = RootSignature->Get();
+	desc.pRootSignature = RootSignature->Native;
 }
 
 TW3DComputePipelineState::~TW3DComputePipelineState() {

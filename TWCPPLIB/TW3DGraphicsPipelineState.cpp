@@ -10,7 +10,7 @@ TW3DGraphicsPipelineState::TW3DGraphicsPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TY
 	desc.RasterizerState = RasterizerState;
 	desc.DepthStencilState = DepthStencilState;
 	desc.BlendState = BlendState;
-	desc.pRootSignature = RootSignature->Get();
+	desc.pRootSignature = RootSignature->Native;
 	desc.NumRenderTargets = 1;
 	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	desc.SampleMask = 0xffffffff;
@@ -37,6 +37,10 @@ ID3D12PipelineState* TW3DGraphicsPipelineState::Get() {
 
 void TW3DGraphicsPipelineState::SetVertexShader(TW3DShader* Shader) {
 	desc.VS = Shader->GetByteCode();
+}
+
+void TW3DGraphicsPipelineState::SetGeometryShader(TW3DShader* Shader) {
+	desc.GS = Shader->GetByteCode();
 }
 
 void TW3DGraphicsPipelineState::SetPixelShader(TW3DShader* Shader) {

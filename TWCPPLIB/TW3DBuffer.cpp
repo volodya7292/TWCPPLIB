@@ -9,6 +9,7 @@ TW3DBuffer::TW3DBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeFo
 {
 	if (OptimizeForUpdating)
 		staging->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&staging_addr));
+
 	srv_index = SRVDescriptorHeap->Allocate();
 	if (UAV)
 		uav_index = SRVDescriptorHeap->Allocate();
@@ -44,11 +45,11 @@ void TW3DBuffer::Create(TWT::uint ElementCount) {
 
 	desc = CD3DX12_RESOURCE_DESC::Buffer(ElementCount * element_size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 	TW3DResource::Create();
-	resource->SetName(L"TW3DResourceUAV Buffer");
+	Native->SetName(L"TW3DResourceUAV Buffer");
 
-	device->CreateShaderResourceView(resource, &srv_desc, srv_descriptor_heap->GetCPUHandle(srv_index));
+	device->CreateShaderResourceView(Native, &srv_desc, srv_descriptor_heap->GetCPUHandle(srv_index));
 	if (uav_index != -1)
-		device->CreateUnorderedAccessView(resource, &uav_desc, srv_descriptor_heap->GetCPUHandle(uav_index));
+		device->CreateUnorderedAccessView(Native, &uav_desc, srv_descriptor_heap->GetCPUHandle(uav_index));
 }
 
 void TW3DBuffer::Update(const void* Data, TWT::uint ElementCount) {

@@ -5,7 +5,7 @@ TW3DTexture::TW3DTexture(TW3DDevice* Device, TW3DTempGCL* TempGCL, DXGI_FORMAT F
 		TW3DDescriptorHeap* SRVDescriptorHeap, TW3DDescriptorHeap* UAVDescriptorHeap, TW3DDescriptorHeap* DSVDescriptorHeap) :
 	TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), TempGCL, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
 	srv_descriptor_heap(SRVDescriptorHeap), uav_descriptor_heap(UAVDescriptorHeap), dsv_descriptor_heap(DSVDescriptorHeap) {
-
+	
 	if (SRVDescriptorHeap)
 		srv_index = srv_descriptor_heap->Allocate();
 	if (UAVDescriptorHeap) {
@@ -17,17 +17,13 @@ TW3DTexture::TW3DTexture(TW3DDevice* Device, TW3DTempGCL* TempGCL, DXGI_FORMAT F
 
 	srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srv_desc.Format = Format;
-	srv_desc.Buffer.FirstElement = 0;
 	srv_desc.Texture2D.MipLevels = 1;
 	srv_desc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
 	uav_desc.Format = Format;
-	uav_desc.Buffer.FirstElement = 0;
 	uav_desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
 	dsv_desc.Format = Format;
-	dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	dsv_desc.Flags = D3D12_DSV_FLAG_NONE;
 }
 
 TW3DTexture::~TW3DTexture() {
@@ -70,14 +66,34 @@ void TW3DTexture::CreateDepthStencil(TWT::uint2 Size) {
 	clear_value.DepthStencil.Depth = 1.0f;
 	clear_value.DepthStencil.Stencil = 0;
 
-	desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Size.x, Size.y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+	dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	dsv_desc.Flags = DSVFlags;
+
+	desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Size.x, Size.y, 1, 1, 1, 0, ResourceFlags | D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 	InitialState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 	TW3DResource::Create();
-	resource->SetName(L"TW3DResourceDSV");
 
-	device->CreateDepthStencilView(resource, dsv_descriptor_heap->GetCPUHandle(dsv_index), &dsv_desc);
+	device->CreateDepthStencilView(Native, dsv_descriptor_heap->GetCPUHandle(dsv_index), &dsv_desc);
 
 	type = TW3D_TEXTURE_DEPTH_STENCIL;
+}
+
+void TW3DTexture::CreateDepthStencilCube(TWT::uint Size) {
+	clear_value.Format = DXGI_FORMAT_D32_FLOAT;
+	clear_value.DepthStencil.Depth = 1.0f;
+	clear_value.DepthStencil.Stencil = 0;
+
+	dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
+	dsv_desc.Texture2DArray.ArraySize = 6;
+	dsv_desc.Flags = DSVFlags;
+
+	desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Size, Size, 6, 1, 1, 0, ResourceFlags | D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+	InitialState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	TW3DResource::Create();
+
+	device->CreateDepthStencilView(Native, dsv_descriptor_heap->GetCPUHandle(dsv_index), &dsv_desc);
+
+	type = TW3D_TEXTURE_DEPTH_STENCIL_CUBE;
 }
 
 void TW3DTexture::Create2D(TWT::uint2 Size) {
@@ -86,15 +102,14 @@ void TW3DTexture::Create2D(TWT::uint2 Size) {
 
 	uav_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 
-	desc = CD3DX12_RESOURCE_DESC::Tex2D(srv_desc.Format, Size.x, Size.y, 1, 1, 1, 0, uav_index == -1 ? D3D12_RESOURCE_FLAG_NONE : D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	desc = CD3DX12_RESOURCE_DESC::Tex2D(srv_desc.Format, Size.x, Size.y, 1, 1, 1, 0, ResourceFlags | (uav_index == -1 ? D3D12_RESOURCE_FLAG_NONE : D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS));
 
 	TW3DResource::Create();
-	resource->SetName(L"TW3DResourceSR 2D");
 
-	device->CreateShaderResourceView(resource, &srv_desc, srv_descriptor_heap->GetCPUHandle(srv_index));
+	device->CreateShaderResourceView(Native, &srv_desc, srv_descriptor_heap->GetCPUHandle(srv_index));
 	if (uav_index != -1) {
-		device->CreateUnorderedAccessView(resource, &uav_desc, srv_descriptor_heap->GetCPUHandle(uav_index));
-		device->CreateUnorderedAccessView(resource, &uav_desc, uav_descriptor_heap->GetCPUHandle(uav_cpu_index));
+		device->CreateUnorderedAccessView(Native, &uav_desc, srv_descriptor_heap->GetCPUHandle(uav_index));
+		device->CreateUnorderedAccessView(Native, &uav_desc, uav_descriptor_heap->GetCPUHandle(uav_cpu_index));
 	}
 
 	type = TW3D_TEXTURE_2D;
@@ -104,23 +119,40 @@ void TW3DTexture::CreateArray2D(TWT::uint2 Size, TWT::uint Depth) {
 	srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
 	srv_desc.Texture2DArray.MipLevels = 1;
 	srv_desc.Texture2DArray.ArraySize = Depth;
-	srv_desc.Texture2DArray.FirstArraySlice = 0;
-	srv_desc.Texture2DArray.MostDetailedMip = 0;
 
 	uav_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
 	uav_desc.Texture2DArray.ArraySize = Depth;
-	uav_desc.Texture2DArray.FirstArraySlice = 0;
 
-	desc = CD3DX12_RESOURCE_DESC::Tex2D(srv_desc.Format, Size.x, Size.y, Depth, 1, 1, 0, uav_index == -1 ? D3D12_RESOURCE_FLAG_NONE : D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	desc = CD3DX12_RESOURCE_DESC::Tex2D(srv_desc.Format, Size.x, Size.y, Depth, 1, 1, 0, ResourceFlags | (uav_index == -1 ? D3D12_RESOURCE_FLAG_NONE : D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS));
 
 	TW3DResource::Create();
-	resource->SetName(L"TW3DResourceSR 2D Array");
 
-	device->CreateShaderResourceView(resource, &srv_desc, srv_descriptor_heap->GetCPUHandle(srv_index));
+	device->CreateShaderResourceView(Native, &srv_desc, srv_descriptor_heap->GetCPUHandle(srv_index));
 	if (uav_index != -1)
-		device->CreateUnorderedAccessView(resource, &uav_desc, uav_descriptor_heap->GetCPUHandle(uav_index));
+		device->CreateUnorderedAccessView(Native, &uav_desc, uav_descriptor_heap->GetCPUHandle(uav_index));
 
 	type = TW3D_TEXTURE_2D_ARRAY;
+}
+
+void TW3DTexture::CreateCube2D(TWT::uint Size) {
+	srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+	srv_desc.TextureCube.MipLevels = 1;
+
+	uav_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+	uav_desc.Texture2DArray.ArraySize = 6;
+
+	desc = CD3DX12_RESOURCE_DESC::Tex2D(srv_desc.Format, Size, Size, 6, 1, 1, 0, ResourceFlags | (uav_index == -1 ? D3D12_RESOURCE_FLAG_NONE : D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS));
+
+	TW3DResource::Create();
+	Native->SetName(L"TW3DResourceSR 2D");
+
+	device->CreateShaderResourceView(Native, &srv_desc, srv_descriptor_heap->GetCPUHandle(srv_index));
+	if (uav_index != -1) {
+		device->CreateUnorderedAccessView(Native, &uav_desc, srv_descriptor_heap->GetCPUHandle(uav_index));
+		device->CreateUnorderedAccessView(Native, &uav_desc, uav_descriptor_heap->GetCPUHandle(uav_cpu_index));
+	}
+
+	type = TW3D_TEXTURE_CUBE;
 }
 
 void TW3DTexture::Upload2D(TWT::byte* Data, TWT::int64 BytesPerRow, TWT::uint Depth) {
@@ -131,14 +163,14 @@ void TW3DTexture::Upload2D(TWT::byte* Data, TWT::int64 BytesPerRow, TWT::uint De
 
 	TW3DResource* upload_heap = staging;
 	if (!staging)
-		upload_heap = TW3DResource::CreateStaging(device, device->GetCopyableFootprints(&desc, 1));
+		upload_heap = TW3DResource::CreateStaging(device, device->GetResourceByteSize(&desc, 1));
 
 	TWT::uint subres = D3D12CalcSubresource(0, Depth, 0, desc.MipLevels, desc.DepthOrArraySize);
 	
 	temp_gcl->Reset();
-	temp_gcl->ResourceBarrier(resource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-	temp_gcl->UpdateSubresources(resource, upload_heap->Get(), &textureData, 1, 0, subres);
-	temp_gcl->ResourceBarrier(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	temp_gcl->ResourceBarrier(Native, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+	temp_gcl->UpdateSubresources(Native, upload_heap->Native, &textureData, 1, 0, subres);
+	temp_gcl->ResourceBarrier(Native, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	temp_gcl->Execute();
 
 	if (!staging)
@@ -160,13 +192,14 @@ void TW3DTexture::Resize(TWT::uint2 Size, TWT::uint Depth) {
 	switch (type) {
 	case TW3D_TEXTURE_2D:
 		Create2D(Size);
-		break;
-	case TW3D_TEXTURE_2D_ARRAY:
+	break; case TW3D_TEXTURE_2D_ARRAY:
 		CreateArray2D(Size, Depth);
-		break;
-	case TW3D_TEXTURE_DEPTH_STENCIL:
+	break; case TW3D_TEXTURE_CUBE:
+		CreateCube2D(Size.x);
+	break; case TW3D_TEXTURE_DEPTH_STENCIL:
 		CreateDepthStencil(Size);
-		break;
+	break; case TW3D_TEXTURE_DEPTH_STENCIL_CUBE:
+		CreateDepthStencilCube(Size.x);
 	}
 }
 

@@ -22,6 +22,7 @@ public:
 	ID3D12PipelineState* Get();
 
 	void SetVertexShader(TW3DShader* Shader);
+	void SetGeometryShader(TW3DShader* Shader);
 	void SetPixelShader(TW3DShader* Shader);
 	void SetRTVFormat(TWT::uint Index, DXGI_FORMAT Format);
 	void SetDSVFormat(DXGI_FORMAT Format);

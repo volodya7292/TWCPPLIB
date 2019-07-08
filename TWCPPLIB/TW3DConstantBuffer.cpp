@@ -8,7 +8,7 @@ TW3DConstantBuffer::TW3DConstantBuffer(TW3DDevice* Device, TWT::uint ElementCoun
 
 	desc = CD3DX12_RESOURCE_DESC::Buffer(AlignedElementSize * ElementCount),
 	TW3DResource::Create();
-	resource->SetName(L"TW3DResourceCB");
+	Native->SetName(L"TW3DResourceCB");
 
 	Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&GPUAddress));
 }

@@ -1,2 +1,2 @@
 #define POSITION_FLAG_POS_EXIST      1 << 0
-#define POSITION_FLAG_LARGE_SCALE    1 << 2
+#define POSITION_FLAG_LARGE_SCALE    1 << 1

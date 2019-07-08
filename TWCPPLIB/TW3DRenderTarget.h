@@ -2,6 +2,13 @@
 #include "TW3DResource.h"
 #include "TW3DTypes.h"
 
+enum TW3DRenderTargetType {
+	TW3D_RENDER_TARGET_UNKNOWN,
+	TW3D_RENDER_TARGET_2D,
+	TW3D_RENDER_TARGET_CUBE
+};
+
+
 class TW3DRenderTarget : public TW3DResource {
 public:
 	TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* RTVDescriptorHeap, TW3DDescriptorHeap* SRVDescriptorHeap);
@@ -13,6 +20,7 @@ public:
 
 	void Create(ID3D12Resource* Buffer);
 	void Create(TWT::uint2 Size);
+	void CreateCube(TWT::uint Size);
 	void Resize(TWT::uint2 Size);
 
 	TWT::uint2 GetSize();
@@ -20,5 +28,7 @@ public:
 private:
 	TW3DDescriptorHeap*	rtv_descriptor_heap;
 	TW3DDescriptorHeap* srv_descriptor_heap = nullptr;
+
 	int RTVIndex = -1, SRVIndex = -1;
+	TW3DRenderTargetType type;
 };

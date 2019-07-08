@@ -15,7 +15,8 @@ void TW3DCube::Update() {
 void TW3DCube::RecordDraw(TW3DCommandList* CommandList, TWT::uint ModelCBRootParameterIndex) {
 	TW3DGeometry::RecordDraw(CommandList, ModelCBRootParameterIndex);
 
-	CommandList->SetVertexBuffer(0, VMInstance.VertexMesh->VertexBuffers[0]);
-
-	CommandList->Draw(VMInstance.VertexMesh->VertexBuffers[0]->GetVertexCount());
+	for (auto& vb : VMInstance.VertexMesh->VertexBuffers) {
+		CommandList->SetVertexBuffer(0, vb);
+		CommandList->Draw(vb->GetVertexCount());
+	}
 }

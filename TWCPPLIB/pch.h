@@ -35,6 +35,10 @@
 #include <d3dcompiler.h>
 #include <reactphysics/reactphysics3d.h>
 
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+
 #include <wrl.h>
 using Microsoft::WRL::ComPtr;
 

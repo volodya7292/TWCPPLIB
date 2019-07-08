@@ -14,16 +14,20 @@ namespace TWT {
 	using float4x4  = glm::mat<4, 4, float>;
 	using double4x4 = glm::mat<4, 4, double>;
 
-	const static DXGI_FORMAT RGBA8Unorm = DXGI_FORMAT_R8G8B8A8_UNORM;
+	const static DXGI_FORMAT R16Float    = DXGI_FORMAT_R16_FLOAT;
+	const static DXGI_FORMAT R32UInt     = DXGI_FORMAT_R32_UINT;
+	const static DXGI_FORMAT RG16Float   = DXGI_FORMAT_R16G16_FLOAT;
+	const static DXGI_FORMAT RG32Float   = DXGI_FORMAT_R32G32_FLOAT;
+	const static DXGI_FORMAT RGB32Float  = DXGI_FORMAT_R32G32B32_FLOAT;
+	const static DXGI_FORMAT RGBA8Unorm  = DXGI_FORMAT_R8G8B8A8_UNORM;
 	const static DXGI_FORMAT RGBA16Float = DXGI_FORMAT_R16G16B16A16_FLOAT;
-	const static DXGI_FORMAT R16Float = DXGI_FORMAT_R16_FLOAT;
-	const static DXGI_FORMAT RG16Float = DXGI_FORMAT_R16G16_FLOAT;
-	const static DXGI_FORMAT RG32Float = DXGI_FORMAT_R32G32_FLOAT;
 	const static DXGI_FORMAT RGBA32Float = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	const static DXGI_FORMAT RGBA32UInt = DXGI_FORMAT_R32G32B32A32_UINT;
-	const static DXGI_FORMAT R32UInt = DXGI_FORMAT_R32_UINT;
+	const static DXGI_FORMAT RGBA32UInt  = DXGI_FORMAT_R32G32B32A32_UINT;
 
 	struct DefaultVertex {
+		DefaultVertex() {
+		}
+
 		DefaultVertex(float x, float y, float z, float u, float v, float nx, float ny, float nz) :
 			Pos(x, y, z), TexCoord(u, v, 0), Normal(nx, ny, nz) {
 		}
@@ -32,7 +36,6 @@ namespace TWT {
 		float3 TexCoord; // .z - material ID
 		float3 Normal;
 		float3 Tangent;
-		float3 Bitangent;
 	};
 
 	struct DefaultCameraCB {
@@ -40,7 +43,7 @@ namespace TWT {
 		float4x4 proj;
 		float4x4 view;
 		float4x4 proj_view;
-		float4 info = float4(1.0f, 1.0f, 0, 0); // .x - FOVy in radians, .y - scale factor (large objects are scaled down)
+		float4 info; // .x - FOVy in radians
 	};
 
 	struct DefaultModelCB {
@@ -52,10 +55,29 @@ namespace TWT {
 		uint4 info; // .x - width, .y - height, .z - frame index
 	};
 
+	struct DefaultMaterial {
+		uint4 texture_ids0; // .x - diffuse, .y - specular, .z - normal
+		uint4 texture_ids1; // .x - diffuse, .y - specular, .z - normal
+		// if texture_id == -1 then the parameters below are used
+		float4 diffuse;  // .a - opacity/translucency
+		float4 specular; // .a - roughness
+		float4 emission; // .a - texture lerp blend factor
+	};
+
 	struct Bounds {
 		float4 pMin;
 		float4 pMax;
 	};
+
+	template<typename T>
+	inline float2 AsFloat2(const T *const Ptr) {
+		return glm::make_vec2(Ptr);
+	}
+
+	template<typename T>
+	inline float3 AsFloat3(const T *const Ptr) {
+		return glm::make_vec3(Ptr);
+	}
 
 	template<typename T>
 	inline T Min(T V0, T V1) {

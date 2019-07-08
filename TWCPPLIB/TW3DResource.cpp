@@ -9,8 +9,8 @@ TW3DResource::TW3DResource(TW3DDevice* Device, CD3DX12_HEAP_PROPERTIES const& He
 		staging = new TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), temp_gcl, D3D12_RESOURCE_STATE_GENERIC_READ, false);
 }
 
-TW3DResource::TW3DResource(ID3D12Resource* resource) : 
-	resource(resource)
+TW3DResource::TW3DResource(ID3D12Resource* Resource) : 
+	Native(Resource)
 {
 }
 
@@ -18,36 +18,31 @@ TW3DResource::~TW3DResource() {
 	Release();
 }
 
-ID3D12Resource* TW3DResource::Get() {
-	return resource;
-}
-
 D3D12_CLEAR_VALUE TW3DResource::GetClearValue() {
 	return clear_value;
 }
 
 D3D12_GPU_VIRTUAL_ADDRESS TW3DResource::GetGPUVirtualAddress() {
-	return resource->GetGPUVirtualAddress();
+	return Native->GetGPUVirtualAddress();
 }
 
 void TW3DResource::Release() {
-	if (resource)
-		TWU::DXSafeRelease(resource);
+	if (Native)
+		TWU::DXSafeRelease(Native);
 	
 	delete staging;
 }
 
 void TW3DResource::Create() {
-	if (clear_value.Format == DXGI_FORMAT_UNKNOWN) {
-		device->CreateCommittedResource(&heap_properties, heap_flags, &desc, InitialState, &resource);
-	} else {
-		device->CreateCommittedResource(&heap_properties, heap_flags, &desc, InitialState, &resource, &clear_value);
-	}
+	if (clear_value.Format == DXGI_FORMAT_UNKNOWN)
+		device->CreateCommittedResource(&heap_properties, heap_flags, &desc, InitialState, &Native);
+	else
+		device->CreateCommittedResource(&heap_properties, heap_flags, &desc, InitialState, &Native, &clear_value);
 
 	if (staging)
-		staging->Create(CD3DX12_RESOURCE_DESC::Buffer(device->GetCopyableFootprints(&desc, 1)));
+		staging->Create(CD3DX12_RESOURCE_DESC::Buffer(device->GetResourceByteSize(&desc, 1)));
 
-	device->MakeResident(resource);
+	device->MakeResident(Native);
 }
 
 void TW3DResource::Create(D3D12_RESOURCE_DESC const& ResourceDescription) {
@@ -56,11 +51,11 @@ void TW3DResource::Create(D3D12_RESOURCE_DESC const& ResourceDescription) {
 }
 
 void TW3DResource::Map(TWT::uint SubResourceIndex, const D3D12_RANGE* ReadRange, void** Data) {
-	TWU::SuccessAssert(resource->Map(SubResourceIndex, ReadRange, Data), "TW3DResource::Map"s);
+	TWU::SuccessAssert(Native->Map(SubResourceIndex, ReadRange, Data), "TW3DResource::Map"s);
 }
 
 void TW3DResource::Unmap(TWT::uint SubResourceIndex, const D3D12_RANGE* WrittenRange) {
-	resource->Unmap(SubResourceIndex, WrittenRange);
+	Native->Unmap(SubResourceIndex, WrittenRange);
 }
 
 void TW3DResource::Read(void* Out, TWT::uint ByteOffset, TWT::uint ByteCount) {
@@ -71,10 +66,10 @@ void TW3DResource::Read(void* Out, TWT::uint ByteOffset, TWT::uint ByteCount) {
 		&CD3DX12_RESOURCE_DESC::Buffer(ByteCount),
 		D3D12_RESOURCE_STATE_COPY_DEST,
 		&read_heap);
-	resource->SetName(L"TW3DResource UAV Read Buffer Heap");
+	Native->SetName(L"TW3DResource UAV Read Buffer Heap");
 
 	temp_gcl->Reset();
-	temp_gcl->Get()->Get()->CopyBufferRegion(read_heap, 0, resource, ByteOffset, ByteCount);
+	temp_gcl->Get()->Native->CopyBufferRegion(read_heap, 0, Native, ByteOffset, ByteCount);
 	temp_gcl->Execute();
 
 	D3D12_RANGE range = CD3DX12_RANGE(0, ByteCount);
@@ -99,5 +94,5 @@ TW3DResource* TW3DResource::CreateStaging(TW3DDevice* Device, TWT::uint64 Size) 
 }
 
 D3D12_RESOURCE_BARRIER TW3DTransitionBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {
-	return CD3DX12_RESOURCE_BARRIER::Transition(Resource->Get(), StateBefore, StateAfter);
+	return CD3DX12_RESOURCE_BARRIER::Transition(Resource->Native, StateBefore, StateAfter);
 }

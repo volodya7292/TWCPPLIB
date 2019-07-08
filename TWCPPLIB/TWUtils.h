@@ -74,3 +74,6 @@ private:
 
 #define fsizeof(v) (sizeof(v) / sizeof(float))
 #define foffsetof(s,m) (offsetof(s,m) / sizeof(float))
+
+
+#define instanceof(Base, ClassDerived) dynamic_cast<ClassDerived*>(Base)

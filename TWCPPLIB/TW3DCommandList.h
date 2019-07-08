@@ -10,6 +10,7 @@ class TW3DTexture;
 class TW3DVertexBuffer;
 class TW3DConstantBuffer;
 class TW3DFramebuffer;
+class TW3DCommandBuffer;
 class TW3DResourceManager;
 class TW3DDescriptorHeap;
 class TW3DObject;
@@ -24,7 +25,6 @@ public:
 	TW3DCommandList(TW3DDevice* Device, D3D12_COMMAND_LIST_TYPE Type, TW3DComputePipelineState* InitialState);
 	~TW3DCommandList();
 
-	ID3D12GraphicsCommandList* Get();
 	D3D12_COMMAND_LIST_TYPE GetType();
 
 	void UpdateSubresources(TW3DResource* DestinationResource, TW3DResource* Intermediate, D3D12_SUBRESOURCE_DATA* SrcData,
@@ -63,7 +63,8 @@ public:
 	void Dispatch(TWT::uint ThreadGroupCountX = 1, TWT::uint ThreadGroupCountY = 1, TWT::uint ThreadGroupCountZ = 1);
 	void Dispatch(TWT::uint2 ThreadGroupCountXY = TWT::uint2(1), TWT::uint ThreadGroupCountZ = 1);
 	void ExecuteIndirect(ID3D12CommandSignature* CommandSignature, TWT::uint MaxCommandCount, ID3D12Resource* ArgumentBuffer,
-		TWT::uint64 ArgumentBufferOffset, ID3D12Resource* CountBuffer, TWT::uint64 CountBufferOffset);
+		TWT::uint64 ArgumentBufferOffset = 0, ID3D12Resource* CountBuffer = nullptr, TWT::uint64 CountBufferOffset = 0);
+	void ExecuteIndirect(TW3DCommandBuffer* CommandBuffer);
 	void ExecuteBundle(TW3DCommandList* CommandList);
 
 
@@ -88,8 +89,9 @@ public:
 
 	TWT::uint64 SignalValue = 0;
 
+	ID3D12GraphicsCommandList* Native;
+
 private:
-	ID3D12GraphicsCommandList* command_list;
 	ID3D12CommandAllocator* command_allocator;
 
 	ID3D12PipelineState* initial_pipeline_state = nullptr;

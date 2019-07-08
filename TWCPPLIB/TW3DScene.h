@@ -39,14 +39,9 @@ private:
 
 	std::map<TW3DVertexBuffer*, TWT::uint> vertex_buffers;
 	std::map<TW3DVertexMesh*, TW3DSceneVertexMesh> vertex_meshes;
-	std::vector<SceneLBVHInstance> mesh_instances;
 
-	TW3DBuffer *gvb, *gnb, *instance_buffer = nullptr, *lsb;
+	TW3DBuffer *lsb;
 
-	TWT::uint gvb_vertex_count = 0;
-	TWT::uint gnb_node_count = 0;
-
-	TW3DLBVH* LBVH;
 
 	rp3d::DynamicsWorld* collision_world;
 };

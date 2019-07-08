@@ -5,7 +5,9 @@ enum TW3DTextureType {
 	TW3D_TEXTURE_UNKNOWN,
 	TW3D_TEXTURE_2D,
 	TW3D_TEXTURE_2D_ARRAY,
-	TW3D_TEXTURE_DEPTH_STENCIL
+	TW3D_TEXTURE_CUBE,
+	TW3D_TEXTURE_DEPTH_STENCIL,
+	TW3D_TEXTURE_DEPTH_STENCIL_CUBE
 };
 
 class TW3DTexture : public TW3DResource {
@@ -22,8 +24,10 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDSVHandle();
 
 	void CreateDepthStencil(TWT::uint2 Size);
+	void CreateDepthStencilCube(TWT::uint Size);
 	void Create2D(TWT::uint2 Size);
 	void CreateArray2D(TWT::uint2 Size, TWT::uint Depth);
+	void CreateCube2D(TWT::uint Size);
 	void Upload2D(TWT::byte* Data, TWT::int64 BytesPerRow, TWT::uint Depth = 0);
 	void Upload2D(TWT::WString const& filename, TWT::uint Depth = 0);
 	void Resize(TWT::uint2 Size, TWT::uint Depth = 1);
@@ -31,6 +35,8 @@ public:
 	TWT::uint2 GetSize();
 
 	static TW3DTexture* Create2D(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::WString const& filename);
+
+	D3D12_DSV_FLAGS DSVFlags = D3D12_DSV_FLAG_NONE;
 
 private:
 	D3D12_SHADER_RESOURCE_VIEW_DESC      srv_desc = {};

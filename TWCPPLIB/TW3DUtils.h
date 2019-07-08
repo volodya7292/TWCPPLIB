@@ -29,7 +29,7 @@ namespace TWU {
 
 	// V - Vertex, F - Float, O - Offset
 	void TW3DCalculateTriangleNormals(void* VertexBuffer, TWT::uint VCount, TWT::uint VFSize,
-		TWT::uint VPosFO, TWT::uint VTexCoordFO, TWT::uint VNormalFO, TWT::uint VTangentFO, TWT::uint VBitangentFO);
+		TWT::uint VPosFO, TWT::uint VTexCoordFO, TWT::uint VNormalFO, TWT::uint VTangentFO);
 
 	// Safely release DirectX resources
 	template<typename T>
@@ -40,6 +40,16 @@ namespace TWU {
 	template<typename T>
 	void DXSetName(T* t, TWT::String const& Name) {
 		t->SetName(Name.Wide().ToWCharArray());
+	}
+
+	template<typename T>
+	TWT::String DXGetName(T* t) {
+		TWT::uint name_size = 256;
+		TWT::wchar name[256];
+
+		t->GetPrivateData(WKPDID_D3DDebugObjectNameW, &name_size, &name);
+
+		return TWT::WString(name).Multibyte();
 	}
 
 	// Check for successful result

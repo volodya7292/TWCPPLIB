@@ -49,18 +49,18 @@ inline float depth_delinearize(float ld, float zNear, float zFar) {
 	return (zNear * zFar / ld - zFar) / (zNear - zFar);
 }
 
-struct VS_QUAD {
-	float4 pos: SV_POSITION;
-	float2 tex_coord: TEXCOORD;
+struct VSQuadOutput {
+	float4 pos       : SV_Position;
+	float2 tex_coord : TEXCOORD;
 };
 
 struct Material {
 	uint4 texture_ids0; // .x - diffuse, .y - specular, .z - normal
 	uint4 texture_ids1; // .x - diffuse, .y - specular, .z - normal
-	float blend_factor; // texture lerp blend factor
 	// if texture_id == -1 then the parameters below are used
-	float4 diffuse;
+	float4 diffuse;  // .a - opacity/translucency
 	float4 specular; // .a - roughness
+	float4 emission; // .a - texture lerp blend factor
 };
 
 struct Vertex {
@@ -68,7 +68,6 @@ struct Vertex {
 	float3    tex_coord : TEXCOORD; // .z - material id
 	float3       normal : NORMAL;
 	float3      tangent : TANGENT;
-	float3    bitangent : BITANGENT;
 };
 
 struct Ray {
@@ -79,7 +78,13 @@ struct Ray {
 struct Bounds {
 	float4 pMin;
 	float4 pMax;
+	inline static float gamma(int n) {
+		return (n * MachineEpsilon) / (1 - n * MachineEpsilon);
+	}
 
+	inline float4 i(int i) {
+		return (i == 0) ? pMin : pMax;
+	}
 	bool intersect(Ray ray) {
 		//distan = FLT_MAX;
 
@@ -97,6 +102,7 @@ struct Bounds {
 
 		//if (tmin < distan) distan = t0;
 		//if (tmax < distan) distan = t1;
+
 		return (tmax >= tmin);
 	}
 };
@@ -135,7 +141,7 @@ struct Camera {
 	float4x4 proj;
 	float4x4 view;
 	float4x4 proj_view;
-	float4 info; // .x - FOVy in radians, .y - scale factor (large objects are scaled down)
+	float4 info; // .x - FOVy in radians
 };
 
 struct RendererInfo {
@@ -287,20 +293,20 @@ float probability_to_sample_diffuse(float3 diffuse, float3 specular) {
 
 float3 rand_ggx_sample_dir(float roughness, float3 normal, float3 inVec) {
 	// Get our uniform random numbers
-	float2 randVal = float2(rand_next(), rand_next());
+	const float2 randVal = float2(rand_next(), rand_next());
 
 	// Get an orthonormal basis from the normal
-	float3 B = get_perpendicular_vector(normal);
-	float3 T = cross(B, normal);
+	const float3 B = get_perpendicular_vector(normal);
+	const float3 T = cross(B, normal);
 
 	// GGX NDF sampling
-	float a2 = roughness * roughness;
-	float cosThetaH = sqrt(max(0.0f, (1.0 - randVal.x) / ((a2 - 1.0) * randVal.x + 1)));
-	float sinThetaH = sqrt(max(0.0f, 1.0f - cosThetaH * cosThetaH));
-	float phiH = randVal.y * PI * 2.0f;
+	const float a2 = roughness * roughness;
+	const float cosThetaH = sqrt(max(0.0f, (1.0 - randVal.x) / ((a2 - 1.0) * randVal.x + 1)));
+	const float sinThetaH = sqrt(max(0.0f, 1.0f - cosThetaH * cosThetaH));
+	const float phiH = randVal.y * PI * 2.0f;
 
 	// Get our GGX NDF sample (i.e., the half vector)
-	float3 H = T * (sinThetaH * cos(phiH)) + B * (sinThetaH * sin(phiH)) + normal * cosThetaH;
+	const float3 H = T * (sinThetaH * cos(phiH)) + B * (sinThetaH * sin(phiH)) + normal * cosThetaH;
 
 	// Convert this into a ray direction by computing the reflection direction
 	return normalize(2.f * dot(inVec, H) * H - inVec);
@@ -315,4 +321,27 @@ void unpack_f2_16(uint4 packed, out float4 v0, out float4 v1) {
 	// 65535 -> 1.0
 	v0 = f16tof32(packed & 0x0000FFFF);
 	v1 = f16tof32((packed >> 16) & 0x0000FFFF);
+}
+
+inline float dot180(float3 v0, float3 v1) {
+	return (1 + dot(v0, v1)) * 0.5f;
+}
+
+inline float triangle_area(float3 v0, float3 v1, float3 v2) {
+	const float3 c = cross(v1 - v0, v2 - v0);
+	return 0.5f * sqrt(sqr(c.x) + sqr(c.y) + sqr(c.z));
+}
+
+inline float hemisphere_area(float r) {
+	return 2 * PI * sqr(r);
+}
+
+inline float triangle_light_spread(float3 p, float3 v0, float3 v1, float3 v2) {
+	const float3 c = normalize((v0 + v1 + v2) / 3.0f - p);
+	return (dot180(normalize(v0 - p), c) + dot180(normalize(v1 - p), c) + dot180(normalize(v2 - p), c)) / 3.0f;
+}
+
+inline float sphere_light_spread(float3 p, float3 v0, float r) {
+	const float3 v = get_perpendicular_vector(normalize(p - v0));
+	return 1 - dot180(normalize(v0 - v * r - p), normalize(v0 + v * r - p));
 }

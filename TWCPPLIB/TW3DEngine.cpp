@@ -219,7 +219,6 @@ void update() {
 }
 
 void render() {
-	//renderer->RecordBeforeExecution();
 	synchronized(resize_sync)
 		renderer->Execute(frames[swapChain->GetCurrentBufferIndex()]);
 

@@ -36,8 +36,10 @@ D3D12_GPU_DESCRIPTOR_HANDLE TW3DRenderTarget::GetGPUSRVHandle() {
 }
 
 void TW3DRenderTarget::Create(ID3D12Resource* Buffer) {
-	resource = Buffer;
+	Native = Buffer;
 	desc = Buffer->GetDesc();
+
+	desc.Flags |= ResourceFlags;
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvdesc = {};
 	srvdesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -45,16 +47,17 @@ void TW3DRenderTarget::Create(ID3D12Resource* Buffer) {
 	srvdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvdesc.Texture2D.MipLevels = 1;
 
-	device->CreateShaderResourceView(resource, &srvdesc, srv_descriptor_heap->GetCPUHandle(SRVIndex));
-	device->CreateRenderTargetView(resource, GetCPURTVHandle());
+	device->CreateShaderResourceView(Native, &srvdesc, srv_descriptor_heap->GetCPUHandle(SRVIndex));
+	device->CreateRenderTargetView(Native, GetCPURTVHandle());
 }
 
 void TW3DRenderTarget::Create(TWT::uint2 Size) {
 	desc.Width = Size.x;
 	desc.Height = Size.y;
-	
+	desc.Flags |= ResourceFlags;
+
 	TW3DResource::Create();
-	resource->SetName(L"TW3DResourceRTV");
+	Native->SetName(L"TW3DResourceRTV");
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvdesc = {};
 	srvdesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -62,15 +65,44 @@ void TW3DRenderTarget::Create(TWT::uint2 Size) {
 	srvdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvdesc.Texture2D.MipLevels = 1;
 
-	device->CreateShaderResourceView(resource, &srvdesc, srv_descriptor_heap->GetCPUHandle(SRVIndex));
-	device->CreateRenderTargetView(resource, GetCPURTVHandle());
+	device->CreateShaderResourceView(Native, &srvdesc, srv_descriptor_heap->GetCPUHandle(SRVIndex));
+	device->CreateRenderTargetView(Native, GetCPURTVHandle());
+
+	type = TW3D_RENDER_TARGET_2D;
+}
+
+void TW3DRenderTarget::CreateCube(TWT::uint Size) {
+	desc.Width = Size;
+	desc.Height = Size;
+	desc.DepthOrArraySize = 6;
+	desc.Flags |= ResourceFlags;
+
+	TW3DResource::Create();
+	Native->SetName(L"TW3DResourceRTV");
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvdesc = {};
+	srvdesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvdesc.Format = desc.Format;
+	srvdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+	srvdesc.Texture2D.MipLevels = 1;
+
+	device->CreateShaderResourceView(Native, &srvdesc, srv_descriptor_heap->GetCPUHandle(SRVIndex));
+	device->CreateRenderTargetView(Native, GetCPURTVHandle());
+
+	type = TW3D_RENDER_TARGET_CUBE;
 }
 
 void TW3DRenderTarget::Resize(TWT::uint2 Size) {
-	//if (GetSize() != Size) {
+	if (GetSize() != Size) {
 		Release();
-		Create(Size);
-	//}
+
+		switch (type) {
+		case TW3D_RENDER_TARGET_2D:
+			Create(Size);
+		break; case TW3D_RENDER_TARGET_CUBE:
+			CreateCube(Size.x);
+		}
+	}
 }
 
 TWT::uint2 TW3DRenderTarget::GetSize() {

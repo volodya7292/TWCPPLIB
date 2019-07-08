@@ -11,9 +11,9 @@ TW3DVertexBuffer::TW3DVertexBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, boo
 
 	desc = CD3DX12_RESOURCE_DESC::Buffer(size);
 	TW3DResource::Create();
-	resource->SetName(L"TW3DResourceVB");
+	Native->SetName(L"TW3DResourceVB");
 
-	view.BufferLocation = resource->GetGPUVirtualAddress();
+	view.BufferLocation = Native->GetGPUVirtualAddress();
 	view.SizeInBytes    = size;
 	view.StrideInBytes  = SingleVertexSize;
 }
@@ -33,12 +33,12 @@ void TW3DVertexBuffer::Update(const void* Data, TWT::uint VertexCount) {
 
 	TW3DResource* upload_heap = staging;
 	if (!staging)
-		upload_heap = TW3DResource::CreateStaging(device, device->GetCopyableFootprints(&desc, 1));
+		upload_heap = TW3DResource::CreateStaging(device, device->GetResourceByteSize(&desc, 1));
 
 	temp_gcl->Reset();
-	temp_gcl->ResourceBarrier(resource, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST);
-	temp_gcl->UpdateSubresources(resource, upload_heap->Get(), &vertexData);
-	temp_gcl->ResourceBarrier(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+	temp_gcl->ResourceBarrier(Native, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST);
+	temp_gcl->UpdateSubresources(Native, upload_heap->Native, &vertexData);
+	temp_gcl->ResourceBarrier(Native, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 	temp_gcl->Execute();
 
 	if (!staging)

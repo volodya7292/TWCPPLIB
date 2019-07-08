@@ -4,21 +4,21 @@
 
 class TW3DAdapter {
 public:
-	TW3DAdapter(IDXGIAdapter4* native_adapter, D3D_FEATURE_LEVEL featureLevel);
-	TW3DAdapter(const TW3DAdapter &str) = default;
+	TW3DAdapter(IDXGIAdapter4* Native, D3D_FEATURE_LEVEL FeatureLevel);
+	TW3DAdapter(TW3DAdapter const& Adapter) = default;
 	~TW3DAdapter();
 
 	D3D_FEATURE_LEVEL GetFeatureLevel();
 	TWT::WString GetDescription();
 
-	void CreateDevice(ID3D12Device2** device);
+	void CreateDevice(ID3D12Device2** NativeDevice);
 
-	static std::vector<TW3DAdapter*> ListAvailable(TW3DFactory* factory, D3D_FEATURE_LEVEL featureLevel);
+	static std::vector<TW3DAdapter*> ListAvailable(TW3DFactory* Factory, D3D_FEATURE_LEVEL FeatureLevel);
 
 private:
-	IDXGIAdapter4* native_adapter;
-	D3D_FEATURE_LEVEL featureLevel;
+	IDXGIAdapter4* adapter;
+	D3D_FEATURE_LEVEL feature_level;
 
 	TWT::WString description;
-	TWT::uint64 dedicatedVideoMemory;
+	TWT::uint64 dedicated_video_memory;
 };

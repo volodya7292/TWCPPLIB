@@ -1,6 +1,5 @@
 #pragma once
 #include "TW3DRenderer.h"
-#include "TW3DRaytracer.h"
 
 class TW3DDefaultRenderer : public TW3DRenderer {
 public:
@@ -23,6 +22,8 @@ private:
 
 	void BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* ColorOutput);
 
+	TW3DShader *g_pixel_s, *g_vertex_s, *g_geom_s;
+
 	// Renderer resources
 	// --------------------------------------------------------------------- 
 	const TWT::uint material_count = 64;
@@ -34,7 +35,8 @@ private:
 	// --------------------------------------------------------------------- 
 	enum GBufferRPIs {
 		GBUFFER_VERTEX_CAMERA_CB,
-		GBUFFER_VERTEX_PREV_CAMERA_CB,
+		//GBUFFER_VERTEX_PREV_CAMERA_CB,
+		GBUFFER_VERTEX_RENDERER_CB,
 		GBUFFER_VERTEX_VMI_CB,
 		GBUFFER_PIXEL_CAMERA_CB,
 		GBUFFER_PIXEL_RENDERER_CB,
@@ -42,15 +44,21 @@ private:
 		GBUFFER_PIXEL_SPECULAR_TEXTURE,
 		GBUFFER_PIXEL_EMISSION_TEXTURE,
 		GBUFFER_PIXEL_NORMAL_TEXTURE,
+		GBUFFER_PIXEL_MATERIAL_BUFFER,
+		GBUFFER_GEOMETRY_MATRICES,
 	};
+	struct CameraCubeMatrices {
+		TWT::float4x4 proj_view[6];
+	};
+
 	TW3DGraphicsPipelineState *gbuffer_ps = nullptr;
 	TW3DRenderTarget *g_position, *g_normal, *g_diffuse, *g_specular, *g_emission;
-	TW3DTexture *g_depth;
+	TW3DTexture* g_depth;
 
-	// Ray tracing compute
-	// --------------------------------------------------------------------- 
-	TW3DRaytracer* ray_tracer;
-	float rt_scale = 0.25f;
+	TW3DCommandBuffer* objs_cmd_buffer;
+
+	TW3DBuffer* material_buffer;
+	TW3DConstantBuffer* cb_camera_matrices;
 
 
 	D3D12_VIEWPORT viewport = D3D12_VIEWPORT();

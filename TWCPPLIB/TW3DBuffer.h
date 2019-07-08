@@ -7,9 +7,7 @@ public:
 	TW3DBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeForUpdating, TWT::uint ElementSizeInBytes, bool UAV, TW3DDescriptorHeap* SRVDescriptorHeap);
 	~TW3DBuffer() final;
 
-	//D3D12_GPU_DESCRIPTOR_HANDLE GetGPUSRVHandle();
-	//D3D12_CPU_DESCRIPTOR_HANDLE GetCPUUAVHandle();
-	//D3D12_GPU_DESCRIPTOR_HANDLE GetGPUUAVHandle();
+	// Returns last updated elements count
 	TWT::uint GetElementCount();
 
 	void Create(TWT::uint ElementCount);

@@ -8,18 +8,15 @@ struct TW3DRSRootParameter {
 
 class TW3DRootSignature {
 public:
-	TW3DRootSignature(TW3DDevice* Device, std::vector<TW3DRSRootParameter> RootParameters,
-		std::vector<D3D12_STATIC_SAMPLER_DESC> StaticSamplers, bool VS = true, bool PS = true, bool GS = false, bool IA = true);
-	TW3DRootSignature(TW3DDevice* Device, std::vector<TW3DRSRootParameter> RootParameters,
+	TW3DRootSignature(TW3DDevice* Device, std::vector<TW3DRSRootParameter> const& RootParameters,
+		std::vector<D3D12_STATIC_SAMPLER_DESC> const& StaticSamplers, bool VS = true, bool PS = true, bool GS = false, bool IA = true);
+	TW3DRootSignature(TW3DDevice* Device, std::vector<TW3DRSRootParameter> const& RootParameters,
 		bool VS = true, bool PS = true, bool GS = false, bool IA = true);
 	~TW3DRootSignature();
 
-	ID3D12RootSignature* Get();
-
 	bool DestroyOnPipelineDestroy = true;
 
-private:
-	ID3D12RootSignature* root_signature = nullptr;
+	ID3D12RootSignature* Native;
 };
 
 TW3DRSRootParameter TW3DRPTexture(TWT::uint Index, D3D12_SHADER_VISIBILITY Visibility, TWT::uint Register, bool UAVAccess = false);

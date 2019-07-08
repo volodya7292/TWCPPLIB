@@ -12,7 +12,6 @@ public:
 	TW3DResource(ID3D12Resource* Resource);
 	virtual ~TW3DResource();
 
-	ID3D12Resource* Get();
 	D3D12_CLEAR_VALUE GetClearValue();
 	D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress();
 
@@ -26,14 +25,16 @@ public:
 
 	static TW3DResource* CreateStaging(TW3DDevice* Device, TWT::uint64 Size);
 
-	D3D12_RESOURCE_STATES InitialState = D3D12_RESOURCE_STATE_GENERIC_READ;
+	D3D12_RESOURCE_STATES InitialState  = D3D12_RESOURCE_STATE_GENERIC_READ;
+	D3D12_RESOURCE_FLAGS  ResourceFlags = D3D12_RESOURCE_FLAG_NONE;
+
+	ID3D12Resource* Native = nullptr;
 
 protected:
 	TW3DDevice*     device      = nullptr;
 	TW3DTempGCL*    temp_gcl    = nullptr;
 	TW3DResource*   staging     = nullptr;
 
-	ID3D12Resource* resource = nullptr;
 	CD3DX12_HEAP_PROPERTIES heap_properties = {};
 	D3D12_HEAP_FLAGS heap_flags = D3D12_HEAP_FLAG_NONE;
 	D3D12_RESOURCE_DESC desc = {};

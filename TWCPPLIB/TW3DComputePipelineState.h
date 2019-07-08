@@ -9,7 +9,6 @@ public:
 
 	ID3D12PipelineState* Get();
 
-	// BindingsChangePriorities: { binding_name, priority(default: 0) }     const std::vector<std::pair<TWT::String, TWT::uint>>& BindingsChangePriorities
 	void SetShader(TW3DShader* Shader);
 	void Create(TW3DDevice* Device);
 

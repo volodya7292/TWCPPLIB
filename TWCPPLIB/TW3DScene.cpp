@@ -6,16 +6,8 @@ TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 	resource_manager(ResourceManager) {
 	Camera = new TW3DPerspectiveCamera(ResourceManager);
 
-	gvb = ResourceManager->CreateBuffer(1024, sizeof(TWT::DefaultVertex), true);
-	ResourceManager->ResourceBarrier(gvb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-
-	gnb = ResourceManager->CreateBuffer(1024, sizeof(LBVHNode), true);
-	ResourceManager->ResourceBarrier(gnb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-
 	lsb = ResourceManager->CreateBuffer(1024, sizeof(TW3DSceneLightSource), true);
 	ResourceManager->ResourceBarrier(lsb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-
-	LBVH = new TW3DLBVH(ResourceManager, 1, true);
 
 	rp3d::WorldSettings settings = {};
 	settings.isSleepingEnabled = false;
@@ -31,18 +23,11 @@ TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 
 TW3DScene::~TW3DScene() {
 	delete Camera;
-	delete gvb;
-	delete gnb;
-	delete instance_buffer;
 	delete lsb;
-	delete LBVH;
 	delete collision_world;
 }
 
 void TW3DScene::Bind(TW3DCommandList* CommandList, TWT::uint GVBRPI, TWT::uint SceneRTNBRPI, TWT::uint GNBRPI, TWT::uint LSBRPI) {
-	CommandList->BindBuffer(GVBRPI, gvb);
-	CommandList->BindBuffer(SceneRTNBRPI, LBVH->GetNodeBuffer());
-	CommandList->BindBuffer(GNBRPI, gnb);
 	CommandList->BindBuffer(LSBRPI, lsb);
 }
 
@@ -110,111 +95,5 @@ void TW3DScene::Update(float DeltaTime) {
 }
 
 void TW3DScene::BeforeExecution() {
-	TWT::uint object_count = Objects.size();
 
-	// Update vertex & meshes buffers
-	// -------------------------------------------------------------------------------------------------------------------------
-	if (vertex_buffers_changed) {
-		TWT::uint VertexOffset = 0;
-
-		for (auto& [vb, voffset] : vertex_buffers) {
-			voffset = VertexOffset;
-			VertexOffset += vb->GetVertexCount();
-		}
-
-		gvb_vertex_count = VertexOffset + 1;
-	}
-
-	if (mesh_buffers_changed) {
-		TWT::uint NodeOffset = 0;
-
-		for (auto& [mesh, moffsets] : vertex_meshes) {
-			moffsets.gvb_offset = vertex_buffers[mesh->VertexBuffers[0]];
-			moffsets.gnb_offset = NodeOffset;
-			NodeOffset += mesh->GetLBVH()->GetNodeCount();
-		}
-
-		gnb_node_count = NodeOffset + 1;
-	}
-
-	mesh_instances.clear();
-	mesh_instances.resize(object_count);
-	for (size_t i = 0; i < object_count; i++) {
-		const auto& object = Objects[i];
-
-		for (auto& vminst : object->GetVertexMeshInstances()) {
-			const auto& obj_mesh = vertex_meshes[vminst.VertexMesh];
-
-			vminst.LBVHInstance.GVBOffset = obj_mesh.gvb_offset;
-			vminst.LBVHInstance.GNBOffset = obj_mesh.gnb_offset;
-
-			if (vminst.Changed) {
-				vminst.Changed = false;
-				TWT::float4x4 transform = vminst.Transform.GetModelMatrix();
-				vminst.LBVHInstance.Transform = transform;
-				vminst.LBVHInstance.TransformInverse = inverse(transform);
-				objects_changed = true;
-			}
-
-			mesh_instances[i] = vminst.LBVHInstance;
-		}
-	}
-
-	if ((!instance_buffer || instance_buffer->GetElementCount() != object_count) && object_count > 0) {
-		instance_buffer = resource_manager->CreateBuffer(object_count, sizeof(SceneLBVHInstance), true);
-		resource_manager->ResourceBarrier(instance_buffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-	}
-	if (objects_changed && object_count > 0)
-		instance_buffer->Update(mesh_instances.data(), object_count);
-
-
-	auto cl = resource_manager->GetTemporaryComputeCommandList();
-	bool cl_updated = false;
-
-
-	// Build Global Vertex Buffer
-	// -------------------------------------------------------------------------------------------------------------------------
-	if (vertex_buffers_changed) {
-		for (const auto& [vb, voffset]: vertex_buffers) {
-			cl->CopyBufferRegion(gvb, voffset * sizeof(TWT::DefaultVertex), vb, 0, vb->GetSizeInBytes());
-			cl_updated = true;
-		}
-	}
-
-
-	// Build LBVHs
-	// -------------------------------------------------------------------------------------------------------------------------
-	for (const auto& [mesh, moffsets] : vertex_meshes) {
-		mesh->UpdateLBVH(gvb, moffsets.gvb_offset, cl);
-		cl_updated = true;
-	}
-
-
-	// Build Global Node Buffer
-	// -------------------------------------------------------------------------------------------------------------------------
-	if (vertex_buffers_changed) {
-		for (const auto& [mesh, moffsets] : vertex_meshes) {
-			cl->CopyBufferRegion(gnb, moffsets.gnb_offset * sizeof(LBVHNode), mesh->GetLBVH()->GetNodeBuffer(), 0, mesh->GetLBVH()->GetNodeCount() * sizeof(LBVHNode));
-			cl_updated = true;
-		}
-	}
-
-
-	// Build scene LBVH
-	// -------------------------------------------------------------------------------------------------------------------------
-	if (objects_changed) {
-		LBVH->BuildFromLBVHs(gnb, instance_buffer, cl);
-		cl_updated = true;
-	}
-
-
-	cl->Close();
-
-	if (cl_updated) {
-		resource_manager->ExecuteCommandList(cl);
-		resource_manager->FlushCommandList(cl);
-	}
-
-	offsets_updated = vertex_buffers_changed || mesh_buffers_changed;
-	vertex_buffers_changed = mesh_buffers_changed = objects_changed = false;
 }

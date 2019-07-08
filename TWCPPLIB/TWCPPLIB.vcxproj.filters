@@ -61,12 +61,6 @@
     <Filter Include="Source Files\TW3DEngine\TW3DModule">
       <UniqueIdentifier>{3ce63c7c-f218-4dc6-95f7-4387ddd88421}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\Shaders\BitonicSort">
-      <UniqueIdentifier>{1284d1e6-ccd6-47ad-a77f-3719ae547363}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Shaders\LBVH">
-      <UniqueIdentifier>{db1d1817-ab4c-4b8f-bc2c-43d53940f11a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\TW3DEngine\TW3DModule">
       <UniqueIdentifier>{b0256958-3d81-4634-a4b7-47b5becb0758}</UniqueIdentifier>
     </Filter>
@@ -76,8 +70,17 @@
     <Filter Include="Source Files\Game">
       <UniqueIdentifier>{e9b4f37c-097d-4d5f-a0ba-9bec97bec004}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\Shaders\SVGF">
-      <UniqueIdentifier>{b5100cd8-6f84-4759-bce6-b20f810a6642}</UniqueIdentifier>
+    <Filter Include="Header Files\TW3DEngine\TW3DResource\Advanced">
+      <UniqueIdentifier>{1bf1a1b3-93ca-451d-94d0-5489aa207d3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TW3DEngine\TW3DResource\Basic">
+      <UniqueIdentifier>{bda97ede-e887-47cb-839c-eac2235d6c49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TW3DEngine\TW3DResource\Advanced">
+      <UniqueIdentifier>{a53d73c5-1041-475f-a85e-755bea7156f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TW3DEngine\TW3DResource\Basic">
+      <UniqueIdentifier>{d5b76659-8d8b-4445-8901-934092099bd6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -92,9 +95,6 @@
     </ClInclude>
     <ClInclude Include="TW3DUtils.h">
       <Filter>Header Files\TWUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DResource.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
@@ -147,14 +147,8 @@
     <ClInclude Include="TW3DComputePipelineState.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DBitonicSorter.h">
-      <Filter>Header Files\TW3DEngine\TW3DModule</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DModules.h">
       <Filter>Header Files\TW3DEngine\TW3DModule</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DLBVH.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
     <ClInclude Include="TW3DShaders.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
@@ -180,21 +174,6 @@
     <ClInclude Include="TWPerlinNoise.h">
       <Filter>Header Files\TWUtils</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DVertexBuffer.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DConstantBuffer.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DRenderTarget.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DBuffer.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DTexture.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DResourceManager.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
@@ -216,15 +195,6 @@
     <ClInclude Include="TW3DLightSource.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DRaytracer.h">
-      <Filter>Header Files\TW3DEngine\TW3DModule</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DFramebuffer.h">
-      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DBlitter.h">
-      <Filter>Header Files\TW3DEngine\TW3DModule</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DCommandList.h">
       <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
@@ -233,6 +203,33 @@
     </ClInclude>
     <ClInclude Include="Universe.h">
       <Filter>Header Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DCommandSignature.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DCommandBuffer.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource\Advanced</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DFramebuffer.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource\Advanced</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DBuffer.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DConstantBuffer.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DRenderTarget.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DResource.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DTexture.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DVertexBuffer.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource\Basic</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -250,9 +247,6 @@
     </ClCompile>
     <ClCompile Include="TW3DUtils.cpp">
       <Filter>Source Files\TWUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DResource.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
     </ClCompile>
     <ClCompile Include="TW3DGeometry.cpp">
       <Filter>Source Files\TW3DEngine\TW3DObject</Filter>
@@ -302,14 +296,8 @@
     <ClCompile Include="TW3DComputePipelineState.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DBitonicSorter.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
-    </ClCompile>
     <ClCompile Include="TW3DModules.cpp">
       <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DLBVH.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
     <ClCompile Include="TW3DShaders.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
@@ -335,21 +323,6 @@
     <ClCompile Include="TWPerlinNoise.cpp">
       <Filter>Source Files\TWUtils</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DVertexBuffer.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DConstantBuffer.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DRenderTarget.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DTexture.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DBuffer.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
     <ClCompile Include="TW3DResourceManager.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
@@ -374,15 +347,6 @@
     <ClCompile Include="TW3DLightSource.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DRaytracer.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DFramebuffer.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DBlitter.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
-    </ClCompile>
     <ClCompile Include="TW3DCommandList.cpp">
       <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
@@ -392,6 +356,33 @@
     <ClCompile Include="Universe.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
+    <ClCompile Include="TW3DCommandSignature.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DCommandBuffer.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource\Advanced</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DFramebuffer.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource\Advanced</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DBuffer.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DConstantBuffer.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DRenderTarget.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DResource.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DTexture.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DVertexBuffer.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource\Basic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="GBuffer.v.hlsl">
@@ -400,88 +391,25 @@
     <FxCompile Include="GBuffer.p.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="BitonicInnerSort.c.hlsl">
-      <Filter>Resource Files\Shaders\BitonicSort</Filter>
-    </FxCompile>
-    <FxCompile Include="BitonicOuterSort.c.hlsl">
-      <Filter>Resource Files\Shaders\BitonicSort</Filter>
-    </FxCompile>
-    <FxCompile Include="BitonicPreSort.c.hlsl">
-      <Filter>Resource Files\Shaders\BitonicSort</Filter>
-    </FxCompile>
-    <FxCompile Include="BitonicSortIndirectArgs.c.hlsl">
-      <Filter>Resource Files\Shaders\BitonicSort</Filter>
-    </FxCompile>
-    <FxCompile Include="RayTrace.c.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="BuildLBVHSplits.c.hlsl">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
-    </FxCompile>
-    <FxCompile Include="UpdateLBVHNodeBounds.c.hlsl">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
-    </FxCompile>
-    <FxCompile Include="CalculateMortonCodesForLBVHs.c.hlsl">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
-    </FxCompile>
-    <FxCompile Include="SetupLBVHNodesFromLBVHs.c.hlsl">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
-    </FxCompile>
-    <FxCompile Include="BuildLBVHSplitsFromLBVHs.c.hlsl">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
-    </FxCompile>
-    <FxCompile Include="UpdateLBVHNodeBoundsForLBVHs.c.hlsl">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
-    </FxCompile>
-    <FxCompile Include="CalculateMortonCodesForTriangles.c.hlsl">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
-    </FxCompile>
-    <FxCompile Include="SetupLBVHNodesFromTriangles.c.hlsl">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
-    </FxCompile>
-    <FxCompile Include="FinalPassBlit.p.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="ScreenQuad.v.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="CalculateLBVHsBoundingBox.c.hlsl">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
+    <FxCompile Include="Tonemap.c.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="CalculateTriangleMeshBoundingBox.c.hlsl">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
-    </FxCompile>
-    <FxCompile Include="PostCalculateFinalLighting.p.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Blit.p.hlsl">
+    <FxCompile Include="GBuffer.g.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="RTDWaveletFilter.c.hlsl">
-      <Filter>Resource Files\Shaders\SVGF</Filter>
-    </FxCompile>
-    <FxCompile Include="RTDTemporalAccumulation.c.hlsl">
-      <Filter>Resource Files\Shaders\SVGF</Filter>
-    </FxCompile>
-    <FxCompile Include="Tonemap.c.hlsl">
+    <FxCompile Include="Composite.p.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSLHelper.hlsli">
       <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="BitonicSortCommon.hlsli">
-      <Filter>Resource Files\Shaders\BitonicSort</Filter>
-    </None>
-    <None Include="RTDefaultLightModel.hlsli">
-      <Filter>Resource Files\Shaders\LBVH</Filter>
-    </None>
-    <None Include="RayTracing.hlsli">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="RTDCommon.hlsli">
-      <Filter>Resource Files\Shaders\SVGF</Filter>
     </None>
     <None Include="GBufferCommon.hlsli">
       <Filter>Resource Files\Shaders</Filter>

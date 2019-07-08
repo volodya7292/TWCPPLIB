@@ -2,8 +2,7 @@
 #include "TW3DResourceManager.h"
 
 TW3DResourceManager::TW3DResourceManager(TW3DDevice* Device) :
-	device(Device)
-{
+	device(Device) {
 	temp_gcl = new TW3DTempGCL(device);
 	rtv_descriptor_heap = TW3DDescriptorHeap::CreateForRTV(device, 16);
 	dsv_descriptor_heap = TW3DDescriptorHeap::CreateForDSV(device, 4);
@@ -18,6 +17,12 @@ TW3DResourceManager::TW3DResourceManager(TW3DDevice* Device) :
 }
 
 TW3DResourceManager::~TW3DResourceManager() {
+	for (auto [name, s] : shaders)
+		delete s;
+	for (auto [name, rs] : root_signatures)
+		delete rs;
+	for (auto [name, cs] : command_signatures)
+		delete cs;
 	for (auto [name, cl] : command_lists)
 		delete cl;
 	for (auto [name, rt] : render_targets)
@@ -29,6 +34,8 @@ TW3DResourceManager::~TW3DResourceManager() {
 	for (auto [name, v_buf] : vertex_buffers)
 		delete v_buf;
 	for (auto [name, c_buf] : constant_buffers)
+		delete c_buf;
+	for (auto [name, c_buf] : command_buffers)
 		delete c_buf;
 	for (auto [name, f_buf] : framebuffers)
 		delete f_buf;
@@ -47,6 +54,10 @@ TW3DFramebuffer* TW3DResourceManager::CreateFramebuffer(TWT::uint2 Size) {
 	return new TW3DFramebuffer(this, Size);
 }
 
+TW3DCommandBuffer* TW3DResourceManager::CreateCommandBuffer(TWT::String const& Name, TW3DCommandSignature* CommandSignature, TWT::uint MaxCommandCount, TWT::uint SingleCommandByteSize) {
+	return new TW3DCommandBuffer(Name, this, CommandSignature, MaxCommandCount, SingleCommandByteSize);
+}
+
 TW3DRenderTarget* TW3DResourceManager::CreateRenderTarget(ID3D12Resource* Buffer) {
 	auto* rtv = new TW3DRenderTarget(device, rtv_descriptor_heap, srv_descriptor_heap);
 	rtv->Create(Buffer);
@@ -59,8 +70,14 @@ TW3DRenderTarget* TW3DResourceManager::CreateRenderTarget(TWT::uint2 Size, DXGI_
 	return rtv;
 }
 
-TW3DBuffer* TW3DResourceManager::CreateBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV) {
-	auto* buffer = new TW3DBuffer(device, temp_gcl, false, ElementSizeInBytes, UAV, srv_descriptor_heap);
+TW3DRenderTarget* TW3DResourceManager::CreateRenderTargetCube(TWT::uint Size, DXGI_FORMAT Format, TWT::float4 ClearValue) {
+	auto* rtv = new TW3DRenderTarget(device, rtv_descriptor_heap, srv_descriptor_heap, Format, ClearValue);
+	rtv->CreateCube(Size);
+	return rtv;
+}
+
+TW3DBuffer* TW3DResourceManager::CreateBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV, bool UpdateOptimized) {
+	auto* buffer = new TW3DBuffer(device, temp_gcl, UpdateOptimized, ElementSizeInBytes, UAV, srv_descriptor_heap);
 	buffer->Create(ElementCount);
 	return buffer;
 }
@@ -76,6 +93,14 @@ TW3DConstantBuffer* TW3DResourceManager::CreateConstantBuffer(TWT::uint ElementC
 TW3DTexture* TW3DResourceManager::CreateDepthStencilTexture(TWT::uint2 Size) {
 	auto* texture = new TW3DTexture(device, temp_gcl, DXGI_FORMAT_D32_FLOAT, nullptr, nullptr, dsv_descriptor_heap);
 	texture->CreateDepthStencil(Size);
+	return texture;
+}
+
+TW3DTexture* TW3DResourceManager::CreateDepthStencilCubeTexture(TWT::uint Size, D3D12_RESOURCE_FLAGS Flags, D3D12_DSV_FLAGS DSVFlags) {
+	auto* texture = new TW3DTexture(device, temp_gcl, DXGI_FORMAT_D32_FLOAT, nullptr, nullptr, dsv_descriptor_heap);
+	texture->ResourceFlags = Flags;
+	texture->DSVFlags = DSVFlags;
+	texture->CreateDepthStencilCube(Size);
 	return texture;
 }
 
@@ -168,12 +193,57 @@ TW3DCommandQueue* TW3DResourceManager::GetCommandListCommandQueue(TW3DCommandLis
 	}
 }
 
+TW3DShader* TW3DResourceManager::RequestShader(TWT::String const& Name, D3D12_SHADER_BYTECODE const& ByteCode) {
+	auto& shader = shaders[Name];
+
+	if (!shader) {
+		shader = new TW3DShader(ByteCode, Name);
+	}
+
+	return shader;
+}
+
+TW3DRootSignature* TW3DResourceManager::RequestRootSignature(TWT::String const& Name, std::vector<TW3DRSRootParameter> RootParameters, bool VS, bool PS, bool GS, bool IA) {
+	auto& rs = root_signatures[Name];
+
+	if (!rs) {
+		rs = new TW3DRootSignature(device, RootParameters, VS, PS, GS, IA);
+		TWU::DXSetName(rs->Native, Name);
+	}
+
+	return rs;
+}
+
+TW3DRootSignature* TW3DResourceManager::RequestRootSignature(TWT::String const& Name, std::vector<TW3DRSRootParameter> RootParameters,
+	std::vector<D3D12_STATIC_SAMPLER_DESC> StaticSamplers, bool VS, bool PS, bool GS, bool IA) {
+
+	auto& rs = root_signatures[Name];
+
+	if (!rs) {
+		rs = new TW3DRootSignature(device, RootParameters, StaticSamplers, VS, PS, GS, IA);
+		TWU::DXSetName(rs->Native, Name);
+	}
+
+	return rs;
+}
+
+TW3DCommandSignature* TW3DResourceManager::RequestCommandSignature(TWT::String const& Name, TW3DRootSignature* RootSignature, std::vector<TW3DCSCommandArgument> const& CommandArguments) {
+	auto& cs = command_signatures[Name];
+
+	if (!cs) {
+		cs = new TW3DCommandSignature(device, RootSignature, CommandArguments);
+		TWU::DXSetName(cs->Native, Name);
+	}
+
+	return cs;
+}
+
 TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name, TW3DCommandListType Type) {
 	auto& cl = command_lists[Name];
 
 	if (!cl) {
 		cl = CreateCommandList(Type);
-		TWU::DXSetName(cl->Get(), Name);
+		TWU::DXSetName(cl->Native, Name);
 	}
 
 	return cl;
@@ -184,7 +254,7 @@ TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name
 
 	if (!cl) {
 		cl = CreateCommandList(Type, InitialState);
-		TWU::DXSetName(cl->Get(), Name);
+		TWU::DXSetName(cl->Native, Name);
 	}
 
 	return cl;
@@ -195,7 +265,7 @@ TW3DCommandList* TW3DResourceManager::RequestCommandList(TWT::String const& Name
 
 	if (!cl) {
 		cl = CreateCommandList(Type, InitialState);
-		TWU::DXSetName(cl->Get(), Name);
+		TWU::DXSetName(cl->Native, Name);
 	}
 
 	return cl;
@@ -206,7 +276,7 @@ TW3DRenderTarget* TW3DResourceManager::RequestRenderTarget(TWT::String const& Na
 
 	if (!rt) {
 		rt = CreateRenderTarget(Buffer);
-		TWU::DXSetName(rt->Get(), Name);
+		TWU::DXSetName(rt->Native, Name);
 	}
 
 	return rt;
@@ -217,7 +287,18 @@ TW3DRenderTarget* TW3DResourceManager::RequestRenderTarget(TWT::String const& Na
 
 	if (!rt) {
 		rt = CreateRenderTarget(Size, Format, ClearValue);
-		TWU::DXSetName(rt->Get(), Name);
+		TWU::DXSetName(rt->Native, Name);
+	}
+
+	return rt;
+}
+
+TW3DRenderTarget* TW3DResourceManager::RequestRenderTargetCube(TWT::String const& Name, TWT::uint Size, DXGI_FORMAT Format, TWT::float4 ClearValue) {
+	auto& rt = render_targets[Name];
+
+	if (!rt) {
+		rt = CreateRenderTargetCube(Size, Format, ClearValue);
+		TWU::DXSetName(rt->Native, Name);
 	}
 
 	return rt;
@@ -228,7 +309,7 @@ TW3DTexture* TW3DResourceManager::RequestTexture2D(TWT::String const& Name, TWT:
 
 	if (!texture) {
 		texture = CreateTexture2D(Size, Format, UAV);
-		TWU::DXSetName(texture->Get(), Name);
+		TWU::DXSetName(texture->Native, Name);
 	}
 
 	return texture;
@@ -239,7 +320,7 @@ TW3DTexture* TW3DResourceManager::RequestTexture2D(TWT::String const& Name, cons
 
 	if (!texture) {
 		texture = TW3DTexture::Create2D(device, temp_gcl, srv_descriptor_heap, Filename);
-		TWU::DXSetName(texture->Get(), Name);
+		TWU::DXSetName(texture->Native, Name);
 	}
 
 	return texture;
@@ -250,7 +331,7 @@ TW3DTexture* TW3DResourceManager::RequestTextureArray2D(TWT::String const& Name,
 
 	if (!texture) {
 		texture = CreateTextureArray2D(Size, Depth, Format, UAV);
-		TWU::DXSetName(texture->Get(), Name);
+		TWU::DXSetName(texture->Native, Name);
 	}
 
 	return texture;
@@ -261,18 +342,30 @@ TW3DTexture* TW3DResourceManager::RequestDepthStencilTexture(TWT::String const& 
 
 	if (!texture) {
 		texture = CreateDepthStencilTexture(Size);
-		TWU::DXSetName(texture->Get(), Name);
+		TWU::DXSetName(texture->Native, Name);
 	}
 
 	return texture;
 }
 
-TW3DBuffer* TW3DResourceManager::RequestBuffer(TWT::String const& Name, TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV) {
+TW3DTexture* TW3DResourceManager::RequestDepthStencilCubeTexture(TWT::String const& Name, TWT::uint Size, D3D12_RESOURCE_FLAGS Flags, D3D12_DSV_FLAGS DSVFlags) {
+
+	auto& texture = textures[Name];
+
+	if (!texture) {
+		texture = CreateDepthStencilCubeTexture(Size, Flags, DSVFlags);
+		TWU::DXSetName(texture->Native, Name);
+	}
+
+	return texture;
+}
+
+TW3DBuffer* TW3DResourceManager::RequestBuffer(TWT::String const& Name, TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV, bool UpdateOptimized) {
 	auto& buffer = buffers[Name];
 
 	if (!buffer) {
-		buffer = CreateBuffer(ElementCount, ElementSizeInBytes, UAV);
-		TWU::DXSetName(buffer->Get(), Name);
+		buffer = CreateBuffer(ElementCount, ElementSizeInBytes, UAV, UpdateOptimized);
+		TWU::DXSetName(buffer->Native, Name);
 	}
 
 	return buffer;
@@ -283,7 +376,7 @@ TW3DVertexBuffer* TW3DResourceManager::RequestVertexBuffer(TWT::String const& Na
 
 	if (!buffer) {
 		buffer = CreateVertexBuffer(VertexCount, SingleVertexSizeInBytes, OptimizeForUpdating);
-		TWU::DXSetName(buffer->Get(), Name);
+		TWU::DXSetName(buffer->Native, Name);
 	}
 
 	return buffer;
@@ -294,8 +387,17 @@ TW3DConstantBuffer* TW3DResourceManager::RequestConstantBuffer(TWT::String const
 
 	if (!buffer) {
 		buffer = CreateConstantBuffer(ElementCount, ElementSizeInBytes);
-		TWU::DXSetName(buffer->Get(), Name);
+		TWU::DXSetName(buffer->Native, Name);
 	}
+
+	return buffer;
+}
+
+TW3DCommandBuffer* TW3DResourceManager::RequestCommandBuffer(TWT::String const& Name, TW3DCommandSignature* CommandSignature, TWT::uint MaxCommandCount, TWT::uint SingleCommandByteSize) {
+	auto& buffer = command_buffers[Name];
+
+	if (!buffer)
+		buffer = CreateCommandBuffer(Name, CommandSignature, MaxCommandCount, SingleCommandByteSize);
 
 	return buffer;
 }
@@ -304,9 +406,30 @@ TW3DFramebuffer* TW3DResourceManager::RequestFramebuffer(TWT::String const& Name
 	auto& buffer = framebuffers[Name];
 
 	if (!buffer)
-		buffer = new TW3DFramebuffer(this, Size);
+		buffer = CreateFramebuffer(Size);
 
 	return buffer;
+}
+
+void TW3DResourceManager::ReleaseResource(TW3DResource* Resource) {
+	TWT::String name = TWU::DXGetName(Resource->Native);
+
+	if (instanceof(Resource, TW3DRenderTarget))
+		ReleaseRenderTarget(name);
+	else if (instanceof(Resource, TW3DTexture))
+		ReleaseTexture(name);
+	else if (instanceof(Resource, TW3DBuffer))
+		ReleaseBuffer(name);
+	else if (instanceof(Resource, TW3DVertexBuffer))
+		ReleaseVertexBuffer(name);
+	else if (instanceof(Resource, TW3DConstantBuffer))
+		ReleaseConstantBuffer(name);
+	else
+		TWU::TW3DLogError("Resource \'"s + name + "\' cannot be deleted due to its unknown type!"s);
+}
+
+void TW3DResourceManager::ReleaseCommandList(TW3DCommandList* CommandList) {
+	ReleaseCommandList(TWU::DXGetName(CommandList->Native));
 }
 
 void TW3DResourceManager::ReleaseCommandList(TWT::String const& Name) {
@@ -346,7 +469,7 @@ void TW3DResourceManager::ReleaseFramebuffer(TWT::String const& Name) {
 
 void TW3DResourceManager::ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {
 	temp_gcl->Reset();
-	temp_gcl->ResourceBarrier(Resource->Get(), StateBefore, StateAfter);
+	temp_gcl->ResourceBarrier(Resource->Native, StateBefore, StateAfter);
 	temp_gcl->Execute();
 }
 
@@ -361,7 +484,7 @@ void TW3DResourceManager::FlushCommandList(TW3DCommandList* CommandList) {
 void TW3DResourceManager::FlushCommandLists() {
 	copy_command_queue->FlushCommands();
 	compute_command_queue->FlushCommands();
-	direct_command_queue->FlushCommands();	
+	direct_command_queue->FlushCommands();
 }
 
 void TW3DResourceManager::ExecuteCommandList(TW3DCommandList* CommandList) {

@@ -57,7 +57,7 @@ void TW3DCommandQueue::ExecuteCommandList(TW3DCommandList* CommandList) {
 
 	CommandList->SignalValue = ++fence_flush_value;
 
-	ID3D12CommandList* native_list = CommandList->Get();
+	ID3D12CommandList* native_list = CommandList->Native;
 	command_queue->ExecuteCommandLists(1, &native_list);
 	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value), "TW3DCommandQueue::ExecuteCommandList"s);
 }
@@ -67,7 +67,7 @@ void TW3DCommandQueue::ExecuteCommandLists(const std::vector<TW3DCommandList*>& 
 
 	std::vector<ID3D12CommandList*> nativeLists(CommandLists.size());
 	for (TWT::uint i = 0; i < nativeLists.size(); i++) {
-		nativeLists[i] = CommandLists[i]->Get();
+		nativeLists[i] = CommandLists[i]->Native;
 		CommandLists[i]->SignalValue = fence_flush_value;
 	}
 

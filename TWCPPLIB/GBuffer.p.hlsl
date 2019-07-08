@@ -1,38 +1,37 @@
 #include "HLSLHelper.hlsli"
-#include "RTDCommon.hlsli"
 #include "GBufferCommon.hlsli"
 
-Texture2DArray<float4> diffuse_tex : register(t0);
-Texture2DArray<float4> specular_tex : register(t1);
-Texture2DArray<float4> emission_tex : register(t2);
-Texture2DArray<float4> normal_tex : register(t3);
+Texture2DArray<float4> diffuse_tex;
+Texture2DArray<float4> specular_tex;
+Texture2DArray<float4> emission_tex;
+Texture2DArray<float4> normal_tex;
 
-sampler sam : register(s0);
+StructuredBuffer<Material> materials;
 
-struct VS_OUTPUT {
+sampler linear_sampler;
+
+struct GSOutput {
+	uint               rt_index : SV_RenderTargetArrayIndex;
 	float4             clip_pos : SV_Position;
-	float4        prev_clip_pos : PrevPosition;
+	//float4        prev_clip_pos : PrevPosition;
 	linear float3     world_pos : WorldPosition;
 	float2            tex_coord : TexCoord;
 	uint            material_id : MaterialId;
-	//linear float3        normal : ObjectNormal;
 	linear float3  world_normal : WorldNormal;
 	linear float3       tangent : Tangent;
 };
 
-struct PS_OUTPUT {
-	float4 position    : SV_Target0;    // World space position.  .w component = 0 if a background pixel
-	float4 normal      : SV_Target1;    // World space normal.  (.w is distance from camera to hit point; this may not be used)
+struct PSOutput {
+	float4 position    : SV_Target0;    // World space position, .w = 0 if a background pixel
+	float4 normal      : SV_Target1;    // World space normal
 	float4 diffuse     : SV_Target2;    // .rgb diffuse material color, .a pixel opacity/transparency
-	float4 specular    : SV_Target3;    // .rgb Falcor's specular representation, .a specular roughness
+	float4 specular    : SV_Target3;    // .rgb specular, .a specular roughness
 	float4 emission    : SV_Target4;    // .rgb emission material color
-	float2 svgfMoVec   : SV_Target5;    // SVGF-specific buffer containing motion vector and fwidth of pos & normal
-	float4 svgfCompact : SV_Target6;    // SVGF-specific buffer containing duplicate data that allows reducing memory traffic in some passes
-	float  depth    : SV_Depth;
+	float  depth       : SV_Depth;
 };
 
-ConstantBuffer<Camera> camera : register(b0); // .info.y - scale factor for large objects
-ConstantBuffer<RendererInfo> renderer : register(b1); // .info.y - scale factor for large objects
+ConstantBuffer<Camera> camera; 
+ConstantBuffer<RendererInfo> renderer; // .info.y - scale factor for large objects
 
 // Take current clip position, last frame pixel position and compute a motion vector
 float2 calcMotionVector(float4 prevClipPos, float2 currentPixelTexPos) {
@@ -45,89 +44,68 @@ float2 calcMotionVector(float4 prevClipPos, float2 currentPixelTexPos) {
 	return motionVec;
 }
 
-PS_OUTPUT main(VS_OUTPUT input) {
-	uint2 pixel = input.prev_clip_pos.xy * uint2(renderer.info.x, renderer.info.y);
+float4 evaluate_texture_linear(Texture2DArray tex, float2 tex_coord, uint id0, uint id1, float blend_factor, float4 default_value) {
+	if ((id0 == -1 && id1 != -1) || (blend_factor == 0.0f && id1 != -1))
+		return tex.Sample(linear_sampler, float3(tex_coord, id1));
+	else if ((id0 != -1 && id1 == -1) || (blend_factor == 1.0f && id0 != -1))
+		return tex.Sample(linear_sampler, float3(tex_coord, id0));
+	else if (id0 != -1 && id1 != -1)
+		return lerp(tex.Sample(linear_sampler, float3(tex_coord, id0)), tex.Sample(linear_sampler, float3(tex_coord, id1)), blend_factor);
+	else
+		return default_value;
+}
 
-	rand_init(pixel.x + pixel.y * renderer.info.x, renderer.info.z, 16);
+float4 evaluate_texture_exact(Texture2DArray tex, float2 tex_coord, uint id0, uint id1, float blend_factor, float4 default_value) {
+	if ((id0 == -1 && id1 != -1) || (blend_factor == 0.0f && id1 != -1))
+		return tex[float3(tex_coord, id1)];
+	else if ((id0 != -1 && id1 == -1) || (blend_factor == 1.0f && id0 != -1))
+		return tex[float3(tex_coord, id0)];
+	else if (id0 != -1 && id1 != -1)
+		return lerp(tex[float3(tex_coord, id0)], tex[float3(tex_coord, id1)], blend_factor);
+	else
+		return default_value;
+}
+
+void evaluate_material(uint id, float2 tex_coord, float3 world_normal, float3 tangent, out float4 diffuse, out float4 specular, out float4 emission, out float3 normal) {
+	Material mat = materials[id];
+
+	diffuse = evaluate_texture_linear(diffuse_tex, tex_coord, mat.texture_ids0[0], mat.texture_ids1[0], mat.emission.a, mat.diffuse);
+	specular = evaluate_texture_linear(specular_tex, tex_coord, mat.texture_ids0[1], mat.texture_ids1[1], mat.emission.a, mat.specular);
+	emission = evaluate_texture_linear(emission_tex, tex_coord, mat.texture_ids0[2], mat.texture_ids1[2], mat.emission.a, mat.emission);
+
+	float3 tex_normal = evaluate_texture_exact(normal_tex, tex_coord, mat.texture_ids0[3], mat.texture_ids1[3], mat.emission.a, 0).xyz;
+	
+	if (all(tex_normal == 0)) {
+		normal = world_normal;
+	} else {
+		tex_normal = tex_normal * 2.0f - 1.0f;
+		tangent = normalize(tangent - dot(tangent, world_normal) * world_normal);
+
+		float3 bitangent = cross(world_normal, tangent);
+		float3x3 tex_space = float3x3(tangent, bitangent, world_normal);
+
+		normal = normalize(mul(tex_normal, tex_space));
+	}
+}
+
+PSOutput main(GSOutput input) {
+	//uint2 pixel = input.clip_pos.xy * uint2(renderer.info.x, renderer.info.y);
+	//rand_init(pixel.x + pixel.y * renderer.info.x, renderer.info.z, 16);
+
+	float4 diffuse, specular, emission;
+	float3 normal;
+	evaluate_material(input.material_id, input.tex_coord, input.world_normal, input.tangent, diffuse, specular, emission, normal);
+
+	bool large_scale = renderer.info.y != 1;
 
 
-	PS_OUTPUT output;
-
-	float3 tex_coord = float3(input.tex_coord, input.material_id);
-
-	float3 normal_sample = normal_tex.Sample(sam, tex_coord).xyz * 2.0f - 1.0f;
-	float3 bitangent = cross(input.world_normal, input.tangent);
-	float3x3 tex_space = float3x3(input.tangent, bitangent, input.world_normal);
-	float3 normal = normalize(mul(normal_sample, tex_space));
-
-
-	normal = input.world_normal;
-	//normal = (dot(normal, normalize(camera.pos.xyz - input.world_pos.xyz)) >= 0) ? normal : -normal;
-
-
-	//if (hasNormMap == true) {
-	//	//Load normal from normal map
-	//	float4 normalMap = ObjNormMap.Sample(ObjSamplerState, input.TexCoord);
-
-	//	//Change normal map range from [0, 1] to [-1, 1]
-	//	normalMap = (2.0f*normalMap) - 1.0f;
-
-	//	//Make sure tangent is completely orthogonal to normal
-	//	input.tangent = normalize(input.tangent - dot(input.tangent, input.normal)*input.normal);
-
-	//	//Create the biTangent
-	//	float3 biTangent = cross(input.normal, input.tangent);
-
-	//	//Create the "Texture Space"
-	//	float3x3 texSpace = float3x3(input.tangent, biTangent, input.normal);
-
-	//	//Convert normal from normal map to texture space and store in input.normal
-	//	input.normal = normalize(mul(normalMap, texSpace));
-	//}
-
-	bool large_scale = camera.info.y != 1.0f;
-
+	PSOutput output;
 	output.position = float4(input.world_pos.xyz, POSITION_FLAG_POS_EXIST | (large_scale ? POSITION_FLAG_LARGE_SCALE : 0));
 	output.normal = float4(normal, 0);
-	output.diffuse = diffuse_tex.Sample(sam, tex_coord);
-	output.specular = specular_tex.Sample(sam, tex_coord);
-	output.emission = emission_tex.Sample(sam, tex_coord);
-	output.depth = distance(input.world_pos.xyz, camera.pos.xyz) / 65535.0f / (large_scale ? camera.info.y : 1);//distance(input.world_pos.xyz, camera.pos.xyz) ;//depth_delinearize(depth_linearize(input.clip_pos.z, 0.1, 1000) / camera.info.y, 0.1, 1000);
-
-
-
-
-
-
-
-
-
-	// The 'linearZ' buffer
-	float linearZ    = output.depth * input.clip_pos.w;
-	float maxChangeZ = max(abs(ddx(linearZ)), abs(ddy(linearZ)));
-	//float objNorm    = asfloat(dir_to_oct(normalize(input.normal)));
-	//float4 svgfLinearZOut = float4(linearZ, maxChangeZ, input.prev_clip_pos.z, objNorm);
-
-
-	// The 'motion vector' buffer
-	float2 svgfMotionVecOut = calcMotionVector(input.prev_clip_pos, input.clip_pos.xy / float2(renderer.info.x, renderer.info.y)) + float2(rand_next(), -rand_next()) / float2(renderer.info.x, renderer.info.y);
-	//float2 posNormFWidth = float2(length(fwidth(input.world_pos)), length(fwidth(normal)));
-	//float4 svgfMotionVecOut = float4(svgfMotionVec, posNormFWidth);
-
-
-
-
-	//gBufOut.wsPos     = float4(hitPt.posW, 1.f);
-	//gBufOut.wsNorm    = float4(hitPt.N, length(hitPt.posW - gCamera.posW));
-	//gBufOut.matDif    = float4(hitPt.diffuse, hitPt.opacity);
-	//gBufOut.matSpec   = float4(hitPt.specular, hitPt.linearRoughness);
-	//output.svgfLinZ  = svgfLinearZOut;
-	output.svgfMoVec = svgfMotionVecOut;
-
-	// A compacted buffer containing discretizied normal, depth, depth derivative
-	output.svgfCompact = float4(asfloat(dir_to_oct(normal)), linearZ, maxChangeZ, output.specular.a);
-
-
+	output.diffuse = diffuse;
+	output.specular = specular;
+	output.emission = emission;
+	output.depth = distance(input.world_pos.xyz, camera.pos.xyz) / (large_scale ? renderer.info.y : 1) / 8192.0f;
 
 	return output;
 }
