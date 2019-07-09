@@ -1,15 +1,37 @@
 #include "pch.h"
 #include "TW3DLightSource.h"
 
-void TW3DLightSource::SetTriangleId(TWT::uint TriangleId, TW3DVertexBuffer* VertexBuffer) {
-	Type = TW3D_LIGHT_SOURCE_TRIANGLE;
-	triangle_id = TriangleId;
-	triangle_vb = VertexBuffer;
+TW3DLightSource::TW3DLightSource(TW3DVertexBuffer* VertexBuffer, TWT::uint TriangleId, TWT::uint MaterialId, TWT::uint VertexByteSize) :
+	type(TW3D_LIGHT_SOURCE_TRIANGLE) {
+
+	SetTriangle(VertexBuffer, TriangleId, MaterialId, VertexByteSize);
+}
+
+TW3DLightSource::TW3DLightSource(TWT::float3 SpherePosition, float SphereRadius) :
+	type(TW3D_LIGHT_SOURCE_SPHERE) {
+	
+	SetSpherePosition(SpherePosition);
+	SetSphereRadius(SphereRadius);
+}
+
+void TW3DLightSource::SetTriangle(TW3DVertexBuffer* VertexBuffer, TWT::uint TriangleId, TWT::uint MaterialId, TWT::uint VertexByteSize) {
+	triangle_material_id = MaterialId;
+
+	TWT::DefaultVertex v[3];
+	VertexBuffer->Read(&v, VertexByteSize * 3 * TriangleId, VertexByteSize * 3);
+
+	triangle[0] = v[0].Pos;
+	triangle[1] = v[1].Pos;
+	triangle[2] = v[2].Pos;
+	triangle_normal = v[0].Normal;
+}
+
+void TW3DLightSource::SetSpherePosition(TWT::float3 Position) {
+	sphere_pos = Position;
 	Updated = true;
 }
 
-void TW3DLightSource::SetSphereRadius(float Radius) {
-	Type = TW3D_LIGHT_SOURCE_SPHERE;
+void TW3DLightSource::SetSphereRadius(float Radius) {	
 	sphere_radius = Radius;
 	Updated = true;
 }
@@ -19,28 +41,30 @@ void TW3DLightSource::SetIntensity(float Intensity) {
 	Updated = true;
 }
 
-void TW3DLightSource::SetPosition(TWT::float3 const& Position) {
-	position = Position;
-	Updated = true;
-}
-
-void TW3DLightSource::SetColor(TWT::float3 const& Color) {
+void TW3DLightSource::SetColor(TWT::float3 Color) {
 	color = Color;
 	Updated = true;
 }
 
-TWT::float3 TW3DLightSource::GetPosition() {
-	return position;
+void TW3DLightSource::SetType(TW3DLightSourceType Type) {
+	type = Type;
+	Updated = true;
 }
 
-TWT::float3 TW3DLightSource::GetColor() {
-	return color * intensity;
-}
+const TWT::DefaultLightSource TW3DLightSource::MakeInfo() const{
+	TWT::DefaultLightSource ls;
 
-TWT::float4 TW3DLightSource::MakeInfo() {
-	return TWT::float4(Type, triangle_id, sphere_radius, 0); // .x - type, .y - GVB triangle id, z - sphere radius
-}
+	ls.info.x = type;
 
-TW3DVertexBuffer* TW3DLightSource::GetTriangleVertexBuffer() {
-	return triangle_vb;
+	if (type == TW3D_LIGHT_SOURCE_TRIANGLE) {
+		ls.v[0] = TWT::float4(triangle[0], 1);
+		ls.v[1] = TWT::float4(triangle[1], 1);
+		ls.v[2] = TWT::float4(triangle[2], 1);
+		ls.normal = TWT::float4(triangle_normal, triangle_material_id);
+	} else if (type == TW3D_LIGHT_SOURCE_SPHERE) {
+		ls.v[0] = TWT::float4(sphere_pos, 1);
+		ls.info.y = sphere_radius;
+	}
+
+	return ls;
 }

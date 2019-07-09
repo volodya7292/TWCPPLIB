@@ -75,8 +75,12 @@ void TW3DCommandList::CopyBufferRegion(TW3DResource* DstBuffer, TWT::uint64 DstO
 	Native->CopyBufferRegion(DstBuffer->Native, DstOffset, SrcBuffer->Native, SrcOffset, ByteCount);
 }
 
-void TW3DCommandList::CopyTextureRegion(TW3DResource* DstTexture, TW3DResource* SrcTexture) {
+void TW3DCommandList::CopyTextureRegion(TW3DTexture* DstTexture, TW3DTexture* SrcTexture) {
 	Native->CopyTextureRegion(&CD3DX12_TEXTURE_COPY_LOCATION(DstTexture->Native), 0, 0, 0, &CD3DX12_TEXTURE_COPY_LOCATION(SrcTexture->Native), nullptr);
+}
+
+void TW3DCommandList::CopyTextureRegion(D3D12_TEXTURE_COPY_LOCATION const* Dst, TWT::uint3 DstXYZ, D3D12_TEXTURE_COPY_LOCATION const* Src, D3D12_BOX const* SrcBox) {
+	Native->CopyTextureRegion(Dst, DstXYZ.x, DstXYZ.y, DstXYZ.z, Src, SrcBox);
 }
 
 void TW3DCommandList::SetPipelineState(TW3DGraphicsPipeline* GraphicsPipeline) {
@@ -263,9 +267,9 @@ void TW3DCommandList::BindTexture(TWT::uint RootParameterIndex, TW3DRenderTarget
 
 void TW3DCommandList::BindConstantBuffer(TWT::uint RootParameterIndex, TW3DConstantBuffer* CB, TWT::uint ElementIndex) {
 	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
-		Native->SetComputeRootConstantBufferView(RootParameterIndex, CB->GetAddress(ElementIndex));
+		Native->SetComputeRootConstantBufferView(RootParameterIndex, CB->GetGPUVirtualAddress(ElementIndex));
 	else
-		Native->SetGraphicsRootConstantBufferView(RootParameterIndex, CB->GetAddress(ElementIndex));
+		Native->SetGraphicsRootConstantBufferView(RootParameterIndex, CB->GetGPUVirtualAddress(ElementIndex));
 }
 
 void TW3DCommandList::BindCameraCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera) {
@@ -279,10 +283,6 @@ void TW3DCommandList::BindCameraPrevCBV(TWT::uint RootParameterIndex, TW3DPerspe
 void TW3DCommandList::ClearTexture(TW3DTexture* Texture, TWT::float4 Color) {
 	float value[] = { Color.r, Color.b, Color.g, Color.a };
 	Native->ClearUnorderedAccessViewFloat(Texture->GetGPUCPUUAVHandle(), Texture->GetCPUUAVHandle(), Texture->Native, value, 0, nullptr);
-}
-
-void TW3DCommandList::DrawObject(TW3DObject* object, TWT::uint ModelCBRootParameterIndex) {
-	object->RecordDraw(this, ModelCBRootParameterIndex);
 }
 
 void TW3DCommandList::Reset() {

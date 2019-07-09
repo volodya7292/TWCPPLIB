@@ -1,11 +1,10 @@
 #pragma once
 #include "TW3DResourceManager.h"
-#include "TW3DVertexMesh.h"
+#include "TW3DVertexBuffer.h"
 
 namespace TW3DPrimitives {
-	void Initialize(TW3DResourceManager* ResourceManager);
-	void Release();
+	void Initialize(TW3DResourceManager* ResourceManager);;
 
-	TW3DVertexMesh* GetCubeVertexMesh();
-	TW3DVertexMesh* GetPyramid4VertexMesh();
+	TW3DVertexBuffer* GetCubeVertexMesh();
+	TW3DVertexBuffer* GetPyramid4VertexMesh();
 }

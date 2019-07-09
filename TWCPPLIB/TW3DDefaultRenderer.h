@@ -15,7 +15,6 @@ public:
 
 private:
 	void CreateGBufferResources();
-	void CreateRTResources();
 
 	void record_g_buffer_objects(TW3DCommandList* cl);
 	void record_g_buffer(TW3DSCFrame* frame, TW3DCommandList* cl);
@@ -50,11 +49,16 @@ private:
 	struct CameraCubeMatrices {
 		TWT::float4x4 proj_view[6];
 	};
+	struct ObjectCmd {
+		D3D12_GPU_VIRTUAL_ADDRESS vb;
+		D3D12_DRAW_ARGUMENTS draw;
+	};
 
 	TW3DGraphicsPipeline *gbuffer_ps = nullptr;
 	TW3DRenderTarget *g_position, *g_normal, *g_diffuse, *g_specular, *g_emission;
 	TW3DTexture* g_depth;
 
+	TW3DCommandSignature* objs_cmd_sign;
 	TW3DCommandBuffer* objs_cmd_buffer;
 
 	TW3DBuffer* material_buffer;

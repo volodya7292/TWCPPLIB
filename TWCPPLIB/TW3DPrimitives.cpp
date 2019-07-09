@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "TW3DPrimitives.h"
 
-static TW3DVertexMesh* Cube;
-static TW3DVertexMesh* Pyramid4;
+static TW3DVertexBuffer* Cube;
+static TW3DVertexBuffer* Pyramid4;
 
 void TW3DPrimitives::Initialize(TW3DResourceManager* ResourceManager) {
 	TWT::DefaultVertex vertices[] = {
@@ -79,7 +79,7 @@ void TW3DPrimitives::Initialize(TW3DResourceManager* ResourceManager) {
 
 	//CubeVertexBuffer->Update(vertices, sizeof(vertices) / sizeof(TWT::DefaultVertex));
 	
-	std::vector<TW3DVertexBuffer*> vbs;
+	
 
 	//std::vector<TWT::DefaultVertex> vertices3;
 
@@ -119,9 +119,8 @@ void TW3DPrimitives::Initialize(TW3DResourceManager* ResourceManager) {
 	//vbs.push_back(vb);
 
 
-	TW3DVertexBuffer* vb = ResourceManager->RequestVertexBuffer("cube_vb"s, sizeof(vertices) / sizeof(TWT::DefaultVertex), sizeof(TWT::DefaultVertex));
-	vb->Update(vertices, sizeof(vertices) / sizeof(TWT::DefaultVertex));
-	vbs.push_back(vb);
+	Cube = ResourceManager->RequestVertexBuffer("cube_vb"s, sizeof(vertices) / sizeof(TWT::DefaultVertex), sizeof(TWT::DefaultVertex));
+	Cube->Update(vertices, sizeof(vertices) / sizeof(TWT::DefaultVertex));
 
 
 
@@ -193,23 +192,14 @@ void TW3DPrimitives::Initialize(TW3DResourceManager* ResourceManager) {
 
 	Pyramid4VertexBuffer->Update(vertices2, sizeof(vertices2) / sizeof(TWT::DefaultVertex));
 
-	vbs.push_back(Pyramid4VertexBuffer);
-
-	Cube = new TW3DVertexMesh(ResourceManager, { vbs });
-
 	//Pyramid4VertexBuffer->Update(vertices2, sizeof(vertices2) / sizeof(TWT::DefaultVertex));
 	//Pyramid4 = new TW3DVertexMesh(ResourceManager, { Pyramid4VertexBuffer });
 }
 
-void TW3DPrimitives::Release() {
-	delete Cube;
-	delete Pyramid4;
-}
-
-TW3DVertexMesh* TW3DPrimitives::GetCubeVertexMesh() {
+TW3DVertexBuffer* TW3DPrimitives::GetCubeVertexMesh() {
 	return Cube;
 }
 
-TW3DVertexMesh* TW3DPrimitives::GetPyramid4VertexMesh() {
+TW3DVertexBuffer* TW3DPrimitives::GetPyramid4VertexMesh() {
 	return Pyramid4;
 }

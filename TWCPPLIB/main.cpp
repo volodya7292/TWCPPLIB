@@ -121,7 +121,7 @@ void on_key(TWT::uint KeyCode, TW3D::KeyActionType Type) {
 		break;
 	case 'H':
 		if (Type == TW3D::KEY_ACTION_DOWN)
-			light.SetPosition(scene->Camera->Position);
+			light.SetSpherePosition(scene->Camera->Position);
 		break;
 	}
 }
@@ -166,6 +166,7 @@ int main() {
 
 
 	cube->VMInstance.Transform.SetPosition(TWT::float3(0.0f, 0, 0));
+	cube->VMInstance.CreateRigidBody = true;
 	scene->AddObject(cube);
 	cube->VMInstance.RigidBody->setType(rp3d::BodyType::STATIC);
 	cube->VMInstance.RigidBody->enableGravity(false);

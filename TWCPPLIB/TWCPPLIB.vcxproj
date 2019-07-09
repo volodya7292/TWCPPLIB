@@ -213,7 +213,6 @@
     <ClInclude Include="TW3DRenderTarget.h" />
     <ClInclude Include="TW3DVertexBuffer.h" />
     <ClInclude Include="TW3DRootSignature.h" />
-    <ClInclude Include="TW3DVertexMesh.h" />
     <ClInclude Include="TW3DScene.h" />
     <ClInclude Include="TW3DSwapChain.h" />
     <ClInclude Include="TW3DTempGCL.h" />
@@ -270,7 +269,6 @@
     <ClCompile Include="TW3DRenderTarget.cpp" />
     <ClCompile Include="TW3DVertexBuffer.cpp" />
     <ClCompile Include="TW3DRootSignature.cpp" />
-    <ClCompile Include="TW3DVertexMesh.cpp" />
     <ClCompile Include="TW3DScene.cpp" />
     <ClCompile Include="TW3DSwapChain.cpp" />
     <ClCompile Include="TW3DTempGCL.cpp" />

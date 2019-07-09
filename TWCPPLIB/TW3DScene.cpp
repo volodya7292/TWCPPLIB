@@ -6,8 +6,11 @@ TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 	resource_manager(ResourceManager) {
 	Camera = new TW3DPerspectiveCamera(ResourceManager);
 
-	lsb = ResourceManager->CreateBuffer(1024, sizeof(TW3DSceneLightSource), true);
-	ResourceManager->ResourceBarrier(lsb, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+	lsb = ResourceManager->CreateBuffer("lsb", 1024, sizeof(TWT::DefaultLightSource), false, true, D3D12_RESOURCE_STATE_COPY_DEST);
+
+	obj_cmds.resize(16384);
+
+	obj_cbs = ResourceManager->CreateConstantBuffer("objs_cb_buffer"s, obj_cmds.size(), sizeof(TWT::DefaultModelCB));
 
 	rp3d::WorldSettings settings = {};
 	settings.isSleepingEnabled = false;
@@ -24,7 +27,24 @@ TW3DScene::TW3DScene(TW3DResourceManager* ResourceManager) :
 TW3DScene::~TW3DScene() {
 	delete Camera;
 	delete lsb;
+	delete obj_cbs;
 	delete collision_world;
+}
+
+std::vector<TW3DObject*> const& TW3DScene::GetObjects() const {
+	return objects;
+}
+
+std::vector<TW3DLightSource*> const& TW3DScene::GetLightSources() const {
+	return light_sources;
+}
+
+std::vector<TW3DScene::ObjectCmd> const& TW3DScene::GetObjectRenderCommands() const {
+	return obj_cmds;
+}
+
+const TWT::uint TW3DScene::GetObjectRenderCommandCount() const {
+	return obj_cmd_count;
 }
 
 void TW3DScene::Bind(TW3DCommandList* CommandList, TWT::uint GVBRPI, TWT::uint SceneRTNBRPI, TWT::uint GNBRPI, TWT::uint LSBRPI) {
@@ -32,68 +52,39 @@ void TW3DScene::Bind(TW3DCommandList* CommandList, TWT::uint GVBRPI, TWT::uint S
 }
 
 void TW3DScene::AddObject(TW3DObject* Object) {
-	Objects.push_back(Object);
+	objects.push_back(Object);
 	objects_changed = true;
 
+	TWT::uint cmd_index = obj_cmd_count;
+
 	for (auto& vminst : Object->GetVertexMeshInstances()) {
-		if (vertex_meshes.find(vminst.VertexMesh) == vertex_meshes.end()) {
-			vertex_meshes[vminst.VertexMesh].gnb_offset = -1;
-			vertex_meshes[vminst.VertexMesh].gvb_offset = -1;
+		mesh_inst_cmd_indices[&vminst] = cmd_index;
 
-			auto d = vminst.Transform.GetPhysicalTransform();
+		obj_cmds[cmd_index].cb = obj_cbs->GetGPUVirtualAddress(cmd_index);
+		obj_cmds[cmd_index].vb = vminst.VertexBuffer->GetView();
+		obj_cmds[cmd_index].draw = { vminst.VertexBuffer->GetVertexCount(), 1, 0, 0};
 
-			TW3DTransform d2;
-			d2.InitFromPhysicalTransform(d);
-
-			vminst.RigidBody = collision_world->createRigidBody(d);
-
-			//rp3d::Material& material = vminst.RigidBody->getMaterial();
-   //         // Change the bounciness of the body 
-			//material.setBounciness(rp3d::decimal(0.4));
-
-			//// Change the friction coefficient of the body 
-			//material.setFrictionCoefficient(rp3d::decimal(0.2));
-
-			mesh_buffers_changed = true;
-		}
-
-		for (TW3DVertexBuffer* vb : vminst.VertexMesh->VertexBuffers)
-			if (vertex_buffers.find(vb) == vertex_buffers.end()) {
-				vertex_buffers[vb] = -1;
-				vertex_buffers_changed = true;
-			}
+		if (vminst.CreateRigidBody && !vminst.RigidBody)
+			vminst.RigidBody = collision_world->createRigidBody(vminst.Transform.GetPhysicalTransform());
 	}
 }
 
 void TW3DScene::AddLightSource(TW3DLightSource* LightSource) {
-	LightSources.push_back(LightSource);
+	light_sources.push_back(LightSource);
 }
 
 void TW3DScene::Update(float DeltaTime) {
-	for (TW3DObject* object : Objects) {
+	for (TW3DObject* object : objects)
 		object->Update();
-	}
 
-	for (TWT::uint i = 0; i < LightSources.size(); i++) {
-		TW3DLightSource* light = LightSources[i];
+	for (TWT::uint i = 0; i < light_sources.size(); i++) {
+		TW3DLightSource* light = light_sources[i];
 
-		if (light->Updated || offsets_updated) {
+		if (light->Updated) {
 			light->Updated = false;
-
-			TW3DSceneLightSource ls;
-			ls.position = TWT::float4(light->GetPosition(), 1);
-			ls.color = TWT::float4(light->GetColor(), 1);
-			ls.info = light->MakeInfo();
-			if (light->Type == TW3D_LIGHT_SOURCE_TRIANGLE)
-				ls.info.y += vertex_buffers[light->GetTriangleVertexBuffer()] / 3;
-
-			lsb->UpdateElement(&ls, i);
+			lsb->UpdateElement(&light->MakeInfo(), i);
 		}
 	}
 	
 	collision_world->update(DeltaTime);
-}
-
-void TW3DScene::BeforeExecution() {
-
 }

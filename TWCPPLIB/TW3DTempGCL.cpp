@@ -25,6 +25,10 @@ void TW3DTempGCL::CopyBufferRegion(TW3DResource* DstBuffer, TWT::uint64 DstOffse
 	CommandList->CopyBufferRegion(DstBuffer, DstOffset, SrcBuffer, SrcOffset, ByteCount);
 }
 
+void TW3DTempGCL::CopyTextureRegion(D3D12_TEXTURE_COPY_LOCATION const* Dst, TWT::uint3 DstXYZ, D3D12_TEXTURE_COPY_LOCATION const* Src, D3D12_BOX const* SrcBox) {
+	CommandList->CopyTextureRegion(Dst, DstXYZ, Src, SrcBox);
+}
+
 void TW3DTempGCL::ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {
 	CommandList->ResourceBarrier(Resource, StateBefore, StateAfter);
 }

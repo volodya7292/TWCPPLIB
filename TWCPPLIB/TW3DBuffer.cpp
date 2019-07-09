@@ -7,9 +7,6 @@ TW3DBuffer::TW3DBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeFo
 	D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, OptimizeForUpdating),
 	srv_descriptor_heap(SRVDescriptorHeap), element_size(ElementSizeInBytes)
 {
-	if (OptimizeForUpdating)
-		staging->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&staging_addr));
-
 	srv_index = SRVDescriptorHeap->Allocate();
 	if (UAV)
 		uav_index = SRVDescriptorHeap->Allocate();
@@ -33,17 +30,21 @@ TW3DBuffer::~TW3DBuffer() {
 	srv_descriptor_heap->Free(uav_index);
 }
 
-TWT::uint TW3DBuffer::GetElementCount() {
+const TWT::uint TW3DBuffer::GetElementCount() const{
 	return element_count;
 }
 
-void TW3DBuffer::Create(TWT::uint ElementCount) {
-	element_count = ElementCount;
+const TWT::uint TW3DBuffer::GetMaxElementCount() const {
+	return max_element_count;
+}
 
-	srv_desc.Buffer.NumElements = ElementCount;
-	uav_desc.Buffer.NumElements = ElementCount;
+void TW3DBuffer::Create(TWT::uint MaxElementCount) {
+	max_element_count = MaxElementCount;
 
-	desc = CD3DX12_RESOURCE_DESC::Buffer(ElementCount * element_size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	srv_desc.Buffer.NumElements = max_element_count;
+	uav_desc.Buffer.NumElements = max_element_count;
+
+	desc = CD3DX12_RESOURCE_DESC::Buffer(max_element_count * element_size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 	TW3DResource::Create();
 	Native->SetName(L"TW3DResourceUAV Buffer");
 
@@ -53,6 +54,9 @@ void TW3DBuffer::Create(TWT::uint ElementCount) {
 }
 
 void TW3DBuffer::Update(const void* Data, TWT::uint ElementCount) {
+	if (ElementCount > max_element_count)
+		TWU::TW3DLogError("TW3DBuffer::Update \'"s + TWU::DXGetName(Native) + "\' ElementCount > MaxElementCount !"s);
+
 	element_count = ElementCount;
 
 	TWT::uint64 size = ElementCount * element_size;
@@ -62,44 +66,28 @@ void TW3DBuffer::Update(const void* Data, TWT::uint ElementCount) {
 	upload_data.RowPitch = size;
 	upload_data.SlicePitch = size;
 
-	TW3DResource* upload_heap = staging;
-	if (!staging) {
-		upload_heap = TW3DResource::CreateStaging(device, size);
-		upload_heap->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&staging_addr));
-	}
+	AllocateStaging();
 
 	memcpy(staging_addr, Data, size);
 
-	if (!staging)
-		upload_heap->Unmap(0, nullptr);
-
 	temp_gcl->Reset();
-	temp_gcl->CopyBufferRegion(this, 0, upload_heap, 0, size);
+	temp_gcl->CopyBufferRegion(this, 0, staging, 0, size);
 	temp_gcl->Execute();
 
-	if (!staging)
-		delete upload_heap;
+	DeallocateStaging();
 }
 
 void TW3DBuffer::UpdateElement(const void* Data, TWT::uint ElementIndex) {
 	TWT::uint64 size = element_count * element_size;
 	TWT::uint64 index_offset = ElementIndex * element_size;
 
-	TW3DResource* upload_heap = staging;
-	if (!staging) {
-		upload_heap = TW3DResource::CreateStaging(device, size);
-		upload_heap->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&staging_addr));
-	}
+	AllocateStaging();
 	
 	memcpy(staging_addr + index_offset, Data, element_size);
-	
-	if(!staging)
-		upload_heap->Unmap(0, nullptr);
 
 	temp_gcl->Reset();
-	temp_gcl->CopyBufferRegion(this, index_offset, upload_heap, index_offset, element_size);
+	temp_gcl->CopyBufferRegion(this, index_offset, staging, index_offset, element_size);
 	temp_gcl->Execute();
 
-	if (!staging)
-		delete upload_heap;
+	DeallocateStaging();
 }

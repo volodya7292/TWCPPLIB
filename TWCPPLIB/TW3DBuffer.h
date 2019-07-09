@@ -8,20 +8,20 @@ public:
 	~TW3DBuffer() final;
 
 	// Returns last updated elements count
-	TWT::uint GetElementCount();
+	const TWT::uint GetElementCount() const;
+	const TWT::uint GetMaxElementCount() const;
 
-	void Create(TWT::uint ElementCount);
+	void Create(TWT::uint MaxElementCount);
 	void Update(const void* Data, TWT::uint ElementCount);
 	void UpdateElement(const void* Data, TWT::uint ElementIndex);
 
 private:
-	TWT::uint8* staging_addr;
-
 	D3D12_SHADER_RESOURCE_VIEW_DESC      srv_desc = {};
 	D3D12_UNORDERED_ACCESS_VIEW_DESC     uav_desc = {};
 
-	TWT::uint    element_size = 0;
-	TWT::uint    element_count = 0;
+	TWT::uint    element_size      = 0;
+	TWT::uint    element_count     = 0;
+	TWT::uint    max_element_count = 0;
 
 	TW3DDescriptorHeap* srv_descriptor_heap;
 	int srv_index = -1, uav_index = -1;

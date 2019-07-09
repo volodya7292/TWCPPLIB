@@ -2,7 +2,7 @@
 #include "Universe.h"
 
 Universe::Universe(TW3DResourceManager* ResourceManager) :
-	TW3DObject(ResourceManager, sizeof(TWT::DefaultModelCB))
+	TW3DObject(ResourceManager)
 {
 	
 }

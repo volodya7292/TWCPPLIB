@@ -75,6 +75,16 @@ namespace TWT {
 	inline void Copy(std::vector<T> const& Source, std::vector<T>& Destination) {
 		std::copy(Source.begin(), Source.end(), std::back_inserter(Destination));
 	}
+
+	template<typename T>
+	inline T Min(T V0, T V1) {
+		return glm::min(V0, V1);
+	}
+
+	template<typename T>
+	inline T Max(T V0, T V1) {
+		return glm::max(V0, V1);
+	}
 }  // namespace TWT
 
 //std::ostream&  operator << (std::ostream& os, const TWT::String& t);

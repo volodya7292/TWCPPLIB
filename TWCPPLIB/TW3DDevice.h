@@ -35,6 +35,7 @@ public:
 
 	TWT::uint GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE HeapType);
 	TWT::uint64 GetResourceByteSize(const D3D12_RESOURCE_DESC* ResourceDesc, TWT::uint SubResCount);
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT GetSubresourceFootprint(const D3D12_RESOURCE_DESC* ResourceDesc, TWT::uint FirstSubresource, TWT::uint NumSubresources);
 
 private:
 	ID3D12Device2* device;

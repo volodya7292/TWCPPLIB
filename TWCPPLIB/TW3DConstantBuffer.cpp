@@ -13,8 +13,8 @@ TW3DConstantBuffer::TW3DConstantBuffer(TW3DDevice* Device, TWT::uint ElementCoun
 	Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&GPUAddress));
 }
 
-D3D12_GPU_VIRTUAL_ADDRESS TW3DConstantBuffer::GetAddress(TWT::uint ElementIndex) {
-	return GetGPUVirtualAddress() + ElementIndex * AlignedElementSize;
+D3D12_GPU_VIRTUAL_ADDRESS TW3DConstantBuffer::GetGPUVirtualAddress(TWT::uint ElementIndex) {
+	return Native->GetGPUVirtualAddress() + ElementIndex * AlignedElementSize;
 }
 
 void TW3DConstantBuffer::Update(void* Data, TWT::uint ElementIndex) {

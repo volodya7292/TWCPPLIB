@@ -5,8 +5,8 @@ TW3DPerspectiveCamera::TW3DPerspectiveCamera(TW3DResourceManager* ResourceManage
 	float FOVY, TWT::float3 Position, TWT::float3 Rotation, float ZNear, float ZFar) :
 	Width(Width), Height(Height), FOVY(FOVY), Position(Position), rotation(Rotation), ZNear(ZNear), ZFar(ZFar)
 {
-	constant_buffer = ResourceManager->CreateConstantBuffer(1, sizeof(TWT::DefaultCameraCB));
-	prev_constant_buffer = ResourceManager->CreateConstantBuffer(1, sizeof(TWT::DefaultCameraCB));
+	constant_buffer = ResourceManager->CreateConstantBuffer("CameraCB"s, 1, sizeof(TWT::DefaultCameraCB));
+	prev_constant_buffer = ResourceManager->CreateConstantBuffer("CameraPrevCB"s, 1, sizeof(TWT::DefaultCameraCB));
 }
 
 TW3DPerspectiveCamera::~TW3DPerspectiveCamera() {

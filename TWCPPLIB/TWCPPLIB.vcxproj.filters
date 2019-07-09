@@ -82,6 +82,18 @@
     <Filter Include="Source Files\TW3DEngine\TW3DResource\Basic">
       <UniqueIdentifier>{d5b76659-8d8b-4445-8901-934092099bd6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\TW3DEngine\TW3DSystem\Core">
+      <UniqueIdentifier>{32c4ddd0-e527-42ac-bc9d-fc35fde24611}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TW3DEngine\TW3DSystem\Extended">
+      <UniqueIdentifier>{4227fbd7-3123-481d-90fc-e02e7249d6d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TW3DEngine\TW3DSystem\Core">
+      <UniqueIdentifier>{e2d15720-0446-4b45-9be5-87764f4b288c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TW3DEngine\TW3DSystem\Extended">
+      <UniqueIdentifier>{45596881-e887-403a-b71a-ee91a2e84dc8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TWTypes.h">
@@ -105,9 +117,6 @@
     <ClInclude Include="TW3DCube.h">
       <Filter>Header Files\TW3DEngine\TW3DObject</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DPrimitives.h">
-      <Filter>Header Files\TW3DEngine</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DRenderer.h">
       <Filter>Header Files\TW3DEngine\TW3DRenderer</Filter>
     </ClInclude>
@@ -117,38 +126,8 @@
     <ClInclude Include="TW3DObject.h">
       <Filter>Header Files\TW3DEngine\TW3DObject</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DAdapter.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DDescriptorHeap.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DDevice.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DFactory.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DRootSignature.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DSwapChain.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DTempGCL.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DCommandQueue.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
     <ClInclude Include="TW3DModules.h">
       <Filter>Header Files\TW3DEngine\TW3DModule</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DShaders.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DVertexMesh.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
     <ClInclude Include="TWLogger.h">
       <Filter>Header Files\TWUtils</Filter>
@@ -168,38 +147,8 @@
     <ClInclude Include="TWPerlinNoise.h">
       <Filter>Header Files\TWUtils</Filter>
     </ClInclude>
-    <ClInclude Include="TW3DResourceManager.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DPerspectiveCamera.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DEngine.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DScene.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DTransform.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DShader.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DLightSource.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DCommandList.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DSCFrame.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
-    </ClInclude>
     <ClInclude Include="Universe.h">
       <Filter>Header Files\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="TW3DCommandSignature.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
     </ClInclude>
     <ClInclude Include="TW3DCommandBuffer.h">
       <Filter>Header Files\TW3DEngine\TW3DResource\Advanced</Filter>
@@ -225,11 +174,71 @@
     <ClInclude Include="TW3DVertexBuffer.h">
       <Filter>Header Files\TW3DEngine\TW3DResource\Basic</Filter>
     </ClInclude>
+    <ClInclude Include="TW3DAdapter.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DCommandList.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DCommandQueue.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DCommandSignature.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClInclude>
     <ClInclude Include="TW3DComputePipeline.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DDescriptorHeap.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DDevice.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DFactory.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
     </ClInclude>
     <ClInclude Include="TW3DGraphicsPipeline.h">
-      <Filter>Header Files\TW3DEngine\TW3DSystem</Filter>
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DRootSignature.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DSCFrame.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DShader.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DSwapChain.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DTempGCL.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DScene.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DPerspectiveCamera.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DLightSource.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DTransform.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DShaders.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DPrimitives.h">
+      <Filter>Header Files\TW3DEngine\TW3DSystem\Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DResourceManager.h">
+      <Filter>Header Files\TW3DEngine\TW3DResource</Filter>
+    </ClInclude>
+    <ClInclude Include="TW3DEngine.h">
+      <Filter>Header Files\TW3DEngine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -254,9 +263,6 @@
     <ClCompile Include="TW3DCube.cpp">
       <Filter>Source Files\TW3DEngine\TW3DObject</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DPrimitives.cpp">
-      <Filter>Source Files\TW3DEngine</Filter>
-    </ClCompile>
     <ClCompile Include="TW3DRenderer.cpp">
       <Filter>Source Files\TW3DEngine\TW3DRenderer</Filter>
     </ClCompile>
@@ -266,38 +272,8 @@
     <ClCompile Include="TW3DObject.cpp">
       <Filter>Source Files\TW3DEngine\TW3DObject</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DAdapter.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DCommandQueue.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DDescriptorHeap.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DDevice.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DFactory.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DRootSignature.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DSwapChain.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DTempGCL.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
     <ClCompile Include="TW3DModules.cpp">
       <Filter>Source Files\TW3DEngine\TW3DModule</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DShaders.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DVertexMesh.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
     <ClCompile Include="TWLogger.cpp">
       <Filter>Source Files\TWUtils</Filter>
@@ -317,41 +293,11 @@
     <ClCompile Include="TWPerlinNoise.cpp">
       <Filter>Source Files\TWUtils</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DResourceManager.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TW3DPerspectiveCamera.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DEngine.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DScene.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DTransform.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DShader.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DLightSource.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DCommandList.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DSCFrame.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
-    </ClCompile>
     <ClCompile Include="Universe.cpp">
       <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="TW3DCommandSignature.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
     </ClCompile>
     <ClCompile Include="TW3DCommandBuffer.cpp">
       <Filter>Source Files\TW3DEngine\TW3DResource\Advanced</Filter>
@@ -377,11 +323,71 @@
     <ClCompile Include="TW3DVertexBuffer.cpp">
       <Filter>Source Files\TW3DEngine\TW3DResource\Basic</Filter>
     </ClCompile>
+    <ClCompile Include="TW3DAdapter.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DCommandList.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DCommandQueue.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DCommandSignature.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClCompile>
     <ClCompile Include="TW3DComputePipeline.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DDescriptorHeap.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DDevice.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DFactory.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
     </ClCompile>
     <ClCompile Include="TW3DGraphicsPipeline.cpp">
-      <Filter>Source Files\TW3DEngine\TW3DSystem</Filter>
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DRootSignature.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DSCFrame.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DShader.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DSwapChain.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DTempGCL.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DResourceManager.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DResource</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DEngine.cpp">
+      <Filter>Source Files\TW3DEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DTransform.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DLightSource.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DPerspectiveCamera.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DScene.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DShaders.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="TW3DPrimitives.cpp">
+      <Filter>Source Files\TW3DEngine\TW3DSystem\Extended</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

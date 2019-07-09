@@ -9,7 +9,7 @@ struct TW3DCSCommandArgument {
 
 class TW3DCommandSignature {
 public:
-	TW3DCommandSignature(TW3DDevice* Device, TW3DRootSignature* RootSignature, std::vector<TW3DCSCommandArgument> const& CommandArguments);
+	TW3DCommandSignature(TW3DDevice* Device, std::vector<TW3DCSCommandArgument> const& CommandArguments, TW3DRootSignature* RootSignature = nullptr);
 	~TW3DCommandSignature();
 
 	ID3D12CommandSignature* Native;

@@ -6,11 +6,11 @@ TW3DCommandBuffer::TW3DCommandBuffer(TWT::String const& Name, TW3DResourceManage
 	TW3DCommandSignature* CommandSignature, TWT::uint MaxCommandCount, TWT::uint SingleCommandByteSize) :
 	resource_manager(ResourceManager), cmd_signature(CommandSignature) {
 
-	cmd_buffer = ResourceManager->RequestBuffer(Name + "-cmd_buffer"s, MaxCommandCount, SingleCommandByteSize, false, true);
+	cmd_buffer = ResourceManager->CreateBuffer(Name + "-cmd_buffer"s, MaxCommandCount, SingleCommandByteSize, false, true);
 }
 
 TW3DCommandBuffer::~TW3DCommandBuffer() {
-	resource_manager->ReleaseResource(cmd_buffer);
+	delete cmd_buffer;
 }
 
 const TW3DCommandSignature* TW3DCommandBuffer::GetSignature() const {

@@ -331,7 +331,6 @@ void cleanup() {
 	for (int i = 0; i < TW3DSwapChain::BufferCount; ++i)
 		delete frames[i];
 
-	TW3DPrimitives::Release();
 	TW3DModules::Release();
 
 	if (on_cleanup)

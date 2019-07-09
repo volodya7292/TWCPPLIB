@@ -68,14 +68,18 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 	g_emission = ResourceManager->RequestRenderTargetCube("g_emission"s, Width, TWT::RGBA8Unorm);
 	g_depth = ResourceManager->RequestDepthStencilCubeTexture("g_depth_tex"s, Width, D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE, D3D12_DSV_FLAG_READ_ONLY_DEPTH);
 
-	//objs_cmd_buffer = ResourceManager->RequestCommandBuffer(""s, )
+
+	objs_cmd_sign = ResourceManager->RequestCommandSignature("objs_cmd_sign"s, {
+		TW3DCAConstantBuffer(0, GBUFFER_VERTEX_VMI_CB),
+		TW3DCAVertexBuffer(1),
+		TW3DCADraw(2)
+		}, root_signature);
+	objs_cmd_buffer = ResourceManager->RequestCommandBuffer("objs_cmd_buffer"s, objs_cmd_sign, 16384, sizeof(TW3DScene::ObjectCmd));
+
+
 
 	material_buffer = ResourceManager->RequestBuffer("material_buffer"s, 8192, sizeof(TWT::DefaultMaterial));
 	cb_camera_matrices = ResourceManager->RequestConstantBuffer("cb_camera_matrices"s, 1, sizeof(CameraCubeMatrices));
-}
-
-void TW3DDefaultRenderer::CreateRTResources() {
-
 }
 
 void TW3DDefaultRenderer::record_g_buffer_objects(TW3DCommandList* cl) {
@@ -86,16 +90,16 @@ void TW3DDefaultRenderer::record_g_buffer_objects(TW3DCommandList* cl) {
 	//cl->BindCameraPrevCBV(GBUFFER_VERTEX_PREV_CAMERA_CB, Scene->Camera);
 	cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, Scene->Camera);
 
-	for (TW3DObject* object : Scene->Objects)
-		cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
+	//for (TW3DObject* object : Scene->GetObjects())
+	//	cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
 
 	if (LargeScaleScene) {
 		cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, LargeScaleScene->Camera);
 		//cl->BindCameraPrevCBV(GBUFFER_VERTEX_PREV_CAMERA_CB, LargeScaleScene->Camera);
 		cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, LargeScaleScene->Camera);
 
-		for (TW3DObject* object : LargeScaleScene->Objects)
-			cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
+	//	for (TW3DObject* object : LargeScaleScene->GetObjects())
+	//		cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
 	}
 }
 
@@ -121,7 +125,6 @@ void TW3DDefaultRenderer::record_g_buffer(TW3DSCFrame* frame, TW3DCommandList* c
 	cl->BindTexture(GBUFFER_PIXEL_EMISSION_TEXTURE, emission_texarr);
 	cl->BindTexture(GBUFFER_PIXEL_NORMAL_TEXTURE, normal_texarr);
 	cl->BindBuffer(GBUFFER_PIXEL_MATERIAL_BUFFER, material_buffer);
-
 	cl->BindConstantBuffer(GBUFFER_VERTEX_RENDERER_CB, info_cb);
 	cl->BindConstantBuffer(GBUFFER_PIXEL_RENDERER_CB, info_cb);
 	cl->BindConstantBuffer(GBUFFER_GEOMETRY_MATRICES, cb_camera_matrices);
@@ -137,8 +140,6 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	TWU::TW3DLogInfo("TW3DRenderer initialized."s);
 	CreateGBufferResources();
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] GBufferResources initialized."s);
-	CreateRTResources();
-	TWU::TW3DLogInfo("[TW3DDefaultRenderer] RTResources initialized."s);
 
 	info.info = TWT::uint4(Width, Height, 0, 0);
 	info_cb = ResourceManager->RequestConstantBuffer("render_info_cb"s, 1, sizeof(TWT::DefaultRendererInfoCB));
@@ -211,10 +212,6 @@ void TW3DDefaultRenderer::Update(float DeltaTime) {
 
 void TW3DDefaultRenderer::Execute(TW3DSCFrame* Frame) {
 	TW3DRenderer::Execute(Frame);
-
-	Scene->BeforeExecution();
-	if (LargeScaleScene)
-		LargeScaleScene->BeforeExecution();
 
 
 	auto g_cl = Frame->GetCommandList("GBuffer");

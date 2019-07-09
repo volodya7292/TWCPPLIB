@@ -5,6 +5,7 @@ class TW3DTransform {
 public:
 	// Rotation in degrees
 	TW3DTransform(TWT::double3 Position = TWT::double3(0), TWT::double3 Rotation = TWT::double3(0), TWT::double3 Scale = TWT::double3(1), bool ChangedInit = true);
+	TW3DTransform(rp3d::Transform const& Transform);
 	~TW3DTransform() = default;
 
 	TWT::double4x4 GetModelMatrix() const;
@@ -24,6 +25,7 @@ public:
 	void InitFromPhysicalTransform(rp3d::Transform const& Transform);
 
 	bool Updated = false;
+	bool ReInitialized = false;
 
 private:
 	TWT::double3 position = TWT::double3(0);

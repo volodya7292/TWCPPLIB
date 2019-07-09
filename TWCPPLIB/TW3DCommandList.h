@@ -35,7 +35,8 @@ public:
 	void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 	void ResourceBarrier(ID3D12Resource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 	void CopyBufferRegion(TW3DResource* DstBuffer, TWT::uint64 DstOffset, TW3DResource* SrcBuffer, TWT::uint64 SrcOffset, TWT::uint64 ByteCount);
-	void CopyTextureRegion(TW3DResource* DstTexture, TW3DResource* SrcTexture);
+	void CopyTextureRegion(TW3DTexture* DstTexture, TW3DTexture* SrcTexture);
+	void CopyTextureRegion(D3D12_TEXTURE_COPY_LOCATION const* Dst, TWT::uint3 DstXYZ, D3D12_TEXTURE_COPY_LOCATION const* Src, D3D12_BOX const* SrcBox = nullptr);
 	void SetPipelineState(TW3DGraphicsPipeline* GraphicsPipeline);
 	void SetPipelineState(TW3DComputePipeline* ComputePipeline);
 	void SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DTexture* DSV = nullptr);
@@ -79,7 +80,6 @@ public:
 	void BindCameraCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera);
 	void BindCameraPrevCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera);
 	void ClearTexture(TW3DTexture* Texture, TWT::float4 Color);
-	void DrawObject(TW3DObject* object, TWT::uint ModelCBRootParameterIndex);
 
 	void Reset();
 	void Close();

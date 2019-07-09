@@ -156,25 +156,19 @@ void TW3DTexture::CreateCube2D(TWT::uint Size) {
 }
 
 void TW3DTexture::Upload2D(TWT::byte* Data, TWT::int64 BytesPerRow, TWT::uint Depth) {
-	D3D12_SUBRESOURCE_DATA textureData = {};
-	textureData.pData = &Data[0];
-	textureData.RowPitch = BytesPerRow;
-	textureData.SlicePitch = BytesPerRow * desc.Height;
-
-	TW3DResource* upload_heap = staging;
-	if (!staging)
-		upload_heap = TW3DResource::CreateStaging(device, device->GetResourceByteSize(&desc, 1));
+	AllocateStaging();
+	memcpy(staging_addr, Data, BytesPerRow * desc.Height);
 
 	TWT::uint subres = D3D12CalcSubresource(0, Depth, 0, desc.MipLevels, desc.DepthOrArraySize);
-	
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT staging_footprint = device->GetSubresourceFootprint(&desc, 0, 1);
+
 	temp_gcl->Reset();
 	temp_gcl->ResourceBarrier(Native, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-	temp_gcl->UpdateSubresources(Native, upload_heap->Native, &textureData, 1, 0, subres);
+	temp_gcl->CopyTextureRegion(&CD3DX12_TEXTURE_COPY_LOCATION(Native, subres), TWT::uint3(0), &CD3DX12_TEXTURE_COPY_LOCATION(staging->Native, staging_footprint));
 	temp_gcl->ResourceBarrier(Native, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	temp_gcl->Execute();
 
-	if (!staging)
-		delete upload_heap;
+	DeallocateStaging();
 }
 
 void TW3DTexture::Upload2D(TWT::WString const& filename, TWT::uint Depth) {

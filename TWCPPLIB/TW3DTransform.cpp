@@ -5,6 +5,10 @@ TW3DTransform::TW3DTransform(TWT::double3 Position, TWT::double3 Rotation, TWT::
 	position(Position), rotation(Rotation), scale(Scale), Updated(UpdatedInit) {
 }
 
+TW3DTransform::TW3DTransform(rp3d::Transform const& Transform) {
+	InitFromPhysicalTransform(Transform);
+}
+
 TWT::double4x4 TW3DTransform::GetModelMatrix() const {
 	TWT::double4x4 m = TWT::Translate(TWT::double4x4(1), position);
 	m = TWT::Rotate(m, TWT::Radians(rotation.x), TWT::double3(1, 0, 0));
@@ -76,4 +80,6 @@ void TW3DTransform::InitFromPhysicalTransform(rp3d::Transform const& Transform) 
 	
 	rotation = TWT::Degrees(eulerAngles(quater));
 	rotation.z = fmod(180 - rotation.z, 360.0f);
+
+	ReInitialized = true;
 }

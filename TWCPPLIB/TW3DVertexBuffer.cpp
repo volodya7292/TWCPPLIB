@@ -31,18 +31,16 @@ void TW3DVertexBuffer::Update(const void* Data, TWT::uint VertexCount) {
 	vertexData.RowPitch		= size;
 	vertexData.SlicePitch	= size;
 
-	TW3DResource* upload_heap = staging;
-	if (!staging)
-		upload_heap = TW3DResource::CreateStaging(device, device->GetResourceByteSize(&desc, 1));
+
+	AllocateStaging();
 
 	temp_gcl->Reset();
 	temp_gcl->ResourceBarrier(Native, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST);
-	temp_gcl->UpdateSubresources(Native, upload_heap->Native, &vertexData);
+	temp_gcl->CopyBufferRegion(this, 0, staging, 0, size);
 	temp_gcl->ResourceBarrier(Native, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 	temp_gcl->Execute();
 
-	if (!staging)
-		delete upload_heap;
+	DeallocateStaging();
 }
 
 TWT::uint TW3DVertexBuffer::GetVertexCount() {

@@ -2,20 +2,23 @@
 #include "TW3DResource.h"
 
 TW3DResource::TW3DResource(TW3DDevice* Device, CD3DX12_HEAP_PROPERTIES const& HeapProperties, TW3DTempGCL* TempGCL,
-	D3D12_RESOURCE_STATES InitialState, bool OptimizeForUpdating, D3D12_HEAP_FLAGS HeapFlags, D3D12_CLEAR_VALUE const& ClearValue) :
-	device(Device), temp_gcl(TempGCL), heap_properties(HeapProperties), heap_flags(HeapFlags), InitialState(InitialState), clear_value(ClearValue)
+	D3D12_RESOURCE_STATES InitialState, bool UpdateOptimized, D3D12_HEAP_FLAGS HeapFlags, D3D12_CLEAR_VALUE const& ClearValue) :
+	device(Device), temp_gcl(TempGCL), heap_properties(HeapProperties), heap_flags(HeapFlags), InitialState(InitialState), clear_value(ClearValue), update_optimized(UpdateOptimized)
 {
-	if (OptimizeForUpdating)
-		staging = new TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), temp_gcl, D3D12_RESOURCE_STATE_GENERIC_READ, false);
+	
 }
 
 TW3DResource::TW3DResource(ID3D12Resource* Resource) : 
-	Native(Resource)
+	Native(Resource), update_optimized(false)
 {
 }
 
 TW3DResource::~TW3DResource() {
 	Release();
+}
+
+D3D12_RESOURCE_DESC TW3DResource::GetDescription() {
+	return desc;
 }
 
 D3D12_CLEAR_VALUE TW3DResource::GetClearValue() {
@@ -39,8 +42,8 @@ void TW3DResource::Create() {
 	else
 		device->CreateCommittedResource(&heap_properties, heap_flags, &desc, InitialState, &Native, &clear_value);
 
-	if (staging)
-		staging->Create(CD3DX12_RESOURCE_DESC::Buffer(device->GetResourceByteSize(&desc, 1)));
+	if (update_optimized)
+		AllocateStaging();
 
 	device->MakeResident(Native);
 }
@@ -74,24 +77,29 @@ void TW3DResource::Read(void* Out, TWT::uint ByteOffset, TWT::uint ByteCount) {
 
 	D3D12_RANGE range = CD3DX12_RANGE(0, ByteCount);
 	void* data;
+
 	read_heap->Map(0, &range, &data);
-
 	memcpy(Out, data, ByteCount);
-
 	read_heap->Unmap(0, nullptr);
 
 	TWU::DXSafeRelease(read_heap);
 }
 
-TW3DResource* TW3DResource::CreateStaging(TW3DDevice* Device, TWT::uint64 Size) {
-	TW3DResource* resource = new TW3DResource(Device,
-		CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-		nullptr,
-		D3D12_RESOURCE_STATE_GENERIC_READ
-	);
-	resource->Create(CD3DX12_RESOURCE_DESC::Buffer(Size));
-	return resource;
+void TW3DResource::AllocateStaging() {
+	if (!staging) {
+		staging = new TW3DResource(device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), nullptr, D3D12_RESOURCE_STATE_GENERIC_READ);
+		staging->Create(CD3DX12_RESOURCE_DESC::Buffer(device->GetResourceByteSize(&desc, 1)));
+		staging->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&staging_addr));
+	}
 }
+
+void TW3DResource::DeallocateStaging() {
+	if (staging && !update_optimized) {
+		delete staging;
+		staging = nullptr;
+	}
+}
+
 
 D3D12_RESOURCE_BARRIER TW3DTransitionBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter) {
 	return CD3DX12_RESOURCE_BARRIER::Transition(Resource->Native, StateBefore, StateAfter);

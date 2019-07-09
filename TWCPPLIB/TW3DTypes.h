@@ -64,6 +64,12 @@ namespace TWT {
 		float4 emission; // .a - texture lerp blend factor
 	};
 
+	struct DefaultLightSource {
+		TWT::float4 v[3];      // v[0] - sphere position; v[0], v[1], v[2] - triangle vertices
+		TWT::float4 normal;    // .xyz - triangle normal, .w - triangle material id
+		TWT::float4 info;      // .x - type, .y - sphere radius
+	};
+
 	struct Bounds {
 		float4 pMin;
 		float4 pMax;
@@ -77,16 +83,6 @@ namespace TWT {
 	template<typename T>
 	inline float3 AsFloat3(const T *const Ptr) {
 		return glm::make_vec3(Ptr);
-	}
-
-	template<typename T>
-	inline T Min(T V0, T V1) {
-		return glm::min(V0, V1);
-	}
-
-	template<typename T>
-	inline T Max(T V0, T V1) {
-		return glm::max(V0, V1);
 	}
 
 	template<typename T>

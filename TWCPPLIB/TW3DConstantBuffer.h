@@ -6,7 +6,7 @@ public:
 	TW3DConstantBuffer(TW3DDevice* Device, TWT::uint ElementCount, TWT::uint ElementSize);
 	~TW3DConstantBuffer() final = default;
 
-	D3D12_GPU_VIRTUAL_ADDRESS GetAddress(TWT::uint ElementIndex);
+	D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress(TWT::uint ElementIndex);
 
 	void Update(void* Data, TWT::uint ElementIndex = 0);
 

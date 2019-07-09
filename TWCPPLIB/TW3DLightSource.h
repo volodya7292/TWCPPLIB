@@ -1,5 +1,6 @@
 #pragma once
 #include "TW3DVertexBuffer.h"
+#include "TW3DTypes.h"
 
 enum TW3DLightSourceType {
 	TW3D_LIGHT_SOURCE_TRIANGLE,
@@ -9,32 +10,29 @@ enum TW3DLightSourceType {
 class TW3DLightSource {
 public:
 	TW3DLightSource() = default;
-	void SetTriangleId(TWT::uint TriangleId, TW3DVertexBuffer* VertexBuffer);
+	TW3DLightSource(TW3DVertexBuffer* VertexBuffer, TWT::uint TriangleId, TWT::uint MaterialId, TWT::uint VertexByteSize = sizeof(TWT::DefaultVertex));
+	TW3DLightSource(TWT::float3 SpherePosition, float SphereRadius);
+
+	void SetTriangle(TW3DVertexBuffer* VertexBuffer, TWT::uint TriangleId, TWT::uint MaterialId, TWT::uint VertexByteSize = sizeof(TWT::DefaultVertex));
+	void SetSpherePosition(TWT::float3 Position);
 	void SetSphereRadius(float Radius);
 	void SetIntensity(float Intensity);
-	void SetPosition(TWT::float3 const& Position);
-	void SetColor(TWT::float3 const& Color);
+	void SetColor(TWT::float3 Color);
+	void SetType(TW3DLightSourceType Type);
 
-	// ActualColor * Intensity
-	TWT::float3 GetPosition();
-	TWT::float3 GetColor();
+	const TWT::DefaultLightSource MakeInfo() const;
 
-	TWT::float4 MakeInfo();
-	TW3DVertexBuffer* GetTriangleVertexBuffer();
-
-	bool Updated = false;
+	bool Updated = true;
 
 private:
-	TW3DLightSourceType Type = TW3D_LIGHT_SOURCE_TRIANGLE;
+	TW3DLightSourceType type = TW3D_LIGHT_SOURCE_SPHERE;
 
-	TWT::uint triangle_id = 0;
-	TW3DVertexBuffer* triangle_vb = nullptr;
+	TWT::float3 triangle[3];
+	TWT::float3 triangle_normal;
+	TWT::float3 sphere_pos = TWT::float3(0);
 
-	float sphere_radius = 1.0f;
+	TWT::uint triangle_material_id;
+	float sphere_radius = 0.0f;
 	float intensity = 1.0f;
-	TWT::float3 position = TWT::float3(0);
 	TWT::float3 color = TWT::float3(1);
-
-	friend class TW3DScene;
 };
-

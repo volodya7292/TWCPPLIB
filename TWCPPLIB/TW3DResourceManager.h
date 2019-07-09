@@ -26,9 +26,10 @@ public:
 	TW3DRenderTarget*   CreateRenderTarget(ID3D12Resource* Buffer);
 	TW3DRenderTarget*   CreateRenderTarget(TWT::uint2 Size, DXGI_FORMAT Format, TWT::float4 ClearValue = TWT::float4(-1));
 	TW3DRenderTarget*   CreateRenderTargetCube(TWT::uint Size, DXGI_FORMAT Format, TWT::float4 ClearValue = TWT::float4(-1));
-	TW3DBuffer*         CreateBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV = false, bool UpdateOptimized = false);
+	TW3DBuffer*         CreateBuffer(TWT::String const& Name, TWT::uint ElementCount, TWT::uint ElementSizeInBytes,
+		bool UAV = false, bool UpdateOptimized = false, D3D12_RESOURCE_STATES InitialState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	TW3DVertexBuffer*   CreateVertexBuffer(TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex), bool OptimizeForUpdating = false);
-	TW3DConstantBuffer* CreateConstantBuffer(TWT::uint ElementCount, TWT::uint ElementSizeInBytes);
+	TW3DConstantBuffer* CreateConstantBuffer(TWT::String const& Name, TWT::uint ElementCount, TWT::uint ElementSizeInBytes);
 	TW3DTexture*        CreateDepthStencilTexture(TWT::uint2 Size);
 	TW3DTexture*        CreateDepthStencilCubeTexture(TWT::uint Size, D3D12_RESOURCE_FLAGS Flags = D3D12_RESOURCE_FLAG_NONE, D3D12_DSV_FLAGS DSVFlags = D3D12_DSV_FLAG_NONE);
 	TW3DTexture*        CreateTexture2D(const TWT::WString& Filename);
@@ -47,7 +48,7 @@ public:
 	TW3DRootSignature*    RequestRootSignature(TWT::String const& Name, std::vector<TW3DRSRootParameter> RootParameters, bool VS = true, bool PS = true, bool GS = false, bool IA = true);
 	TW3DRootSignature*    RequestRootSignature(TWT::String const& Name, std::vector<TW3DRSRootParameter> RootParameters,
 		std::vector<D3D12_STATIC_SAMPLER_DESC> StaticSamplers, bool VS = true, bool PS = true, bool GS = false, bool IA = true);
-	TW3DCommandSignature* RequestCommandSignature(TWT::String const& Name, TW3DRootSignature* RootSignature, std::vector<TW3DCSCommandArgument> const& CommandArguments);
+	TW3DCommandSignature* RequestCommandSignature(TWT::String const& Name, std::vector<TW3DCSCommandArgument> const& CommandArguments, TW3DRootSignature* RootSignature = nullptr);
 	TW3DCommandList*      RequestCommandList(TWT::String const& Name, TW3DCommandListType Type);
 	TW3DCommandList*      RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DGraphicsPipeline* InitialState);
 	TW3DCommandList*      RequestCommandList(TWT::String const& Name, TW3DCommandListType Type, TW3DComputePipeline* InitialState);
@@ -59,7 +60,8 @@ public:
 	TW3DTexture*          RequestTextureArray2D(TWT::String const& Name, TWT::uint2 Size, TWT::uint Depth, DXGI_FORMAT Format, bool UAV = false);
 	TW3DTexture*          RequestDepthStencilTexture(TWT::String const& Name, TWT::uint2 Size);
 	TW3DTexture*          RequestDepthStencilCubeTexture(TWT::String const& Name, TWT::uint Size, D3D12_RESOURCE_FLAGS Flags = D3D12_RESOURCE_FLAG_NONE, D3D12_DSV_FLAGS DSVFlags = D3D12_DSV_FLAG_NONE);
-	TW3DBuffer*           RequestBuffer(TWT::String const& Name, TWT::uint ElementCount, TWT::uint ElementSizeInBytes, bool UAV = false, bool UpdateOptimized = false);
+	TW3DBuffer*           RequestBuffer(TWT::String const& Name, TWT::uint ElementCount, TWT::uint ElementSizeInBytes,
+		bool UAV = false, bool UpdateOptimized = false, D3D12_RESOURCE_STATES InitialState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	TW3DVertexBuffer*     RequestVertexBuffer(TWT::String const& Name, TWT::uint VertexCount, TWT::uint SingleVertexSizeInBytes = sizeof(TWT::DefaultVertex), bool OptimizeForUpdating = false);
 	TW3DConstantBuffer*   RequestConstantBuffer(TWT::String const& Name, TWT::uint ElementCount, TWT::uint ElementSizeInBytes);
 	TW3DCommandBuffer*    RequestCommandBuffer(TWT::String const& Name, TW3DCommandSignature* CommandSignature, TWT::uint MaxCommandCount, TWT::uint SingleCommandByteSize);
@@ -83,7 +85,6 @@ public:
 	void ReleaseConstantBuffer(TWT::String const& Name);
 	void ReleaseFramebuffer(TWT::String const& Name);
 
-	void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
 
 	bool IsCommandListRunning(TW3DCommandList* CommandList);
 	void FlushCommandList(TW3DCommandList* CommandList);

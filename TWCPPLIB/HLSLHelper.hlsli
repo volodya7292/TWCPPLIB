@@ -54,15 +54,6 @@ struct VSQuadOutput {
 	float2 tex_coord : TEXCOORD;
 };
 
-struct Material {
-	uint4 texture_ids0; // .x - diffuse, .y - specular, .z - normal
-	uint4 texture_ids1; // .x - diffuse, .y - specular, .z - normal
-	// if texture_id == -1 then the parameters below are used
-	float4 diffuse;  // .a - opacity/translucency
-	float4 specular; // .a - roughness
-	float4 emission; // .a - texture lerp blend factor
-};
-
 struct Vertex {
 	float3          pos : POSITION;
 	float3    tex_coord : TEXCOORD; // .z - material id
@@ -130,10 +121,19 @@ struct SceneLBVHNode {
 	uint right_child;
 };
 
+struct Material {
+	uint4 texture_ids0; // .x - diffuse, .y - specular, .z - normal
+	uint4 texture_ids1; // .x - diffuse, .y - specular, .z - normal
+	// if texture_id == -1 then the parameters below are used
+	float4 diffuse;  // .a - opacity/translucency
+	float4 specular; // .a - roughness
+	float4 emission; // .a - texture lerp blend factor
+};
+
 struct LightSource {
-	float4 pos;
-	float4 color;
-	float4 info; // .x - type, .y - GVB triangle id, z - sphere radius
+	float4 v[3];      // v[0] - sphere position; v[0], v[1], v[2] - triangle vertices
+	float4 normal;    // .xyz - triangle normal, .w - triangle material id
+	float4 info;      // .x - type, .y - sphere radius
 };
 
 struct Camera {

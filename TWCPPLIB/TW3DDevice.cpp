@@ -104,6 +104,12 @@ TWT::uint64 TW3DDevice::GetResourceByteSize(const D3D12_RESOURCE_DESC* ResourceD
 	return total_bytes;
 }
 
+D3D12_PLACED_SUBRESOURCE_FOOTPRINT TW3DDevice::GetSubresourceFootprint(const D3D12_RESOURCE_DESC* ResourceDesc, TWT::uint FirstSubresource, TWT::uint NumSubresources) {
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint;
+	device->GetCopyableFootprints(ResourceDesc, FirstSubresource, NumSubresources, 0, &footprint, nullptr, nullptr, nullptr);
+	return footprint;
+}
+
 TWT::uint TW3DDevice::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE HeapType) {
 	return device->GetDescriptorHandleIncrementSize(HeapType);
 }

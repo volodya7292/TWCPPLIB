@@ -7,5 +7,4 @@ public:
 	~TW3DCube() final = default;
 
 	void Update() final;
-	void RecordDraw(TW3DCommandList* CommandList, TWT::uint ModelCBRootParameterIndex)  final;
 };
