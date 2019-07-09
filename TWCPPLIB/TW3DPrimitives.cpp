@@ -129,9 +129,6 @@ void TW3DPrimitives::Initialize(TW3DResourceManager* ResourceManager) {
 
 
 
-
-
-
 	TW3DVertexBuffer* Pyramid4VertexBuffer = ResourceManager->RequestVertexBuffer("pyramid_vb"s, 18, sizeof(TWT::DefaultVertex));
 
 	//TWT::DefaultVertex vertices2[] = {

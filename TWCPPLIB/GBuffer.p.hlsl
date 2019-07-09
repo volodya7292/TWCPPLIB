@@ -31,7 +31,7 @@ struct PSOutput {
 };
 
 ConstantBuffer<Camera> camera; 
-ConstantBuffer<RendererInfo> renderer; // .info.y - scale factor for large objects
+ConstantBuffer<RendererInfo> renderer; // .info.w - scale factor for large objects
 
 // Take current clip position, last frame pixel position and compute a motion vector
 float2 calcMotionVector(float4 prevClipPos, float2 currentPixelTexPos) {
@@ -96,16 +96,16 @@ PSOutput main(GSOutput input) {
 	float3 normal;
 	evaluate_material(input.material_id, input.tex_coord, input.world_normal, input.tangent, diffuse, specular, emission, normal);
 
-	bool large_scale = renderer.info.y != 1;
+	bool large_scale = renderer.info.w != 1;
 
 
 	PSOutput output;
 	output.position = float4(input.world_pos.xyz, POSITION_FLAG_POS_EXIST | (large_scale ? POSITION_FLAG_LARGE_SCALE : 0));
 	output.normal = float4(normal, 0);
-	output.diffuse = diffuse;
+	output.diffuse = clamp(diffuse, 0.5, 1);
 	output.specular = specular;
 	output.emission = emission;
-	output.depth = distance(input.world_pos.xyz, camera.pos.xyz) / (large_scale ? renderer.info.y : 1) / 8192.0f;
+	output.depth = distance(input.world_pos.xyz, camera.pos.xyz) / (large_scale ? renderer.info.w : 1) / 8192.0f;
 
 	return output;
 }

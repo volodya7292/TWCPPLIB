@@ -61,7 +61,7 @@ void TW3DResource::Unmap(TWT::uint SubResourceIndex, const D3D12_RANGE* WrittenR
 	Native->Unmap(SubResourceIndex, WrittenRange);
 }
 
-void TW3DResource::Read(void* Out, TWT::uint ByteOffset, TWT::uint ByteCount) {
+void TW3DResource::Read(void* Out, TWT::uint ByteOffset, TWT::uint ByteCount) const {
 	ID3D12Resource* read_heap;
 	device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK),

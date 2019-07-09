@@ -19,10 +19,7 @@ TWT::float4x4 TW3DPerspectiveCamera::GetProjectionMatrix() {
 }
 
 TWT::float4x4 TW3DPerspectiveCamera::GetViewMatrix() {
-	TWT::float4x4 m = TWT::Rotate(TWT::float4x4(1), TWT::Radians(rotation.x), TWT::float3(1, 0, 0));
-	m *= TWT::Rotate(TWT::float4x4(1), TWT::Radians(rotation.y), TWT::float3(0, 1, 0));
-	m *= TWT::Rotate(TWT::float4x4(1), TWT::Radians(rotation.z), TWT::float3(0, 0, 1));
-	return m * TWT::Translate(TWT::float4x4(1), -Position);
+	return TWT::ViewMatrix(Position, rotation);
 }
 
 TWT::float4x4 TW3DPerspectiveCamera::GetProjectionViewMatrix() {

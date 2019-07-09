@@ -11,8 +11,9 @@ public:
 	~TW3DCommandBuffer();
 
 	const TW3DCommandSignature* GetSignature() const;
-	const TW3DBuffer* GetBuffer() const;
-	const TWT::uint GetCommandCount() const;
+	const TW3DBuffer* GetCommandBuffer() const;
+	const TW3DBuffer* GetCountBuffer() const;
+	const TWT::uint GetMaxCommandCount() const;
 
 	void Update(const void* Commands, TWT::uint CommandCount);
 
@@ -20,5 +21,6 @@ private:
 	TW3DResourceManager* resource_manager;
 
 	TW3DBuffer* cmd_buffer;
+	TW3DBuffer* count_buffer;
 	TW3DCommandSignature* cmd_signature;
 };

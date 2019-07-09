@@ -213,7 +213,7 @@ TW3DShader* TW3DResourceManager::RequestShader(TWT::String const& Name, D3D12_SH
 	return shader;
 }
 
-TW3DRootSignature* TW3DResourceManager::RequestRootSignature(TWT::String const& Name, std::vector<TW3DRSRootParameter> RootParameters, bool VS, bool PS, bool GS, bool IA) {
+TW3DRootSignature* TW3DResourceManager::RequestRootSignature(TWT::String const& Name, std::vector<TW3DRSRootParameter> const& RootParameters, bool VS, bool PS, bool GS, bool IA) {
 	auto& rs = root_signatures[Name];
 
 	if (!rs) {
@@ -224,7 +224,7 @@ TW3DRootSignature* TW3DResourceManager::RequestRootSignature(TWT::String const& 
 	return rs;
 }
 
-TW3DRootSignature* TW3DResourceManager::RequestRootSignature(TWT::String const& Name, std::vector<TW3DRSRootParameter> RootParameters,
+TW3DRootSignature* TW3DResourceManager::RequestRootSignature(TWT::String const& Name, std::vector<TW3DRSRootParameter> const& RootParameters,
 	std::vector<D3D12_STATIC_SAMPLER_DESC> StaticSamplers, bool VS, bool PS, bool GS, bool IA) {
 
 	auto& rs = root_signatures[Name];
@@ -415,7 +415,7 @@ TW3DFramebuffer* TW3DResourceManager::RequestFramebuffer(TWT::String const& Name
 }
 
 TW3DGraphicsPipeline* TW3DResourceManager::RequestGraphicsPipeline(TWT::String const& Name, TW3DRootSignature* RootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType,
-	DXGI_SAMPLE_DESC SampleDesc, D3D12_RASTERIZER_DESC RasterizerState, D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState,
+	DXGI_SAMPLE_DESC SampleDesc, D3D12_RASTERIZER_DESC const& RasterizerState, D3D12_DEPTH_STENCIL_DESC const& DepthStencilState, D3D12_BLEND_DESC const& BlendState,
 	std::vector<DXGI_FORMAT> const& OutputFormats, TW3DShader* VertexShader, TW3DShader* GeometryShader, TW3DShader* PixelShader, std::vector<D3D12_INPUT_ELEMENT_DESC> const& InputLayout) {
 
 	auto& gp = graphics_pipelines[Name];

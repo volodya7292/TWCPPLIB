@@ -145,7 +145,7 @@ struct Camera {
 };
 
 struct RendererInfo {
-	uint4 info; // .x - width, .y - height, .z - frame index
+	uint4 info; // .x - width, .y - height, .z - frame index, .w - scale factor for large objects
 };
 
 typedef StructuredBuffer<SceneLBVHNode> RTScene;

@@ -16,9 +16,6 @@ public:
 private:
 	void CreateGBufferResources();
 
-	void record_g_buffer_objects(TW3DCommandList* cl);
-	void record_g_buffer(TW3DSCFrame* frame, TW3DCommandList* cl);
-
 	void BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* ColorOutput);
 
 	TW3DShader *g_pixel_s, *g_vertex_s, *g_geom_s;

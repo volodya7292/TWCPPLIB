@@ -25,6 +25,7 @@ public:
 	void Update(float DeltaTime);
 
 	TW3DPerspectiveCamera* Camera;
+	bool RenderCommandsUpdated = false;
 
 private:
 	TW3DResourceManager* resource_manager;

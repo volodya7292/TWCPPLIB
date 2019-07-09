@@ -52,12 +52,12 @@ namespace TWT {
 	};
 
 	struct DefaultRendererInfoCB {
-		uint4 info; // .x - width, .y - height, .z - frame index
+		uint4 info; // .x - width, .y - height, .z - frame index, .w - scale factor for large objects
 	};
 
 	struct DefaultMaterial {
-		uint4 texture_ids0; // .x - diffuse, .y - specular, .z - normal
-		uint4 texture_ids1; // .x - diffuse, .y - specular, .z - normal
+		uint4 texture_ids0 = uint4(-1); // .x - diffuse, .y - specular, .z - normal
+		uint4 texture_ids1 = uint4(-1); // .x - diffuse, .y - specular, .z - normal
 		// if texture_id == -1 then the parameters below are used
 		float4 diffuse;  // .a - opacity/translucency
 		float4 specular; // .a - roughness
@@ -158,5 +158,13 @@ namespace TWT {
 		Result[2][3] = -static_cast<T>(1);
 		Result[3][2] = static_cast<T>(0);
 		return Result;
+	}
+
+	template<typename T>
+	inline glm::mat<4, 4, T> ViewMatrix(glm::vec<3, T> Position, glm::vec<3, T> Rotation) {
+		glm::mat<4, 4, T> m = TWT::Rotate(glm::mat<4, 4, T>(1), TWT::Radians(Rotation.x), glm::vec<3, T>(1, 0, 0));
+		m *= TWT::Rotate(glm::mat<4, 4, T>(1), TWT::Radians(Rotation.y), glm::vec<3, T>(0, 1, 0));
+		m *= TWT::Rotate(glm::mat<4, 4, T>(1), TWT::Radians(Rotation.z), glm::vec<3, T>(0, 0, 1));
+		return m * TWT::Translate(glm::mat<4, 4, T>(1), -Position);
 	}
 }  // namespace TWT

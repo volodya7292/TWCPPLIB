@@ -74,65 +74,17 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 		TW3DCAVertexBuffer(1),
 		TW3DCADraw(2)
 		}, root_signature);
-	objs_cmd_buffer = ResourceManager->RequestCommandBuffer("objs_cmd_buffer"s, objs_cmd_sign, 16384, sizeof(TW3DScene::ObjectCmd));
+	objs_cmd_buffer = ResourceManager->RequestCommandBuffer("objs_cmd_buffer"s, objs_cmd_sign, 1, sizeof(TW3DScene::ObjectCmd));
 
 
 
-	material_buffer = ResourceManager->RequestBuffer("material_buffer"s, 8192, sizeof(TWT::DefaultMaterial));
+	material_buffer = ResourceManager->RequestBuffer("material_buffer"s, 8192, sizeof(TWT::DefaultMaterial), false, true, D3D12_RESOURCE_STATE_COPY_DEST);
 	cb_camera_matrices = ResourceManager->RequestConstantBuffer("cb_camera_matrices"s, 1, sizeof(CameraCubeMatrices));
-}
 
-void TW3DDefaultRenderer::record_g_buffer_objects(TW3DCommandList* cl) {
-	cl->SetRootSignatureFrom(gbuffer_ps);
-	cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	TWT::DefaultMaterial mat = {};
+	mat.diffuse = TWT::float4(1);
 
-	cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, Scene->Camera);
-	//cl->BindCameraPrevCBV(GBUFFER_VERTEX_PREV_CAMERA_CB, Scene->Camera);
-	cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, Scene->Camera);
-
-	//for (TW3DObject* object : Scene->GetObjects())
-	//	cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
-
-	if (LargeScaleScene) {
-		cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, LargeScaleScene->Camera);
-		//cl->BindCameraPrevCBV(GBUFFER_VERTEX_PREV_CAMERA_CB, LargeScaleScene->Camera);
-		cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, LargeScaleScene->Camera);
-
-	//	for (TW3DObject* object : LargeScaleScene->GetObjects())
-	//		cl->DrawObject(object, GBUFFER_VERTEX_VMI_CB);
-	}
-}
-
-void TW3DDefaultRenderer::record_g_buffer(TW3DSCFrame* frame, TW3DCommandList* cl) {
-	cl->Reset();
-	cl->BindResources(ResourceManager);
-
-
-	cl->SetRootSignatureFrom(gbuffer_ps);
-	cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	cl->SetRenderTargets({ g_position, g_normal, g_diffuse, g_specular, g_emission }, g_depth);
-
-	cl->ClearRTV(g_emission);
-	cl->ClearRTV(g_position);
-	cl->ClearRTV(g_diffuse);
-	cl->ClearDSVDepth(g_depth);
-	cl->SetViewport(&viewport);
-	cl->SetScissor(&scissor);
-
-	cl->BindTexture(GBUFFER_PIXEL_DIFFUSE_TEXTURE, diffuse_texarr);
-	cl->BindTexture(GBUFFER_PIXEL_SPECULAR_TEXTURE, specular_texarr);
-	cl->BindTexture(GBUFFER_PIXEL_EMISSION_TEXTURE, emission_texarr);
-	cl->BindTexture(GBUFFER_PIXEL_NORMAL_TEXTURE, normal_texarr);
-	cl->BindBuffer(GBUFFER_PIXEL_MATERIAL_BUFFER, material_buffer);
-	cl->BindConstantBuffer(GBUFFER_VERTEX_RENDERER_CB, info_cb);
-	cl->BindConstantBuffer(GBUFFER_PIXEL_RENDERER_CB, info_cb);
-	cl->BindConstantBuffer(GBUFFER_GEOMETRY_MATRICES, cb_camera_matrices);
-
-	cl->ExecuteBundle(frame->GetCommandList("GBufferObjects"s));
-
-
-	cl->Close();
+	material_buffer->UpdateElement(&mat, 0);
 }
 
 void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height) {
@@ -141,7 +93,7 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 	CreateGBufferResources();
 	TWU::TW3DLogInfo("[TW3DDefaultRenderer] GBufferResources initialized."s);
 
-	info.info = TWT::uint4(Width, Height, 0, 0);
+	info.info = TWT::uint4(Width, Height, 0, 1);
 	info_cb = ResourceManager->RequestConstantBuffer("render_info_cb"s, 1, sizeof(TWT::DefaultRendererInfoCB));
 
 	diffuse_texarr = ResourceManager->RequestTextureArray2D("diffuse_arr"s, TWT::uint2(400, 400), material_count, TWT::RGBA8Unorm);
@@ -160,9 +112,39 @@ void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DS
 
 
 void TW3DDefaultRenderer::InitializeFrame(TW3DSCFrame* Frame) {
-	Frame->RequestCommandList("GBufferObjects"s, TW3D_CL_BUNDLE, gbuffer_ps, [&](TW3DSCFrame* Frame, TW3DCommandList* CommandList) { record_g_buffer_objects(CommandList); });
+	{
+		auto cl = Frame->RequestCommandList("GBuffer"s, TW3D_CL_DIRECT, gbuffer_ps);
 
-	auto g_cl = Frame->RequestCommandList("GBuffer"s, TW3D_CL_DIRECT, gbuffer_ps);
+		cl->Reset();
+		cl->BindResources(ResourceManager);
+
+		cl->SetRootSignatureFrom(gbuffer_ps);
+		cl->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		cl->SetRenderTargets({ g_position, g_normal, g_diffuse, g_specular, g_emission }, g_depth);
+
+		cl->ClearRTV(g_emission);
+		cl->ClearRTV(g_position);
+		cl->ClearRTV(g_diffuse);
+		cl->ClearDSVDepth(g_depth);
+		cl->SetViewport(&viewport);
+		cl->SetScissor(&scissor);
+
+		cl->BindTexture(GBUFFER_PIXEL_DIFFUSE_TEXTURE, diffuse_texarr);
+		cl->BindTexture(GBUFFER_PIXEL_SPECULAR_TEXTURE, specular_texarr);
+		cl->BindTexture(GBUFFER_PIXEL_EMISSION_TEXTURE, emission_texarr);
+		cl->BindTexture(GBUFFER_PIXEL_NORMAL_TEXTURE, normal_texarr);
+		cl->BindBuffer(GBUFFER_PIXEL_MATERIAL_BUFFER, material_buffer);
+		cl->BindConstantBuffer(GBUFFER_PIXEL_RENDERER_CB, info_cb);
+		cl->BindCameraCBV(GBUFFER_PIXEL_CAMERA_CB, Scene->Camera);
+		cl->BindConstantBuffer(GBUFFER_VERTEX_RENDERER_CB, info_cb);
+		cl->BindCameraCBV(GBUFFER_VERTEX_CAMERA_CB, Scene->Camera);
+		cl->BindConstantBuffer(GBUFFER_GEOMETRY_MATRICES, cb_camera_matrices);
+
+		cl->ExecuteIndirect(objs_cmd_buffer);
+
+		cl->Close();
+	}
 
 	auto blit_cl = Frame->RequestCommandList("Blit"s, TW3D_CL_DIRECT);
 	BlitOutput(blit_cl, Frame->RenderTarget);
@@ -174,8 +156,8 @@ void TW3DDefaultRenderer::Resize(TWT::uint Width, TWT::uint Height) {
 	info.info.x = Width;
 	info.info.y = Height;
 
-	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(Width), static_cast<float>(Height));
-	scissor = CD3DX12_RECT(0, 0, Width, Height);
+	viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(Width), static_cast<float>(Width));
+	scissor = CD3DX12_RECT(0, 0, Width, Width);
 
 	g_position->Resize(TWT::uint2(Width, Height));
 	g_normal->Resize(TWT::uint2(Width, Height));
@@ -207,19 +189,37 @@ void TW3DDefaultRenderer::Update(float DeltaTime) {
 	if (LargeScaleScene)
 		LargeScaleScene->Update(DeltaTime);
 
+	if (Scene->RenderCommandsUpdated) {
+		Scene->RenderCommandsUpdated = false;
+
+		std::vector<TW3DScene::ObjectCmd> cmd = Scene->GetObjectRenderCommands();
+		objs_cmd_buffer->Update(cmd.data(), Scene->GetObjectRenderCommandCount());
+	}
+
 	info_cb->Update(&info);
+
+	{
+		TWT::float3 pos = Scene->Camera->Position;
+		TWT::float4x4 proj_matrix = TWT::InfinitePerspective(90.0f, 1.0f); // Square perspection with 90 degrees FOV
+	
+		CameraCubeMatrices ccm;
+		ccm.proj_view[0] = proj_matrix * TWT::ViewMatrix(pos, TWT::float3(0, -90, 0)); // left?
+		ccm.proj_view[1] = proj_matrix * TWT::ViewMatrix(pos, TWT::float3(0, 0, 0));   // front
+		ccm.proj_view[2] = proj_matrix * TWT::ViewMatrix(pos, TWT::float3(0, 90, 0));  // right?
+		ccm.proj_view[3] = proj_matrix * TWT::ViewMatrix(pos, TWT::float3(0, 180, 0)); // back
+		ccm.proj_view[4] = proj_matrix * TWT::ViewMatrix(pos, TWT::float3(-90, 0, 0)); // bottom
+		ccm.proj_view[5] = proj_matrix * TWT::ViewMatrix(pos, TWT::float3(90, 0, 0));  // top
+
+		cb_camera_matrices->Update(&ccm);
+	}
 }
 
 void TW3DDefaultRenderer::Execute(TW3DSCFrame* Frame) {
 	TW3DRenderer::Execute(Frame);
 
 
-	auto g_cl = Frame->GetCommandList("GBuffer");
-	record_g_buffer(Frame, g_cl);
-
 	Frame->ExecuteCommandList("GBuffer"s, false, true);
 
-	Frame->ExecuteCommandList("RayTrace"s, false, true);
 	Frame->ExecuteCommandList("Blit"s, false, true);
 
 

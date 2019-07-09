@@ -69,7 +69,7 @@ void TW3DTexture::CreateDepthStencil(TWT::uint2 Size) {
 	dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	dsv_desc.Flags = DSVFlags;
 
-	desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Size.x, Size.y, 1, 1, 1, 0, ResourceFlags | D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+	desc = CD3DX12_RESOURCE_DESC::Tex2D(dsv_desc.Format, Size.x, Size.y, 1, 1, 1, 0, ResourceFlags | D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 	InitialState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 	TW3DResource::Create();
 
@@ -87,7 +87,7 @@ void TW3DTexture::CreateDepthStencilCube(TWT::uint Size) {
 	dsv_desc.Texture2DArray.ArraySize = 6;
 	dsv_desc.Flags = DSVFlags;
 
-	desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Size, Size, 6, 1, 1, 0, ResourceFlags | D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+	desc = CD3DX12_RESOURCE_DESC::Tex2D(dsv_desc.Format, Size, Size, 6, 1, 1, 0, ResourceFlags | D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 	InitialState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 	TW3DResource::Create();
 

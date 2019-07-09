@@ -22,7 +22,7 @@ public:
 	void Create(D3D12_RESOURCE_DESC const& ResourceDescription);
 	void Map(TWT::uint SubResourceIndex, const D3D12_RANGE* ReadRange, void** Data);
 	void Unmap(TWT::uint SubResourceIndex, const D3D12_RANGE* WrittenRange);
-	void Read(void* Out, TWT::uint ByteOffset, TWT::uint ByteCount);
+	void Read(void* Out, TWT::uint ByteOffset, TWT::uint ByteCount) const;
 
 	D3D12_RESOURCE_STATES InitialState  = D3D12_RESOURCE_STATE_GENERIC_READ;
 	D3D12_RESOURCE_FLAGS  ResourceFlags = D3D12_RESOURCE_FLAG_NONE;

@@ -60,13 +60,23 @@ void TW3DScene::AddObject(TW3DObject* Object) {
 	for (auto& vminst : Object->GetVertexMeshInstances()) {
 		mesh_inst_cmd_indices[&vminst] = cmd_index;
 
-		obj_cmds[cmd_index].cb = obj_cbs->GetGPUVirtualAddress(cmd_index);
-		obj_cmds[cmd_index].vb = vminst.VertexBuffer->GetView();
-		obj_cmds[cmd_index].draw = { vminst.VertexBuffer->GetVertexCount(), 1, 0, 0};
+		ObjectCmd obj_cmd;
+		obj_cmd.cb = obj_cbs->GetGPUVirtualAddress(cmd_index);
+		obj_cmd.vb = vminst.VertexBuffer->GetView();
+		obj_cmd.draw = { vminst.VertexBuffer->GetVertexCount(), 1, 0, 0};
 
-		if (vminst.CreateRigidBody && !vminst.RigidBody)
+		obj_cmds[cmd_index++] = obj_cmd;
+
+
+		if (vminst.CreateRigidBody && !vminst.RigidBody) {
 			vminst.RigidBody = collision_world->createRigidBody(vminst.Transform.GetPhysicalTransform());
+			vminst.RigidBody->setIsAllowedToSleep(true);
+		}
 	}
+
+	obj_cmd_count = cmd_index;
+
+	RenderCommandsUpdated = true;
 }
 
 void TW3DScene::AddLightSource(TW3DLightSource* LightSource) {
@@ -74,8 +84,16 @@ void TW3DScene::AddLightSource(TW3DLightSource* LightSource) {
 }
 
 void TW3DScene::Update(float DeltaTime) {
-	for (TW3DObject* object : objects)
+	for (TW3DObject* object : objects) {
 		object->Update();
+
+		for (auto& vminst : object->GetVertexMeshInstances()) {
+			if (vminst.Transform.Updated || vminst.Transform.ReInitialized) {
+				vminst.Transform.Updated = vminst.Transform.ReInitialized = false;
+				obj_cbs->Update(&static_cast<TWT::float4x4>(vminst.Transform.GetModelMatrix()), mesh_inst_cmd_indices[&vminst]);
+			}
+		}
+	}
 
 	for (TWT::uint i = 0; i < light_sources.size(); i++) {
 		TW3DLightSource* light = light_sources[i];

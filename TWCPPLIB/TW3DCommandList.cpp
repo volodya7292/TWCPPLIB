@@ -223,7 +223,7 @@ void TW3DCommandList::ExecuteIndirect(ID3D12CommandSignature* CommandSignature, 
 }
 
 void TW3DCommandList::ExecuteIndirect(TW3DCommandBuffer* CommandBuffer) {
-	ExecuteIndirect(CommandBuffer->GetSignature()->Native, CommandBuffer->GetCommandCount(), CommandBuffer->GetBuffer()->Native);
+	ExecuteIndirect(CommandBuffer->GetSignature()->Native, CommandBuffer->GetMaxCommandCount(), CommandBuffer->GetCommandBuffer()->Native, 0, CommandBuffer->GetCountBuffer()->Native);
 }
 
 void TW3DCommandList::ExecuteBundle(TW3DCommandList* CommandList) {

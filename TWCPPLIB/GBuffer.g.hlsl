@@ -1,7 +1,5 @@
 struct VSOutput {
-	//float4             clip_pos : SV_Position;
-	//float4        prev_clip_pos : PrevPosition;
-	linear float3     world_pos : WorldPosition;
+	float4            world_pos : SV_Position;
 	float2            tex_coord : TexCoord;
 	uint            material_id : MaterialId;
 	linear float3  world_normal : WorldNormal;
@@ -35,7 +33,7 @@ void main(triangle VSOutput input[3], inout TriangleStream<GSOutput> output) {
 
 		[unroll]
 		for (uint v = 0; v < 3; v++) {
-			element.clip_pos = mul(input_data.proj_view[t], float4(input[v].world_pos, 1));
+			element.clip_pos = mul(input_data.proj_view[t], float4(input[v].world_pos.xyz, 1));
 			//element.prev_clip_pos = mul(input_data.proj_view[t], float4(input[v].world_pos, 1));
 			element.world_pos = input[v].world_pos;
 			element.tex_coord = input[v].tex_coord;

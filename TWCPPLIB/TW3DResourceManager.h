@@ -45,8 +45,8 @@ public:
 	TW3DCommandQueue* GetCommandListCommandQueue(TW3DCommandList* CommandList);
 
 	TW3DShader*           RequestShader(TWT::String const& Name, D3D12_SHADER_BYTECODE const& ByteCode);
-	TW3DRootSignature*    RequestRootSignature(TWT::String const& Name, std::vector<TW3DRSRootParameter> RootParameters, bool VS = true, bool PS = true, bool GS = false, bool IA = true);
-	TW3DRootSignature*    RequestRootSignature(TWT::String const& Name, std::vector<TW3DRSRootParameter> RootParameters,
+	TW3DRootSignature*    RequestRootSignature(TWT::String const& Name, std::vector<TW3DRSRootParameter> const& RootParameters, bool VS = true, bool PS = true, bool GS = false, bool IA = true);
+	TW3DRootSignature*    RequestRootSignature(TWT::String const& Name, std::vector<TW3DRSRootParameter> const& RootParameters,
 		std::vector<D3D12_STATIC_SAMPLER_DESC> StaticSamplers, bool VS = true, bool PS = true, bool GS = false, bool IA = true);
 	TW3DCommandSignature* RequestCommandSignature(TWT::String const& Name, std::vector<TW3DCSCommandArgument> const& CommandArguments, TW3DRootSignature* RootSignature = nullptr);
 	TW3DCommandList*      RequestCommandList(TWT::String const& Name, TW3DCommandListType Type);
@@ -67,7 +67,7 @@ public:
 	TW3DCommandBuffer*    RequestCommandBuffer(TWT::String const& Name, TW3DCommandSignature* CommandSignature, TWT::uint MaxCommandCount, TWT::uint SingleCommandByteSize);
 	TW3DFramebuffer*      RequestFramebuffer(TWT::String const& Name, TWT::uint2 Size);
 	TW3DGraphicsPipeline* RequestGraphicsPipeline(TWT::String const& Name, TW3DRootSignature* RootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType,
-		DXGI_SAMPLE_DESC SampleDesc, D3D12_RASTERIZER_DESC RasterizerState, D3D12_DEPTH_STENCIL_DESC DepthStencilState, D3D12_BLEND_DESC BlendState,
+		DXGI_SAMPLE_DESC SampleDesc, D3D12_RASTERIZER_DESC const& RasterizerState, D3D12_DEPTH_STENCIL_DESC const& DepthStencilState, D3D12_BLEND_DESC const& BlendState,
 		std::vector<DXGI_FORMAT> const& OutputFormats, TW3DShader* VertexShader, TW3DShader* GeometryShader, TW3DShader* PixelShader, std::vector<D3D12_INPUT_ELEMENT_DESC> const& InputLayout);
 	TW3DGraphicsPipeline* RequestGraphicsPipeline(TWT::String const& Name, TW3DRootSignature* RootSignature,
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);

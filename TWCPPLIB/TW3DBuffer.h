@@ -13,6 +13,7 @@ public:
 
 	void Create(TWT::uint MaxElementCount);
 	void Update(const void* Data, TWT::uint ElementCount);
+	void Update(const void* Data, TWT::uint ElementCount, D3D12_RESOURCE_STATES BeforeUpdate, D3D12_RESOURCE_STATES AfterUpdate);
 	void UpdateElement(const void* Data, TWT::uint ElementIndex);
 
 private:

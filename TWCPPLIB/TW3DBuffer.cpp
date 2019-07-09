@@ -77,6 +77,27 @@ void TW3DBuffer::Update(const void* Data, TWT::uint ElementCount) {
 	DeallocateStaging();
 }
 
+void TW3DBuffer::Update(const void* Data, TWT::uint ElementCount, D3D12_RESOURCE_STATES BeforeUpdate, D3D12_RESOURCE_STATES AfterUpdate) {
+	if (ElementCount > max_element_count)
+		TWU::TW3DLogError("TW3DBuffer::Update \'"s + TWU::DXGetName(Native) + "\' ElementCount > MaxElementCount !"s);
+
+	element_count = ElementCount;
+
+	TWT::uint64 size = ElementCount * element_size;
+
+	AllocateStaging();
+
+	memcpy(staging_addr, Data, size);
+
+	temp_gcl->Reset();
+	temp_gcl->ResourceBarrier(Native, AfterUpdate, BeforeUpdate);
+	temp_gcl->CopyBufferRegion(this, 0, staging, 0, size);
+	temp_gcl->ResourceBarrier(Native, BeforeUpdate, AfterUpdate);
+	temp_gcl->Execute();
+
+	DeallocateStaging();
+}
+
 void TW3DBuffer::UpdateElement(const void* Data, TWT::uint ElementIndex) {
 	TWT::uint64 size = element_count * element_size;
 	TWT::uint64 index_offset = ElementIndex * element_size;

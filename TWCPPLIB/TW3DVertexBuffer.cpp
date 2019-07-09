@@ -26,13 +26,9 @@ void TW3DVertexBuffer::Update(const void* Data, TWT::uint VertexCount) {
 	vertex_count = VertexCount;
 	TWT::uint64 size = vertex_count * single_vertex_size;
 
-	D3D12_SUBRESOURCE_DATA vertexData = {};
-	vertexData.pData		= Data;
-	vertexData.RowPitch		= size;
-	vertexData.SlicePitch	= size;
-
-
 	AllocateStaging();
+
+	memcpy(staging_addr, Data, size);
 
 	temp_gcl->Reset();
 	temp_gcl->ResourceBarrier(Native, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST);
