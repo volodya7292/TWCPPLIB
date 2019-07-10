@@ -47,16 +47,16 @@ TWT::uint TW3DSwapChain::GetCurrentBufferIndex() {
 	return swap_chain->GetCurrentBackBufferIndex();
 }
 
-ID3D12Resource* TW3DSwapChain::GetBuffer(TWT::uint index) {
+ID3D12Resource* TW3DSwapChain::GetBuffer(TWT::uint Index) {
 	ID3D12Resource* resource;
-	swap_chain->GetBuffer(index, IID_PPV_ARGS(&resource));
+	TWU::SuccessAssert(swap_chain->GetBuffer(Index, IID_PPV_ARGS(&resource)), "TW3DSwapChain::GetBuffer "s + Index);
 	return resource;
 }
 
-void TW3DSwapChain::Resize(TWT::uint width, TWT::uint height) {
-	swap_chain->ResizeBuffers(BufferCount, width, height, desc.Format, desc.Flags);
+void TW3DSwapChain::Resize(TWT::uint Width, TWT::uint Height) {
+	TWU::SuccessAssert(swap_chain->ResizeBuffers(BufferCount, Width, Height, desc.Format, desc.Flags), "TW3DSwapChain::Resize "s + Width + "x"s + Height);
 }
 
 void TW3DSwapChain::Present() {
-	swap_chain->Present(VSync ? 1 : 0, tearing && !VSync && !GetFullScreen() ? DXGI_PRESENT_ALLOW_TEARING : 0);
+	TWU::SuccessAssert(swap_chain->Present(VSync ? 1 : 0, tearing && !VSync && !GetFullScreen() ? DXGI_PRESENT_ALLOW_TEARING : 0), "TW3DSwapChain::Present"s);
 }

@@ -38,6 +38,7 @@ public:
 		TW3DComputePipeline* InitialState, CLRecorder Recorder, TWT::uint RecordPriority = 0); // Create dynamic command list
 
 	void FlushCommandList(TWT::String const& Name);
+	void FlushCommandLists();
 	void PerformSwap();
 	void ExecuteCommandList(TWT::String const& Name, bool FlushBeforeExecution = false, bool FlushAfterExecution = false);
 	void RequestCommandListRecord(TWT::String const& Name);

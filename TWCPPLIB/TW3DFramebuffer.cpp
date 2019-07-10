@@ -70,6 +70,8 @@ void TW3DFramebuffer::Resize(TWT::uint2 Size) {
 
 	for (auto const& [name, rt] : rts)
 		rt.RenderTarget->Resize(Size);
+
+	depth_stencil.first->Resize(Size);
 }
 
 TWT::uint2 TW3DFramebuffer::GetSize() {

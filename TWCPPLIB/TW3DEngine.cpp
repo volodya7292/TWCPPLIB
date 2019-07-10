@@ -219,8 +219,12 @@ void update() {
 }
 
 void render() {
-	synchronized(resize_sync)
-		renderer->Execute(frames[swapChain->GetCurrentBufferIndex()]);
+	synchronized(resize_sync) {
+		TWT::uint curr_index = swapChain->GetCurrentBufferIndex();
+
+		frames[(curr_index + TW3DSwapChain::BufferCount - 1) % TW3DSwapChain::BufferCount]->FlushCommandLists(); // flush previous frame command lists
+		renderer->Execute(frames[curr_index]);
+	}
 
 	swapChain->Present();
 }

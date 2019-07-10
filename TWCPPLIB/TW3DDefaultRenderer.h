@@ -2,6 +2,34 @@
 #include "TW3DRenderer.h"
 
 struct TW3DDefaultRendererSettigns {
+	enum GraphicsType {
+		GRAPHICS_DEFAULT,   // front render target
+		GRAPHICS_IMPROVED,  // Front + Cube render target
+		GRAPHICS_REALISTIC  // Front render target, ray tracing
+	} GraphicsType = GRAPHICS_DEFAULT;
+
+	struct GraphicsDefault {
+		enum ShadowsQuality {
+			SHADOWS_QUALITY_LOW,
+			SHADOWS_QUALITY_MEDIUM,
+			SHADOWS_QUALITY_HIGH,
+		} ShadowsQuality;
+	} DefaultGraphics;
+
+	struct GraphicsImproved {
+		float BackScale = 0.25f; // Cube render target scale
+
+		enum ShadowsQuality {
+			SHADOWS_QUALITY_LOW,
+			SHADOWS_QUALITY_MEDIUM,
+			SHADOWS_QUALITY_HIGH,
+		} ShadowsQuality;
+	} ImprovedGraphics;
+
+	struct GraphicsRealistic {
+		// Non-implementable
+	};
+
 	float Scale = 1.0f;
 
 };

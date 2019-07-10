@@ -15,7 +15,6 @@
 #include "CompiledShaders/Release/GBuffer.p.h"
 #include "CompiledShaders/Release/ScreenQuad.v.h"
 #endif // _DEBUG
-#include "TWProperty.h"
 
 TW3DDefaultRenderer::~TW3DDefaultRenderer() {
 
@@ -107,10 +106,6 @@ void TW3DDefaultRenderer::CreateGBufferResources() {
 	mat.diffuse = TWT::float4(1);
 
 	material_buffer->UpdateElement(&mat, 0);
-	//std::unordered_map<TWT::uint>;
-	ResourceManager->govno = 7;
-	TWU::CPrintln(ResourceManager->govno);
-
 }
 
 void TW3DDefaultRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint2 Size) {
@@ -242,11 +237,7 @@ void TW3DDefaultRenderer::Update(float DeltaTime) {
 void TW3DDefaultRenderer::Execute(TW3DSCFrame* Frame) {
 	TW3DRenderer::Execute(Frame);
 
-	Frame->ExecuteCommandList("GBuffer"s, false, true);
-
-	//Frame->ExecuteCommandList("Blit"s, false, true);
-
-
+	Frame->ExecuteCommandList("GBuffer"s);
 
 	// Adjust frame count
 	info.info.z++;

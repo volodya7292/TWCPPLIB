@@ -108,6 +108,15 @@ void TW3DSCFrame::FlushCommandList(TWT::String const& Name) {
 	}
 }
 
+void TW3DSCFrame::FlushCommandLists() {
+	for (auto& [name, cl] : command_lists) {
+		if (cl.recorder)
+			resource_manager->FlushCommandList(cl.command_list[1]);
+		else
+			resource_manager->FlushCommandList(cl.command_list[0]);
+	}
+}
+
 void TW3DSCFrame::PerformSwap() {
 	for (auto& [name, cl] : command_lists) {
 		if (cl.swap) {

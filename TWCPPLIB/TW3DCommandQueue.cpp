@@ -41,7 +41,6 @@ void TW3DCommandQueue::FlushCommandList(TW3DCommandList* CommandList) {
 }
 
 void TW3DCommandQueue::FlushCommands() {
-	fence_flush_value++;
 	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value), "TW3DCommandQueue::FlushCommands, command_queue->Signal "s + fence_flush_value);
 
 	if (fence->GetCompletedValue() < fence_flush_value) {
