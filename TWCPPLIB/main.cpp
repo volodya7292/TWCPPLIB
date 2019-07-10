@@ -16,7 +16,7 @@ TW3DDefaultRenderer* defaultRenderer;
 TW3DScene *scene, *large_scene;
 TW3DLightSource light, light2;
 
-TW3DCube* cube, *cube2;
+TW3DCube* cube[100];//, *cube2;
 
 void on_update() {
 
@@ -96,8 +96,9 @@ TWT::uint on_thread_tick(TWT::uint ThreadID, TWT::uint ThreadCount) {
 }
 
 void on_cleanup() {
-	delete cube;
-	delete cube2;
+	for (int i = 0; i < 100; i++)
+		delete cube[i];
+	//delete cube2;
 	delete scene;
 	delete large_scene;
 	delete defaultRenderer;
@@ -145,8 +146,8 @@ int main() {
 	scene = new TW3DScene(RM);
 	large_scene = new TW3DScene(RM);
 	large_scene->Camera->SetSceneScale(1);
-	cube = new TW3DCube(RM);
-	cube2 = new TW3DCube(RM);
+	//cube = new TW3DCube(RM);
+	//cube2 = new TW3DCube(RM);
 
 	rp3d::BoxShape shape = rp3d::BoxShape(rp3d::Vector3(0.5, 0.5, 0.5));
 
@@ -160,17 +161,25 @@ int main() {
 
 
 
+	for (int i = 0; i < 100; i++) {
+		cube[i] = new TW3DCube(RM);
+		if (i < 1)
+			cube[i]->VMInstance.Transform.SetPosition(TWT::float3(0));
+		else
+			cube[i]->VMInstance.Transform.SetPosition(-50.0f + TWT::float3(rand() % 100, rand() % 100, rand() % 100));
 
+		scene->AddObject(cube[i]);
+	}
 
 	
 
 
-	cube->VMInstance.Transform.SetPosition(TWT::float3(0.0f, 0, 0));
+	/*cube->VMInstance.Transform.SetPosition(TWT::float3(0.0f, 0, 0));
 	cube->VMInstance.CreateRigidBody = true;
 	scene->AddObject(cube);
 	cube->VMInstance.RigidBody->setType(rp3d::BodyType::STATIC);
 	cube->VMInstance.RigidBody->enableGravity(false);
-	cube->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);
+	cube->VMInstance.RigidBody->addCollisionShape(&shape, rp3d::Transform::identity(), 1);*/
 	//cube->VMInstance.RigidBody->setTransform(PhysicalTransform(cube->VMInstance.Transform));
 	//cube->VMInstance.Transform.SetIdentity();
 

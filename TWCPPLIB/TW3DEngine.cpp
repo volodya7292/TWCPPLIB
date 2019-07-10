@@ -252,8 +252,8 @@ void on_resize() {
 	synchronized(resize_sync) {
 		RECT clientRect = {};
 		GetClientRect(hwnd, &clientRect);
-		width = std::max(clientRect.right - clientRect.left, 1L);
-		height = std::max(clientRect.bottom - clientRect.top, 1L);
+		width = TWT::Max(clientRect.right - clientRect.left, 1L);
+		height = TWT::Max(clientRect.bottom - clientRect.top, 1L);
 
 		for (UINT i = 0; i < TW3DSwapChain::BufferCount; i++)
 			frames[i]->Release();
@@ -263,7 +263,7 @@ void on_resize() {
 		logger->LogInfo("[on_resize] Render target resized to "s + width + "x"s + height);
 
 		if (renderer) {
-			renderer->Resize(width, height);
+			renderer->Resize(TWT::uint2(width, height));
 			logger->LogInfo("[on_resize] Renderer resized to "s + width + "x"s + height);
 		}
 
@@ -505,9 +505,9 @@ void TW3D::SetWindowTitle(const TWT::String& WindowTitle) {
 
 void TW3D::SetRenderer(TW3DRenderer* Renderer) {
 	renderer = Renderer;
-	renderer->Initialize(resource_manager, swapChain, width, height);
+	renderer->Initialize(resource_manager, swapChain, TWT::uint2(width, height));
 	logger->LogInfo("[SetRenderer] Renderer initialized. Resizing renderer to "s + width + "x"s + height);
-	renderer->Resize(width, height);
+	renderer->Resize(TWT::uint2(width, height));
 	for (int i = 0; i < TW3DSwapChain::BufferCount; i++)
 		renderer->InitializeFrame(frames[i]);
 	logger->LogInfo("[SetRenderer] Renderer resized."s);

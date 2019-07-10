@@ -14,11 +14,11 @@ struct GSOutput {
 	uint               rt_index : SV_RenderTargetArrayIndex;
 	float4             clip_pos : SV_Position;
 	//float4        prev_clip_pos : PrevPosition;
-	linear float3     world_pos : WorldPosition;
+	float3     world_pos : WorldPosition;
 	float2            tex_coord : TexCoord;
 	uint            material_id : MaterialId;
-	linear float3  world_normal : WorldNormal;
-	linear float3       tangent : Tangent;
+	float3  world_normal : WorldNormal;
+	float3       tangent : Tangent;
 };
 
 struct PSOutput {
@@ -102,7 +102,7 @@ PSOutput main(GSOutput input) {
 	PSOutput output;
 	output.position = float4(input.world_pos.xyz, POSITION_FLAG_POS_EXIST | (large_scale ? POSITION_FLAG_LARGE_SCALE : 0));
 	output.normal = float4(normal, 0);
-	output.diffuse = clamp(diffuse, 0.5, 1);
+	output.diffuse = diffuse;
 	output.specular = specular;
 	output.emission = emission;
 	output.depth = distance(input.world_pos.xyz, camera.pos.xyz) / (large_scale ? renderer.info.w : 1) / 8192.0f;

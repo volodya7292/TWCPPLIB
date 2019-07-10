@@ -87,38 +87,17 @@ namespace TWT {
 	}
 }  // namespace TWT
 
-//std::ostream&  operator << (std::ostream& os, const TWT::String& t);
-//std::wostream& operator << (std::wostream& os, const TWT::WString& t);
 
-//template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
-//std::string operator+(const std::string& str, const T& t) {
-//	return str.data + std::to_string(t);
-//}
-//template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
-//std::string operator+(const T& t, const std::string& str) {
-//	return std::to_string(t) + str;
-//}
-
-//TWT::String  operator+(const TWT::String&  t, const TWT::String&  str);
-//std::string  operator+(const std::string&  str, const TWT::String&  t);
-//std::string  operator+(const TWT::String&  t, const std::string&  str);
-//TWT::WString operator+(const TWT::WString& t, const TWT::WString& str);
-//std::wstring operator+(const std::wstring& str, const TWT::WString& t);
-//std::wstring operator+(const TWT::WString& t, const std::wstring& str);
-
-//bool operator ==(TWT::String const& str0, TWT::String const& str1);
-//bool operator !=(TWT::String const& str0, TWT::String const& str1);
 std::ostream& operator << (std::ostream& os, TWT::String const& t);
 TWT::String   operator  + (TWT::String const& t, TWT::String const& str);
 std::string   operator  + (std::string const& str, TWT::String const& t);
 std::string   operator  + (TWT::String const& t, std::string const& str);
 
-//bool operator ==(TWT::WString const& str0, TWT::WString const& str1);
-//bool operator !=(TWT::WString const& str0, TWT::WString const& str1);
 std::wostream& operator << (std::wostream const& os, TWT::WString const& t);
 TWT::WString   operator  + (TWT::WString const& t, TWT::WString const& str);
 std::wstring   operator  + (std::wstring const& str, TWT::WString const& t);
 std::wstring   operator  + (TWT::WString const& t, std::wstring const& str);
+
 
 namespace std {
 	template <>

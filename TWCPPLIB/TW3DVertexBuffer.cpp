@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "TW3DVertexBuffer.h"
 
-TW3DVertexBuffer::TW3DVertexBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeForUpdating, TWT::uint VertexCount, TWT::uint SingleVertexSize) :
-	TW3DResource(Device,
+TW3DVertexBuffer::TW3DVertexBuffer(TWT::String Name, TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeForUpdating, TWT::uint VertexCount, TWT::uint SingleVertexSize) :
+	TW3DResource(Name, Device,
 	CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), TempGCL,
 	D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, OptimizeForUpdating),
 	vertex_count(VertexCount), single_vertex_size(SingleVertexSize) {

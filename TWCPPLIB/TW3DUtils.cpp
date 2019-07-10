@@ -127,11 +127,6 @@ D3D12_DESCRIPTOR_RANGE TWU::DXDescriptorRange(TWT::uint Register, D3D12_DESCRIPT
 	return range;
 }
 
-void TWU::UpdateSubresourcesImp(ID3D12GraphicsCommandList* commandList, ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate,
-	D3D12_SUBRESOURCE_DATA* SrcData, TWT::uint SubresourcesCount, TWT::uint64 IntermediateOffset, TWT::uint FirstSubresource) {
-	UpdateSubresources(commandList, DestinationResource, Intermediate, IntermediateOffset, FirstSubresource, SubresourcesCount, SrcData);
-}
-
 int TWU::LoadImageDataFromFile(TWT::byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, const TWT::WString& filename, int& bytesPerRow) {
 	HRESULT hr;
 	TWU::FileExistsAssert(filename);

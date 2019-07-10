@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "TW3DConstantBuffer.h"
 
-TW3DConstantBuffer::TW3DConstantBuffer(TW3DDevice* Device, TWT::uint ElementCount, TWT::uint ElementSize) :
-	TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), nullptr, D3D12_RESOURCE_STATE_GENERIC_READ)
+TW3DConstantBuffer::TW3DConstantBuffer(TWT::String Name, TW3DDevice* Device, TWT::uint ElementCount, TWT::uint ElementSize) :
+	TW3DResource(Name, Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), nullptr, D3D12_RESOURCE_STATE_GENERIC_READ)
 {
 	AlignedElementSize = (ElementSize + 255) & ~255;
 

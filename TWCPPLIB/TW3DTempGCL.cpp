@@ -16,11 +16,6 @@ TW3DCommandList* TW3DTempGCL::Get() {
 	return CommandList;
 }
 
-void TW3DTempGCL::UpdateSubresources(ID3D12Resource* DestinationResource, ID3D12Resource* intermediate, D3D12_SUBRESOURCE_DATA* SrcData,
-	TWT::uint SubresourcesCount, TWT::uint64 intermediateOffset, TWT::uint FirstSubresource) {
-	CommandList->UpdateSubresources(DestinationResource, intermediate, SrcData, SubresourcesCount, intermediateOffset, FirstSubresource);
-}
-
 void TW3DTempGCL::CopyBufferRegion(TW3DResource* DstBuffer, TWT::uint64 DstOffset, TW3DResource* SrcBuffer, TWT::uint64 SrcOffset, TWT::uint64 ByteCount) {
 	CommandList->CopyBufferRegion(DstBuffer, DstOffset, SrcBuffer, SrcOffset, ByteCount);
 }

@@ -1,16 +1,15 @@
 #include "pch.h"
 #include "TW3DResource.h"
 
-TW3DResource::TW3DResource(TW3DDevice* Device, CD3DX12_HEAP_PROPERTIES const& HeapProperties, TW3DTempGCL* TempGCL,
+TW3DResource::TW3DResource(TWT::String Name, TW3DDevice* Device, CD3DX12_HEAP_PROPERTIES const& HeapProperties, TW3DTempGCL* TempGCL,
 	D3D12_RESOURCE_STATES InitialState, bool UpdateOptimized, D3D12_HEAP_FLAGS HeapFlags, D3D12_CLEAR_VALUE const& ClearValue) :
-	device(Device), temp_gcl(TempGCL), heap_properties(HeapProperties), heap_flags(HeapFlags), InitialState(InitialState), clear_value(ClearValue), update_optimized(UpdateOptimized)
-{
-	
+	name(Name), device(Device), temp_gcl(TempGCL), heap_properties(HeapProperties), heap_flags(HeapFlags),
+	InitialState(InitialState), clear_value(ClearValue), update_optimized(UpdateOptimized) {
+
 }
 
-TW3DResource::TW3DResource(ID3D12Resource* Resource) : 
-	Native(Resource), update_optimized(false)
-{
+TW3DResource::TW3DResource(TWT::String Name, ID3D12Resource* Resource) :
+	name(Name), Native(Resource), update_optimized(false) {
 }
 
 TW3DResource::~TW3DResource() {
@@ -29,10 +28,14 @@ D3D12_GPU_VIRTUAL_ADDRESS TW3DResource::GetGPUVirtualAddress() {
 	return Native->GetGPUVirtualAddress();
 }
 
+TWT::String const& TW3DResource::GetName() {
+	return name;
+}
+
 void TW3DResource::Release() {
 	if (Native)
 		TWU::DXSafeRelease(Native);
-	
+
 	delete staging;
 }
 
@@ -87,7 +90,7 @@ void TW3DResource::Read(void* Out, TWT::uint ByteOffset, TWT::uint ByteCount) co
 
 void TW3DResource::AllocateStaging() {
 	if (!staging) {
-		staging = new TW3DResource(device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), nullptr, D3D12_RESOURCE_STATE_GENERIC_READ);
+		staging = new TW3DResource(name + "-staging"s, device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), nullptr, D3D12_RESOURCE_STATE_GENERIC_READ);
 		staging->Create(CD3DX12_RESOURCE_DESC::Buffer(device->GetResourceByteSize(&desc, 1)));
 		staging->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&staging_addr));
 	}

@@ -29,7 +29,7 @@ namespace TWU {
 
 		if (_BitScanReverse64(&mssb, value) > 0 && _BitScanForward64(&lssb, value) > 0)
 			return uint8_t(mssb + (mssb == lssb ? 0 : 1));
-		
+
 		return 0;
 	}
 
@@ -76,4 +76,20 @@ private:
 #define foffsetof(s,m) (offsetof(s,m) / sizeof(float))
 
 
-#define instanceof(Base, ClassDerived) dynamic_cast<ClassDerived*>(Base)
+#define instanceof(Base, ClassDerived) dynamic_cast<ClassDerived*>(Base)        // Check if derived class relate to base class
+#define readonly(Type, Name) private: Type _##Name; public: Type const& Name    // Create read-only public class member
+
+#define prop_readonly(Type, Name) \
+    private: \
+        Type _##Name; \
+        inline void Name##_setter(Type const& value) { } \
+    public: \
+        inline Type const& Name##_getter() const { return _##Name; } \
+		__declspec(property(get=Name##_getter, put=Name##_setter)) Type Name;
+
+#define prop_readwrite(Type, Name, WriteMethod) \
+    private: \
+        Type _##Name; \
+    public: \
+        inline Type const& Name##_getter() const { return _##Name; } \
+		__declspec(property(get=Name##_getter, put=WriteMethod)) Type Name;

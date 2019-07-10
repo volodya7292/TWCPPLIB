@@ -5,20 +5,18 @@ TW3DRenderer::~TW3DRenderer() {
 	
 }
 
-void TW3DRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height) {
+void TW3DRenderer::Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint2 Size) {
 	this->ResourceManager = ResourceManager;
 	this->SwapChain = SwapChain;
-	this->Width = Width;
-	this->Height = Height;
+	this->Size = Size;
 	Initialized = true;
 	Device = ResourceManager->GetDevice();
 }
 
-void TW3DRenderer::Resize(TWT::uint Width, TWT::uint Height) {
-	this->Width = Width;
-	this->Height = Height;
-	Scene->Camera->Width = Width;
-	Scene->Camera->Height = Height;
+void TW3DRenderer::Resize(TWT::uint2 Size) {
+	this->Size = Size;
+	Scene->Camera->Width = Size.x;
+	Scene->Camera->Height = Size.y;
 }
 
 void TW3DRenderer::Execute(TW3DSCFrame* Frame) {

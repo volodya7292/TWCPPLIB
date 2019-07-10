@@ -12,7 +12,7 @@ enum TW3DTextureType {
 
 class TW3DTexture : public TW3DResource {
 public:
-	TW3DTexture(TW3DDevice* Device, TW3DTempGCL* TempGCL, DXGI_FORMAT Format,
+	TW3DTexture(TWT::String Name, TW3DDevice* Device, TW3DTempGCL* TempGCL, DXGI_FORMAT Format,
 		TW3DDescriptorHeap* SRVDescriptorHeap, TW3DDescriptorHeap* UAVDescriptorHeap, TW3DDescriptorHeap* DSVDescriptorHeap);
 	~TW3DTexture() final;
 
@@ -47,7 +47,7 @@ private:
 	TW3DDescriptorHeap* uav_descriptor_heap;
 	TW3DDescriptorHeap* dsv_descriptor_heap;
 	TWT::uint8* gpu_address = nullptr;
+	TW3DTextureType type;
 
 	int srv_index = -1, uav_index = -1, uav_cpu_index = -1, dsv_index = -1;
-	TW3DTextureType type = TW3D_TEXTURE_UNKNOWN;
 };

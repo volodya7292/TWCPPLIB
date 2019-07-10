@@ -25,11 +25,6 @@ public:
 
 	D3D12_COMMAND_LIST_TYPE GetType();
 
-	void UpdateSubresources(TW3DResource* DestinationResource, TW3DResource* Intermediate, D3D12_SUBRESOURCE_DATA* SrcData,
-		TWT::uint SubresourcesCount = 1, TWT::uint64 IntermediateOffset = 0, TWT::uint FirstSubresource = 0);
-	void UpdateSubresources(ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate, D3D12_SUBRESOURCE_DATA* SrcData,
-		TWT::uint SubresourcesCount = 1, TWT::uint64 IntermediateOffset = 0, TWT::uint FirstSubresource = 0);
-
 	void ResourceBarrier(const D3D12_RESOURCE_BARRIER& barrier);
 	void ResourceBarriers(const std::vector<D3D12_RESOURCE_BARRIER>& barriers);
 	void ResourceBarrier(TW3DResource* Resource, D3D12_RESOURCE_STATES StateBefore, D3D12_RESOURCE_STATES StateAfter);
@@ -37,8 +32,8 @@ public:
 	void CopyBufferRegion(TW3DResource* DstBuffer, TWT::uint64 DstOffset, TW3DResource* SrcBuffer, TWT::uint64 SrcOffset, TWT::uint64 ByteCount);
 	void CopyTextureRegion(TW3DTexture* DstTexture, TW3DTexture* SrcTexture);
 	void CopyTextureRegion(D3D12_TEXTURE_COPY_LOCATION const* Dst, TWT::uint3 DstXYZ, D3D12_TEXTURE_COPY_LOCATION const* Src, D3D12_BOX const* SrcBox = nullptr);
-	void SetPipelineState(TW3DGraphicsPipeline* GraphicsPipeline);
-	void SetPipelineState(TW3DComputePipeline* ComputePipeline);
+	void SetPipeline(TW3DGraphicsPipeline* GraphicsPipeline);
+	void SetPipeline(TW3DComputePipeline* ComputePipeline);
 	void SetRenderTarget(TW3DRenderTarget* RenderTarget, TW3DTexture* DSV = nullptr);
 	void SetRenderTargets(const std::vector<TW3DRenderTarget*>& RTVs, TW3DTexture* DSV = nullptr);
 	void ClearRTV(TW3DRenderTarget* RenderTarget);
@@ -52,7 +47,7 @@ public:
 	void SetRootDescriptorTable(TWT::uint RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor);
 	void SetViewport(const D3D12_VIEWPORT *viewport);
 	void SetScissor(const D3D12_RECT* scissor);
-	void SetViewportScissor(TWT::uint2 Size);
+	void SetViewportAndScissor(TWT::uint2 Size);
 	void SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY PrimitiveTopology);
 	void SetVertexBuffer(TWT::uint StartSlot, TW3DVertexBuffer* VertexBuffer);
 	void SetVertexBuffers(TWT::uint StartSlot, const std::vector<D3D12_VERTEX_BUFFER_VIEW>& views);
@@ -80,6 +75,9 @@ public:
 	void BindCameraCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera);
 	void BindCameraPrevCBV(TWT::uint RootParameterIndex, TW3DPerspectiveCamera* Camera);
 	void ClearTexture(TW3DTexture* Texture, TWT::float4 Color);
+
+	void DebugBeginEvent(TWT::String const& Name, TWT::float3 Color = TWT::float3(1, 1, 0));
+	void DebugEndEvent();
 
 	void Reset();
 	void Close();

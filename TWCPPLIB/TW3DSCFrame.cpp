@@ -4,7 +4,7 @@
 TW3DSCFrame::TW3DSCFrame(TW3DResourceManager* ResourceManager, TWT::uint Index, ID3D12Resource* RenderTargetBuffer) :
 	resource_manager(ResourceManager), index(Index) {
 
-	RenderTarget = ResourceManager->CreateRenderTarget(RenderTargetBuffer);
+	RenderTarget = ResourceManager->CreateRenderTarget("SCFrame_RT"s + Index, RenderTargetBuffer);
 }
 
 TW3DSCFrame::~TW3DSCFrame() {

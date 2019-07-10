@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "TW3DBuffer.h"
 
-TW3DBuffer::TW3DBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeForUpdating, TWT::uint ElementSizeInBytes, bool UAV, TW3DDescriptorHeap* SRVDescriptorHeap) :
-	TW3DResource(Device,
+TW3DBuffer::TW3DBuffer(TWT::String Name, TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeForUpdating, TWT::uint ElementSizeInBytes, bool UAV, TW3DDescriptorHeap* SRVDescriptorHeap) :
+	TW3DResource(Name, Device,
 	CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), TempGCL,
 	D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, OptimizeForUpdating),
 	srv_descriptor_heap(SRVDescriptorHeap), element_size(ElementSizeInBytes)
@@ -44,7 +44,7 @@ void TW3DBuffer::Create(TWT::uint MaxElementCount) {
 	srv_desc.Buffer.NumElements = max_element_count;
 	uav_desc.Buffer.NumElements = max_element_count;
 
-	desc = CD3DX12_RESOURCE_DESC::Buffer(max_element_count * element_size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	desc = CD3DX12_RESOURCE_DESC::Buffer(max_element_count * element_size, ResourceFlags | (uav_index == -1 ? D3D12_RESOURCE_FLAG_NONE : D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS));
 	TW3DResource::Create();
 	Native->SetName(L"TW3DResourceUAV Buffer");
 
@@ -55,7 +55,7 @@ void TW3DBuffer::Create(TWT::uint MaxElementCount) {
 
 void TW3DBuffer::Update(const void* Data, TWT::uint ElementCount) {
 	if (ElementCount > max_element_count)
-		TWU::TW3DLogError("TW3DBuffer::Update \'"s + TWU::DXGetName(Native) + "\' ElementCount > MaxElementCount !"s);
+		TWU::TW3DLogError("TW3DBuffer::Update \'"s + name + "\' ElementCount > MaxElementCount !"s);
 
 	element_count = ElementCount;
 
@@ -79,7 +79,7 @@ void TW3DBuffer::Update(const void* Data, TWT::uint ElementCount) {
 
 void TW3DBuffer::Update(const void* Data, TWT::uint ElementCount, D3D12_RESOURCE_STATES BeforeUpdate, D3D12_RESOURCE_STATES AfterUpdate) {
 	if (ElementCount > max_element_count)
-		TWU::TW3DLogError("TW3DBuffer::Update \'"s + TWU::DXGetName(Native) + "\' ElementCount > MaxElementCount !"s);
+		TWU::TW3DLogError("TW3DBuffer::Update \'"s + name + "\' ElementCount > MaxElementCount !"s);
 
 	element_count = ElementCount;
 

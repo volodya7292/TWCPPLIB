@@ -6,8 +6,8 @@ TW3DCommandBuffer::TW3DCommandBuffer(TWT::String const& Name, TW3DResourceManage
 	TW3DCommandSignature* CommandSignature, TWT::uint MaxCommandCount, TWT::uint SingleCommandByteSize) :
 	resource_manager(ResourceManager), cmd_signature(CommandSignature) {
 
-	cmd_buffer = ResourceManager->CreateBuffer(Name + "-cmd_buffer"s, MaxCommandCount, SingleCommandByteSize, false, true, D3D12_RESOURCE_STATE_COPY_DEST);
-	count_buffer = ResourceManager->CreateBuffer(Name + "-count_buffer"s, 1, sizeof(TWT::uint), false, true, D3D12_RESOURCE_STATE_COPY_DEST);
+	cmd_buffer = ResourceManager->CreateBuffer(Name + "-cmd_buffer"s, MaxCommandCount, SingleCommandByteSize, false, true, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+	count_buffer = ResourceManager->CreateBuffer(Name + "-count_buffer"s, 1, sizeof(TWT::uint), false, true, D3D12_RESOURCE_STATE_GENERIC_READ);
 }
 
 TW3DCommandBuffer::~TW3DCommandBuffer() {
@@ -32,6 +32,6 @@ const TWT::uint TW3DCommandBuffer::GetMaxCommandCount() const {
 }
 
 void TW3DCommandBuffer::Update(const void* Commands, TWT::uint CommandCount) {
-	cmd_buffer->Update(Commands, CommandCount);
-	count_buffer->Update(&CommandCount, 1);
+	cmd_buffer->Update(Commands, CommandCount, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+	count_buffer->Update(&CommandCount, 1, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
 }

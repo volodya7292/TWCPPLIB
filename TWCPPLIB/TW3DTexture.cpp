@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "TW3DTexture.h"
 
-TW3DTexture::TW3DTexture(TW3DDevice* Device, TW3DTempGCL* TempGCL, DXGI_FORMAT Format,
+TW3DTexture::TW3DTexture(TWT::String Name, TW3DDevice* Device, TW3DTempGCL* TempGCL, DXGI_FORMAT Format,
 		TW3DDescriptorHeap* SRVDescriptorHeap, TW3DDescriptorHeap* UAVDescriptorHeap, TW3DDescriptorHeap* DSVDescriptorHeap) :
-	TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), TempGCL, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
+	TW3DResource(Name, Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), TempGCL, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
 	srv_descriptor_heap(SRVDescriptorHeap), uav_descriptor_heap(UAVDescriptorHeap), dsv_descriptor_heap(DSVDescriptorHeap) {
 	
 	if (SRVDescriptorHeap)
@@ -156,14 +156,28 @@ void TW3DTexture::CreateCube2D(TWT::uint Size) {
 }
 
 void TW3DTexture::Upload2D(TWT::byte* Data, TWT::int64 BytesPerRow, TWT::uint Depth) {
-	AllocateStaging();
-	memcpy(staging_addr, Data, BytesPerRow * desc.Height);
+	AllocateStaging();	
+
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT staging_footprint = device->GetSubresourceFootprint(&desc, 0, 1);
+	D3D12_MEMCPY_DEST d;
+	d.pData = staging_addr;
+	d.RowPitch = staging_footprint.Footprint.RowPitch;
+	d.SlicePitch = d.RowPitch * desc.Height;
+
+	D3D12_SUBRESOURCE_DATA data;
+	data.pData = Data;
+	data.RowPitch = BytesPerRow;
+	data.SlicePitch = BytesPerRow * desc.Height;
+
+	D3D12MemcpySubresource(&d, &data, BytesPerRow, desc.Height, 1);
+
 
 	TWT::uint subres = D3D12CalcSubresource(0, Depth, 0, desc.MipLevels, desc.DepthOrArraySize);
-	D3D12_PLACED_SUBRESOURCE_FOOTPRINT staging_footprint = device->GetSubresourceFootprint(&desc, 0, 1);
+	
 
 	temp_gcl->Reset();
 	temp_gcl->ResourceBarrier(Native, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+	
 	temp_gcl->CopyTextureRegion(&CD3DX12_TEXTURE_COPY_LOCATION(Native, subres), TWT::uint3(0), &CD3DX12_TEXTURE_COPY_LOCATION(staging->Native, staging_footprint));
 	temp_gcl->ResourceBarrier(Native, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	temp_gcl->Execute();
@@ -201,13 +215,13 @@ TWT::uint2 TW3DTexture::GetSize() {
 	return TWT::uint2(desc.Width, desc.Height);
 }
 
-TW3DTexture* TW3DTexture::Create2D(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::WString const& filename) {
+TW3DTexture* TW3DTexture::Create2D(TW3DDevice* Device, TW3DTempGCL* TempGCL, TW3DDescriptorHeap* SRVDescriptorHeap, TWT::WString const& Filename) {
 	D3D12_RESOURCE_DESC textureDesc;
 	int imageBytesPerRow;
 	TWT::byte* imageData;
-	int imageSize = TWU::LoadImageDataFromFile(&imageData, textureDesc, filename, imageBytesPerRow);
+	int imageSize = TWU::LoadImageDataFromFile(&imageData, textureDesc, Filename, imageBytesPerRow);
 
-	TW3DTexture* texture = new TW3DTexture(Device, TempGCL, textureDesc.Format, SRVDescriptorHeap, nullptr, nullptr);
+	TW3DTexture* texture = new TW3DTexture(Filename.Multibyte(), Device, TempGCL, textureDesc.Format, SRVDescriptorHeap, nullptr, nullptr);
 	texture->Create2D(TWT::uint2(static_cast<TWT::uint>(textureDesc.Width), static_cast<TWT::uint>(textureDesc.Height)));
 	texture->Upload2D(imageData, imageBytesPerRow);
 

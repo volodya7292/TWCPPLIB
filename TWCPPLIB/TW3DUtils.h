@@ -20,10 +20,6 @@ namespace TWU {
 
 	D3D12_DESCRIPTOR_RANGE DXDescriptorRange(TWT::uint Register, D3D12_DESCRIPTOR_RANGE_TYPE Type);
 
-	// Implementation of UpdateSubresources from d3dx12.h. Used in TW3DCommandList.
-	void UpdateSubresourcesImp(ID3D12GraphicsCommandList* commandList, ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate,
-		D3D12_SUBRESOURCE_DATA* SrcData, TWT::uint SubresourcesCount, TWT::uint64 IntermediateOffset, TWT::uint FirstSubresource);
-
 	// Load and decode image from file
 	int LoadImageDataFromFile(TWT::byte** imageData, D3D12_RESOURCE_DESC& resourceDescription, const TWT::WString& filename, int& bytesPerRow);
 
@@ -39,17 +35,9 @@ namespace TWU {
 
 	template<typename T>
 	void DXSetName(T* t, TWT::String const& Name) {
+#ifdef _DEBUG
 		t->SetName(Name.Wide().ToWCharArray());
-	}
-
-	template<typename T>
-	TWT::String DXGetName(T* t) {
-		TWT::uint name_size = 256;
-		TWT::wchar name[256];
-
-		t->GetPrivateData(WKPDID_D3DDebugObjectNameW, &name_size, &name);
-
-		return TWT::WString(name).Multibyte();
+#endif // _DEBUG
 	}
 
 	// Check for successful result

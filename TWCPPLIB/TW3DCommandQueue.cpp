@@ -75,6 +75,14 @@ void TW3DCommandQueue::ExecuteCommandLists(const std::vector<TW3DCommandList*>& 
 	TWU::SuccessAssert(command_queue->Signal(fence, fence_flush_value), "TW3DCommandQueue::ExecuteCommandLists, command_queue->Signal "s + fence_flush_value);
 }
 
+void TW3DCommandQueue::DebugBeginEvent(TWT::String const& Name, TWT::float3 Color) {
+	PIXBeginEvent(command_queue, PIX_COLOR(Color.r * 255, Color.g * 255, Color.b * 255), Name.ToCharArray());
+}
+
+void TW3DCommandQueue::DebugEndEvent() {
+	PIXEndEvent();
+}
+
 TW3DCommandQueue* TW3DCommandQueue::CreateDirect(TW3DDevice* Device) {
 	return new TW3DCommandQueue(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 }

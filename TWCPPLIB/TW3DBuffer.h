@@ -4,7 +4,7 @@
 
 class TW3DBuffer : public TW3DResource {
 public:
-	TW3DBuffer(TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeForUpdating, TWT::uint ElementSizeInBytes, bool UAV, TW3DDescriptorHeap* SRVDescriptorHeap);
+	TW3DBuffer(TWT::String Name, TW3DDevice* Device, TW3DTempGCL* TempGCL, bool OptimizeForUpdating, TWT::uint ElementSizeInBytes, bool UAV, TW3DDescriptorHeap* SRVDescriptorHeap);
 	~TW3DBuffer() final;
 
 	// Returns last updated elements count

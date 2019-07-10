@@ -45,16 +45,6 @@ D3D12_COMMAND_LIST_TYPE TW3DCommandList::GetType() {
 	return type;
 }
 
-void TW3DCommandList::UpdateSubresources(TW3DResource* DestinationResource, TW3DResource* Intermediate,
-	D3D12_SUBRESOURCE_DATA* SrcData, TWT::uint SubresourcesCount, TWT::uint64 IntermediateOffset, TWT::uint FirstSubresource) {
-	TWU::UpdateSubresourcesImp(Native, DestinationResource->Native, Intermediate->Native, SrcData, SubresourcesCount, IntermediateOffset, FirstSubresource);
-}
-
-void TW3DCommandList::UpdateSubresources(ID3D12Resource* DestinationResource, ID3D12Resource* Intermediate,
-	D3D12_SUBRESOURCE_DATA* SrcData, TWT::uint SubresourcesCount, TWT::uint64 IntermediateOffset, TWT::uint FirstSubresource) {
-	TWU::UpdateSubresourcesImp(Native, DestinationResource, Intermediate, SrcData, SubresourcesCount, IntermediateOffset, FirstSubresource);
-}
-
 void TW3DCommandList::ResourceBarrier(const D3D12_RESOURCE_BARRIER& barrier) {
 	Native->ResourceBarrier(1, &barrier);
 }
@@ -83,12 +73,12 @@ void TW3DCommandList::CopyTextureRegion(D3D12_TEXTURE_COPY_LOCATION const* Dst, 
 	Native->CopyTextureRegion(Dst, DstXYZ.x, DstXYZ.y, DstXYZ.z, Src, SrcBox);
 }
 
-void TW3DCommandList::SetPipelineState(TW3DGraphicsPipeline* GraphicsPipeline) {
+void TW3DCommandList::SetPipeline(TW3DGraphicsPipeline* GraphicsPipeline) {
 	Native->SetPipelineState(GraphicsPipeline->Native);
 	SetRootSignatureFrom(GraphicsPipeline);
 }
 
-void TW3DCommandList::SetPipelineState(TW3DComputePipeline* ComputePipeline) {
+void TW3DCommandList::SetPipeline(TW3DComputePipeline* ComputePipeline) {
 	Native->SetPipelineState(ComputePipeline->Native);
 	SetRootSignatureFrom(ComputePipeline);
 }
@@ -180,7 +170,7 @@ void TW3DCommandList::SetScissor(const D3D12_RECT* scissor) {
 	Native->RSSetScissorRects(1, scissor);
 }
 
-void TW3DCommandList::SetViewportScissor(TWT::uint2 Size) {
+void TW3DCommandList::SetViewportAndScissor(TWT::uint2 Size) {
 	Native->RSSetViewports(1, &CD3DX12_VIEWPORT(0.0f, 0.0f, Size.x, Size.y));
 	Native->RSSetScissorRects(1, &CD3DX12_RECT(0, 0, Size.x, Size.y));
 }
@@ -283,6 +273,14 @@ void TW3DCommandList::BindCameraPrevCBV(TWT::uint RootParameterIndex, TW3DPerspe
 void TW3DCommandList::ClearTexture(TW3DTexture* Texture, TWT::float4 Color) {
 	float value[] = { Color.r, Color.b, Color.g, Color.a };
 	Native->ClearUnorderedAccessViewFloat(Texture->GetGPUCPUUAVHandle(), Texture->GetCPUUAVHandle(), Texture->Native, value, 0, nullptr);
+}
+
+void TW3DCommandList::DebugBeginEvent(TWT::String const& Name, TWT::float3 Color) {
+	PIXBeginEvent(Native, PIX_COLOR(Color.r * 255, Color.g * 255, Color.b * 255), Name.ToCharArray());
+}
+
+void TW3DCommandList::DebugEndEvent() {
+	PIXEndEvent();
 }
 
 void TW3DCommandList::Reset() {

@@ -2,9 +2,8 @@
 #include "TW3DFramebuffer.h"
 #include "TW3DResourceManager.h"
 
-TW3DFramebuffer::TW3DFramebuffer(TW3DResourceManager* ResourceManager, TWT::uint2 Size) :
-	resource_manager(ResourceManager), size(Size)
-{
+TW3DFramebuffer::TW3DFramebuffer(TWT::String Name, TW3DResourceManager* ResourceManager, TWT::uint2 Size, TW3DFramebufferType Type) :
+	name(Name), resource_manager(ResourceManager), type(Type), size(Size) {
 }
 
 TW3DFramebuffer::~TW3DFramebuffer() {
@@ -18,12 +17,15 @@ TW3DFramebuffer::~TW3DFramebuffer() {
 
 void TW3DFramebuffer::AddRenderTarget(TWT::uint Index, DXGI_FORMAT Format, TWT::float4 ClearValue) {
 	if (rts.size() == 8) {
-		TWU::TW3DLogError("[TW3DFramebuffer::AddRenderTarget] Maximum render target count limit(8) exceeded!");
+		TWU::TW3DLogError("[TW3DFramebuffer::AddRenderTarget] Maximum render target count limit(8) exceeded!"s);
 		return;
 	}
 
 	TW3DFBRT rt;
-	rt.RenderTarget = resource_manager->CreateRenderTarget(size, Format, ClearValue);
+	if (type == TW3D_FRAMEBUFFER_CUBE)
+		rt.RenderTarget = resource_manager->CreateRenderTargetCube(name + "_RT"s + Index, size.x, Format, ClearValue);
+	else
+		rt.RenderTarget = resource_manager->CreateRenderTarget(name + "_RT"s + Index, size, Format, ClearValue);
 	rt.DestroyOnFBDestroy = true;
 
 	rts[Index] = rt;
@@ -31,7 +33,7 @@ void TW3DFramebuffer::AddRenderTarget(TWT::uint Index, DXGI_FORMAT Format, TWT::
 
 void TW3DFramebuffer::AddRenderTarget(TWT::uint Index, TW3DRenderTarget* RenderTarget) {
 	if (rts.size() == 8) {
-		TWU::TW3DLogError("[TW3DFramebuffer::AddRenderTarget] Maximum render target count limit(8) exceeded!");
+		TWU::TW3DLogError("[TW3DFramebuffer::AddRenderTarget] Maximum render target count limit(8) exceeded!"s);
 		return;
 	}
 
@@ -46,15 +48,18 @@ void TW3DFramebuffer::AddRenderTarget(TWT::uint Index, TW3DRenderTarget* RenderT
 
 void TW3DFramebuffer::AddDepthStencil() {
 	if (depth_stencil.first)
-		TWU::TW3DLogError("DepthStencil texture already exists!");
-	
-	depth_stencil.first = resource_manager->CreateDepthStencilTexture(size);
+		TWU::TW3DLogError("DepthStencil texture already exists!"s);
+
+	if (type == TW3D_FRAMEBUFFER_CUBE)
+		depth_stencil.first = resource_manager->CreateDepthStencilCubeTexture(name + "_DS"s, size.x);
+	else
+		depth_stencil.first = resource_manager->CreateDepthStencilTexture(name + "_DS"s, size);
 	depth_stencil.second = true;
 }
 
 void TW3DFramebuffer::AddDepthStencil(TW3DTexture* DepthStencil) {
 	if (depth_stencil.first)
-		TWU::TW3DLogError("DepthStencil texture already exists!");
+		TWU::TW3DLogError("DepthStencil texture already exists!"s);
 
 	depth_stencil.first = DepthStencil;
 	depth_stencil.second = false;

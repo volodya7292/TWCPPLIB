@@ -3,9 +3,14 @@
 
 class TW3DResourceManager;
 
+enum TW3DFramebufferType {
+	TW3D_FRAMEBUFFER_DEFAULT,
+	TW3D_FRAMEBUFFER_CUBE,
+};
+
 class TW3DFramebuffer {
 public:
-	TW3DFramebuffer(TW3DResourceManager* ResourceManager, TWT::uint2 Size);
+	TW3DFramebuffer(TWT::String Name, TW3DResourceManager* ResourceManager, TWT::uint2 Size, TW3DFramebufferType Type = TW3D_FRAMEBUFFER_DEFAULT);
 	~TW3DFramebuffer();
 
 	void AddRenderTarget(TWT::uint Index, DXGI_FORMAT Format, TWT::float4 ClearValue = TWT::float4(-1));
@@ -27,9 +32,10 @@ private:
 	};
 
 	TW3DResourceManager* resource_manager;
+	TW3DFramebufferType type;
 	TWT::uint2 size;
+	TWT::String name;
 
 	std::unordered_map<TWT::uint, TW3DFBRT> rts; // uint : Index
 	std::pair<TW3DTexture*, bool> depth_stencil; // bool : DestroyOnFBDestroy
 };
-

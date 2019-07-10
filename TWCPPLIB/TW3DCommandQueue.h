@@ -15,6 +15,9 @@ public:
 	void ExecuteCommandList(TW3DCommandList* CommandList);
 	void ExecuteCommandLists(const std::vector<TW3DCommandList*>& CommandLists);
 
+	void DebugBeginEvent(TWT::String const& Name, TWT::float3 Color = TWT::float3(1, 1, 0));
+	void DebugEndEvent();
+
 	static TW3DCommandQueue* CreateDirect(TW3DDevice* Device);
 	static TW3DCommandQueue* CreateCompute(TW3DDevice* Device);
 	static TW3DCommandQueue* CreateCopy(TW3DDevice* Device);

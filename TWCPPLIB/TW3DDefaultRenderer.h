@@ -1,13 +1,18 @@
 #pragma once
 #include "TW3DRenderer.h"
 
+struct TW3DDefaultRendererSettigns {
+	float Scale = 1.0f;
+
+};
+
 class TW3DDefaultRenderer : public TW3DRenderer {
 public:
 	TW3DDefaultRenderer() = default;
 	~TW3DDefaultRenderer() final;
-	void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint Width, TWT::uint Height) final;
+	void Initialize(TW3DResourceManager* ResourceManager, TW3DSwapChain* SwapChain, TWT::uint2 Size) final;
 	void InitializeFrame(TW3DSCFrame* Frame) final;
-	void Resize(TWT::uint Width, TWT::uint Height) final;
+	void Resize(TWT::uint2 Size) final;
 	void Update(float DeltaTime) final;
 	void Execute(TW3DSCFrame* Frame) final;
 
@@ -17,8 +22,6 @@ private:
 	void CreateGBufferResources();
 
 	void BlitOutput(TW3DCommandList* cl, TW3DRenderTarget* ColorOutput);
-
-	TW3DShader *g_pixel_s, *g_vertex_s, *g_geom_s;
 
 	// Renderer resources
 	// --------------------------------------------------------------------- 
@@ -51,17 +54,14 @@ private:
 		D3D12_DRAW_ARGUMENTS draw;
 	};
 
-	TW3DGraphicsPipeline *gbuffer_ps = nullptr;
-	TW3DRenderTarget *g_position, *g_normal, *g_diffuse, *g_specular, *g_emission;
-	TW3DTexture* g_depth;
+	TW3DGraphicsPipeline *cube_gbuffer_ps, *front_gbuffer_ps;
+
+	TW3DFramebuffer *cube_gbuffer, *front_gbuffer;
+	float cube_gbuffer_scale = 1.0f;
 
 	TW3DCommandSignature* objs_cmd_sign;
 	TW3DCommandBuffer* objs_cmd_buffer;
 
 	TW3DBuffer* material_buffer;
 	TW3DConstantBuffer* cb_camera_matrices;
-
-
-	D3D12_VIEWPORT viewport = D3D12_VIEWPORT();
-	D3D12_RECT scissor = D3D12_RECT();
 };

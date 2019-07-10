@@ -1,15 +1,15 @@
 #include "pch.h"
 #include "TW3DRenderTarget.h"
 
-TW3DRenderTarget::TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* rtv_descriptor_heap, TW3DDescriptorHeap* srv_descriptor_heap) :
-	TW3DResource(Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT)), rtv_descriptor_heap(rtv_descriptor_heap), srv_descriptor_heap(srv_descriptor_heap)
+TW3DRenderTarget::TW3DRenderTarget(TWT::String Name, TW3DDevice* Device, TW3DDescriptorHeap* rtv_descriptor_heap, TW3DDescriptorHeap* srv_descriptor_heap) :
+	TW3DResource(Name, Device, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT)), rtv_descriptor_heap(rtv_descriptor_heap), srv_descriptor_heap(srv_descriptor_heap)
 {
 	RTVIndex = rtv_descriptor_heap->Allocate();
 	SRVIndex = srv_descriptor_heap->Allocate();
 }
 
-TW3DRenderTarget::TW3DRenderTarget(TW3DDevice* Device, TW3DDescriptorHeap* rtv_descriptor_heap, TW3DDescriptorHeap* srv_descriptor_heap, DXGI_FORMAT Format, TWT::float4 ClearValue) :
-	TW3DResource(Device,
+TW3DRenderTarget::TW3DRenderTarget(TWT::String Name, TW3DDevice* Device, TW3DDescriptorHeap* rtv_descriptor_heap, TW3DDescriptorHeap* srv_descriptor_heap, DXGI_FORMAT Format, TWT::float4 ClearValue) :
+	TW3DResource(Name, Device,
 	CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), nullptr,
 	D3D12_RESOURCE_STATE_RENDER_TARGET,
 	false,
