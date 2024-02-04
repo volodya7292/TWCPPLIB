@@ -1,4 +1,4 @@
-# TWCoders C++ library
+# TWCPPLIB
 
 Components:
   TWTypes
